@@ -475,7 +475,7 @@ class pootlefile(po.pofile):
       if oldpo.isblankmsgstr() or newpo.isblankmsgstr() or unchanged:
         oldpo.merge(newpo)
       else:
-        for matchitem, matchpo in enumerate(self.transelements):
+        for item, matchpo in enumerate(self.transelements):
           if matchpo == oldpo:
             self.addsuggestion(item, newpo.msgstr, username)
             return
@@ -590,29 +590,24 @@ class TranslationProject:
         os.mkdir(dircheck)
     return os.path.join(self.podir, dirname, pofilename)  
 
-  def addnewpofile(self, dirname, pofilename, contents):
-    """creates a new po file with the given contents"""
+  def uploadpofile(self, dirname, pofilename, contents):
+    """uploads an individual PO files"""
     pathname = self.getuploadpath(dirname, pofilename)
     if os.path.exists(pathname):
-      raise ValueError("that file already exists")
-    outfile = open(pathname, "wb")
-    outfile.write(contents)
-    outfile.close()
-    self.scanpofiles()
-
-  def mergepofile(self, dirname, pofilename, contents):
-    """merges a new po file with the given contents with the existing one"""
-    pathname = self.getuploadpath(dirname, pofilename)
-    if not os.path.exists(pathname):
-      raise ValueError("cannot merge unless file exists")
-    origpofile = self.getpofile(os.path.join(dirname, pofilename))
-    newpofile = po.pofile()
-    infile = cStringIO.StringIO(contents)
-    newpofile.parse(infile)
-    # TODO: get the real username here
-    origpofile.mergefile(newpofile, "merged")
+      origpofile = self.getpofile(os.path.join(dirname, pofilename))
+      newpofile = po.pofile()
+      infile = cStringIO.StringIO(contents)
+      newpofile.parse(infile)
+      # TODO: get the real username here
+      origpofile.mergefile(newpofile, "merged") 
+    else:
+      outfile = open(pathname, "wb")
+      outfile.write(contents)
+      outfile.close()
+      self.scanpofiles()
 
   def create(self):
+    """creates PO files from the templates"""
     projectdir = os.path.join(self.potree.podirectory, self.projectcode)
     templatesdir = os.path.join(projectdir, "templates")
     if self.potree.isgnustyle(self.projectcode):
@@ -669,13 +664,6 @@ class TranslationProject:
     archive.close()
     return archivecontents.getvalue()
 
-  def uploadpofile(self, dirname, pofilename, contents):
-    """uploads an individual PO files"""
-    if os.path.exists(os.path.join(self.podir, dirname, pofilename)):
-      self.mergepofile(dirname, pofilename, contents)
-    else:
-      self.addnewpofile(dirname, pofilename, contents)
-
   def uploadarchive(self, dirname, archivecontents):
     """uploads the files inside the archive"""
     try:
@@ -701,7 +689,7 @@ class TranslationProject:
       subdirname, pofilename = os.path.dirname(filename), os.path.basename(filename)
       try:
         # TODO: use zipfile info to set the time and date of the file
-        self.addnewpofile(os.path.join(dirname, subdirname), pofilename, contents)
+        self.uploadpofile(os.path.join(dirname, subdirname), pofilename, contents)
       except ValueError, e:
         print "error adding %s" % filename, e
         continue
