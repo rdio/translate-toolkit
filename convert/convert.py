@@ -310,7 +310,13 @@ class ConvertOptionParser(optparse.OptionParser):
     if self.templateslikeinput:
       return inputname
     else:
-      return self.getoutputname(options, inputname)
+      outputname = self.getoutputname(options, inputname)
+      # TODO: clean this up
+      # templates should be pot files sometimes...
+      outputbase, outputext = os.path.splitext(outputname)
+      if outputext == os.extsep + "po":
+        return outputbase + os.extsep + "pot"
+      return outputname
 
   def getoutputname(self, options, inputname):
     """gets an output filename based on the input filename"""
