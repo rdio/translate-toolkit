@@ -33,7 +33,7 @@ class RegisterPage(pagelayout.PootlePage):
 
   def getform(self):
     columnlist = [("email", self.localize("Email Address"), self.localize("Must be a valid email address")),
-                  ("username", self.localize("Username"), sesssion.localize("Your requested username")),
+                  ("username", self.localize("Username"), self.localize("Your requested username")),
                   ("password", self.localize("Password"), self.localize("Your desired password"))]
     formlayout = {1:("email", ), 2:("username", ), 3:("password", )}
     extrawidgets = [widgets.Input({'type': 'submit', 'name':'register', 'value':self.localize('Register')})]
