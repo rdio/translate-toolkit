@@ -101,7 +101,7 @@ class detector:
   def handledir(self, dirname):
     os.path.walk(dirname, self.handlefiles, None)
 
-  def getcountmap(self, charstring, excludestring="", countmap=None):
+  def updatecountmap(self, charstring, excludestring="", countmap=None):
     """makes a countmap of the characters in the string, excluding those in excludestring
     starts with countmap if one is given"""
     if countmap is None: countmap = {}
@@ -151,7 +151,7 @@ class detector:
   def testcharstats(self):
     dictcountmap = {}
     if self.dictstring:
-      self.getcountmap(self.dictstring, self.excludestring, dictcountmap)
+      self.updatecountmap(self.dictstring, self.excludestring, dictcountmap)
     validencodings = {}
     encodingdeltas = {}
     for encoding in self.listencodings():
@@ -161,7 +161,7 @@ class detector:
           decoded = translation.decode(encoding)
         except UnicodeDecodeError:
           continue
-        self.getcountmap(decoded, self.excludestring, countmap)
+        self.updatecountmap(decoded, self.excludestring, countmap)
       validencodings[encoding] = countmap
       if dictcountmap:
         encodingdeltas[encoding] = self.getcountmapdelta(dictcountmap, countmap)
