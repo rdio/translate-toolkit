@@ -27,7 +27,7 @@ def getmodtime(filename, default=None):
 class RightsError(ValueError):
   pass
 
-regionre = sre.compile("^_[A-Z]{2,3}$")
+regionre = sre.compile("^[_-][A-Z]{2,3}$")
 
 class TranslationSession:
   """A translation session represents a users work on a particular translation project"""
@@ -516,7 +516,7 @@ class TranslationProject:
       raise ValueError("invalid/insecure file name: %s" % pofilename)
     if self.filestyle == "gnu":
       if not self.potree.languagematch(self.languagecode, pofilename[:-len(".po")]):
-        raise ValueError("invalid GNU-style file name %s: must match '%s.po' or '%s_[A-Z]{2,3}.po'" % (pofilename, self.languagecode, self.languagecode))
+        raise ValueError("invalid GNU-style file name %s: must match '%s.po' or '%s[_-][A-Z]{2,3}.po'" % (pofilename, self.languagecode, self.languagecode))
     dircheck = ""
     for part in dirname.split(os.sep):
       dircheck = os.path.join(dircheck, part)
