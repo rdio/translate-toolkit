@@ -237,6 +237,20 @@ class SetupIndex(sparse.SimpleParser):
           index.setfieldvalue(fileentry, "PackedName", '"%s"' % newpackedname)
           if index != self:
             self.addforeignfile(index, fileentry, suffix)
+      for configitem in index.bytype["ConfigurationItem"]:
+        key = sparse.stringeval(index.getfieldvalue(configitem, 'Key'))
+        if key == index.isocode:
+          suffix = "_" + index.isocode
+          index.rename(configitem, configitem + suffix)
+          if index != self:
+            self.addforeignconfigitem(index, configitem, suffix)
+
+  def addforeignconfigitem(self, index, configitem, suffix):
+    """adds the foreign config item and updates the modules list..."""
+    tokenrange = index.getsectiontokenrange(configitem)
+    configitemsection = index.definitions[configitem]
+    # the config item will already have been renamed by the index.renamedirectory
+    self.insertforeignsection(configitem, configitem + suffix, configitemsection, index, tokenrange)
 
   def addforeignfile(self, index, fileentry, suffix):
     """adds the foreign file entry and updates the modules list..."""
