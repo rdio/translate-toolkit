@@ -27,8 +27,7 @@ class TranslationSession:
 
   def receivetranslation(self, pofilename, item, trans):
     """submits a new/changed translation from the user"""
-    pofile = self.translationproject.getpofile(pofilename)
-    pofile.transelements[item].msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
+    self.translationproject.receivetranslation(pofilename, item, trans)
     if pofilename == self.pofilename:
       self.lastitem = item
 
@@ -144,14 +143,28 @@ class TranslationProject:
     return pofile
 
   def getitemsbefore(self, pofilename, item, num=3):
+    """returns num items before the given item, as context"""
     pofile = self.getpofile(pofilename)
     elements = pofile.transelements[max(item-num,0):item]
     return [(po.getunquotedstr(poel.msgid), po.getunquotedstr(poel.msgstr)) for poel in elements]
 
   def getitemsafter(self, pofilename, item, num=3):
+    """returns num items after the given item, as context"""
     pofile = self.getpofile(pofilename)
     elements = pofile.transelements[item+1:item+1+num]
     return [(po.getunquotedstr(poel.msgid), po.getunquotedstr(poel.msgstr)) for poel in elements]
+
+  def receivetranslation(self, pofilename, item, trans):
+    """receives a new translation that has been submitted..."""
+    pofile = self.getpofile(pofilename)
+    pofile.transelements[item].msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
+    self.savefile(pofilename)
+
+  def savefile(self, pofilename):
+    """saves changes to disk..."""
+    pofile = self.getpofile(pofilename)
+    lines = pofile.tolines()
+    open(pofilename, "w").writelines(lines)
 
 projects = {}
 
