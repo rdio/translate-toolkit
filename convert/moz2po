@@ -117,9 +117,9 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
 
   def recurseconversion(self, options):
     """recurse through directories and convert files"""
-    join = os.path.join
     if options.recursive != 'xpi':
-      convert.ConvertOptionParserExt.recurseconversion(self, options)
+      return convert.ConvertOptionParserExt.recurseconversion(self, options)
+    join = os.path.join
     allfiles = self.recursexpifiles(options)
     allfiles = self.initprogressbar(allfiles, options)
     for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
