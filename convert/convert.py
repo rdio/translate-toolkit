@@ -49,7 +49,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def warning(self, msg):
     """Print a warning message incorporating 'msg' to stderr and exit."""
-    print >>sys.stderr, "%s: warning: %s" % (optparse.get_prog_name(), msg)
+    print >>sys.stderr, "\n%s: warning: %s" % (optparse.get_prog_name(), msg)
 
   def getusagestring(self, option):
     """returns the usage string for the given option"""
@@ -318,7 +318,11 @@ class ConvertOptionParser(optparse.OptionParser, object):
       fulloutputpath = self.getfulloutputpath(options, outputpath)
       if options.recursiveoutput and outputpath:
         self.checkoutputsubdir(options, os.path.dirname(outputpath))
-      success = self.convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
+      try:
+        success = self.convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
+      except Exception, e:
+        self.warning("Error in conversion: input %s, output %s, template %s" % (fullinputpath, fulloutputpath, fulltemplatepath))
+        raise
       self.reportprogress(inputpath, success)
     del self.progressbar
 
