@@ -70,6 +70,11 @@ class CatchStringOutput(NamedStringOutput):
 
 class ZipFileCatcher(zipfile.ZipFile, object):
   """a ZipFile that calls any methods its instructed to before closing (useful for catching stream output)"""
+  def __init__(self, *args, **kwargs):
+    """initialize the ZipFileCatcher"""
+    # storing oldclose as attribute, since if close is called from __del__ it has no access to external variables
+    self.oldclose = super(ZipFileCatcher, self).close
+    super(ZipFileCatcher, self).__init__(*args, **kwargs)
   def addcatcher(self, pendingsave):
     """remember to call the given method before closing"""
     if hasattr(self, "pendingsaves"):
@@ -81,7 +86,11 @@ class ZipFileCatcher(zipfile.ZipFile, object):
     if hasattr(self, "pendingsaves"):
       for pendingsave in self.pendingsaves:
         pendingsave()
-    super(ZipFileCatcher, self).close()
+    # if close is called from __del__, it somehow can't see ZipFileCatcher, so we've cached oldclose...
+    if ZipFileCatcher is None:
+      self.oldclose()
+    else:
+      super(ZipFileCatcher, self).close()
 
 class XpiFile(ZipFileCatcher):
   def __init__(self, *args, **kwargs):
