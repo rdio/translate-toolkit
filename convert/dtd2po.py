@@ -242,15 +242,38 @@ class dtd2po:
     thepofile = po.pofile()
     headerpo = self.makeheader(filename)
     thepofile.poelements.append(headerpo)
-    # remember the current groups we're in
-    self.currentgroups = []
-    # go through the dtd and convert each element
     thedtdfile.makeindex()
     self.findmixedentities(thedtdfile)
+    # go through the dtd and convert each element
     for thedtd in thedtdfile.dtdelements:
       thepo = self.convertdtdelement(thedtdfile, thedtd)
       if thepo is not None:
         thepofile.poelements.append(thepo)
+    thepofile.removeduplicates()
+    return thepofile
+
+  def mergefiles(self, origdtdfile, translateddtdfile, filename="unknown file"):
+    thepofile = po.pofile()
+    headerpo = self.makeheader(filename)
+    thepofile.poelements.append(headerpo)
+    origdtdfile.makeindex()
+    self.findmixedentities(origdtdfile)
+    translateddtdfile.makeindex()
+    self.findmixedentities(translateddtdfile)
+    # go through the dtd files and convert each element
+    for origdtd in origdtdfile.dtdelements:
+      origpo = self.convertdtdelement(origdtdfile, origdtd)
+      if origdtd.entity in translateddtdfile.index:
+        translateddtd = translateddtdfile.index[origdtd.entity]
+        translatedpo = self.convertdtdelement(translateddtdfile, translateddtd)
+      else:
+        translatedpo = None
+      if origpo is not None:
+        if translatedpo is not None:
+          origpo.msgstr = translatedpo.msgid
+        thepofile.poelements.append(origpo)
+      elif translatedpo is not None:
+        print >>sys.stderr, "error converting original dtd entity %s" % origdtd.entity
     thepofile.removeduplicates()
     return thepofile
 
