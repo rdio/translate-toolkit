@@ -155,6 +155,7 @@ def convertoo(inputfile, outputfile, templatefile, languagecode=None):
     convertor.renumberdest(languagecode)
   outputoolines = outputoo.tolines()
   outputfile.writelines(outputoolines)
+  return True
 
 if __name__ == '__main__':
   # handle command line options
