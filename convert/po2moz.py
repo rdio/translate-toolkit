@@ -36,8 +36,8 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
 
   def initoutputarchive(self, options):
     """creates an outputarchive if required"""
-    if options.output and self.isarchive(options.output, mustexist=False):
-      if self.isarchive(options.template):
+    if options.output and self.isarchive(options.output, 'output'):
+      if self.isarchive(options.template, 'template'):
         newlang = None
 	newregion = None
 	if options.locale is not None:
@@ -54,7 +54,7 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
   def recursiveprocess(self, options):
     """recurse through directories and convert files"""
     result = super(MozConvertOptionParser, self).recursiveprocess(options)
-    if self.isarchive(options.output):
+    if self.isarchive(options.output, 'output'):
       if options.progress in ('console', 'verbose'):
         print "writing xpi file..."
       options.outputarchive.close()
