@@ -152,11 +152,12 @@ class redtd:
   def __init__(self, dtdfile):
     self.dtdfile = dtdfile
 
-  def convertfile(self, pofile):
+  def convertfile(self, pofile, includefuzzy=False):
     # translate the strings
     for thepo in pofile.poelements:
       # there may be more than one entity due to msguniq merge
-      self.handlepoelement(thepo)
+      if includefuzzy or not thepo.isfuzzy():
+        self.handlepoelement(thepo)
     return self.dtdfile
 
   def handlepoelement(self, thepo):
@@ -238,23 +239,24 @@ class po2dtd:
     self.convertstrings(thepo,thedtd)
     return thedtd
 
-  def convertfile(self,thepofile):
+  def convertfile(self, thepofile, includefuzzy=False):
     thedtdfile = dtd.dtdfile()
     self.currentgroups = []
     for thepo in thepofile.poelements:
-      thedtd = self.convertelement(thepo)
-      if thedtd is not None:
-        thedtdfile.dtdelements.append(thedtd)
+      if includefuzzy or not thepo.isfuzzy():
+        thedtd = self.convertelement(thepo)
+        if thedtd is not None:
+          thedtdfile.dtdelements.append(thedtd)
     return thedtdfile
 
-def convertdtd(inputfile, outputfile, templatefile):
+def convertdtd(inputfile, outputfile, templatefile, includefuzzy=False):
   inputpo = po.pofile(inputfile)
   if templatefile is None:
     convertor = po2dtd()
   else:
     templatedtd = dtd.dtdfile(templatefile)
     convertor = redtd(templatedtd)
-  outputdtd = convertor.convertfile(inputpo)
+  outputdtd = convertor.convertfile(inputpo, includefuzzy)
   outputdtdlines = outputdtd.tolines()
   outputfile.writelines(outputdtdlines)
   return 1
@@ -264,5 +266,10 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {"po": ("dtd", convertdtd), ("po", "dtd"): ("dtd", convertdtd)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
+  parser.add_option("", "--fuzzy", dest="includefuzzy", action="store_true", default=False,
+    help="use translations marked fuzzy")
+  parser.add_option("", "--nofuzzy", dest="includefuzzy", action="store_false", default=False,
+    help="don't use translations marked fuzzy (default)")
+  parser.passthrough.append("includefuzzy")
   parser.run()
 
