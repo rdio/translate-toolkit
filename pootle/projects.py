@@ -45,6 +45,7 @@ class TranslationProject:
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses)
     self.pofilenames = []
     self.pofiles = {}
+    # TODO: handle pending file caching, re-reading if newer, etc
     self.pendingfiles = {}
     self.stats = {}
     os.path.walk(self.podir, self.addfiles, None)
@@ -315,7 +316,8 @@ class TranslationProject:
     thepo = pofile.transelements[item]
     thepo.msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
     thepo.markfuzzy(False)
-    del self.stats[pofilename]
+    if pofilename in self.stats:
+      del self.stats[pofilename]
     self.savepofile(pofilename)
     self.reclassifyelement(pofile, item)
 
@@ -332,7 +334,7 @@ class TranslationProject:
 
   def getsuggestions(self, pofile, item):
     """find all the suggestions submitted for the given (pofile or pofilename) and item"""
-    if isinstance(pofile, str):
+    if isinstance(pofile, (str, unicode)):
       pofilename = pofile
       pofile = self.getpofile(pofilename)
       pendingfile = self.getpendingfile(pofilename)
@@ -344,6 +346,29 @@ class TranslationProject:
     suggestpos = [suggestpo for suggestpo in pendingfile.poelements if suggestpo.getsources() == sources]
     suggestions = [po.getunquotedstr(suggestpo.msgstr) for suggestpo in suggestpos]
     return suggestions
+
+  def acceptsuggestion(self, pofile, item, newtrans):
+    """accepts the suggestion into the main pofile"""
+    if isinstance(pofile, (str, unicode)):
+      pofilename = pofile
+      pofile = self.getpofile(pofilename)
+      pendingfile = self.getpendingfile(pofilename)
+    else:
+      pendingfile = self.getpendingfile(pofile.filename)
+    # TODO: remove the suggestion
+    self.updatetranslation(pofilename, item, newtrans)
+    print "accepted: %r" % newtrans
+
+  def rejectsuggestion(self, pofile, item, newtrans):
+    """rejects the suggestion and removes it from the pending file"""
+    if isinstance(pofile, (str, unicode)):
+      pofilename = pofile
+      pofile = self.getpofile(pofilename)
+      pendingfile = self.getpendingfile(pofilename)
+    else:
+      pendingfile = self.getpendingfile(pofile.filename)
+    # TODO: remove the suggestion
+    print "rejected: %r" % newtrans
 
   def savepofile(self, pofilename):
     """saves changes to disk..."""
