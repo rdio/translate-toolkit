@@ -120,6 +120,8 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
     if templatepath is not None and self.usetemplates and options.template:
       if self.isxpi(options.template):
         return templatepath
+      elif not options.recursivetemplate:
+        return templatepath
       else:
         return os.path.join(options.template, templatepath)
     else:
