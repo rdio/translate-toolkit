@@ -25,8 +25,9 @@ class TranslatePage(pagelayout.PootlePage):
     self.finditem()
     translations = self.gettranslations()
     self.maketable(translations)
+    searchcontextinfo = widgets.HiddenFieldList({"searchtext": self.searchtext})
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
-    translateform = widgets.Form([self.transtable, contextinfo], {"name": "translate", "action":""})
+    translateform = widgets.Form([self.transtable, searchcontextinfo, contextinfo], {"name": "translate", "action":""})
     title = "Pootle: translating %s into %s: %s" % (self.project.projectname, self.project.languagename, self.pofilename)
     if self.viewmode:
       pagelinks = []
@@ -49,11 +50,8 @@ class TranslatePage(pagelayout.PootlePage):
 
   def addfilelinks(self, pofilename, matchnames):
     """adds a section on the current file, including any checks happening"""
-    self.links.addcontents(pagelayout.SidebarTitle("search"))
-    contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
-    searchbox = widgets.Input({"name": "searchtext", "value": self.searchtext})
-    searchform = widgets.Form([contextinfo, searchbox])
-    self.links.addcontents(searchform)
+    searchcontextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
+    self.links.addsearchbox(self.searchtext, searchcontextinfo)
     self.links.addcontents(pagelayout.SidebarTitle("current file"))
     self.links.addcontents(pagelayout.SidebarText(pofilename))
     if matchnames:

@@ -66,6 +66,13 @@ class PootleSidebar(widgets.Division):
     loginlink = SidebarText(loginlink)
     widgets.Division.__init__(self, [title, description, logintitle, loginstatus, loginlink], "links")
 
+  def addsearchbox(self, searchtext, contextinfo="", action=""):
+    """adds a simple search box"""
+    self.addcontents(SidebarTitle("Search"))
+    searchbox = widgets.Input({"name": "searchtext", "value": searchtext})
+    searchform = widgets.Form([contextinfo, searchbox], {"action": action, "name":"searchform"})
+    self.addcontents(searchform)
+
 class PootleBanner(widgets.Division):
   """the banner at the top"""
   def __init__(self, instance, maxheight=135):
