@@ -25,6 +25,7 @@ FIXME: add simple test which reads in a file and writes it out again"""
 
 import sys
 from translate.misc import quote
+from translate.misc import wStringIO
 
 normalizetable = ""
 for i in map(chr, range(256)):
@@ -134,23 +135,27 @@ class oomultifile:
   def __init__(self, inputfile):
     """initialises oomultifile from a seekable inputfile"""
     self.inputfile = inputfile
-    self.modulelines = {}
+    self.subfilelines = {}
     linenum = 0
     for line in self.inputfile:
-      module = self.getmodule(line)
-      if not module in self.modulelines:
-        self.modulelines[module] = []
-      self.modulelines[module].append(linenum)
+      subfile = self.getsubfile(line)
+      if not subfile in self.subfilelines:
+        self.subfilelines[subfile] = []
+      self.subfilelines[subfile].append(linenum)
       linenum += 1
 
-  def getmodule(self, line):
-    """looks up the module name for the line"""
-    return line[:line.find("\t")]
+  def getsubfile(self, line):
+    """looks up the subfile name for the line"""
+    return line[:line.find("\t")]+".oo"
 
-  def getlines(self, module):
-    """returns the list of lines matching the module"""
+  def listsubfiles(self):
+    """returns a list of subfiles in the file"""
+    return self.subfilelines.keys()
+
+  def getlines(self, subfile):
+    """returns the list of lines matching the subfile"""
     lines = []
-    requiredlines = dict.fromkeys(self.modulelines[module])
+    requiredlines = dict.fromkeys(self.subfilelines[subfile])
     linenum = 0
     self.inputfile.seek(0)
     for line in self.inputfile:
@@ -159,9 +164,14 @@ class oomultifile:
       linenum += 1
     return lines
 
-  def getoofile(self, module):
-    """returns an oofile built up from the given module's lines"""
-    lines = self.getlines(module)
+  def openfile(self, subfile):
+    """returns a pseudo-file object for the given subfile"""
+    lines = self.getlines(subfile)
+    return wStringIO.StringIO("".join(lines))
+
+  def getoofile(self, subfile):
+    """returns an oofile built up from the given subfile's lines"""
+    lines = self.getlines(subfile)
     oofilefromlines = oofile()
     oofilefromlines.fromlines(lines)
     return oofilefromlines
