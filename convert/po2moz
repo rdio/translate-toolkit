@@ -1,0 +1,135 @@
+#!/usr/bin/python2.2
+# 
+# Copyright 2002, 2003 Zuza Software Foundation
+# 
+# This file is part of translate.
+#
+# translate is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# translate is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with translate; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+"""script that converts a set of .po files to a set of .dtd and .properties files
+either done using a template or just using the .po file"""
+
+import sys
+import os
+from translate.convert import po2dtd
+from translate.convert import po2prop
+from translate.storage import dtd
+from translate.storage import po
+from translate.misc import quote
+
+def convertdtd(inputfile, outputfile, templatefile):
+  inputpo = po.pofile(inputfile)
+  if templatefile is None:
+    convertor = po2dtd.po2dtd()
+  else:
+    templatedtd = dtd.dtdfile(templatefile)
+    convertor = po2dtd.redtd(templatedtd)
+  outputdtd = convertor.convertfile(inputpo)
+  outputdtdlines = outputdtd.tolines()
+  outputfile.writelines(outputdtdlines)
+
+def convertprop(inputfile, outputfile, templatefile):
+  inputpo = po.pofile(inputfile)
+  if templatefile is None:
+    raise ValueError("must have template file for properties files")
+    # convertor = po2prop.po2prop()
+  else:
+    convertor = po2prop.reprop(templatefile)
+  outputproplines = convertor.convertfile(inputpo)
+  outputfile.writelines(outputproplines)
+
+inputformat = "po"
+outputformats = {"dtd": convertdtd, "properties": convertprop}
+
+def recurse(inputdir, outputdir, templatedir):
+  dirstack = ['']
+  while dirstack:
+    top = dirstack.pop(-1)
+    names = os.listdir(os.path.join(inputdir, top))
+    dirs = []
+    for name in names:
+      inputname = os.path.join(inputdir, top, name)
+      # handle directories...
+      if os.path.isdir(inputname):
+        dirs.append(os.path.join(top, name))
+        outputname = os.path.join(outputdir, top, name)
+        if not os.path.isdir(outputname):
+          os.mkdir(outputname)
+        if templatedir is not None:
+          templatename = os.path.join(templatedir, top, name)
+          if not os.path.isdir(templatename):
+            print >>sys.stderr, "warning: missing template directory %s" % templatename
+      elif os.path.isfile(inputname):
+        base, inputext = os.path.splitext(name)
+        if inputext != os.extsep + inputformat:
+          # only handle names that match the correct input file extension
+          continue
+        # now we have split off .po, we split off the original extension
+        outputbase, outputext = os.path.splitext(base)
+        outputname = os.path.join(outputdir, top, base)
+        outputext = outputext.replace(os.extsep, "", 1)
+        if not outputext in outputformats:
+          print >>sys.stderr, "not processing %s: unknown extension (%s)" % (name, outputext)
+          continue
+        inputfile = open(inputname, 'r')
+        outputfile = open(outputname, 'w')
+        templatefile = None
+        if templatedir is not None:
+          templatename = os.path.join(templatedir, top, base)
+          if os.path.isfile(templatename):
+            templatefile = open(templatename, 'r')
+          else:
+            print >>sys.stderr, "warning: missing template file %s" % templatename
+        convertfile = outputformats[outputext]
+        convertfile(inputfile, outputfile, templatefile)
+    # make sure the directories are processed next time round...
+    dirs.reverse()
+    dirstack.extend(dirs)
+
+def handleoptions(options):
+  """handles the options, allocates s, and runs the neccessary functions..."""
+  if options.inputdir is None:
+    raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputdir")
+  if not os.path.isdir(options.inputdir):
+    raise optparse.OptionValueError("inputdir must be directory for recursive run.")
+  if options.outputdir is None:
+    raise optparse.OptionValueError("must specify output directory for recursive run.")
+  if not os.path.isdir(options.outputdir):
+    raise optparse.OptionValueError("output must be existing directory for recursive run.")
+  if options.templatedir is not None:
+    if not os.path.isdir(options.templatedir):
+      raise optparse.OptionValueError("template must be existing directory for recursive run.")
+  recurse(options.inputdir, options.outputdir, options.templatedir)
+
+if __name__ == '__main__':
+  # handle command line options
+  try:
+    import optparse
+  except ImportError:
+    from translate.misc import optparse
+  parser = optparse.OptionParser(usage="%prog [-i|--input-dir inputdir] [-o|--output-dir outputdir] [-t|--template templatedir]")
+  parser.add_option("-i", "--input-dir", dest="inputdir", default=None,
+                    help="read from inputdir in "+inputformat+" format", metavar="inputdir")
+  parser.add_option("-o", "--output-dir", dest="outputdir", default=None,
+                    help="write to outputdir in "+", ".join(outputformats)+" formats", metavar="outputdir")
+  parser.add_option("-t", "--template", dest="templatedir", default=None,
+                    help="read from template in "+", ".join(outputformats)+" formats", metavar="template")
+  (options, args) = parser.parse_args()
+  # recurse the appropriate directories...
+  try:
+    handleoptions(options)
+  except optparse.OptParseError, message:
+    parser.error(message)
+
