@@ -94,36 +94,46 @@ class TranslationProject:
         if os.path.exists(statsfilename):
           try:
             stats = open(statsfilename, "r").read()
-            statsmtime, translated, total = [int(n) for n in stats.split()[:3]]
+            statsmtime, postatsstring = stats.split("\n", 1)
+            postats = {}
+            for line in postatsstring.split("\n"):
+              name, count = line.split(":", 1)
+              count = int(count.strip())
+              postats[name.strip()] = count
           except:
             continue
           if pomtime != statsmtime:
             continue
-          self.stats[pofilename] = (translated, total)
+          self.stats[pofilename] = postats
 
   def calculatestats(self):
     """calculates translation statistics for all the po files"""
-    translated, total = 0, 0
+    totalstats = {}
     for pofilename in self.pofilenames:
-      potranslated, pototal = self.getpostats(pofilename)
-      translated += potranslated
-      total += pototal
-    return translated, total
+      postats = self.getpostats(pofilename)
+      for name, count in postats.iteritems():
+        totalstats[name] = totalstats.get(name, 0) + count
+    return totalstats
 
   def getpostats(self, pofilename):
     """calculates translation statistics for the given po file"""
     if pofilename in self.stats:
       return self.stats[pofilename]
     pofile = self.getpofile(pofilename)
-    translated = len(filter(lambda poel: not (poel.isfuzzy() or poel.isblankmsgstr()), pofile.transelements))
-    total = len(pofile.transelements)
-    self.stats[pofilename] = (translated, total)
+    pofile.classify = {}
+    pofile.classify["fuzzy"] = [item for item, poel in enumerate(pofile.transelements) if poel.isfuzzy()]
+    pofile.classify["blank"] = [item for item, poel in enumerate(pofile.transelements) if poel.isblankmsgstr()]
+    pofile.classify["translated"] = [item for item, poel in enumerate(pofile.transelements) if item not in pofile.classify["fuzzy"] and item not in pofile.classify["blank"]]
+    pofile.classify["total"] = range(len(pofile.transelements))
+    postats = dict([(name, len(items)) for name, items in pofile.classify.iteritems()])
+    self.stats[pofilename] = postats
     abspofilename = os.path.join(self.subproject.podir, pofilename)
     pomtime = os.stat(abspofilename)[os.path.stat.ST_MTIME]
     statsfilename = abspofilename + os.extsep + "stats"
     try:
-      open(statsfilename, "w").write("%d %d %d" % (pomtime, translated, total))
-    except:
+      postatsstring = "\n".join(["%s:%d" % (name, count) for name, count in postats.iteritems()])
+      open(statsfilename, "w").write("%d\n%s" % (pomtime, postatsstring))
+    except IOError:
       pass
     return self.stats[pofilename]
 

@@ -25,11 +25,13 @@ class PootleIndex(pagelayout.PootlePage):
     body = widgets.Division([bodytitle, bodydescription], None, {"class":"blogbody"})
     subprojects = [projects.getproject(subproject) for (subprojectcode, subproject) in project.subprojects.iteritems()]
     subprojectcount = len(subprojects)
-    translated, total = 0, 0
+    totalstats = {}
     for subproject in subprojects:
-      projecttranslated, projecttotal = subproject.calculatestats()
-      translated += projecttranslated
-      total += projecttotal
+      projectstats = subproject.calculatestats()
+      for name, count in projectstats.iteritems():
+        totalstats[name] = totalstats.get(name, 0) + count
+    translated = totalstats["translated"]
+    total = totalstats["total"]
     percentfinished = (translated*100/total)
     stats = widgets.Division("%d subprojects, %d%% translated" % (subprojectcount, percentfinished), None, {"class":"posted"})
     return widgets.Division([body, stats], None, {"class":"item"})
@@ -54,7 +56,9 @@ class ProjectIndex(pagelayout.PootlePage):
     body = widgets.Division([bodytitle, bodydescription], None, {"class":"blogbody"})
     translationproject = projects.getproject(subproject)
     numfiles = len(translationproject.pofilenames)
-    translated, total = translationproject.calculatestats()
+    projectstats = translationproject.calculatestats()
+    translated = projectstats["translated"]
+    total = projectstats["total"]
     percentfinished = (translated*100/total)
     stats = widgets.Division("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished), None, {"class":"posted"})
     return widgets.Division([body, stats], None, {"class":"item"})
