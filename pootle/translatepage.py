@@ -21,6 +21,7 @@ class TranslatePage(pagelayout.PootlePage):
     self.lastitem = None
     self.receivetranslations()
     self.viewmode = self.argdict.get("view", 0)
+    self.reviewmode = self.argdict.get("review", 0)
     self.finditem()
     translations = self.gettranslations()
     self.maketable(translations)
@@ -86,7 +87,7 @@ class TranslatePage(pagelayout.PootlePage):
     """returns any checker filters the user has asked to match..."""
     matchnames = []
     for checkname in self.argdict:
-      if checkname in ["fuzzy", "blank", "translated"]:
+      if checkname in ["fuzzy", "blank", "translated", "has-suggestion"]:
         matchnames.append(checkname)
       elif checkname in checker.getfilters():
         matchnames.append("check-" + checkname)
@@ -102,7 +103,6 @@ class TranslatePage(pagelayout.PootlePage):
     origtitle = table.TableCell("original", {"class":"translate-table-title"})
     transtitle = table.TableCell("translation", {"class":"translate-table-title"})
     self.addtransrow(-1, origtitle, transtitle)
-    translations = self.gettranslations()
     self.textcolors = ["#000000", "#000060"]
     for row, (orig, trans) in enumerate(translations):
       thisitem = self.firstitem + row
@@ -134,6 +134,9 @@ class TranslatePage(pagelayout.PootlePage):
       self.firstitem = self.item
       return self.project.getitems(self.pofilename, self.item, self.item+10)
     else:
+      if self.reviewmode:
+        suggestions = self.project.getsuggestions(self.pofilename, self.item)
+        print "suggestions:", suggestions
       self.editable = [self.item]
       self.firstitem = max(self.item - 3, 0)
       return self.project.getitems(self.pofilename, self.item-3, self.item+4)
