@@ -17,7 +17,9 @@ Pootle:
     smtpserver = "localhost"
   users:
     # store user details here
-    __dummy__ = 0
+    dummy:
+      passwdhash = ''
+      activated = 0
   projects:
     openoffice:
       fullname = "OpenOffice.org"
