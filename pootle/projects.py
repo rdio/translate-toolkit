@@ -352,21 +352,29 @@ class pootlefile(po.pofile):
     self.savependingfile()
     self.reclassifyelement(item)
 
-  def iteritems(self, lastitem=None, matchnames=None):
-    """iterates through the items in this pofile starting after the given lastitem"""
+  def iteritems(self, lastitem=None, matchnames=None, assigncondition=None):
+    """iterates through the items in this pofile starting after the given lastitem
+    if matchnames is given only returns items matching one of the given classifications
+    if assigncondition is given, as (username, action), only returns items assigned to username for action"""
     # update stats if required
     self.getstats()
     if lastitem is None:
-      item = 0
+      minitem = 0
     else:
-      item = lastitem + 1
-    while item < len(self.transelements):
+      minitem = lastitem + 1
+    maxitem = len(self.transelements)
+    validitems = range(minitem, maxitem)
+    if assigncondition is not None: 
+      self.getassigns()
+      username, action = assigncondition
+      assignitems = self.assigns.get(username, {}).get(action, {})
+      validitems = [item for item in validitems if item in assignitems]
+    for item in validitems:
       if not matchnames:
         yield item
       for name in matchnames:
         if item in self.classify[name]:
           yield item
-      item += 1
 
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
@@ -439,13 +447,14 @@ class TranslationProject:
         if postats[name]:
           yield pofilename
 
-  def searchpoitems(self, pofilename, item, matchnames, dirfilter, searchstring):
+  def searchpoitems(self, pofilename, item, matchnames, dirfilter, searchstring, assigncondition=None):
     """finds the next item matching one of the given classification names"""
     if searchstring:
       pogrepfilter = pogrep.pogrepfilter(searchstring, None, ignorecase=True)
+    # TODO: pass assigncondition to searchpofilenames to...
     for pofilename in self.searchpofilenames(pofilename, matchnames, dirfilter, includelast=True):
       pofile = self.getpofile(pofilename)
-      for item in pofile.iteritems(item, matchnames):
+      for item in pofile.iteritems(item, matchnames, assigncondition):
         if searchstring:
           thepo = pofile.transelements[item]
           if pogrepfilter.filterelement(thepo):
