@@ -132,7 +132,11 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
   def run(self):
     """parses the arguments, and runs recursiveprocess with the resulting options"""
     (options, args) = self.parse_args()
-    options.checkfilter = pocheckfilter(options.filterclass, options.excludefilters, options.limitfilters)
+    if options.filterclass is None:
+      checkerclasses = [checks.StandardChecker, StandardPOChecker]
+    else:
+      checkerclasses = [options.filterclass, StandardPOChecker]
+    options.checkfilter = pocheckfilter(checkerclasses, options.excludefilters, options.limitfilters)
     options.inputformats = self.inputformats
     options.outputoptions = self.outputoptions
     self.usepsyco(options)
