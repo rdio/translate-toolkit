@@ -148,6 +148,17 @@ class detector:
           failed += char
       return encoded + " " + repr(failed)
 
+  def makecountmap(self, encoding):
+    """makes a countmap for all the translations using the encoding"""
+    countmap = {}
+    for translation in self.alltranslations:
+      try:
+        decoded = translation.decode(encoding)
+      except UnicodeDecodeError:
+        continue
+      self.updatecountmap(decoded, self.excludestring, countmap)
+    return countmap
+
   def testcharstats(self):
     dictcountmap = {}
     if self.dictstring:
@@ -155,14 +166,7 @@ class detector:
     validencodings = {}
     encodingdeltas = {}
     for encoding in self.listencodings():
-      countmap = {}
-      for translation in self.alltranslations:
-        try:
-          decoded = translation.decode(encoding)
-        except UnicodeDecodeError:
-          continue
-        self.updatecountmap(decoded, self.excludestring, countmap)
-      validencodings[encoding] = countmap
+      validencodings[encoding] = self.makecountmap(encoding)
       if dictcountmap:
         encodingdeltas[encoding] = self.getcountmapdelta(dictcountmap, countmap)
     if self.dictstring:
@@ -183,6 +187,7 @@ class detector:
       print validencoding, self.encodeattempt(sortedstring)
 
   def fuzzy(self, word, includestring):
+    """return a version of word including all the characters in includestring, with sequences of other characters replaced by a space"""
     # the dots cleverly help us catch start and end spaces
     fuzzyword = '.'
     for char in word:
