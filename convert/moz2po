@@ -107,7 +107,6 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
       return None
 
 if __name__ == '__main__':
-  # TODO: add ability to import translations from another directory
   inputformats = {"dtd": dtd2po.convertdtd, "properties": prop2po.convertprop}
   outputformat = "po"
   parser = MozConvertOptionParser(inputformats, outputformat, usetemplates=True, usepots=True)
