@@ -20,6 +20,7 @@
 
 """module for accessing mozilla xpi packages"""
 
+from __future__ import generators
 import zipfile
 import os.path
 from translate import __version__
