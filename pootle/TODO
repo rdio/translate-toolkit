@@ -1,4 +1,5 @@
 current tasks:
+  * fix up suggestion stats
   assigning stuff to people (package + email too)
   priorities (directory/file order)
   process (administrators/translators/reviewers)
@@ -14,4 +15,19 @@ other:
   add ability to mark/unmark things as fuzzy
   move the sidebar to be like distributed proofreaders (at the top, small)
   test with apache multiprocess
+  store a history file
+  maybe have a separate file to track who translated each string
+
+requirements for translatathon:
+  * only show review if there are suggestion
+  assigning stuff to people (with permissions)
+    - both translation and review
+  attribution (based on login)
+    ? where to put it
+    - last translator
+    - comment with everyone at top of po file
+    - comment in suggestion
+  translation review cycle
+    - comment to explain rejection
+    - have a diff
 
