@@ -12,16 +12,31 @@ def summarizestats(statslist, totalstats=None):
       totalstats[name] = totalstats.get(name, 0) + count
   return totalstats
 
+class AboutPage(pagelayout.PootlePage):
+  """the bar at the side describing current login details etc"""
+  def __init__(self, session):
+    self.localize = session.localize
+    pagetitle = getattr(session.instance, "title", self.localize("Pootle Demo"))
+    title = widgets.ContentWidget("h3", pagetitle, {"class":"title"})
+    defaultdescription = self.localize("This is a demo installation of pootle. The administrator can customize the description in the preferences.")
+    description = pagelayout.IntroText(getattr(session.instance, "description", defaultdescription))
+    abouttitle = widgets.ContentWidget("h3", self.localize("About Pootle"), {"class":"title"})
+    introtext = pagelayout.IntroText(self.localize("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>! Since Pootle is <strong>Free Software</strong>, you can download it and run your own copy if you like. You can also help participate in the development in many ways (you don't have to be able to program)."))
+    hosttext = pagelayout.IntroText(self.localize('The Pootle project itself is hosted at <a href="http://translate.sourceforge.net/">translate.sourceforge.net</a> where you can find the details about source code, mailing lists etc.'))
+    nametext = pagelayout.IntroText(self.localize('The name stands for <b>PO</b>-based <b>O</b>nline <b>T</b>ranslation / <b>L</b>ocalization <b>E</b>ngine, but you may need to read <a href="http://www.thechestnut.com/flumps.htm">this</a>.'))
+    aboutpootle = [abouttitle, introtext, hosttext, nametext]
+    contents = pagelayout.Contents([title, description, aboutpootle])
+    pagelayout.PootlePage.__init__(self, pagetitle, contents, session)
+
 class PootleIndex(pagelayout.PootlePage):
   """the main page"""
   def __init__(self, potree, session):
     self.potree = potree
     self.localize = session.localize
-    introtext = pagelayout.IntroText(self.localize("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>!"))
-    nametext = pagelayout.IntroText(self.localize('The name stands for <b>PO</b>-based <b>O</b>nline <b>T</b>ranslation / <b>L</b>ocalization <b>E</b>ngine, but you may need to read <a href="http://www.thechestnut.com/flumps.htm">this</a>.'))
+    aboutlink = pagelayout.IntroText(widgets.Link("about.html", self.localize("About this Pootle server")))
     languagelinks = self.getlanguagelinks()
     projectlinks = self.getprojectlinks()
-    contents = [introtext, nametext, languagelinks, projectlinks]
+    contents = [aboutlink, languagelinks, projectlinks]
     pagelayout.PootlePage.__init__(self, self.localize("Pootle"), contents, session)
 
   def getlanguagelinks(self):

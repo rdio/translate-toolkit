@@ -41,9 +41,8 @@ class PootleServer(users.OptionalLoginAppServer):
       top = ""
     if not top or top == "index.html":
       return indexpage.PootleIndex(self.potree, session)
-    elif top == 'res.html':
-      from jLogbook.python import configpage
-      return configpage.ResourcePage(self, session)
+    elif top == 'about.html':
+      return indexpage.AboutPage(session)
     elif top == "login.html":
       if session.isopen:
         redirecttext = pagelayout.IntroText("Redirecting to home page...")
