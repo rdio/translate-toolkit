@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <title>Project</title>
+    </head>
+    <body>
+        <small><a href="index?view=projectlist">Home</a></small>>
+        <small><u>$project.name ($project.version)</u></small>        
+        <h1>Project files:</h1>
+        <hr/>
+        #for  $file in $project.getFiles()
+            <p><a href="index?view=filedetail&file=$file.id">$file.name</a></p>
+        #end for
+    </body>
+</html>

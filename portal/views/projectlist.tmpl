@@ -1,0 +1,12 @@
+<html>
+    <head>
+        <title>Projects</title>
+    </head>
+    <body>
+        <h1>Projects:</h1>
+        <hr/>
+        #for  $project in $projects
+            <p><a href="index?view=projectdetail&project=$project.id">$project.name ($project.version)</a></p>
+        #end for
+    </body>
+</html>

@@ -45,6 +45,21 @@ def executeQuery(sql):
         raise
     if db: pool.releaseConnection(db)
     return results
+
+
+def executeCustomDelete(sql):
+    """custom_delete(sql) -> execute a custom DELETE query"""
+    logging.debug("Executing custom delete query: " + sql)
+    pool = ConnectionPool.getInstance()
+    try:
+        db = pool.getConnection()            
+        results = db.query(sql)          
+    except pg.error,e:
+        logging.error(e)
+        if db: pool.releaseConnection(db)
+        raise
+    if db: pool.releaseConnection(db)
+    
     
 def retrieve(cls,criteria={},orderby=[]):
     """retrieve(cls,criteria={},orderby=[]) -> Retrieve a list of 

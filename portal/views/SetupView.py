@@ -36,9 +36,13 @@ def setupTesting(transaction,tmpl):
     Logging.debug("View setup func setupTesting() called")
     tmpl.name = "Tom"
     
-def setupFilelist(transaction,tmpl):
-    Logging.debug("View setup func setupFilelist() called")
-    tmpl.files = dbhelper.retrieve(File, {}, [File.NAME_COL])
+def setupProjectlist(transaction,tmpl):
+    Logging.debug("View setup func setupProjectlist() called")
+    tmpl.projects = dbhelper.retrieve(Project, {}, [Project.NAME_COL, Project.VERSION_COL])
+    
+def setupProjectdetail(transaction,tmpl):
+    Logging.debug("View setup func setupProjectdetail() called")
+    tmpl.project = dbhelper.fetchByPK(Project, HTTPRequestParameterWrapper(transaction.request()).getInt("project"))
     
 def setupFiledetail(transaction,tmpl):
     Logging.debug("View setup func setupFiledetail() called")
@@ -58,6 +62,12 @@ def setupStringdetail(transaction,tmpl):
             Translation.ORIGINAL_ID_COL:tmpl.original.id,
             Translation.LANGUAGE_ID_COL:langid
         })
+        #if not tmpl.translations:
+        #    trans = Translation()
+        #    trans.setLanguage(tmpl.language)
+        #    trans.setOriginal(tmpl.original)
+        #    tmpl.translations.append(trans)
+        Logging.debug(tmpl.translations)
     else:
         tmpl.translations = tmpl.original.getTranslations()
     

@@ -33,14 +33,16 @@ def doTranslationsave(transaction):
     wrapper = HTTPRequestParameterWrapper(transaction.request())
     translationid = wrapper.getInt("translationid", -1)
     originalid = wrapper.getInt("originalid",-1)    
+    languageid = wrapper.getInt("languageid",-1)
     raw = wrapper.getString("raw", "")
     translation =  None
     if translationid > 0:
         translation = dbhelper.fetchByPK(Translation,translationid)
     else:
         translation = Translation(
-            {Translation.VERSION_COL:"1.0"},
-            {ORIGINAL_ID_COL:originalid}
+            {Translation.VERSION_COL:"1.0",
+            Translation.ORIGINAL_ID_COL:originalid,
+            Translation.LANGUAGE_ID_COL:languageid}
         )
     if translation:
         translation.setRaw(raw)

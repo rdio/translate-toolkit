@@ -8,7 +8,7 @@
             <td align="right">Translation version : </td><td>$transl.version</td>
         </tr>
             #if $ed
-            <form name="editForm" action="index">
+            <form name="editForm" action="index" method="post">
             <tr>
                 <td align="right">Raw string : </td><td><textarea name="raw">$transl.raw</textarea></td> 
             </tr>
@@ -16,6 +16,7 @@
                 <td align="right">
                     <input type="hidden" name="action" value="translationsave">
                     <input type="hidden" name="translationid" value="$transl.id">
+                    <input type="hidden" name="languageid" value="$transl.language.id">
                     <input type="hidden" name="originalid" value="$transl.original.id">                    
                     <input type="hidden" name="view" value="stringdetail"/>
                 </td><td><input type="submit"  value="save"/></td>                     
@@ -45,7 +46,8 @@
 <html>
     <head>
         #set $displayname = $original.getStripped()
-        <small><a href="index?view=filelist">Home</a></small> >
+        <small><a href="index?view=projectlist">Home</a></small>>
+        <small><a href="index?view=projectdetail&project=$original.file.project.id">$original.file.project.name ($original.file.project.version)</a></small> >
         <small><a href="index?view=filedetail&file=$original.file.id">$original.file.name</a></small>>
         <small><u>$displayname[:20] ...</u></small>
         <title>String details</title>
@@ -81,7 +83,7 @@
             </tr>
         </table>
         <hr/>
-        <form name="langselectForm" action="index">
+        <form name="langselectForm" action="index" method="post">
             <input type="hidden" name="view" value="stringdetail"/>
             <input type="hidden" name="edit" value="$editing"/>
             <input type="hidden" name="original" value="$original.id"/>
@@ -97,14 +99,16 @@
                 >$l.name ($l.iso639_2 $l.iso639_3 $l.country_iso3166_2)</option>
             #end for        
            </select></form>
+
         #if not $translations
-            <hr/>
             #if $editing
                 #set $translation = Translation()
                 $translation.setLanguage($language)
+                $translation.setVersion('1.0')
                 $translation.setOriginal($original)
-                $showTranslation($translation,$editing)
+                $translations.append($translation)
             #else
+                <hr/>
                 <i>No translations for that selection</i>
             #end if
         #end if
