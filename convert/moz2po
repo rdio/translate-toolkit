@@ -21,6 +21,7 @@
 """script that converts a set of .dtd and .properties files to a set of .po files"""
 
 import os.path
+import sys
 try:
   import optparse
 except ImportError:
@@ -118,7 +119,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
     """recurse through directories and convert files"""
     join = os.path.join
     if options.recursive != 'xpi':
-      ConvertOptionsParserExt.recurseconversion(self, options)
+      convert.ConvertOptionParserExt.recurseconversion(self, options)
     allfiles = self.recursexpifiles(options)
     allfiles = self.initprogressbar(allfiles, options)
     for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
