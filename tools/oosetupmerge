@@ -317,6 +317,11 @@ class SetupIndex(SetupParser):
         index.renamefield(helpitem, "Text", "Text(%s)" % index.dialingcode)
         if index != self:
           self.addforeignhelptext(index, helpitem)
+      for moduleitem in index.bytype["Module"]:
+        index.renamefield(moduleitem, "Name", "Name(%s)" % index.dialingcode)
+        index.renamefield(moduleitem, "Description", "Description(%s)" % index.dialingcode)
+        if index != self:
+          self.addforeignmoduletext(index, moduleitem)
 
   def addmanualshortcut(self, shortcutentry, fileentry, iconid, baseentry):
     """Inserts a manual shortcut into the build system"""
@@ -407,6 +412,14 @@ class SetupIndex(SetupParser):
     tokenrange = index.getfieldtokenrange(helpitem, "Text")
     # the help item field will already have been renamed
     self.insertforeignvalue(helpitem, index, tokenrange)
+
+  def addforeignmoduletext(self, index, moduleitem):
+    """adds the foreign modules's text to the corresponding item in self"""
+    # the module item fields will already have been renamed, but not in the lookup dicts
+    tokenrange = index.getfieldtokenrange(moduleitem, "Name")
+    self.insertforeignvalue(moduleitem, index, tokenrange)
+    tokenrange = index.getfieldtokenrange(moduleitem, "Description")
+    self.insertforeignvalue(moduleitem, index, tokenrange)
 
   def addforeignfile(self, index, fileentry, suffix):
     """adds the foreign file entry and updates the modules list..."""
