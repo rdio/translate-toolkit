@@ -9,6 +9,7 @@ from translate.filters import pofilter
 from translate.convert import po2csv
 from translate.tools import pogrep
 from jToolkit import timecache
+import time
 import os
 
 def getmodtime(filename, default=None):
@@ -432,9 +433,10 @@ class potimecache(timecache.timecache):
   def expire(self, pofilename):
     """expires the given pofilename by recreating it (holding only stats)"""
     timestamp, currentfile = dict.__getitem__(self, pofilename)
-    # TODO: look at extra situations where the parsed file has been kept (if it has been used/modified recently)
     if currentfile.pomtime is not None:
-      self.__setitem__(pofilename, pootlefile(self.project, pofilename))
+      # use the currentfile.pomtime as a timestamp as well, so any modifications will extend its life
+      if time.time() - currentfile.pomtime > self.expiryperiod.seconds:
+        self.__setitem__(pofilename, pootlefile(self.project, pofilename))
  
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
