@@ -1,3 +1,681 @@
+2004-11-12 14:00  davidfraser
+
+	* tools/: pocount.py, pogrep.py: pychecker fixes:   sum is only
+	  needed if builtin is not defined   logic in pogrep for multiple
+	  msgstrs was wrong (using thepo.msgstr instead of each item)
+
+2004-11-12 13:55  davidfraser
+
+	* convert/README: removed README (we have docs\!)
+
+2004-11-12 13:54  davidfraser
+
+	* filters/: checks.py, decoration.py: TeeChecker should use the
+	  checker to run_filters otherwise its an infinite loop...  removed
+	  unneccessary import of sre, unused variable
+
+2004-11-12 13:53  davidfraser
+
+	* convert/: csv2po.py, html2po.py, nb2po.py, oo2po.py, po2html.py,
+	  po2nb.py, po2txt.py, sxw2po.py, txt2po.py: only import the
+	  convert module in the main method throughout some pychecker
+	  fixups:   made constructors for conversion classes that need wrap
+	  parameters   remove unneccessary imports of os, sre modules
+	  txt2po didn't have a proper main method
+
+2004-11-12 13:40  davidfraser
+
+	* storage/csvl10n.py: pychecker fixup (unused variables)
+
+2004-11-12 13:32  davidfraser
+
+	* misc/: optrecurse.py, quote.py, sparse.py: pychecker changes (bad
+	  variable names, unused variables)
+
+2004-11-12 12:43  davidfraser
+
+	* tools/__init__.py: better doc string
+
+2004-11-12 11:30  davidfraser
+
+	* convert/: convert.py, oo2po.py, po2oo.py: made oo2po, po2oo treat
+	  any input file as a multifile archive (not just .gsi/.sdf/.txt)
+	  implemented this by using None to refer to any file, but not
+	  existing directories so to output to a directory tree, just make
+	  sure the output directory exists
+
+2004-11-12 10:03  davidfraser
+
+	* storage/po.py: added better intelligence to handle kde comments
+	  (they end at the \\n) this could probably use further
+	  improvement...
+
+2004-11-12 09:40  dwaynebailey
+
+	* filters/checks.py: prefilter -> prefilters added removekdecomment
+	  prefilter to brackets test
+
+2004-11-12 09:33  davidfraser
+
+	* filters/prefilters.py: added more intelligence to get kde
+	  comments correctly
+
+2004-11-11 16:36  dwaynebailey
+
+	* tools/TODO: pomerge: - problem merging #: headers - need to be
+	  able to run without templates
+
+2004-11-11 15:02  dwaynebailey
+
+	* tools/__init__.py: Tools should be installed as a module.
+
+2004-11-11 14:56  dwaynebailey
+
+	* filters/checks.py: Added brackets filter Remove KDE comments
+	  before running tests on: long, short, blank and escapes.
+
+2004-11-10 16:59  davidfraser
+
+	* tools/: podebug, podebug.py: added podebug
+
+2004-11-10 16:21  davidfraser
+
+	* README: updated README to talk about Python 2.3
+
+2004-11-10 16:10  davidfraser
+
+	* __version__.py: version 0.8rc2
+
+2004-11-10 15:40  davidfraser
+
+	* filters/pogrep, filters/pogrep.py, tools/pogrep, tools/pogrep.py:
+	  moved pogrep from filters to tools
+
+2004-11-10 15:35  davidfraser
+
+	* filters/: TODO, pofilter, pofilter.py, pogrep, pogrep.py:
+	  rearranged scripts into script/module parts
+
+2004-11-10 15:18  davidfraser
+
+	* tools/: TODO, pocount, pocount.py, pomerge, pomerge.py: split
+	  scripts into script / module parts
+
+2004-11-10 10:18  davidfraser
+
+	* storage/po.py, tools/pocount: pocount: use poelement class
+	  methods rather than handling strings ourselves as that breaks
+	  with plurals calculated length of msgstr correctly when used on
+	  plurals (failed before)
+
+2004-11-10 10:01  dwaynebailey
+
+	* convert/po2csv.py: Incorrectly calling convertcsv
+
+2004-11-10 09:13  davidfraser
+
+	* pootle/: projects.py, translatepage.py: did some simplification
+	  of translation session, factored out getitem method made argdict
+	  a member of TranslatePage, to simplify access added Edit link for
+	  each item that lets you go straight to edit that item
+
+2004-11-10 08:53  davidfraser
+
+	* pootle/: indexpage.py, projects.py, server.py: pass argdict in to
+	  ProjectIndex, use that for showchecks rather than a special
+	  variable use showchecks parameter rather than checks.html to
+	  determine checking allow ProjectIndex to work on a single file
+	  added browse and checks links per file allow projects code to
+	  handle individual po files
+
+2004-11-10 08:30  davidfraser
+
+	* pootle/: TODO, indexpage.py, projects.py, translatepage.py:
+	  instead of translate page defaulting to quick translate, pass
+	  fuzzy and blank as parameters similarly projects code doesn't
+	  default to fuzzy & blank, it defaults to matchnames=[] which
+	  allows everything DONE: renamed start translate
+
+2004-11-10 08:19  davidfraser
+
+	* pootle/indexpage.py: changed "Start Translating" to "Quick
+	  Translate" Don't show the name of the file everywhere for PO
+	  files
+
+2004-11-10 08:14  davidfraser
+
+	* pootle/projects.py: renamed po2csvmod -> po2csv (filename
+	  changed)
+
+2004-11-09 18:19  davidfraser
+
+	* filters/TODO, tools/TODO: added TODO to rearrange the
+	  filters/tools scripts into script/module parts like I just did to
+	  the convert tools...
+
+2004-11-09 18:16  davidfraser
+
+	* convert/: csv2po, csv2po.py, html2po, html2po.py, nb2po,
+	  nb2po.py, oo2po, oo2po.py, po2csv, po2csv.py, po2csvmod.py,
+	  po2html, po2html.py, po2nb, po2nb.py, po2oo, po2oo.py, po2txt,
+	  po2txt.py, sxw2po, sxw2po.py, txt2po, txt2po.py: massive
+	  reorganization to make sure all code is accessible via module, so
+	  the files not ending in .py are just scripts to call a main
+	  method in a module
+
+2004-11-08 19:00  davidfraser
+
+	* pootle/TODO: Added pootle TODO
+
+2004-11-08 17:40  davidfraser
+
+	* convert/po2oo: started adding support for using simple
+	  unduplicated english GSI as input this duplicates the lines if
+	  neccessary
+
+2004-11-04 22:11  davidfraser
+
+	* pootle/server.py: added mani program to allow server to run
+	  webserver itself (will allow deefault options in future)
+
+2004-11-04 21:52  davidfraser
+
+	* filters/pofilter: fixed options.filterclass so it works with new
+	  multiple classes (StandardPOChecker is always included now)
+
+2004-11-04 21:45  davidfraser
+
+	* filters/prefilters.py: added a function to strip out kde comments
+
+2004-11-04 16:11  davidfraser
+
+	* convert/: po2csv, po2csvmod.py: moved all the po2csv code into
+	  po2csvmod.py so that we can call it from pootle
+
+2004-11-04 16:07  davidfraser
+
+	* pootle/projects.py: have made po2csv into po2csvmod.py and po2csv
+
+2004-11-04 16:06  davidfraser
+
+	* pootle/translatepage.py: added list of checks in sidebar
+
+2004-11-04 16:00  davidfraser
+
+	* pootle/: indexpage.py, projects.py, server.py, translatepage.py:
+	  create clickable links to be able to go through files that failed
+	  checks dded matchnames as an option to
+	  TranslationSession.getnextitem only get translationproject once
+	  in server
+
+2004-11-04 15:43  davidfraser
+
+	* pootle/indexpage.py: factored out check details, apply it to both
+	  dirs and files (also don't say "files" when summarising a
+	  file...)
+
+2004-11-04 15:35  davidfraser
+
+	* pootle/: indexpage.py, projects.py: renamed the checks to check-
+	  so we don't show normal statistics as checks
+
+2004-11-04 15:28  davidfraser
+
+	* pootle/: indexpage.py, projects.py, server.py, html/pootle.css:
+	  added code to include checks and show statistics on them ...
+
+2004-11-04 14:58  dwaynebailey
+
+	* filters/checks.py: Added tests: - kdecomments: detects kde
+	  comments in the msgstr - compendiumconflicts: detects #-#-#-#-#
+	  conflicts in files - acronyms: cehcks that acronyms in the msgid
+	  are also in the msgstr
+
+2004-11-04 14:33  davidfraser
+
+	* pootle/projects.py: renamed subproject to project
+
+2004-11-04 14:22  davidfraser
+
+	* filters/: checks.py, pofilter: created new POChecker paradigm for
+	  doing tests on po elements rather than just strings moved tests
+	  for fuzzy, review into this added TeeCheckers which can handle
+	  multiple filters, POTeeChecker which can handle POChecker or
+	  normal Checkers
+
+2004-11-04 10:31  davidfraser
+
+	* pootle/indexpage.py: refactored summarizing statistics
+
+2004-11-03 22:44  davidfraser
+
+	* pootle/: indexpage.py, server.py: finished project->language and
+	  subproject->project rename
+
+2004-11-03 14:50  davidfraser
+
+	* pootle/: indexpage.py, server.py, translatepage.py: added link to
+	  current folder from translate page made banner height smaller
+	  except for main page
+
+2004-11-03 14:30  davidfraser
+
+	* pootle/html/pootle.css: added some missing styles from
+	  translate.css
+
+2004-11-03 14:19  davidfraser
+
+	* pootle/html/: pootle.css, images/logo.gif, images/pootle.jpg,
+	  js/autoexpand.js: added images
+
+2004-11-03 14:07  davidfraser
+
+	* pootle/indexpage.py: fixed language links, misreplaced
+	  project/language names made Start Transating link look nice
+
+2004-11-03 13:59  davidfraser
+
+	* pootle/: indexpage.py, server.py: renamed "project" to "language"
+
+2004-11-03 11:02  davidfraser
+
+	* pootle/server.py: pass the login page class to the underlying
+	  server
+
+2004-11-03 10:00  davidfraser
+
+	* pootle/server.py: added support for browsing through directories
+	  and files added support for downloading po files and csv files
+	  updated to use non-database user details in prefs files improved
+	  registration -> login redirection made a lot of the required
+	  prefs optional, and added support for saving prefs currently
+	  emailing username + passwords is disabled, the message is printed
+	  on stdout
+
+2004-11-03 09:54  davidfraser
+
+	* pootle/pagelayout.py: made a lot of the required prefs optional
+	  and have defaults
+
+2004-11-03 09:45  davidfraser
+
+	* pootle/indexpage.py: added support for browsing through the files
+	  / directories in a project this allows browsing or translating at
+	  a given granularity also don't require the project node to have a
+	  fullname attribute
+
+2004-11-03 09:40  davidfraser
+
+	* pootle/translatepage.py: refactored generation of translation
+	  rows so we don't have to call before / item / after separately
+	  refactored receivetranslations into a function, handle skipping
+	  added dirfilter support so the translatepage can be used with
+	  more granularity (used when finding the next item)
+
+2004-11-03 09:24  davidfraser
+
+	* pootle/projects.py: added dir filtering ability, code to browse
+	  through po filenames and directories in a useful way added
+	  support for skipping translations added pofilenames option for
+	  calculatestats for retrieving stats in finer granularity added
+	  support for getting po file source and converting to csv (needs a
+	  po2csv module) this fits in with other refactoring in the other
+	  files
+
+2004-11-03 09:18  davidfraser
+
+	* filters/pofilter: added code to be able to exclude fuzzy / review
+	  elements from filtering entirely [Dwayne Bailey] this still
+	  probably needs more refinement alongside the filter checks for
+	  fuzzy / review
+
+2004-11-03 09:13  davidfraser
+
+	* filters/checks.py: filteraccelerators when checking unchanged, so
+	  just changing the accelerator doesn't qualify as a real change
+	  [Dwayne Bailey]
+
+2004-11-02 11:25  dwaynebailey
+
+	* filters/checks.py: Mozilla variable checks cahnged "#, None" to
+	  "#, 1" So only check for #1, #2
+
+2004-10-28 17:56  davidfraser
+
+	* storage/dtd.py: improved entity parsing so we can handle entities
+	  split over multiple lines  changed the order of the position
+	  checks so that we don't run into the end of the line...  took out
+	  FIXME about single quotes (they are used in official firefox
+	  source) raise an error if we get an unexpected quote character
+
+2004-10-28 17:40  davidfraser
+
+	* storage/dtd.py: don't process entities that are inside
+	  comments...
+
+2004-10-28 17:32  davidfraser
+
+	* misc/optrecurse.py: use special options.psyco value None to
+	  indicate no option was passed Only display a psyco warning if it
+	  was set to use explicitly
+
+2004-10-28 17:27  davidfraser
+
+	* convert/po2oo: added a switch to keep the timestamps, which means
+	  you can compare files more easily
+
+2004-10-28 15:07  davidfraser
+
+	* misc/optrecurse.py: fixed check for whether we need to know the
+	  number of files (console was old option) should now go to 100% in
+	  default case (was just using count instead of percent because of
+	  this)
+
+2004-10-28 10:26  davidfraser
+
+	* convert/translatepath.py, filters/pofilter, filters/pogrep,
+	  filters/translatepath.py, tools/pomerge, tools/translatepath.py:
+	  removed all remaining translatepath stuff
+
+2004-10-28 10:09  davidfraser
+
+	* convert/: dtd2po.py, html2po, moz2po, nb2po, oo2po, po2csv,
+	  po2dtd.py, po2html, po2nb, po2oo, po2prop.py, po2txt, prop2po.py,
+	  sxw2po, txt2po: removed translatepath imports ; it doesn't work
+	  in its current form
+
+2004-10-28 09:48  davidfraser
+
+	* convert/TODO: added todo to change the order of csv columns
+
+2004-10-28 09:36  davidfraser
+
+	* convert/csv2po: enable conversion without template
+
+2004-10-28 08:48  davidfraser
+
+	* pootle/server.py: passwordgen is in jToolkit not pootle
+
+2004-10-28 08:45  davidfraser
+
+	* pootle/: pagelayout.py, server.py: added link to register added
+	  password generation and emailing
+
+2004-10-28 07:33  davidfraser
+
+	* pootle/: indexpage.py, pagelayout.py, server.py,
+	  translatepage.py: made PootlePage automatically wrap the main
+	  contents in a #content div
+
+2004-10-27 23:00  davidfraser
+
+	* pootle/server.py: added very simple registration
+	  (username=password)
+
+2004-10-27 22:49  davidfraser
+
+	* pootle/server.py: started adding registration page for new users
+
+2004-10-27 22:40  davidfraser
+
+	* pootle/pagelayout.py: sidetitle got changed to sidecontents
+	  accidentally added TranslateForm
+
+2004-10-27 22:37  davidfraser
+
+	* pootle/translatepage.py: simplified styles by moving to css
+
+2004-10-27 21:53  davidfraser
+
+	* pootle/: indexpage.py, pagelayout.py: renamed classes (and css
+	  classes) to be less bloggy renamed title to contents for Division
+	  classes
+
+2004-10-27 21:44  davidfraser
+
+	* pootle/: indexpage.py, pagelayout.py, server.py,
+	  translatepage.py: made little classes for all the div styles, to
+	  make stuff simpler...
+
+2004-10-27 21:41  davidfraser
+
+	* pootle/projects.py: various minor pochecker fixups...  don't just
+	  fall off the end if no more pofilenames could be found
+
+2004-10-27 21:08  davidfraser
+
+	* pootle/: indexpage.py, pagelayout.py, server.py,
+	  translatepage.py: used new cls= keyword parameter for Division
+	  rather than putting the class in a dictionary
+
+2004-10-25 18:51  davidfraser
+
+	* convert/TODO: some mozilla stuff is done found an error on
+	  firefox dtds
+
+2004-10-25 18:41  davidfraser
+
+	* pootle/indexpage.py: make sure empty projects are handle OK by
+	  the stats pages
+
+2004-10-25 13:13  dwaynebailey
+
+	* filters/checks.py: Added #1 style variables to the --mozilla
+	  variable checks.
+
+2004-10-25 11:58  davidfraser
+
+	* pootle/projects.py: when an item is submitted, store the
+	  pofilename and lastitem on the TranslationSession this should
+	  make apache multi-process servers pass state between processes
+
+2004-10-25 11:46  davidfraser
+
+	* pootle/translatepage.py: jToolkit has problems with non-unicode
+	  in the TextArea ; manually decoding to unicode for now
+
+2004-10-25 11:08  davidfraser
+
+	* pootle/projects.py: added quick route to find next pofilename
+	  that contains matches, so we don't have to parse all those in
+	  between
+
+2004-10-25 10:57  davidfraser
+
+	* pootle/: pagelayout.py, server.py: added spearch url for login
+	  page which redirects back to the index if logged in (this is
+	  because the login page submits to itself in case of error) added
+	  link to logout / login to sidebar
+
+2004-10-25 10:37  davidfraser
+
+	* pootle/server.py: added an OptionalLoginAppServer that makes
+	  login optional
+
+2004-10-25 10:25  davidfraser
+
+	* pootle/projects.py: need to convert the statsmtime to an integer
+	  otherwise it'll never match
+
+2004-10-25 09:53  davidfraser
+
+	* pootle/projects.py: took out __init__ loop through self.pofiles
+	  (should have been self.pofilename) as it would have been too
+	  expensive but it wasn't doing anything as self.pofiles was empty
+	  moved pofile.classify construction to getpofile as we always need
+	  the classifications available
+
+2004-10-23 20:26  davidfraser
+
+	* pootle/projects.py: use matchnames for searching for next item,
+	  to make it superfast :-)
+
+2004-10-23 20:09  davidfraser
+
+	* pootle/: indexpage.py, projects.py, translatepage.py: replaced
+	  translated, total with named stats in a dictionary also keep in
+	  each pofile a classify member that keeps named lists of elements
+	  matching fuzzy, blank, etc this should be useful in optimizing
+	  searches added more info on blank, fuzzy to the sidebar of the
+	  translation page
+
+2004-10-23 19:47  davidfraser
+
+	* pootle/: indexpage.py, projects.py, translatepage.py: more
+	  detailed statistics invalidate statistics when a file changes
+
+2004-10-23 19:40  davidfraser
+
+	* pootle/projects.py: changed to use relative paths for po files,
+	  calculate absolute path when needing to access files
+
+2004-10-23 19:33  davidfraser
+
+	* pootle/: pagelayout.py, projects.py, translatepage.py: added
+	  pofilename to the links at the side (made them accessible as
+	  PootlePage members) rearranged test for what is translated
+
+2004-10-23 19:26  davidfraser
+
+	* pootle/projects.py: separated out receivetranslation so the
+	  actual changes are done from the TranslationProject made new
+	  savefile function which saves the pofile to disk   currently
+	  saving after each change which is not ideal added doc strings
+
+2004-10-23 19:19  davidfraser
+
+	* pootle/projects.py: added findnextitem which searches and filters
+	  options through a function this can be slow if you do what it
+	  does at the moment and searches for blank msgstrs...	we should
+	  use the stats to filter out files automatically...
+
+2004-10-23 19:08  davidfraser
+
+	* pootle/projects.py: moved logic about moving to next item from
+	  session into project
+
+2004-10-23 14:57  davidfraser
+
+	* pootle/: indexpage.py, projects.py, translatepage.py: created new
+	  class TranslationSession which represents a users work on a
+	  project use this to keep track of current po file, item rather
+	  than doing it globally in the project added the pofilename as a
+	  hidden field so we know what item is being translated exactly
+	  store translatable elements in pofile.transelements for each
+	  pofile to make indexing easier rather than returning items before
+	  and after with the translatable item, query for them separately
+	  also changed projects.getproject to only take the subproject
+	  config item
+
+2004-10-23 13:58  davidfraser
+
+	* pootle/projects.py: added call to initstatscache so it is
+	  actually used :-) and make sure the right filenames etc are
+	  passed so that it actually reads the files...
+
+2004-10-23 13:54  davidfraser
+
+	* pootle/projects.py: added primitive means of caching statistics
+	  in .stats files with timestamps
+
+2004-10-23 13:43  davidfraser
+
+	* pootle/: indexpage.py, projects.py, translatepage.py: read all
+	  pofiles in when TranslationProject is constructed added
+	  calculation and display of statistics ; this is currently very
+	  slow! renamed projects.getiterator to getproject
+
+2004-10-23 13:15  davidfraser
+
+	* pootle/projects.py: added code to iterate through all the files
+	  in a directory tree rather than just one pofile this changes the
+	  pref name to podir fixed up getiterator to not use self
+	  everywhere...
+
+2004-10-23 12:57  davidfraser
+
+	* pootle/: projects.py, translatepage.py: moved TranslationIterator
+	  code into separate projects module, from whence it will be
+	  transmogrified
+
+2004-10-23 12:46  davidfraser
+
+	* pootle/indexpage.py: count the subprojects
+
+2004-10-23 12:45  davidfraser
+
+	* pootle/server.py: added login, LoginPage that looks pootley
+
+2004-10-22 15:54  davidfraser
+
+	* misc/wStringIO.py: catch error trying to do getvalue on closed
+	  files... (self.buf is gone because we delete it) this can happen
+	  if for example a CatchStringOutput has close() called twice...
+
+2004-10-22 15:47  davidfraser
+
+	* convert/convert.py: don't close files we copy because the
+	  processfile module does that anyway...  make processfile check
+	  that files aren't a tty (as the copy file did...) (not sure if
+	  this is neccessary but can't hurt)
+
+2004-10-22 14:15  dwaynebailey
+
+	* tools/pocount: - Laoyout is now more readable with similar items
+	  grouped in columns.  - Introduced a translated count so that we
+	  can get better total figures - Entries marked fuzzy and which are
+	  untranslated are no longer double counted.	A n entry is fuzzy
+	  if it is marked fuzzy and in not untranslated. This change
+	  also makes it easier to total and evaluate figures.
+
+2004-10-22 11:46  davidfraser
+
+	* pootle/: server.py, translatepage.py: added hook to receive new
+	  translations calculate translation items correctly, made the row
+	  offset equal to the item in the file
+
+2004-10-22 11:14  davidfraser
+
+	* pootle/translatepage.py: removed dummytranslations, now uses
+	  subproject.pofile to get translations from also fixed up some row
+	  calculation problems
+
+2004-10-22 10:51  davidfraser
+
+	* pootle/: __init__.py, indexpage.py, pagelayout.py, server.py,
+	  translatepage.py: added initial pootle implementation (with
+	  random dummy bork translations)
+
+2004-10-21 17:20  davidfraser
+
+	* convert/po2moz: open the outputarchive in write mode if it
+	  doesn't exist oh, and translatepath doesn't work...
+
+2004-10-19 13:46  davidfraser
+
+	* filters/pofilter: remove -x and change --exclude to
+	  --excludefilter to prevent option with main optrecurse
+	  -x/--exclude option for folders
+
+2004-10-18 19:46  davidfraser
+
+	* convert/csv2po, convert/dtd2po.py, convert/html2po,
+	  convert/moz2po, convert/nb2po, convert/oo2po, convert/po2csv,
+	  convert/po2dtd.py, convert/po2html, convert/po2moz,
+	  convert/po2nb, convert/po2oo, convert/po2prop.py, convert/po2txt,
+	  convert/prop2po.py, convert/sxw2po, convert/translatepath.py,
+	  convert/txt2po, filters/pofilter, filters/pogrep,
+	  filters/translatepath.py, tools/pocount, tools/pomerge,
+	  tools/translatepath.py: added translatepath to all the tools,
+	  which tries to find the right directory and add it to the python
+	  path if translate can't be imported. one of these lives in each
+	  directory with executable scripts in them so they can find it
+	  automatically
+
+2004-10-18 19:37  davidfraser
+
+	* ChangeLog: updated ChangeLog to 0.8rc1
+
 2004-10-04 16:39  davidfraser
 
 	* __version__.py: version 0.8 RC1
