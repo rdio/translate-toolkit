@@ -17,6 +17,7 @@ other:
   test with apache multiprocess
   store a history file
   maybe have a separate file to track who translated each string
+  display results of checks for each string on submission
 
 requirements for translatathon:
   * only show review if there are suggestion
@@ -30,4 +31,5 @@ requirements for translatathon:
   translation review cycle
     - comment to explain rejection
     - have a diff
+  highlight spaces in original so you can see what is a space
 
