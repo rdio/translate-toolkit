@@ -1,0 +1,25 @@
+Pootle is a web translation engine
+
+How it works
+------------
+The concept is: a PO file is a document, so lets use PO files directly, rather than storing it in a database.
+But we need quick access to statistics so we cache them in .stats files. This lets us do most checks etc in advance and then iterate quickly.
+
+Requirements
+-------------
+Pootle needs to be installed as part of the whole translate package from translate.sf.net as it uses most of the other modules.
+translate requires Python 2.2 or higher, but Pootle itself probably only works with Python 2.3 or higher.
+translate must be installed properly i.e. it needs to be accessible in your Python Path. This will normally be accomplished by installing from source (python setup.py install).
+For the web interface, Pootle requires jToolkit. The home page is http://jtoolkit.sourceforge.net/
+jToolkit can run applications either via Apache using mod_python, or standalone from the command line.
+Pootle works best at the moment being run from the command line since we don't handle inter-process locking etc.
+It's also much easier!
+
+Running
+-------
+To run, edit pootle.prefs and specify your languages and projects. The key detail here is the podir for each project.
+Then from the pootle directory run pootle.py
+To see the options give it --help but basically you can tell it which prefs file to use, and what port to run on (the default is 8080). The defaults will generally work.
+
+Then go to http://localhost:8080/ (or put a different number in if you want) and begin!
+
