@@ -137,16 +137,17 @@ class poelement:
   def tolines(self):
     for othercomment in self.othercomments:
       yield othercomment
+    # if there's no msgid don't do msgid and string, unless we're the header
+    # this will also discard any comments other than plain othercomments...
+    if (len(self.msgid) == 0) or ((len(self.msgid) == 1) and (self.msgid[0] == '""')):
+      if not self.isheader():
+        return
     for sourcecomment in self.sourcecomments:
       yield sourcecomment
     for typecomment in self.typecomments:
       yield typecomment
     for visiblecomment in self.visiblecomments:
       yield visiblecomment
-    # if there's no msgid don't do msgid and string, unless we're the header
-    if (len(self.msgid) == 0) or ((len(self.msgid) == 1) and (self.msgid[0] == '""')):
-      if not self.isheader():
-        return
     msgidstr = "msgid "
     msgidstartline = 0
     if len(self.msgid) > 0 and len(self.msgidcomments) == 0:
@@ -234,7 +235,10 @@ class pofile:
     # index everything
     for thepo in self.poelements:
       msgid = getunquotedstr(thepo.msgid)
-      if msgid in msgiddict:
+      if not msgid:
+        # blank msgids shouldn't be merged...
+        uniqueelements.append(thepo)
+      elif msgid in msgiddict:
         msgiddict[msgid].merge(thepo)
       else:
         msgiddict[msgid] = thepo
