@@ -112,7 +112,14 @@ class PootleBanner(widgets.Division):
     baseurl = instance.baseurl
     bannertable = table.TableLayout({"width":"100%", "cellpadding":0, "cellspacing":0, "border":0})
     width, height = min((180*maxheight/135, maxheight), (180, 135))
-    pootleimage = widgets.Image(baseurl+"images/pootle.jpg", {"width":width, "height":height})
+    if width <= 108:
+      imagename = "pootle-small.jpg"
+    elif width <= 180:
+      imagename = "pootle-medium.jpg"
+    else:
+      imagename = "pootle.jpg"
+    imagename = baseurl + "images/" + imagename
+    pootleimage = widgets.Image(imagename, {"width":width, "height":height})
     pootlecell = table.TableCell(pootleimage, {"width": width, "align":"left", "valign":"top"})
     gapimage = widgets.Image(baseurl+"images/gap.png", {"width":5, "height":5})
     gapcell = table.TableCell(gapimage, {"width":5})
