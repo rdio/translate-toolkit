@@ -236,10 +236,11 @@ class LanguageSelectionWindow(wx.Frame):
     self.languagelist = wx.ListBox(self.panel, wx.ID_ANY, choices=self.languagenames)
     self.languagelist.SetToolTipString("Select the language you would like to run OpenOffice.org in")
 
-    self.adminlabel = wx.StaticText(self.panel, wx.ID_ANY, "Change system settings:")
-    self.adminchoice = wx.CheckBox(self.panel, wx.ID_ANY, "")
-    self.adminchoice.SetToolTipString("Changes the default setting for all users (which the user setting overrides)")
-    wx.EVT_CHECKBOX(self, self.adminchoice.GetId(), self.OnSetAdmin)
+    self.adminlabel = wx.StaticText(self.panel, wx.ID_ANY, "Change language for:")
+    self.adminchoice = wx.Choice(self.panel, wx.ID_ANY, choices=["User", "System default"])
+    self.adminchoice.SetToolTipString("Changes the default setting or the user setting")
+    self.adminchoice.SetSelection(0)
+    wx.EVT_CHOICE(self, self.adminchoice.GetId(), self.OnSetAdmin)
     self.forcelabel = wx.StaticText(self.panel, wx.ID_ANY, "Assume language is valid:")
     self.forcechoice = wx.CheckBox(self.panel, wx.ID_ANY, "")
     self.forcechoice.SetToolTipString("Ignores the list of valid languages defined for this installation")
@@ -249,8 +250,8 @@ class LanguageSelectionWindow(wx.Frame):
     """arranges all the option controls using a sizer"""
     optionslayout = [(self.versionlabel, self.versionchoice),
                      (self.dirlabel, self.dirbox),
-                     (self.languagelabel, self.languagelist),
                      (self.adminlabel, self.adminchoice),
+                     (self.languagelabel, self.languagelist),
                      (self.forcelabel, self.forcechoice)]
     self.optionssizer.Clear()
     for label, control in optionslayout:
@@ -325,9 +326,17 @@ class LanguageSelectionWindow(wx.Frame):
     self.dirbox.SetValue(versiondir)
     self.setinstalldir(versiondir)
 
+  def getadminmode(self):
+    """returns wheter we are adjusting system defaults or user settings"""
+    adminmode = self.adminchoice.GetSelection()
+    if adminmode == 0:
+      return False
+    elif adminmode == 1:
+      return True
+
   def getlanguage(self):
     """looks up the current language in the config files"""
-    if self.adminchoice.GetValue():
+    if self.getadminmode():
       return self.config.getadminlanguage()
     else:
       return self.config.getuserlanguage()
@@ -419,7 +428,7 @@ class LanguageSelectionWindow(wx.Frame):
       if currentisocode is None:
         wx.MessageBox("Error finding language code", "Error", wx.ICON_ERROR, self)
       else:
-        admin = self.adminchoice.GetValue()
+        admin = self.getadminmode()
         force = self.forcechoice.GetValue()
         if self.setlanguage(currentisocode, admin, force):
           self.Close(1)
