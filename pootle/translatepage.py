@@ -252,7 +252,7 @@ class TranslatePage(pagelayout.PootlePage):
         if self.reviewmode:
           transdiv = self.gettransreview(item, trans, suggestions[item])
         else:
-          transdiv = self.gettransedit(item, trans)
+          transdiv = self.gettransedit(item, orig, trans)
       else:
         transdiv = self.gettransview(item, trans)
       polarity = oddoreven(item)
@@ -300,11 +300,26 @@ class TranslatePage(pagelayout.PootlePage):
       buttons.append(submitbutton)
     return buttons
 
-  def gettransedit(self, item, trans):
+  def gettransedit(self, item, orig, trans):
     """returns a widget for editing the given item and translation"""
     trans = self.escape(trans).decode("utf8")
     if "translate" in self.rights or "suggest" in self.rights:
-      text = widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
+      min = 3
+      max = 10
+      cols = 40
+      chars_orig = len(orig)
+      chars_trans = len(trans)
+      if chars_orig > chars_trans:
+        ideal_rows = chars_orig/cols
+      else:
+        ideal_rows = chars_trans/cols
+      if ideal_rows < min:
+        rows = min
+      elif ideal_rows > max:
+        rows = max
+      else:
+        rows = ideal_rows
+      text = widgets.TextArea({"name":"trans%d" % item, "rows":rows, "cols":cols}, contents=trans)
     else:
       text = pagelayout.TranslationText(trans)
     buttons = self.gettransbuttons(item)
