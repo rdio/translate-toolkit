@@ -17,10 +17,9 @@ class AboutPage(pagelayout.PootlePage):
   """the bar at the side describing current login details etc"""
   def __init__(self, session):
     self.localize = session.localize
-    pagetitle = getattr(session.instance, "title", self.localize("Pootle Demo"))
+    pagetitle = getattr(session.instance, "title")
     title = pagelayout.Title(pagetitle)
-    defaultdescription = self.localize("This is a demo installation of pootle. The administrator can customize the description in the preferences.")
-    description = pagelayout.IntroText(getattr(session.instance, "description", defaultdescription))
+    description = pagelayout.IntroText(getattr(session.instance, "description"))
     abouttitle = pagelayout.Title(self.localize("About Pootle"))
     introtext = pagelayout.IntroText(self.localize("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>! Since Pootle is <strong>Free Software</strong>, you can download it and run your own copy if you like. You can also help participate in the development in many ways (you don't have to be able to program)."))
     hosttext = pagelayout.IntroText(self.localize('The Pootle project itself is hosted at <a href="http://translate.sourceforge.net/">translate.sourceforge.net</a> where you can find the details about source code, mailing lists etc.'))
@@ -136,16 +135,34 @@ class UserOptions(pagelayout.PootlePage):
 
 class AdminPage(pagelayout.PootlePage):
   """page for administering pootle..."""
-  def __init__(self, potree, session):
+  def __init__(self, potree, session, instance):
     self.potree = potree
     self.session = session
+    self.instance = instance
     self.localize = session.localize
     if self.session.issiteadmin():
       indexlink = pagelayout.IntroText(widgets.Link("../home/", self.localize("Home page")))
-      contents = [indexlink, self.getlanguages(), self.getprojects()]
+      contents = [indexlink, self.getgeneral(), self.getlanguages(), self.getprojects()]
     else:
       contents = pagelayout.IntroText(self.localize("You do not have the rights to administer pootle."))
     pagelayout.PootlePage.__init__(self, self.localize("Pootle Admin Page"), contents, session)
+
+  def getgeneral(self):
+    """gets the general options"""
+    generaltitle = pagelayout.Title(self.localize('General Options'))
+    general = table.TableLayout()
+    general.setcell(0, 0, table.TableCell(pagelayout.Title(self.localize("Option"))))
+    general.setcell(0, 1, table.TableCell(pagelayout.Title(self.localize("Current value"))))
+    for optionname in ("title", "description", "baseurl"):
+      optionvalue = getattr(self.instance, optionname, "")
+      valuetextbox = widgets.Input({"name": "option-%s" % optionname, "value": optionvalue})
+      rownum = general.maxrownum()+1
+      general.setcell(rownum, 0, table.TableCell(optionname))
+      general.setcell(rownum, 1, table.TableCell(valuetextbox))
+    rownum = general.maxrownum()+1
+    submitbutton = widgets.Input({"type":"submit", "name":"changegeneral", "value":self.localize("Save changes")})
+    generalform = widgets.Form([general, submitbutton], {"name": "general", "action":""})
+    return pagelayout.Contents([generaltitle, generalform])
 
   def getlanguages(self):
     """gets the links to the languages"""

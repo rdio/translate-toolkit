@@ -20,7 +20,39 @@ class PootleServer(users.OptionalLoginAppServer):
       sessioncache = session.SessionCache(sessionclass=users.PootleSession)
     self.localedomains = ["jToolkit", "pootle"]
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
+    self.setdefaultoptions()
     self.potree = projects.POTree(self.instance)
+
+  def saveprefs(self):
+    """saves any changes made to the preferences"""
+    # TODO: this is a hack, fix it up nicely :-)
+    prefsfile = self.instance.__root__.__dict__["_setvalue"].im_self
+    prefsfile.savefile()
+
+  def setdefaultoptions(self):
+    """sets the default options in the preferences"""
+    changed = False
+    if not hasattr(self.instance, "title"):
+      setattr(self.instance, "title", "Pootle Demo")
+      changed = True
+    if not hasattr(self.instance, "description"):
+      defaultdescription = "This is a demo installation of pootle. The administrator can customize the description in the preferences."
+      setattr(self.instance, "description", defaultdescription)
+      changed = True
+    if not hasattr(self.instance, "baseurl"):
+      setattr(self.instance, "baseurl", "/")
+      changed = True
+    if changed:
+      self.saveprefs()
+
+  def changeoptions(self, argdict):
+    """changes options on the instance"""
+    for key, value in argdict.iteritems():
+      if not key.startswith("option-"):
+        continue
+      optionname = key.replace("option-", "", 1)
+      setattr(self.instance, optionname, value)
+    self.saveprefs()
 
   def refreshstats(self):
     """refreshes all the available statistics..."""
@@ -105,11 +137,13 @@ class PootleServer(users.OptionalLoginAppServer):
         redirectpage = pagelayout.PootlePage("Redirecting to home...", redirecttext, session)
         return server.Redirect("../index.html", withpage=redirectpage)
       if not top or top == "index.html":
+        if "changegeneral" in argdict:
+          self.changeoptions(argdict)
         if "changelanguages" in argdict:
           self.potree.changelanguages(argdict)
         if "changeprojects" in argdict:
           self.potree.changeprojects(argdict)
-        return indexpage.AdminPage(self.potree, session)
+        return indexpage.AdminPage(self.potree, session, self.instance)
     elif self.potree.haslanguage(top):
       languagecode = top
       pathwords = pathwords[1:]
