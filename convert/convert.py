@@ -148,12 +148,13 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       return os.path.isdir(fileoption)
 
-  def runconversion(self, options):
-    """runs the conversion method using the given commandline options..."""
-    if self.isrecursive(options.input):
-      if not self.isrecursive(options.output):
-        self.error(optparse.OptionValueError("Cannot have recursive input and non-recursive output. check output exists"))
-    self.recurseconversion(options)
+  def runconversion(self):
+    """parses the command line options and runs the conversion"""
+    (options, args) = self.parse_args()
+    try:
+      self.recurseconversion(options, args)
+    except optparse.OptParseError, message:
+      self.error(message)
 
   def getrequiredoptions(self, options):
     """get the options required to pass to the filtermethod..."""
@@ -222,9 +223,11 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       return None
 
-  def recurseconversion(self, options):
+  def recurseconversion(self, options, args):
     """recurse through directories and convert files"""
     if self.isrecursive(options.input):
+      if not self.isrecursive(options.output):
+        self.error(optparse.OptionValueError("Cannot have recursive input and non-recursive output. check output exists"))
       allfiles = self.recursefiles(options)
     else:
       if options.input:

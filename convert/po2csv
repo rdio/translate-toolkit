@@ -91,10 +91,5 @@ if __name__ == '__main__':
   inputformat = {"po":convertcsv}
   outputformat = "csv"
   parser = convert.ConvertOptionParser(inputformat, outputformat, usepots=True)
-  (options, args) = parser.parse_args()
-  # open the appropriate files
-  try:
-    parser.runconversion(options)
-  except convert.optparse.OptParseError, message:
-    parser.error(message)
+  parser.runconversion()
 

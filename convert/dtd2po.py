@@ -278,9 +278,5 @@ if __name__ == '__main__':
   inputformats = {"dtd": convertdtd}
   outputformat = "po"
   parser = convert.ConvertOptionParserExt(inputformats, outputformat, usetemplates=True, usepots=True)
-  (options, args) = parser.parse_args()
-  try:
-    parser.runconversion(options)
-  except convert.optparse.OptParseError, message:
-    parser.error(message)
+  parser.runconversion()
 

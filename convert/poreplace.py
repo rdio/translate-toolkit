@@ -23,7 +23,6 @@
 # this is used as the basis for other scripts, it currently replaces nothing
 
 from translate.storage import po
-from translate.convert import convert
 
 class poreplace:
   def convertstring(self, postr):
@@ -53,12 +52,7 @@ def main(converterclass):
   inputformat = {"po":converterclass().convertpo}
   outputformat = "po"
   parser = convert.ConvertOptionParser(inputformat, outputformat, usepots=True)
-  (options, args) = parser.parse_args()
-  # open the appropriate files
-  try:
-    parser.runconversion(options)
-  except convert.optparse.OptParseError, message:
-    parser.error(message)
+  parser.runconversion()
 
 if __name__ == '__main__':
   main(poreplace)
