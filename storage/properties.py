@@ -63,6 +63,8 @@ class propfile:
     newpe = propelement()
     inmultilinemsgid = 0
     for line in lines:
+      # handle unicode-escape encoding
+      line = line.decode("unicode-escape")
       # handle multiline msgid if we're in one
       if inmultilinemsgid:
         newpe.msgid += quote.rstripeol(line).lstrip()
@@ -110,6 +112,7 @@ class propfile:
     for pe in self.propelements:
       pelines = pe.tolines()
       lines.extend(pelines)
+    lines = [quote.mozillapropertiesencode(line) for line in lines]
     return lines
 
   def makeindex(self):
