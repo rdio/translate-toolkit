@@ -63,9 +63,9 @@ class reprop:
 
   def convertstring(self, postring):
     """converts a po-style string to a properties-style string"""
-    propstring = "\\\n".join([quote.extractwithoutquotes(line,'"','"',"\\",includeescapes=0)[0] for line in postring])
-    if propstring[:2] == "\\\n": propstring = propstring[2:]
-    propstring = quote.unescapeunicode(propstring)
+    propstring = "\\n".join([quote.extractwithoutquotes(line,'"','"',"\\",includeescapes=0)[0] for line in postring])
+    if propstring[:2] == "\\n": propstring = propstring[2:]
+    print repr((postring, propstring))
     return propstring
 
   def convertline(self, line):

@@ -61,7 +61,7 @@ class prop2po:
     return thepofile
 
   def mergefiles(self, origpropfile, translatedpropfile, blankmsgstr=False):
-    """converts a .properties file to a .po file..."""
+    """converts two .properties files to a .po file..."""
     thepofile = po.pofile()
     if blankmsgstr:
       headerpo = thepofile.makeheader()
@@ -105,14 +105,14 @@ class prop2po:
   def convertelement(self, theprop):
     """converts a .properties element to a .po element..."""
     # escape unicode
-    msgid = quote.escapeunicode(theprop.msgid.strip())
+    msgid = theprop.msgid.strip()
     thepo = po.poelement()
     thepo.othercomments.extend(theprop.comments)
     # TODO: handle multiline msgid
     if theprop.isblank():
       return None
     thepo.sourcecomments.append("#: "+theprop.name+eol)
-    thepo.msgid = [quote.quotestr(msgid, escapeescapes=1)]
+    thepo.msgid = [quote.quotestr(line, escapeescapes=1) for line in msgid.split("\n")]
     thepo.msgstr = ['""']
     return thepo
 
