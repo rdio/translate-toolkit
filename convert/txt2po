@@ -19,8 +19,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-"""script to convert a set of plain text message files to gettext .po localization files using the po module, and the txt2po convertor class which is in this module
-You can convert back to .txt using po2txt, but it doesn't exist yet"""
+"""Converts plain text files to Gettext .po files (Note: po2txt does not exist
+yet)"""
 
 # TODO: create po2txt
 

@@ -85,7 +85,7 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
     if self.usepots:
       potoption = optparse.Option("-P", "--pot", \
                       action="store_true", dest="pot", default=False, \
-                      help="use PO template files (.pot) rather than PO files (.po)")
+                      help="output PO Templates (.pot) rather than PO files (.po)")
       self.define_option(potoption)
 
   def run(self):

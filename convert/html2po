@@ -19,8 +19,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-"""script to convert html files to gettext .po localization files using the po module, and the html2po convertor class which is in this module
-You can convert back to .html using po2html, but it doesn't exist yet"""
+"""Converts HTML files to Gettext .po files (Note: po2html does not exist yet)"""
 
 # TODO: create po2html
 
