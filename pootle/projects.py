@@ -32,6 +32,200 @@ class TranslationSession:
     self.pofilename = pofilename
     self.lastitem = item
 
+class pootlefile(po.pofile):
+  """this represents a pootle-managed .po file and its associated files"""
+  # TODO: handle pending file caching, re-reading if newer, etc
+  def __init__(self, project, pofilename):
+    po.pofile.__init__(self)
+    self.project = project
+    self.checker = self.project.checker
+    self.pofilename = pofilename
+    self.filename = os.path.join(self.project.podir, self.pofilename)
+    self.statsfilename = self.filename + os.extsep + "stats"
+    self.pendingfilename = self.filename + os.extsep + "pending"
+    self.pendingfile = None
+    # we delay parsing until it is required
+    self.parsed = False
+
+  def readpofile(self):
+    """reads and parses the main po file"""
+    self.parse(open(self.filename, 'r'))
+    # we ignore all the headers by using this filtered set
+    self.transelements = [poel for poel in self.poelements if not (poel.isheader() or poel.isblank())]
+    self.classifyelements()
+    self.parsed = True
+
+  def savepofile(self):
+    """saves changes to the main file to disk..."""
+    lines = self.tolines()
+    open(self.filename, "w").writelines(lines)
+
+  def getsource(self):
+    """returns pofile source"""
+    if not self.parsed:
+      self.readpofile()
+    lines = self.tolines()
+    return "".join(lines)
+
+  def getcsv(self):
+    """returns pofile as csv"""
+    if not self.parsed:
+      self.readpofile()
+    convertor = po2csv.po2csv()
+    csvfile = convertor.convertfile(self)
+    lines = csvfile.tolines()
+    return "".join(lines)
+
+  def readpendingfile(self):
+    """reads and parses the pending file corresponding to this po file"""
+    if os.path.exists(self.pendingfilename):
+      inputfile = open(self.pendingfilename, "r")
+      self.pendingfile = po.pofile(inputfile)
+    else:
+      self.pendingfile = po.pofile()
+
+  def savependingfile(self):
+    """saves changes to disk..."""
+    lines = self.pendingfile.tolines()
+    open(self.pendingfilename, "w").writelines(lines)
+
+  def getstats(self):
+    """reads the stats if neccessary or returns them from the cache"""
+    frompomtime, self.stats = self.readstats()
+    pomtime = self.getmodtime()
+    if pomtime != frompomtime:
+      self.calcstats()
+      self.savestats()
+    return self.stats
+
+  def readstats(self):
+    """reads the stats from the associated stats file, returning the pomtime and stats"""
+    stats = open(self.statsfilename, "r").read()
+    frompomtime, postatsstring = stats.split("\n", 1)
+    frompomtime = int(frompomtime)
+    postats = {}
+    for line in postatsstring.split("\n"):
+      if not line.strip():
+        continue
+      if not ":" in line:
+        print "invalid stats line in", self.statsfilename,line
+        continue
+      name, count = line.split(":", 1)
+      count = int(count.strip())
+      postats[name.strip()] = count
+    return frompomtime, postats
+
+  def savestats(self):
+    """saves the current statistics to file"""
+    # assumes self.stats is up to date
+    try:
+      postatsstring = "\n".join(["%s:%d" % (name, count) for name, count in self.stats.iteritems()])
+      open(self.statsfilename, "w").write("%d\n%s" % (self.getmodtime(), postatsstring))
+    except IOError:
+      pass
+
+  def calcstats(self):
+    """calculates translation statistics for the given po file"""
+    # assumes classify has already been done
+    postats = dict([(name, len(items)) for name, items in self.classify.iteritems()])
+    self.stats = postats
+
+  def getmodtime(self):
+    """gets the modificationtime of the po file"""
+    return os.stat(self.filename)[os.path.stat.ST_MTIME]
+
+  def setmsgstr(self, item, newmsgstr):
+    """updates a translation with a new msgstr value"""
+    if not self.parsed:
+      self.readpofile()
+    thepo = self.transelements[item]
+    thepo.msgstr = newmsgstr
+    thepo.markfuzzy(False)
+    # TODO: recalculate stats
+    self.savepofile()
+    self.reclassifyelement(item)
+
+  def classifyelements(self):
+    """makes a dictionary of which elements fall into which classifications"""
+    self.classify = {}
+    self.classify["fuzzy"] = []
+    self.classify["blank"] = []
+    self.classify["translated"] = []
+    self.classify["has-suggestion"] = []
+    self.classify["total"] = []
+    for checkname in self.checker.getfilters().keys():
+      self.classify["check-" + checkname] = []
+    for item, poel in enumerate(self.transelements):
+      classes = self.classifyelement(poel)
+      if self.getsuggestions(item):
+        classes.append("has-suggestion")
+      for classname in classes:
+        self.classify[classname].append(item)
+
+  def classifyelement(self, poel):
+    """returns all classify keys that this element should match"""
+    classes = ["total"]
+    if poel.isfuzzy():
+      classes.append("fuzzy")
+    if poel.isblankmsgstr():
+      classes.append("blank")
+    if not ("fuzzy" in classes or "blank" in classes):
+      classes.append("translated")
+    unquotedid = po.getunquotedstr(poel.msgid, joinwithlinebreak=False)
+    unquotedstr = po.getunquotedstr(poel.msgstr, joinwithlinebreak=False)
+    failures = self.checker.run_filters(poel, unquotedid, unquotedstr)
+    for failure in failures:
+      functionname = failure.split(":",2)[0]
+      classes.append("check-" + functionname)
+    return classes
+
+  def reclassifyelement(self, item):
+    """updates the classification of poel in self.classify"""
+    poel = self.transelements[item]
+    classes = self.classifyelement(poel)
+    if self.getsuggestions(item):
+      classes.append("has-suggestion")
+    for classname, matchingitems in self.classify.items():
+      if (classname in classes) != (item in matchingitems):
+        if classname in classes:
+          self.classify[classname].append(item)
+        else:
+          self.classify[classname].remove(item)
+        self.classify[classname].sort()
+
+  def getsuggestions(self, item):
+    """find all the suggestion items submitted for the given (pofile or pofilename) and item"""
+    if self.pendingfile is None:
+      self.readpendingfile()
+    thepo = self.transelements[item]
+    sources = thepo.getsources()
+    # TODO: review the matching method
+    suggestpos = [suggestpo for suggestpo in self.pendingfile.poelements if suggestpo.getsources() == sources]
+    return suggestpos
+
+  def addsuggestion(self, item, suggmsgstr):
+    """adds a new suggestion for the given item to the pendingfile"""
+    if self.pendingfile is None:
+      self.readpendingfile()
+    thepo = self.transelements[item]
+    newpo = thepo.copy()
+    newpo.msgstr = suggmsgstr
+    newpo.markfuzzy(False)
+    self.pendingfile.poelements.append(newpo)
+    self.savependingfile()
+    # check implications for statistics
+    self.reclassifyelement(item)
+
+  def deletesuggestion(self, item, suggitem):
+    """removes the suggestion from the pending file"""
+    if self.pendingfile is None:
+      self.readpendingfile()
+    # TODO: remove the suggestion in a less brutal manner
+    del self.pendingfile.poelements[suggitem]
+    self.savependingfile()
+    # check implications for statistics
+    self.reclassifyelement(item)
+
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
   def __init__(self, languagecode, projectcode, potree):
@@ -45,8 +239,6 @@ class TranslationProject:
     checkerclasses = [checks.projectcheckers.get(projectcode, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses)
     self.pofiles = {}
-    # TODO: handle pending file caching, re-reading if newer, etc
-    self.pendingfiles = {}
     self.stats = {}
     self.initstatscache()
 
@@ -145,25 +337,14 @@ class TranslationProject:
   def initstatscache(self):
     """reads cached statistics from the disk"""
     for pofilename in self.pofilenames:
+      self.pofiles[pofilename] = pootlefile(self, pofilename)
       if not pofilename in self.stats:
         abspofilename = os.path.join(self.podir, pofilename)
         pomtime = os.stat(abspofilename)[os.path.stat.ST_MTIME]
         statsfilename = abspofilename + os.extsep + "stats"
         if os.path.exists(statsfilename):
           try:
-            stats = open(statsfilename, "r").read()
-            statsmtime, postatsstring = stats.split("\n", 1)
-            statsmtime = int(statsmtime)
-            postats = {}
-            for line in postatsstring.split("\n"):
-              if not line.strip():
-                continue
-              if not ":" in line:
-                print "invalid stats line in", statsfilename,line
-                continue
-              name, count = line.split(":", 1)
-              count = int(count.strip())
-              postats[name.strip()] = count
+            statsmtime, postats = self.pofiles[pofilename].readstats()
           except Exception, e:
             # TODO: provide some logging here for debugging...
             print "error processing stats for %s: %s" % (pofilename, e)
@@ -187,99 +368,18 @@ class TranslationProject:
 
   def getpostats(self, pofilename):
     """calculates translation statistics for the given po file"""
-    if pofilename in self.stats:
-      return self.stats[pofilename]
-    pofile = self.getpofile(pofilename)
-    postats = dict([(name, len(items)) for name, items in pofile.classify.iteritems()])
-    self.stats[pofilename] = postats
-    abspofilename = os.path.join(self.podir, pofilename)
-    pomtime = os.stat(abspofilename)[os.path.stat.ST_MTIME]
-    statsfilename = abspofilename + os.extsep + "stats"
-    try:
-      postatsstring = "\n".join(["%s:%d" % (name, count) for name, count in postats.iteritems()])
-      open(statsfilename, "w").write("%d\n%s" % (pomtime, postatsstring))
-    except IOError:
-      pass
-    return self.stats[pofilename]
+    return self.pofiles[pofilename].getstats()
 
   def getpofile(self, pofilename):
     """parses the file into a pofile object and stores in self.pofiles"""
-    if pofilename in self.pofiles:
-      return self.pofiles[pofilename]
-    abspofilename = os.path.join(self.podir, pofilename)
-    inputfile = open(abspofilename, "r")
-    pofile = po.pofile(inputfile)
-    pofile.filename = pofilename
-    # we ignore all the headers by using this filtered set
-    pofile.transelements = [poel for poel in pofile.poelements if not (poel.isheader() or poel.isblank())]
-    self.classifyelements(pofile)
-    self.pofiles[pofilename] = pofile
+    pofile = self.pofiles[pofilename]
+    if not pofile.parsed:
+      pofile.readpofile()
     return pofile
-
-  def getpendingfile(self, pofilename):
-    """gets the pending po elements stored for the given pofilename"""
-    pendingfilename = pofilename + ".pending"
-    if pendingfilename in self.pendingfiles:
-      return self.pendingfiles[pendingfilename]
-    abspendingfilename = os.path.join(self.podir, pendingfilename)
-    if os.path.exists(abspendingfilename):
-      inputfile = open(abspendingfilename, "r")
-      pendingfile = po.pofile(inputfile)
-    else:
-      pendingfile = po.pofile()
-    self.pendingfiles[pendingfilename] = pendingfile
-    return pendingfile
-
-  def classifyelements(self, pofile):
-    # we always want to have the classifications available
-    pofile.classify = {}
-    pofile.classify["fuzzy"] = []
-    pofile.classify["blank"] = []
-    pofile.classify["translated"] = []
-    pofile.classify["has-suggestion"] = []
-    pofile.classify["total"] = []
-    for checkname in self.checker.getfilters().keys():
-      pofile.classify["check-" + checkname] = []
-    for item, poel in enumerate(pofile.transelements):
-      classes = self.classifyelement(poel)
-      if self.getsuggestions(pofile, item):
-        classes.append("has-suggestion")
-      for classname in classes:
-        pofile.classify[classname].append(item)
-
-  def reclassifyelement(self, pofile, item):
-    """updates the classification of poel in pofile.classify"""
-    poel = pofile.transelements[item]
-    classes = self.classifyelement(poel)
-    if self.getsuggestions(pofile, item):
-      classes.append("has-suggestion")
-    for classname, matchingitems in pofile.classify.items():
-      if (classname in classes) != (item in matchingitems):
-        if classname in classes:
-          pofile.classify[classname].append(item)
-        else:
-          pofile.classify[classname].remove(item)
-        pofile.classify[classname].sort()
-
-  def classifyelement(self, poel):
-    """returns all classify keys that this element should match"""
-    classes = ["total"]
-    if poel.isfuzzy():
-      classes.append("fuzzy")
-    if poel.isblankmsgstr():
-      classes.append("blank")
-    if not ("fuzzy" in classes or "blank" in classes):
-      classes.append("translated")
-    unquotedid = po.getunquotedstr(poel.msgid, joinwithlinebreak=False)
-    unquotedstr = po.getunquotedstr(poel.msgstr, joinwithlinebreak=False)
-    failures = self.checker.run_filters(poel, unquotedid, unquotedstr)
-    for failure in failures:
-      functionname = failure.split(":",2)[0]
-      classes.append("check-" + functionname)
-    return classes
 
   def getpofilelen(self, pofilename):
     """returns number of items in the given pofilename"""
+    # TODO: needn't parse the file for this ...
     pofile = self.getpofile(pofilename)
     return len(pofile.transelements)
 
@@ -292,52 +392,34 @@ class TranslationProject:
 
   def getitemclasses(self, pofilename, item):
     """returns which classes this item belongs to"""
+    # TODO: needn't parse the file for this ...
     pofile = self.getpofile(pofilename)
     return [classname for (classname, classitems) in pofile.classify.iteritems() if item in classitems]
 
   def getitems(self, pofilename, itemstart, itemstop):
-    """returns num items before the given item, as context"""
+    """returns a set of items from the pofile, converted to original and translation strings"""
     pofile = self.getpofile(pofilename)
     elements = pofile.transelements[max(itemstart,0):itemstop]
     return [(po.getunquotedstr(poel.msgid), po.getunquotedstr(poel.msgstr)) for poel in elements]
 
   def updatetranslation(self, pofilename, item, trans):
     """updates a translation with a new value..."""
-    pofile = self.getpofile(pofilename)
-    thepo = pofile.transelements[item]
-    thepo.msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
-    thepo.markfuzzy(False)
-    if pofilename in self.stats:
-      del self.stats[pofilename]
-    self.savepofile(pofilename)
-    self.reclassifyelement(pofile, item)
+    newmsgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
+    pofile = self.pofiles[pofilename]
+    pofile.setmsgstr(item, newmsgstr)
 
   def suggesttranslation(self, pofilename, item, trans):
     """stores a new suggestion for a translation..."""
+    suggmsgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
     pofile = self.getpofile(pofilename)
-    thepo = pofile.transelements[item]
-    newpo = thepo.copy()
-    newpo.msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
-    newpo.markfuzzy(False)
-    pendingfile = self.getpendingfile(pofilename)
-    pendingfile.poelements.append(newpo)
-    self.savependingfile(pofilename)
-    self.reclassifyelement(pofile, item)
-    if pofilename in self.stats:
-      del self.stats[pofilename]
+    pofile.addsuggestion(item, suggmsgstr)
 
   def getsuggestions(self, pofile, item):
     """find all the suggestions submitted for the given (pofile or pofilename) and item"""
     if isinstance(pofile, (str, unicode)):
       pofilename = pofile
       pofile = self.getpofile(pofilename)
-      pendingfile = self.getpendingfile(pofilename)
-    else:
-      pendingfile = self.getpendingfile(pofile.filename)
-    thepo = pofile.transelements[item]
-    sources = thepo.getsources()
-    # TODO: review the matching method
-    suggestpos = [suggestpo for suggestpo in pendingfile.poelements if suggestpo.getsources() == sources]
+    suggestpos = pofile.getsuggestions(item)
     suggestions = [po.getunquotedstr(suggestpo.msgstr) for suggestpo in suggestpos]
     return suggestions
 
@@ -346,12 +428,7 @@ class TranslationProject:
     if isinstance(pofile, (str, unicode)):
       pofilename = pofile
       pofile = self.getpofile(pofilename)
-      pendingfile = self.getpendingfile(pofilename)
-    else:
-      pendingfile = self.getpendingfile(pofile.filename)
-    # TODO: remove the suggestion in a less brutal manner
-    del pendingfile.poelements[suggitem]
-    self.savependingfile(pofilename)
+    pofile.deletesuggestion(item, suggitem)
     self.updatetranslation(pofilename, item, newtrans)
 
   def rejectsuggestion(self, pofile, item, suggitem, newtrans):
@@ -359,44 +436,23 @@ class TranslationProject:
     if isinstance(pofile, (str, unicode)):
       pofilename = pofile
       pofile = self.getpofile(pofilename)
-      pendingfile = self.getpendingfile(pofilename)
-    else:
-      pendingfile = self.getpendingfile(pofile.filename)
-    # TODO: remove the suggestion in a less brutal manner
-    del pendingfile.poelements[suggitem]
-    self.savependingfile(pofilename)
-    self.reclassifyelement(pofile, item)
-    if pofilename in self.stats:
-      del self.stats[pofilename]
+    pofile.deletesuggestion(item, suggitem)
 
   def savepofile(self, pofilename):
     """saves changes to disk..."""
     pofile = self.getpofile(pofilename)
-    lines = pofile.tolines()
-    abspofilename = os.path.join(self.podir, pofilename)
-    open(abspofilename, "w").writelines(lines)
-
-  def savependingfile(self, pofilename):
-    """saves changes to disk..."""
-    pendingfile = self.getpendingfile(pofilename)
-    lines = pendingfile.tolines()
-    abspendingfilename = os.path.join(self.podir, pofilename + ".pending")
-    open(abspendingfilename, "w").writelines(lines)
+    pofile.savepofile()
 
   def getsource(self, pofilename):
     """returns pofile source"""
     pofile = self.getpofile(pofilename)
-    lines = pofile.tolines()
-    return "".join(lines)
+    return pofile.getsource()
 
   def getcsv(self, csvfilename):
     """returns pofile as csv"""
     pofilename = csvfilename.replace(".csv", ".po")
     pofile = self.getpofile(pofilename)
-    convertor = po2csv.po2csv()
-    csvfile = convertor.convertfile(pofile)
-    lines = csvfile.tolines()
-    return "".join(lines)
+    return pofile.getcsv()
 
 class POTree:
   """Manages the tree of projects and languages"""
