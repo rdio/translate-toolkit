@@ -23,18 +23,98 @@
 
 from xml.dom import minidom
 
+def writexml(self, writer, indent="", addindent="", newl=""):
+    """a replacement to writexml that formats it more like typical .ts files"""
+    # indent = current indentation
+    # addindent = indentation to add to higher levels
+    # newl = newline string
+    writer.write(indent+"<" + self.tagName)
+
+    attrs = self._get_attributes()
+    a_names = attrs.keys()
+    a_names.sort()
+
+    for a_name in a_names:
+        writer.write(" %s=\"" % a_name)
+        _write_data(writer, attrs[a_name].value)
+        writer.write("\"")
+    if self.childNodes:
+        if len(self.childNodes) == 1 and self.childNodes[0].nodeType == self.TEXT_NODE:
+          writer.write(">")
+          for node in self.childNodes:
+              node.writexml(writer,"","","")
+          writer.write("</%s>%s" % (self.tagName,newl))
+        else:
+          writer.write(">%s"%(newl))
+          for node in self.childNodes:
+              node.writexml(writer,indent+addindent,addindent,newl)
+          writer.write("%s</%s>%s" % (indent,self.tagName,newl))
+    else:
+        writer.write("/>%s"%(newl))
+
+Element_writexml = minidom.Element.writexml
+for elementclassname in dir(minidom):
+  elementclass = getattr(minidom, elementclassname)
+  if not isinstance(elementclass, type(minidom.Element)):
+    continue
+  if not issubclass(elementclass, minidom.Element):
+    continue
+  if elementclass.writexml != Element_writexml:
+    continue
+  elementclass.writexml = writexml
 
 class QtTsParser:
   def __init__(self, inputfile=None):
     """make a new QtTsParser, reading from the given inputfile if required"""
     self.filename = getattr(inputfile, "filename", None)
-    if inputfile is not None:
+    if inputfile is None:
+      self.document = minidom.parseString("<!DOCTYPE TS><TS></TS>")
+    else:
       self.document = minidom.parse(inputfile)
       assert self.document.documentElement.tagName == "TS"
+
+  def addtranslation(self, contextname, source, translation, createifmissing=False):
+    """adds the given translation (will create the nodes required if asked). Returns success"""
+    contextnode = self.getcontextnode(contextname)
+    if contextnode is None:
+      if not createifmissing:
+        return False
+      # construct a context node with the given name
+      contextnode = self.document.createElement("context")
+      namenode = self.document.createElement("name")
+      nametext = self.document.createTextNode(contextname)
+      namenode.appendChild(nametext)
+      contextnode.appendChild(namenode)
+      self.document.documentElement.appendChild(contextnode)
+    for message in self.getmessagenodes(contextnode):
+      if self.getmessagesource(message).strip() == source.strip():
+        translationnode = message.getElementsByTagName("translation")[0]
+        # TODO: make this more robust
+        translationnode.replaceChild(self.document.createTextNode(translation), translationnode.firstChild)
+        return True
+    if not createifmissing:
+      return False
+    messagenode = self.document.createElement("message")
+    sourcenode = self.document.createElement("source")
+    sourcetext = self.document.createTextNode(source)
+    sourcenode.appendChild(sourcetext)
+    translationnode = self.document.createElement("translation")
+    translationtext = self.document.createTextNode(translation)
+    translationnode.appendChild(translationtext)
+    messagenode.appendChild(sourcenode)
+    messagenode.appendChild(translationnode)
+    contextnode.appendChild(messagenode)
+    return True
 
   def getnodetext(self, node):
     """returns the node's text by iterating through the child nodes"""
     return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
+
+  def getxml(self):
+    """return the ts file as xml"""
+    xml = self.document.toprettyxml(indent="    ", encoding="utf-8")
+    xml = "\n".join([line for line in xml.split("\n") if line.strip()])
+    return xml
 
   def getcontextname(self, contextnode):
     """returns the name of the given context"""
@@ -70,8 +150,8 @@ class QtTsParser:
 
   def getmessagetranslation(self, message):
     """returns the message translation for a given node"""
-    sourcenode = message.getElementsByTagName("translation")[0]
-    return self.getnodetext(sourcenode)
+    translationnode = message.getElementsByTagName("translation")[0]
+    return self.getnodetext(translationnode)
 
   def iteritems(self):
     """iterates through (contextname, messages)"""
