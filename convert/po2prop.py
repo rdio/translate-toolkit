@@ -63,7 +63,7 @@ class reprop:
 
   def convertstring(self, postring):
     """converts a po-style string to a properties-style string"""
-    propstring = "\\\n".join([quote.extractwithoutquotes(line,'"','"',None,includeescapes=0)[0] for line in postring])
+    propstring = "\\\n".join([quote.extractwithoutquotes(line,'"','"',"\\",includeescapes=0)[0] for line in postring])
     if propstring[:2] == "\\\n": propstring = propstring[2:]
     propstring = quote.unescapeunicode(propstring)
     return propstring
@@ -137,7 +137,7 @@ if __name__ == '__main__':
   else:
     outputfile = open(options.outputfile, 'w')
   if options.templatefile is None:
-    templatefile = None
+    parser.error("must have template file")
   else:
     templatefile = open(options.templatefile, 'r')
   main(inputfile, outputfile, templatefile)
