@@ -47,6 +47,7 @@ class poelement:
   # sourcecomments = []     #   #: sourcefile.xxx:35
   # typecomments = []       #   #, fuzzy
   # visiblecomments = []    #   #_ note to translator  (this is nonsense)
+  # msgidcomments = []      #   _: within msgid
   # msgid = []
   # msgstr = []
 
@@ -70,16 +71,18 @@ class poelement:
     else:
       return len(getunquotedstr(self.msgstr).strip())
 
-  def merge(self, otherpo, overwrite=False):
+  def merge(self, otherpo, overwrite=False, comments=True):
     """merges the otherpo (with the same msgid) into this one
-    overwrite non-blank self.msgstr only if overwrite is True"""
+    overwrite non-blank self.msgstr only if overwrite is True
+    merge comments only if comments is True"""
     def mergelists(list1, list2):
       list1.extend([item for item in list2 if not item in list1])
-    mergelists(self.othercomments, otherpo.othercomments)
-    mergelists(self.sourcecomments, otherpo.sourcecomments)
-    mergelists(self.typecomments, otherpo.typecomments)
-    mergelists(self.visiblecomments, otherpo.visiblecomments)
-    mergelists(self.msgidcomments, otherpo.msgidcomments)
+    if comments:
+      mergelists(self.othercomments, otherpo.othercomments)
+      mergelists(self.sourcecomments, otherpo.sourcecomments)
+      mergelists(self.typecomments, otherpo.typecomments)
+      mergelists(self.visiblecomments, otherpo.visiblecomments)
+      mergelists(self.msgidcomments, otherpo.msgidcomments)
     if self.isblankmsgstr() or overwrite:
       self.msgstr = otherpo.msgstr
     elif otherpo.isblankmsgstr():
@@ -196,7 +199,9 @@ class poelement:
       if len(partlines) > 0 and len(getunquotedstr(partlines[:1])) == 0:
         # if there is a blank leader line, it must come before the comment
         partstr += partlines[0] + '\n'
-        partstartline += 1
+        # but if the whole string is blank, leave it in
+        if len(partlines) > 1:
+          partstartline += 1
       # comments first, no blank leader line needed
       for partcomment in partcomments:
         partstr += partcomment # + '\n'
