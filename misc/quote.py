@@ -175,7 +175,7 @@ def mozillapropertiesdecode(source):
     # escapes that are self-escaping
     "\\": "\\", "'": "'", '"': '"',
     # control characters that we keep
-    "b": "\b", "f": "\f", "t": "\t", "n": "\n", "v": "\v", "a": "\a"
+    "b": "\\b", "f": "\\f", "t": "\\t", "n": "\\n", "v": "\\v", "a": "\\a"
     }
   def unichr2(i):
     """Returns a Unicode string of one character with ordinal 32 <= i, otherwise an escaped control character"""
