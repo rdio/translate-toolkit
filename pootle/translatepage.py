@@ -113,6 +113,7 @@ class TranslatePage(pagelayout.PootlePage):
         suggestions[item, suggid] = value
     for item in skips:
       self.session.skiptranslation(self.pofilename, item)
+      self.lastitem = item
     for item in submits:
       if item in skips or item not in translations:
         continue
@@ -122,11 +123,13 @@ class TranslatePage(pagelayout.PootlePage):
     for item, suggid in rejects:
       value = suggestions[item, suggid]
       self.project.rejectsuggestion(self.pofilename, item, suggid, value)
+      self.lastitem = item
     for item, suggid in accepts:
       if (item, suggid) in rejects or (item, suggid) not in suggestions:
         continue
       value = suggestions[item, suggid]
       self.project.acceptsuggestion(self.pofilename, item, suggid, value)
+      self.lastitem = item
 
   def getmatchnames(self, checker): 
     """returns any checker filters the user has asked to match..."""
@@ -179,7 +182,8 @@ class TranslatePage(pagelayout.PootlePage):
     self.textcolors = ["#000000", "#000060"]
     for row, (orig, trans) in enumerate(translations):
       item = self.firstitem + row
-      origdiv = self.getorigdiv(item, orig, item in self.editable)
+      itemclasses = self.project.getitemclasses(self.pofilename, item)
+      origdiv = self.getorigdiv(item, orig, item in self.editable, itemclasses)
       if item in self.editable:
         if self.reviewmode:
           transdiv = self.gettransreview(item, trans, suggestions[item])
@@ -194,7 +198,7 @@ class TranslatePage(pagelayout.PootlePage):
     self.transtable.shrinkrange()
     return self.transtable
 
-  def getorigdiv(self, item, orig, editable):
+  def getorigdiv(self, item, orig, editable, itemclasses):
     origclass = "translate-original "
     if editable:
       origclass += "translate-original-focus "
@@ -202,6 +206,8 @@ class TranslatePage(pagelayout.PootlePage):
       origclass += "autoexpand "
     origdiv = widgets.Division([], "orig%d" % item, cls=origclass)
     origtext = widgets.Font(orig, {"color":self.textcolors[item % 2]})
+    if itemclasses:
+      origtext = widgets.Tooltip(" ".join(itemclasses), origtext)
     origdiv.addcontents(origtext)
     return origdiv
 
