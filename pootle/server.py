@@ -4,9 +4,21 @@ from jToolkit.web import server
 from jToolkit.widgets import widgets
 from translate.pootle import indexpage
 from translate.pootle import translatepage
+from translate.pootle import pagelayout
 
-class PootleServer(server.AppServer):
+class LoginPage(server.LoginPage, pagelayout.PootlePage):
+  """wraps the normal login page in a PootlePage layout"""
+  def __init__(self, session, extraargs={}, confirmlogin=0, specialmessage=None, languagenames=None):
+    server.LoginPage.__init__(self, session, extraargs, confirmlogin, specialmessage, languagenames)
+    loginform = self.contents
+    contents = widgets.Division(widgets.Division(loginform, None, {"class":"intro"}), "content")
+    pagelayout.PootlePage.__init__(self, "Login to Pootle", contents, session)
+
+class PootleServer(server.LoginAppServer):
   """the Server that serves the Pootle Pages"""
+  def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage, cachetables=None):
+    super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass, cachetables)
+
   def getpage(self, pathwords, session, argdict):
     """return a page that will be sent to the user"""
     # TODO: strip off the initial path properly
