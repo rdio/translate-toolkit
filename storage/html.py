@@ -25,7 +25,7 @@ from HTMLParser import HTMLParser
 
 
 class POHTMLParser(HTMLParser):
-  markingtags = ["p", "title", "h1", "h2", "h3", "td", "div", "li"]
+  markingtags = ["p", "title", "h1", "h2", "h3", "td", "div", "li", "span"]
   markingattrs = ["lang"]
   includeattrs = ["alt"]
   def __init__(self, includeuntaggeddata):
