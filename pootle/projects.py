@@ -48,11 +48,21 @@ class TranslationProject:
       index = self.pofilenames.index(pofilename)
       return self.pofilenames[index+1]
 
+  def findnextpofilename(self, pofilename, matchnames):
+    """find the next pofilename that has items matching one of the given classification names"""
+    matches = False
+    while not matches:
+      pofilename = self.getnextpofilename(pofilename)
+      postats = self.getpostats(pofilename)
+      for name in matchnames:
+        if postats[name]:
+          return pofilename
+
   def findnextitem(self, pofilename, item, matchnames):
     """finds the next item matching one of the given classification names"""
     matches = False
     while not matches:
-      pofilename, item = self.getnextitem(pofilename, item)
+      pofilename, item = self.getnextitem(pofilename, item, matchnames)
       pofile = self.getpofile(pofilename)
       thepo = pofile.transelements[item]
       matches = False
@@ -62,8 +72,8 @@ class TranslationProject:
           continue
     return pofilename, item
 
-  def getnextitem(self, pofilename, lastitem):
-    """skips to the next item"""
+  def getnextitem(self, pofilename, lastitem, matchnames):
+    """skips to the next item. uses matchnames to filter next pofile if required"""
     if lastitem is None:
       item = 0
     else:
@@ -73,7 +83,10 @@ class TranslationProject:
     else:
       pofile = self.getpofile(pofilename)
     while pofile is None or item >= len(pofile.transelements):
-      pofilename = self.getnextpofilename(pofilename)
+      if matchnames:
+        pofilename = self.findnextpofilename(pofilename, matchnames)
+      else:
+        pofilename = self.getnextpofilename(pofilename)
       pofile = self.getpofile(pofilename)
       item = 0
     return pofilename, item
@@ -132,7 +145,7 @@ class TranslationProject:
     try:
       postatsstring = "\n".join(["%s:%d" % (name, count) for name, count in postats.iteritems()])
       open(statsfilename, "w").write("%d\n%s" % (pomtime, postatsstring))
-    except IOError:
+    except IOError, e:
       pass
     return self.stats[pofilename]
 
