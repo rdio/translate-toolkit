@@ -314,7 +314,7 @@ class GnomeChecker(StandardChecker):
   def __init__(self, **kwargs):
     StandardChecker.__init__(self,
       accelmarkers = ("_"),
-      varmatches = (("%", 1),),
+      varmatches = (("%", 1), ("$(", ")")),
       **kwargs
       )
 
