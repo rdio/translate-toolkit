@@ -25,6 +25,15 @@ FIXME: add simple test which reads in a file and writes it out again"""
 from __future__ import generators
 from translate.misc import quote
 
+def quotefordtd(source):
+  if '"' in source:
+    if "'" in source:
+      return "'" + source.replace("'", '&apos;') + "'"
+    else:
+      return quote.singlequotestr(source)
+  else:
+    return quote.quotestr(source)
+
 class dtdelement:
   """this class represents an entity definition from a dtd file (and possibly associated comments)"""
   def __init__(self):
@@ -141,6 +150,7 @@ class dtdelement:
           e = self.entityhelp[0]
           if (self.entityhelp[1] == "'"):
             (defpart,self.instring) = quote.extract(line[e:],"'","'",None,startinstring=self.instring)
+            defpart = defpart.replace("&apos;", "'")
           elif (self.entityhelp[1] == '"'):
             (defpart,self.instring) = quote.extract(line[e:],'"','"',None,startinstring=self.instring)
           else:
@@ -171,6 +181,8 @@ class dtdelement:
     # for n in self.locnotes: yield n
     if len(self.entity) > 0: 
       entityline = '<!ENTITY '+self.entity+' '+self.definition+'>'
+      if isinstance(entityline, unicode):
+        entityline = entityline.encode('UTF-8')
       yield entityline+'\n'
 
 class dtdfile:

@@ -274,9 +274,9 @@ def singlequotestr(source):
 def eitherquotestr(source):
   "Returns a singlequote- or doublequote-delimited string, depending on what quotes it contains"
   if '"' in source:
-    return "'" + source + "'"
+    return singlequotestr(source)
   else:
-    return '"' + source + '"'
+    return quotestr(source)
 
 def findend(string,substring):
   s = string.find(substring)

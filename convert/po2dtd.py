@@ -147,7 +147,7 @@ def applytranslation(entity, thedtd, thepo, mixedentities):
   unquotedstr = removeinvalidamps(entity, unquotedstr)
   # finally set the new definition in the dtd, but not if its empty
   if len(unquotedstr) > 0:
-    thedtd.definition = quote.eitherquotestr(unquotedstr)
+    thedtd.definition = dtd.quotefordtd(unquotedstr)
 
 class redtd:
   """this is a convertor class that creates a new dtd based on a template using translations in a po"""
@@ -233,7 +233,7 @@ class po2dtd:
       unquoted = unquotedid
     else:
       unquoted = unquotedstr
-    thedtd.definition = quote.eitherquotestr(unquoted)
+    thedtd.definition = dtd.quotefordtd(unquoted)
 
   def convertelement(self,thepo):
     thedtd = dtd.dtdelement()
