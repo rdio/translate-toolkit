@@ -182,18 +182,12 @@ def recurse(inputdir, outputdir, templatedir, languagecode=None):
         if inputext != os.extsep + inputformat:
           # only handle names that match the correct input file extension
           continue
-        # now we have split off .po, we split off the original extension
-        outputbase, outputext = os.path.splitext(base)
-        outputname = os.path.join(outputdir, top, base)
-        outputext = outputext.replace(os.extsep, "", 1)
-        if outputext != outputformat:
-          print >>sys.stderr, "not processing %s: unknown extension (%s)" % (name, outputext)
-          continue
+        outputname = os.path.join(outputdir, top, base) + os.extsep + outputformat
         inputfile = open(inputname, 'r')
         outputfile = open(outputname, 'w')
         templatefile = None
         if templatedir is not None:
-          templatename = os.path.join(templatedir, top, base)
+          templatename = os.path.join(templatedir, top, base) + os.extsep + templateformat
           if os.path.isfile(templatename):
             templatefile = open(templatename, 'r')
           else:
