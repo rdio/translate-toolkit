@@ -1,0 +1,131 @@
+#!/usr/bin/env python
+# 
+# Copyright 2002, 2003 Zuza Software Foundation
+# 
+# This file is part of translate.
+#
+# translate is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# translate is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with translate; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+"""grep for gettext .po localization files"""
+
+from translate.storage import po
+import sre
+
+class pogrepfilter:
+  def __init__(self, searchstring, searchparts, ignorecase, useregexp, invertmatch):
+    """builds a pocheckfilter using the given checker"""
+    self.searchstring = searchstring
+    if searchparts:
+      self.searchmsgid = "msgid" in searchparts
+      self.searchmsgstr = "msgstr" in searchparts
+    else:
+      self.searchmsgid = True
+      self.searchmsgstr = True
+    self.ignorecase = ignorecase
+    if self.ignorecase:
+      self.searchstring = self.searchstring.lower()
+    self.useregexp = useregexp
+    if self.useregexp:
+      self.searchpattern = sre.compile(self.searchstring)
+    self.invertmatch = invertmatch
+
+  def matches(self, teststr):
+    if self.ignorecase:
+      teststr = teststr.lower()
+    if self.useregexp:
+      found = self.searchpattern.search(teststr)
+    else:
+      found = teststr.find(self.searchstring) != -1
+    if self.invertmatch:
+      found = not found
+    return found
+
+  def filterelement(self, thepo):
+    """runs filters on an element"""
+    if thepo.isheader(): return []
+    if thepo.hasplural():
+      if self.searchmsgid:
+        unquotedid = po.getunquotedstr(thepo.msgid)
+        unquotedid_plural = po.getunquotedstr(thepo.msgid_plural)
+        if self.matches(unquotedid) or self.matches(unquotedid_plural):
+          return True
+      if self.searchmsgstr:
+        for msgstr in thepo.msgstr.values():
+          unquotedstr = po.getunquotedstr(thepo.msgstr)
+          if self.matches(unquotedstr): return True
+    else:
+      if self.searchmsgid:
+        unquotedid = po.getunquotedstr(thepo.msgid)
+        if self.matches(unquotedid): return True
+      if self.searchmsgstr:
+        unquotedstr = po.getunquotedstr(thepo.msgstr)
+        if self.matches(unquotedstr): return True
+    return False
+
+  def filterfile(self, thepofile):
+    """runs filters on a file"""
+    thenewpofile = po.pofile()
+    for thepo in thepofile.poelements:
+      matches = self.filterelement(thepo)
+      if matches:
+        thenewpofile.poelements.append(thepo)
+    return thenewpofile
+
+# TODO: refactor to set the filter list once, and use every time, rather than recreating for each file
+def runpogrep(inputfile, outputfile, **kwargs):
+  """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
+  checkfilter = pogrepfilter(**kwargs)
+  fromfile = po.pofile(inputfile)
+  tofile = checkfilter.filterfile(fromfile)
+  if tofile.isempty():
+    return 0
+  tolines = tofile.tolines()
+  outputfile.writelines(tolines)
+  return 1
+
+if __name__ == '__main__':
+  from translate.filters import filtercmd
+  inputformats = {"po":runpogrep, "pot":runpogrep}
+  parser = filtercmd.FilterOptionParser(filtercmd.optionalrecursion, inputformats)
+  parser.add_option("", "--search", dest="searchparts",
+    action="append", type="choice", choices=["msgid", "msgstr"],
+    help="searches the given parts")
+  parser.add_option("-I", "--ignore-case", dest="ignorecase",
+    action="store_true", default=False, help="ignore case distinctions")
+  parser.add_option("-e", "--regexp", dest="useregexp",
+    action="store_true", default=False, help="use regular expression matching")
+  parser.add_option("-v", "--invert-match", dest="invertmatch",
+    action="store_true", default=False, help="select non-matching lines")
+  requiredoptions = dict([(key, True) for key in 
+    ('searchparts','searchstring','ignorecase', "useregexp", "invertmatch")])
+  options, args = parser.parse_args()
+  # TODO: move this code into filtercmd...
+  if options.input is None:
+    if len(args) == 0:
+      parser.error("incorrect number of arguments. need search string")
+    elif len(args) == 1:
+      options.searchstring = args[0]
+      parser.runfilter(options, runpogrep, requiredoptions)
+    else:
+      options.searchstring = args[0]
+      for inputarg in args[1:]:
+        options.input = inputarg
+        parser.runfilter(options, runpogrep, requiredoptions)
+  else:
+    if len(args) != 1:
+      parser.error("incorrect number of arguments. need search string")
+    options.searchstring = args[0]
+    parser.runfilter(options, runpogrep, requiredoptions)
+
