@@ -77,8 +77,10 @@ def filtervariables(startmarker, endmarker, varfilter):
   return filtermarkedvariables
 
 wordswithpunctuation = ["can't", "couldn't", "doesn't", "don't", "wasn't", "won't", "you're",
-                        "user's", "system's", "writer's",  # english
-                        "'n", "makro's", "scenario's"   # afrikaans
+                        "user's", "system's", "writer's",  "isn't", "it's", "I'll", "you've", 
+			"window's", "folder's", "viewer's", "haven't", "today's", "I've", 
+                        "Didn't",  "didn't", "that's", # english
+                        "'n", "makro's", "scenario's", "jy't", "URL'e"   # afrikaans
                        ]
 # map all the words to their non-punctified equivalent
 wordswithpunctuation = dict([(word, filter(str.isalnum, word)) for word in wordswithpunctuation])
