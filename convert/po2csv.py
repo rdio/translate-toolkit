@@ -23,6 +23,7 @@
 import sys
 from translate.storage import po
 from translate.storage import csvl10n
+from translate import __version__
 
 class po2csv:
   def convertstrings(self,thepo,thecsv):
@@ -52,17 +53,37 @@ class po2csv:
         thecsvfile.csvelements.append(thecsv)
     return thecsvfile
 
-def convert(fromfileclass,convertorclass):
-  """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
-  filelines = sys.stdin.readlines()
-  fromfile = fromfileclass()
-  fromfile.fromlines(filelines)
-  convertor = convertorclass()
-  tofile = convertor.convertfile(fromfile)
-  tolines = tofile.tolines()
-  sys.stdout.writelines(tolines)
+def main(inputfile, outputfile):
+  """reads in inputfile using po, converts using po2csv, writes to outputfile"""
+  inputpo = po.pofile(inputfile)
+  convertor = po2csv()
+  outputcsv = convertor.convertfile(inputpo)
+  outputcsvlines = outputcsv.tolines()
+  outputfile.writelines(outputcsvlines)
 
 if __name__ == '__main__':
-  convert(po.pofile,po2csv)
-  
+  # handle command line options
+  try:
+    import optparse
+  except ImportError:
+    from translate.misc import optparse
+  inputformat = "po"
+  outputformat = "csv"
+  parser = optparse.OptionParser(usage="%prog [-i|--input-file inputfile] [-o|--output-file outputfile]",
+                                 version="%prog "+__version__.ver)
+  parser.add_option("-i", "--input-file", dest="inputfile", default=None,
+                    help="read from inputfile in "+inputformat+" format", metavar="inputfile")
+  parser.add_option("-o", "--output-file", dest="outputfile", default=None,
+                    help="write to outputfile in "+outputformat+" format", metavar="outputfile")
+  (options, args) = parser.parse_args()
+  # open the appropriate files
+  if options.inputfile is None:
+    inputfile = sys.stdin
+  else:
+    inputfile = open(options.inputfile, 'r')
+  if options.outputfile is None:
+    outputfile = sys.stdout
+  else:
+    outputfile = open(options.outputfile, 'w')
+  main(inputfile, outputfile)
 
