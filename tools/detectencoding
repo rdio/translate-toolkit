@@ -160,6 +160,7 @@ class detector:
     return countmap
 
   def testcharstats(self):
+    """produces char distribution for each encoding, and dict, and shows statistical match"""
     dictcountmap = {}
     if self.dictstring:
       self.updatecountmap(self.dictstring, self.excludestring, dictcountmap)
@@ -186,19 +187,8 @@ class detector:
       validencoding += " "*(keylen-len(validencoding))
       print validencoding, self.encodeattempt(sortedstring)
 
-  def fuzzy(self, word, includestring):
-    """return a version of word including all the characters in includestring, with sequences of other characters replaced by a space"""
-    # the dots cleverly help us catch start and end spaces
-    fuzzyword = '.'
-    for char in word:
-      if char in includestring:
-        fuzzyword += char
-      else:
-        fuzzyword += ' '
-    fuzzyword += '.'
-    return ' '.join(fuzzyword.split())[1:-1]
-
   def testwordstats(self):
+    """produces word count for each encoding, shows matches to dict"""
     ignoremap = {}
     for excludedchar in self.excludestring:
       ignoremap[ord(excludedchar)] = u' '
@@ -206,18 +196,8 @@ class detector:
     if self.dictstring:
       for dictword in self.dictstring.split():
         if not dictword.translate(ignoremap).isspace():
-          if self.options.fuzzymatch:
-            dictmap[self.fuzzy(dictword, self.excludestring)] = dictword
-          else:
-            dictmap[dictword.lower()] = 0
+          dictmap[dictword.lower()] = 0
     print "%d words in dictionary" % len(dictmap)
-    if self.options.verbose and False:
-      if self.options.fuzzymatch:
-        for fuzzy, word in dictmap.iteritems():
-          print fuzzy, word
-      else:
-        for word in dictmap:
-          print repr(word)
     encodingcounts = {}
     uniquewordsfound = {}
     for encoding in self.listencodings():
@@ -230,26 +210,69 @@ class detector:
             raise
           except Exception, e:
             raise UnicodeDecodeError(encoding, translation, 0, 0, str(e))
-          decodedwords = translation.lower().split()
+          decodedwords = decoded.lower().split()
           for word in decodedwords:
-            if self.options.fuzzymatch:
-              fuzzyword = self.fuzzy(word, self.excludestring)
-              if fuzzyword in dictmap:
-                wordsfound += 1
-                if self.options.verbose:
-                  if (not self.options.unique) or (word not in uniquewordsfound):
-                    print repr(word), repr(fuzzyword), repr(dictmap[fuzzyword])
-                uniquewordsfound[word] = fuzzyword
-            else:
-              if word in dictmap:
-                uniquewordsfound[word] = 1
-                wordsfound += 1
+            if word in dictmap:
+              if self.options.verbose:
+                if (not self.options.unique) or (word not in uniquewordsfound):
+                  print self.encodeattempt(word)
+              uniquewordsfound[word] = 1
+              wordsfound += 1
         if options.unique:
           encodingcounts[encoding] = len(uniquewordsfound)
         else:
           encodingcounts[encoding] = wordsfound
       except UnicodeDecodeError:
         continue
+    counts = [(count, encoding) for encoding, count in encodingcounts.iteritems()]
+    counts.sort()
+    validkeys = [encoding for count, encoding in counts]
+    for validencoding in validkeys:
+      count = encodingcounts[validencoding]
+      if count:
+        print "%s: %d" % (validencoding, count)
+
+  def fuzzy(self, word, includestring):
+    """return a version of word including all the characters in includestring, with sequences of other characters replaced by a space"""
+    # the dots cleverly help us catch start and end spaces
+    fuzzyword = '.'
+    for char in word:
+      if char in includestring:
+        fuzzyword += char
+      else:
+        fuzzyword += ' '
+    fuzzyword += '.'
+    return ' '.join(fuzzyword.split())[1:-1]
+
+  def fuzzywordmatch(self, encoding):
+    """does fuzzy word match for given encoding, and shows correspondence to dict"""
+    ignoremap = {}
+    for excludedchar in self.excludestring:
+      ignoremap[ord(excludedchar)] = u' '
+    dictmap = {}
+    if self.dictstring:
+      for dictword in self.dictstring.split():
+        if not dictword.translate(ignoremap).isspace():
+          dictmap[self.fuzzy(dictword, self.excludestring)] = dictword
+    print "%d words in dictionary" % len(dictmap)
+    encodingcounts = {}
+    uniquewordsfound = {}
+    wordsfound = 0
+    for translation in self.alltranslations:
+      decoded = translation.decode(encoding)
+      decodedwords = translation.lower().split()
+      for word in decodedwords:
+        fuzzyword = self.fuzzy(word, self.excludestring)
+        if fuzzyword in dictmap:
+          wordsfound += 1
+          if self.options.verbose:
+            if (not self.options.unique) or (word not in uniquewordsfound):
+              print repr(word), repr(fuzzyword), repr(dictmap[fuzzyword])
+          uniquewordsfound[word] = fuzzyword
+    if options.unique:
+      encodingcounts[encoding] = len(uniquewordsfound)
+    else:
+      encodingcounts[encoding] = wordsfound
     counts = [(count, encoding) for encoding, count in encodingcounts.iteritems()]
     counts.sort()
     validkeys = [encoding for count, encoding in counts]
@@ -283,8 +306,8 @@ if __name__ == '__main__':
     action="store_true", default=False,
     help="match chars to the dictionary")
   optparser.add_option("", "--fuzzymatch", dest="fuzzymatch",
-    action="store_true", default=False,
-    help="match words to the dictionary using a fuzzy algorithm...")
+    action="store", default=None,
+    help="match words to the dictionary using a fuzzy algorithm and the given encoding...")
   optparser.add_option("", "--limitencodings", dest="limitencodings",
     action="store", default=None,
     help="only use the encodings specified")
@@ -296,8 +319,10 @@ if __name__ == '__main__':
     help="verbose (print out lots of strings)")
   (options, args) = optparser.parse_args()
   d = detector(args, options)
-  if options.matchwords:
-    d.testwordstats()
   if options.matchchars:
     d.testcharstats()
+  if options.matchwords:
+    d.testwordstats()
+  if options.fuzzymatch:
+    d.fuzzywordmatch(options.fuzzymatch)
 
