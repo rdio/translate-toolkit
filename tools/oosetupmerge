@@ -274,7 +274,7 @@ class SetupIndex(SetupParser):
           if index != self:
             self.addforeignconfigitem(index, configitem, suffix)
 
-  def addmanualfile(self, fileentry, direntry, filename, packedname, aftersection):
+  def addmanualfile(self, fileentry, direntry, filename, packedname, baseentry):
     """Inserts an external file into the build system"""
     fileinfo = os.stat_result(os.stat(filename))
     filedate = datetime.datetime.fromtimestamp(fileinfo.st_mtime)
@@ -297,7 +297,7 @@ class SetupIndex(SetupParser):
     dummysetup.parse(filesectionstr)
     fileentrysection = dummysetup.definitions[fileentry]
     tokenrange = dummysetup.getsectiontokenrange(fileentry)
-    self.insertforeignsection(aftersection, fileentry, fileentrysection, dummysetup, tokenrange)
+    self.insertforeignsection(baseentry, fileentry, fileentrysection, dummysetup, tokenrange)
 
   def addforeignconfigitem(self, index, configitem, suffix):
     """adds the foreign config item and updates the modules list..."""
@@ -314,32 +314,36 @@ class SetupIndex(SetupParser):
     self.insertforeignsection(fileentry, fileentry + suffix, fileentrysection, index, tokenrange)
     if fileentry in self.filemodules:
       for modulename in self.filemodules[fileentry]:
-        tokennum = self.getmoduleentrytokennum(modulename, fileentry)
-        indextokennum = index.getmoduleentrytokennum(modulename, fileentry)
-        if tokennum is None or indextokennum is None:
-          print >>sys.stderr, "could not find Files entry in index %s: module %s, file %s, token %r, indextoken %r" \
-            % (index.filename, modulename, fileentry, tokennum, indextokennum)
-          continue
-        commaafter = (self.tokens[tokennum + 1] == ',')
-        indexcommaafter = (index.tokens[indextokennum + 1] == ',')
-        commabefore = (self.tokens[tokennum - 1] == ',')
-        indexcommabefore = (index.tokens[indextokennum - 1] == ',')
-        if not (commaafter or commabefore) or not (indexcommaafter or indexcommabefore):
-          print >>sys.stderr, "could not insert into modules: not enough commas for module %s, fileentry %s" \
-            % (modulename, fileentry)
-        # cleverly combine the commas...
-        if commaafter and indexcommaafter:
-          insertion = (index, (indextokennum, indextokennum + 2))
-          tokennum += 1
-        elif indexcommabefore:
-          insertion = (index, (indextokennum - 1, indextokennum + 1))
-        elif commabefore and indexcommaafter:
-          insertion = (index, (indextokennum, indextokennum + 2))
-          tokennum -= 1
-        if tokennum not in self.insertions:
-          self.insertions[tokennum] = [insertion]
-        else:
-          self.insertions[tokennum].append(insertion)
+        self.addfiletomodule(index, fileentry, modulename)
+
+  def addfiletomodule(self, index, fileentry, modulename):
+    """adds the given fileentry to module modulename using the definition from the index"""
+    tokennum = self.getmoduleentrytokennum(modulename, fileentry)
+    indextokennum = index.getmoduleentrytokennum(modulename, fileentry)
+    if tokennum is None or indextokennum is None:
+      print >>sys.stderr, "could not find Files entry in index %s: module %s, file %s, token %r, indextoken %r" \
+        % (index.filename, modulename, fileentry, tokennum, indextokennum)
+      continue
+    commaafter = (self.tokens[tokennum + 1] == ',')
+    indexcommaafter = (index.tokens[indextokennum + 1] == ',')
+    commabefore = (self.tokens[tokennum - 1] == ',')
+    indexcommabefore = (index.tokens[indextokennum - 1] == ',')
+    if not (commaafter or commabefore) or not (indexcommaafter or indexcommabefore):
+      print >>sys.stderr, "could not insert into modules: not enough commas for module %s, fileentry %s" \
+        % (modulename, fileentry)
+    # cleverly combine the commas...
+    if commaafter and indexcommaafter:
+      insertion = (index, (indextokennum, indextokennum + 2))
+      tokennum += 1
+    elif indexcommabefore:
+      insertion = (index, (indextokennum - 1, indextokennum + 1))
+    elif commabefore and indexcommaafter:
+      insertion = (index, (indextokennum, indextokennum + 2))
+      tokennum -= 1
+    if tokennum not in self.insertions:
+      self.insertions[tokennum] = [insertion]
+    else:
+      self.insertions[tokennum].append(insertion)
 
   def renamedirectory(self, directory, newname, suffix):
     self.rename(directory, newname)
