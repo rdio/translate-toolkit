@@ -20,7 +20,6 @@
 
 """this is a set of validation checks that can be done on original strings and translations"""
 
-from translate.misc import sparse
 from translate.filters import helpers
 from translate.filters import decoration
 from translate.filters import prefilters
