@@ -342,8 +342,9 @@ class SetupIndex(SetupParser):
     if directory in self.directoryfiles:
       for fileentry in self.directoryfiles[directory]:
         self.rename(fileentry, fileentry + suffix)
-        packedname = sparse.stringeval(self.getfieldvalue(fileentry, "PackedName"))
-        self.setfieldvalue(fileentry, "PackedName", '"%s"' % (packedname+suffix))
+        packedname = sparse.stringeval(self.getfieldvalue(fileentry, "PackedName", ""))
+        if packedname:
+          self.setfieldvalue(fileentry, "PackedName", '"%s"' % (packedname+suffix))
 
   def makepackedname(self, prefix, offset=1):
     """finds a new packedname starting with prefix in the sequence"""
