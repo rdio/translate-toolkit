@@ -995,13 +995,20 @@ class POTree:
         basedirname = basedirname.replace(os.sep, "", 1)
       ponames = [fname for fname in fnames if fname.endswith(os.extsep+"po")]
       pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
+    def gnumatch(languagecode, fname):
+      """matches filename to languagecode (handling region codes too)"""
+      if fname == languagecode + os.extsep + "po":
+        return True
+      if not (fname.startswith(languagecode) and fname.endswith(os.extsep + "po")):
+        return False
+      cutname = fname.replace(languagecode, "", 1)[:-len(os.extsep+"po")]
+      return cutname.startswith("_") and cutname[1:].isalpha() and 3 <= len(cutname) <= 4
     def addgnufiles(podir, dirname, fnames):
       """adds the files to the set of files for this project"""
       basedirname = dirname.replace(podir, "", 1)
       while basedirname.startswith(os.sep):
         basedirname = basedirname.replace(os.sep, "", 1)
-      languageponame = languagecode + os.extsep + "po"
-      ponames = [fname for fname in fnames if fname == languageponame]
+      ponames = [fname for fname in fnames if gnumatch(languagecode, fname)]
       pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
     pofilenames = []
     podir = self.getpodir(languagecode, projectcode)
