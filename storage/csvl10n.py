@@ -113,6 +113,7 @@ class csvfile:
   def __init__(self, inputfile=None):
     self.csvelements = []
     self.fieldnames = ['source', 'msgid', 'msgstr']
+    self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
       csvlines = inputfile.readlines()
       inputfile.close()
