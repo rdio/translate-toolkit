@@ -52,8 +52,10 @@ class TranslationSession:
   def receivetranslation(self, pofilename, item, trans, issuggestion):
     """submits a new/changed translation from the user"""
     if self.session.isopen:
+      userprefs = getattr(self.session.loginchecker.users, self.session.username)
       username = self.session.username
     else:
+      userprefs = None
       username = None
     if issuggestion:
       if "suggest" not in self.rights:
@@ -62,7 +64,7 @@ class TranslationSession:
     else:
       if "translate" not in self.rights:
         raise RightsError(self.session.localize("you do not have rights to change translations here"))
-      self.project.updatetranslation(pofilename, item, trans, username)
+      self.project.updatetranslation(pofilename, item, trans, username, userprefs)
 
   def skiptranslation(self, pofilename, item):
     """skips a declined translation from the user"""
@@ -317,13 +319,18 @@ class pootlefile(po.pofile):
     assignsfile.writelines(assignstrings)
     assignsfile.close()
 
-  def setmsgstr(self, item, newmsgstr):
+  def setmsgstr(self, item, newmsgstr, userprefs):
     """updates a translation with a new msgstr value"""
     self.pofreshen()
     thepo = self.transelements[item]
     thepo.msgstr = newmsgstr
     thepo.markfuzzy(False)
     self.updateheader(PO_Revision_Date = time.strftime("%F %H:%M%z"))
+    if userprefs:
+      fullname = userprefs.name
+      email = userprefs.email
+      if fullname and email:
+        self.updateheader(Last_Translator = "%s <%s>" % (userprefs.name, userprefs.email))
     self.savepofile()
     self.reclassifyelement(item)
 
@@ -1004,12 +1011,12 @@ class TranslationProject:
     elements = pofile.transelements[max(itemstart,0):itemstop]
     return [(self.unquotefrompo(poel.msgid), self.unquotefrompo(poel.msgstr)) for poel in elements]
 
-  def updatetranslation(self, pofilename, item, trans, username):
+  def updatetranslation(self, pofilename, item, trans, username, userprefs=None):
     """updates a translation with a new value..."""
     newmsgstr = self.quoteforpo(trans)
     pofile = self.pofiles[pofilename]
     pofile.track(item, "edited by %s" % username)
-    pofile.setmsgstr(item, newmsgstr)
+    pofile.setmsgstr(item, newmsgstr, userprefs)
 
   def suggesttranslation(self, pofilename, item, trans, username):
     """stores a new suggestion for a translation..."""
