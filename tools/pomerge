@@ -99,6 +99,6 @@ if __name__ == '__main__':
   potoutput = ("pot", mergepo)
   formats = {("po", "po"): pooutput, ("po", "pot"): pooutput, ("pot", "po"): pooutput, ("pot", "pot"): potoutput,
              "po": pooutput, "pot": pooutput}
-  parser = convert.ConvertOptionParser(formats, usetemplates=True)
+  parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.runconversion()
 
