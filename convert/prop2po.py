@@ -42,6 +42,7 @@ class prop2po:
   def outputheader(self, outputfile):
     # TODO: handle this properly in the pofile class
     outputfile.write('''# extracted from unknown file
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\\n"
@@ -50,7 +51,7 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n"
 "Language-Team: LANGUAGE <LL@li.org>\\n"
 "MIME-Version: 1.0\\n"
-"Content-Type: text/plain; charset=ISO-8859-1\\n"
+"Content-Type: text/plain; charset=CHARSET\\n"
 "Content-Transfer-Encoding: ENCODING\\n"
 '''+eol)
 
@@ -68,7 +69,7 @@ msgstr ""
       if self.inmultilinemsgid:
         # strip the backslash
         msgid = msgid[:-1]
-      outputlines.append(quote.quotestr(msgid)+eol)
+      outputlines.append(quote.quotestr(msgid, escapeescapes=1)+eol)
       if not self.inmultilinemsgid:
         # we're finished, print the msgstr
         outputlines.append('msgstr ""'+eol+eol)
@@ -91,9 +92,9 @@ msgstr ""
           if msgid[-1:] == '\\':
             self.inmultilinemsgid = 1
             outputlines.append('msgid ""'+eol)
-            outputlines.append(quote.quotestr(msgid[:-1])+eol) # don't print the backslash
+            outputlines.append(quote.quotestr(msgid[:-1], escapeescapes=1)+eol) # don't print the backslash
           else:
-            outputlines.append("msgid "+quote.quotestr(msgid)+eol)
+            outputlines.append("msgid "+quote.quotestr(msgid, escapeescapes=1)+eol)
             outputlines.append('msgstr ""'+eol+eol)
     return outputlines
 

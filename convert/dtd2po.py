@@ -178,6 +178,7 @@ class dtd2po:
     # create a header for the file
     headerpo = po.poelement()
     headerpo.othercomments.append("# extracted from %s\n" % filename)
+    headerpo.typecomments.append("#, fuzzy\n")
     headerpo.msgid = ['""']
     headeritems = [""]
 # SOME DESCRIPTIVE TITLE.
@@ -191,7 +192,7 @@ class dtd2po:
     headeritems.append("Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n")
     headeritems.append("Language-Team: LANGUAGE <LL@li.org>\\n")
     headeritems.append("MIME-Version: 1.0\\n")
-    headeritems.append("Content-Type: text/plain; charset=ISO-8859-1\\n")
+    headeritems.append("Content-Type: text/plain; charset=CHARSET\\n")
     headeritems.append("Content-Transfer-Encoding: ENCODING\\n")
     headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
     thepofile.poelements.append(headerpo)
