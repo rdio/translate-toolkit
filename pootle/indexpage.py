@@ -23,7 +23,7 @@ class PootleIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % project.fullname
     bodydescription = widgets.Division('<a href="%s/">%s projects</a>' % (projectcode, project.fullname), None, {"class":"item-description"})
     body = widgets.Division([bodytitle, bodydescription], None, {"class":"blogbody"})
-    subprojects = [projects.getproject(project, subproject) for (subprojectcode, subproject) in project.subprojects.iteritems()]
+    subprojects = [projects.getproject(subproject) for (subprojectcode, subproject) in project.subprojects.iteritems()]
     subprojectcount = len(subprojects)
     translated, total = 0, 0
     for subproject in subprojects:
@@ -52,7 +52,7 @@ class ProjectIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % subproject.fullname
     bodydescription = widgets.Division('<a href="%s/">%s subproject</a>' % (subprojectcode, subproject.fullname), None, {"class":"item-description"})
     body = widgets.Division([bodytitle, bodydescription], None, {"class":"blogbody"})
-    translationproject = projects.getproject(self.project, subproject)
+    translationproject = projects.getproject(subproject)
     numfiles = len(translationproject.pofilenames)
     translated, total = translationproject.calculatestats()
     percentfinished = (translated*100/total)

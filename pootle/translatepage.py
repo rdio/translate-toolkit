@@ -6,21 +6,26 @@ from translate.pootle import pagelayout
 from translate.pootle import projects
 
 class TranslatePage(pagelayout.PootlePage):
-  """the main page"""
+  """the page which lets people edit translations"""
   def __init__(self, project, subproject, session, argdict):
     self.project = project
     self.subproject = subproject
-    self.translationproject = projects.getproject(self.project, self.subproject)
+    self.translationproject = projects.getproject(self.subproject)
+    self.translationsession = self.translationproject.gettranslationsession(session)
     for key, value in argdict.iteritems():
       if key.startswith("trans"):
         try:
           item = int(key.replace("trans",""))
         except:
           continue
-        self.translationproject.receivetranslation(item, value)
+        # submit the actual translation back to the project...
+        pofilename = argdict["pofilename"]
+        self.translationsession.receivetranslation(pofilename, item, value)
     self.instance = session.instance
-    title = "Pootle: translating %s into %s" % (self.subproject.fullname, self.project.fullname)
-    translateform = widgets.Form(self.gettranslations(), {"name": "translate", "action":""})
+    translations = self.gettranslations()
+    contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
+    translateform = widgets.Form([translations, contextinfo], {"name": "translate", "action":""})
+    title = "Pootle: translating %s into %s: %s" % (self.subproject.fullname, self.project.fullname, self.pofilename)
     divstyle = {"font-family": "verdana, arial, sans-serif", "font-size": "small", "line-height": "100%"}
     translatediv = widgets.Division(translateform, None, {"style": divstyle})
     contents = widgets.Division([translatediv], "content")
@@ -37,15 +42,15 @@ class TranslatePage(pagelayout.PootlePage):
     origtitle = table.TableCell("<b>original</b>")
     transtitle = table.TableCell("<b>translation</b>")
     self.addtransrow(-1, origtitle, transtitle)
-    translationsbefore, currenttranslation, translationsafter = self.translationproject.gettranslations()
+    self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem()
+    translationsbefore = self.translationproject.getitemsbefore(self.pofilename, item, 3)
+    translationsafter = self.translationproject.getitemsafter(self.pofilename, item, 3)
     self.textcolors = ["#000000", "#000060"]
-    rowoffset = self.translationproject.item
     for row, (orig, trans) in enumerate(translationsbefore):
-      self.addtranslationrow(rowoffset - len(translationsbefore) + row, orig, trans)
-    orig, trans = currenttranslation
-    self.addtranslationrow(rowoffset, orig, trans, True)
+      self.addtranslationrow(item - len(translationsbefore) + row, orig, trans)
+    self.addtranslationrow(item, theorig, thetrans, True)
     for row, (orig, trans) in enumerate(translationsafter):
-      self.addtranslationrow(rowoffset + 1 + row, orig, trans)
+      self.addtranslationrow(item + 1 + row, orig, trans)
     self.transtable.shrinkrange()
     return self.transtable
 
