@@ -25,6 +25,8 @@ import os
 from translate.storage import po
 from translate.storage import csvl10n
 from translate import __version__
+# FIXME: convert to convert
+import optparse
 
 class po2csv:
   def convertstrings(self,thepo,thecsv):
@@ -43,7 +45,12 @@ class po2csv:
 
   def convertelement(self,thepo):
      thecsv = csvl10n.csvelement()
-     self.convertstrings(thepo,thecsv)
+     if thepo.isheader():
+       thecsv.source = "source"
+       thecsv.msgid = "original"
+       thecsv.msgstr = "translation"
+     else:
+       self.convertstrings(thepo,thecsv)
      return thecsv
 
   def convertfile(self,thepofile):
