@@ -15,6 +15,10 @@ bugs
   startcaps - can't cope with sentence such as in Afrikaans taht start with 'n
     [CAPS].  Perhaps some prefilter to remove the 'n if the language is AF?
     Would need to be able to detect the language.
+  accronym - multiple occurances of an acronym are not seen as an error. Ie one
+    in msgid and two in msgstr, probably similarly the other way round.
+  isreview, isfuzzy - are listed as having to pass the untranslated
+    precondition but still appear - they should not.
 
 other checks
   stop words - 
