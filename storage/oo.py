@@ -134,14 +134,24 @@ class oofile:
 
 class oomultifile:
   """this takes a huge GSI file and represents it as multiple smaller files..."""
-  def __init__(self, inputfile):
-    """initialises oomultifile from a seekable inputfile"""
-    if isinstance(inputfile, (str, unicode)):
-      inputfile = open(inputfile, 'r')
-    self.inputfile = inputfile
+  def __init__(self, filename, mode=None):
+    """initialises oomultifile from a seekable inputfile or writable outputfile"""
+    self.filename = filename
+    if mode is None:
+      if os.path.exists(filename):
+        mode = 'r'
+      else:
+        mode = 'w'
+    self.mode = mode
+    self.multifile = open(filename, mode)
     self.subfilelines = {}
+    if mode == "r":
+      self.createsubfileindex()
+
+  def createsubfileindex(self):
+    """reads in all the lines and works out the subfiles"""
     linenum = 0
-    for line in self.inputfile:
+    for line in self.multifile:
       subfile = self.getsubfile(line)
       if not subfile in self.subfilelines:
         self.subfilelines[subfile] = []
@@ -175,8 +185,8 @@ class oomultifile:
     lines = []
     requiredlines = dict.fromkeys(self.subfilelines[subfile])
     linenum = 0
-    self.inputfile.seek(0)
-    for line in self.inputfile:
+    self.multifile.seek(0)
+    for line in self.multifile:
       if linenum in requiredlines:
         lines.append(line)
       linenum += 1
@@ -188,6 +198,14 @@ class oomultifile:
     inputfile = wStringIO.StringIO("".join(lines))
     inputfile.filename = subfile
     return inputfile
+
+  def openoutputfile(self, subfile):
+    """returns a pseudo-file object for the given subfile"""
+    def onclose(contents):
+      self.multifile.write(contents)
+    outputfile = wStringIO.CatchStringOutput(onclose)
+    outputfile.filename = subfile
+    return outputfile
 
   def getoofile(self, subfile):
     """returns an oofile built up from the given subfile's lines"""
