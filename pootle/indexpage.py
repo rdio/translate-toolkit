@@ -350,7 +350,7 @@ class ProjectIndex(pagelayout.PootlePage):
     childitems = self.getchilditems(dirfilter)
     pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, mainitem, childitems], session, bannerheight=81)
     self.addsearchbox(searchtext="", action="translate.html")
-    if session.issiteadmin():
+    if session.issiteadmin() and self.showassigns:
       self.addassignbox()
     self.addnavlinks(dirfilter)
 
