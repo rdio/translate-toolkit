@@ -31,19 +31,21 @@ norecursion = 0
 optionalrecursion = 1
 defaultrecursion = 2
 
-# TODO: work out how to support .po/.pot differences
 # TODO: handle input/output without needing -i/-o
 
 class ConvertOptionParser(optparse.OptionParser):
   """a specialized Option Parser for convertor tools..."""
-  def __init__(self, recursion, inputformats, outputformats, usetemplates=False):
+  def __init__(self, recursion, inputformats, outputformats, usetemplates=False, usepots=False):
     """construct the specialized Option Parser"""
     optparse.OptionParser.__init__(self, version="%prog "+__version__.ver)
     self.usetemplates = usetemplates
+    self.usepots = usepots
     self.setrecursion(recursion)
     self.setinputformats(inputformats)
     self.setoutputformats(outputformats)
     self.setprogressoptions()
+    if self.usepots:
+      self.setpotsoptions()
     self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
 
   def getusagestring(self, option):
@@ -111,8 +113,24 @@ class ConvertOptionParser(optparse.OptionParser):
                       help="set progress type to one of %s" % (", ".join(self.progresstypes)))
     self.define_option(progressoption)
 
+  def setpotoption(self):
+    """sets the -P/--pot option depending on input/output formats etc"""
+    if self.usepots:
+      if "po" in self.inputformats:
+        potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
+                                   help="use PO template files (.pot) as input")
+      elif "po" in self.outputformats:
+        potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
+                                   help="use PO template files (.pot) in output")
+      else:
+        potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
+                                   help="use PO template files (.pot)")
+      self.define_option(potoption)
+
   def getformathelp(self, formats):
     """make a nice help string for describing formats..."""
+    if self.usepots and "po" in formats:
+      formats.append("pot")
     if len(formats) == 0:
       return ""
     elif len(formats) == 1:
@@ -189,7 +207,7 @@ class ConvertOptionParser(optparse.OptionParser):
         outputfile.close()
         os.unlink(fulloutputpath)
         self.reportprogress(inputpath, False)
-    self.prunesubdirs()
+    self.prunesubdirs(options)
     del self.progressbar
 
   def reportprogress(self, filename, success):
@@ -212,7 +230,7 @@ class ConvertOptionParser(optparse.OptionParser):
     if subdir in self.dirscreated:
       self.dirscreated[subdir] = 1
 
-  def prunesubdirs(self):
+  def prunesubdirs(self, options):
     """prunes any directories that were created unneccessarily"""
     # remove any directories we created unneccessarily
     # note that if there is a tree of empty directories, only leaves will be removed...
@@ -242,13 +260,11 @@ class ConvertOptionParser(optparse.OptionParser):
             if not os.path.isdir(fulltemplatepath):
               print >>sys.stderr, "warning: missing template directory %s" % fulltemplatepath
         elif os.path.isfile(fullinputpath):
-          inputbase, inputext = os.path.splitext(name)
-          inputext = inputext.replace(os.extsep, "", 1)
-          if not inputext in self.inputformats:
+          if not self.isvalidinputname(options, name):
             # only handle names that match recognized input file extensions
             continue
           # now we have split off .po, we split off the original extension
-          outputname = self.getoutputname(name)
+          outputname = self.getoutputname(options, name)
           outputbase, outputext = os.path.splitext(outputname)
           outputext = outputext.replace(os.extsep, "", 1)
           outputpath = join(top, outputname)
@@ -256,6 +272,7 @@ class ConvertOptionParser(optparse.OptionParser):
           if self.usetemplates and options.template:
             templatename = self.gettemplatename(name)
             templatepath = join(top, templatename)
+          inputbase, inputext = os.path.splitext(name)
           yield (inputext, inputpath, outputext, outputpath, templatepath)
       # make sure the directories are processed next time round...
       dirs.reverse()
@@ -270,12 +287,23 @@ class ConvertOptionParser(optparse.OptionParser):
       inputbase, ext = os.path.splitext(inputname)
       return inputbase
 
-  def getoutputname(self, inputname):
+  def getoutputname(self, options, inputname):
     """gets an output filename based on the input filename"""
     if len(self.outputformats) == 1:
-      return inputname + os.extsep + self.outputformats[0]
+      outputformat = self.outputformats[0]
+      if self.usepots and options.pot and outputformat == "po":
+        outputformat = "pot"
+      return inputname + os.extsep + self.outputformat
     else:
       # if there is more than one outputformat, assume it is encoded in the inputname...
       inputbase, ext = os.path.splitext(inputname)
       return inputbase
+
+  def isvalidinputname(self, options, inputname):
+    """checks if this is a valid input filename"""
+    inputbase, inputext = os.path.splitext(inputname)
+    inputext = inputext.replace(os.extsep, "", 1)
+    if self.usepots and options.pot and inputext == "pot":
+      inputext = "po"
+    return inputext in self.inputformats
 
