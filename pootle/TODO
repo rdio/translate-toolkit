@@ -7,7 +7,20 @@ current tasks:
   allow search to display only items related to search (no context)
   add ability to email bug report
 
+requirements for translatathon:
+  assigning stuff to people (with permissions)
+    - both translation and review
+  attribution (based on login)
+    ? where to put it
+    - last translator
+    - comment with everyone at top of po file
+    - comment in suggestion
+  translation review cycle
+    - comment to explain rejection
+  highlight spaces in original so you can see what is a space
+
 other:
+  support GNU-style path/to/languagecode.po rather than languagecode/path/to/filename.po
   manage new users / registration
     - need to make emailing more robust, add hash check to verify address
     - should move user details into separate prefs file
@@ -25,16 +38,4 @@ other:
     order to browse and fixup things like af KDE.
   integrate with KBabel/POEdit
   allow XLIFF version of files to be downloaded/uploaded
-
-requirements for translatathon:
-  assigning stuff to people (with permissions)
-    - both translation and review
-  attribution (based on login)
-    ? where to put it
-    - last translator
-    - comment with everyone at top of po file
-    - comment in suggestion
-  translation review cycle
-    - comment to explain rejection
-  highlight spaces in original so you can see what is a space
 
