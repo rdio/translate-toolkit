@@ -88,8 +88,9 @@ class TranslationProject:
     """reads cached statistics from the disk"""
     for pofilename in self.pofilenames:
       if not pofilename in self.stats:
-        pomtime = os.stat(pofilename)[os.path.stat.ST_MTIME]
-        statsfilename = pofilename + os.extsep + "stats"
+        abspofilename = os.path.join(self.subproject.podir, pofilename)
+        pomtime = os.stat(abspofilename)[os.path.stat.ST_MTIME]
+        statsfilename = abspofilename + os.extsep + "stats"
         if os.path.exists(statsfilename):
           try:
             stats = open(statsfilename, "r").read()
@@ -117,8 +118,9 @@ class TranslationProject:
     translated = len(filter(lambda poel: not (poel.isfuzzy() or poel.isblankmsgstr()), pofile.transelements))
     total = len(pofile.transelements)
     self.stats[pofilename] = (translated, total)
-    pomtime = os.stat(pofilename)[os.path.stat.ST_MTIME]
-    statsfilename = pofilename + os.extsep + "stats"
+    abspofilename = os.path.join(self.subproject.podir, pofilename)
+    pomtime = os.stat(abspofilename)[os.path.stat.ST_MTIME]
+    statsfilename = abspofilename + os.extsep + "stats"
     try:
       open(statsfilename, "w").write("%d %d %d" % (pomtime, translated, total))
     except:
@@ -127,14 +129,18 @@ class TranslationProject:
 
   def addfiles(self, dummy, dirname, fnames):
     """adds the files to the set of files for this project"""
+    basedirname = dirname.replace(self.subproject.podir, "")
+    while basedirname.startswith(os.sep):
+      basedirname = basedirname.replace(os.sep, "", 1)
     ponames = [fname for fname in fnames if fname.endswith(os.extsep+"po")]
-    self.pofilenames.extend([os.path.join(dirname, poname) for poname in ponames])
+    self.pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
 
   def getpofile(self, pofilename):
     """parses the file into a pofile object and stores in self.pofiles"""
     if pofilename in self.pofiles:
       return self.pofiles[pofilename]
-    inputfile = open(pofilename, "r")
+    abspofilename = os.path.join(self.subproject.podir, pofilename)
+    inputfile = open(abspofilename, "r")
     pofile = po.pofile(inputfile)
     # we ignore all the headers by using this filtered set
     pofile.transelements = [poel for poel in pofile.poelements if not (poel.isheader() or poel.isblank())]
@@ -163,7 +169,8 @@ class TranslationProject:
     """saves changes to disk..."""
     pofile = self.getpofile(pofilename)
     lines = pofile.tolines()
-    open(pofilename, "w").writelines(lines)
+    abspofilename = os.path.join(self.subproject.podir, pofilename)
+    open(abspofilename, "w").writelines(lines)
 
 projects = {}
 
