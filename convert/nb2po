@@ -1,0 +1,110 @@
+#!/usr/bin/env python
+#
+# Copyright 2002-2004 Zuza Software Foundation
+# 
+# This file is part of translate.
+#
+# translate is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# translate is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with translate; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+"""Converts nanoblogger HTML part files to Gettext .po files"""
+
+from translate.storage import po
+from translate.misc import quote
+from translate.convert import convert
+from translate.storage import html
+import os
+
+class nb2po:
+  htmlfields = ["BODY"]
+
+  def makepoelement(self, filename, fieldname, fieldvalue):
+    """makes a poelement"""
+    thepo = po.poelement()
+    thepo.sourcecomments.append("#: %s#%s\n" % (filename,fieldname))
+    thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in fieldvalue.split("\n")]
+    if len(thepo.msgid) > 1:
+      thepo.msgid = [quote.quotestr("")] + thepo.msgid
+    thepo.msgstr = []
+    return thepo
+
+  def makepoelements(self, filename, fieldname, fieldvalue):
+    """makes a list of poelements from an html block"""
+    thepolist = []
+    htmlparser = html.POHTMLParser()
+    htmlparser.feed(fieldvalue)
+    for blocknum in range(len(htmlparser.blocks)):
+      block = htmlparser.blocks[blocknum]
+      if not block.strip(): continue
+      thepo = po.poelement()
+      thepo.sourcecomments.append("#: %s#%s:%d\n" % (filename,fieldname,blocknum+1))
+      thepo.msgid = [quote.quotestr(quote.rstripeol(block))]
+      if len(thepo.msgid) > 1:
+        thepo.msgid = [quote.quotestr("")] + thepo.msgid
+      thepo.msgstr = []
+      thepolist.append(thepo)
+    return thepolist
+
+  def convertfile(self, inputfile, filename, includeheader):
+    """converts a file to .po format"""
+    thepofile = po.pofile()
+    if includeheader:
+      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
+      thepofile.poelements.append(headerpo)
+    lines = inputfile.readlines()
+    inlongfield = False
+    for line in lines:
+      if line.strip() == "-----":
+        if inlongfield:
+          # TODO: look at how to split this up into blocks
+          # thepolist = self.makepoelements(filename, longfieldname, longfieldvalue)
+          # thepofile.poelements.extend(thepolist)
+          thepo = self.makepoelement(filename, longfieldname, longfieldvalue)
+          thepofile.poelements.append(thepo)
+        inlongfield = not inlongfield
+        longfieldname, longfieldvalue = None, ""
+        continue
+      if inlongfield and longfieldname is not None:
+        longfieldvalue += line
+        continue
+      colonpos = line.find(":")
+      if colonpos == -1:
+        continue
+      fieldname = line[:colonpos]
+      fieldvalue = line[colonpos+1:].strip()
+      if inlongfield:
+        longfieldname, longfieldvalue = fieldname, fieldvalue
+      else:
+        # split up into blocks
+        thepo = self.makepoelement(filename, fieldname, fieldvalue)
+        thepofile.poelements.append(thepo)
+    return thepofile
+
+def convertnb(inputfile, outputfile, templates):
+  """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
+  convertor = nb2po()
+  outputfilepos = outputfile.tell()
+  includeheader = outputfilepos == 0
+  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader)
+  outputpolines = outputpo.tolines()
+  outputfile.writelines(outputpolines)
+  return 1
+
+if __name__ == '__main__':
+  # handle command line options
+  formats = {"htm":("po",convertnb)}
+  parser = convert.ConvertOptionParser(formats, description=__doc__)
+  parser.run()
+
