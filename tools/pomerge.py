@@ -37,6 +37,8 @@ def writepofile(outfile, pf):
 def mergepofiles(p1, p2, mergeblanks, mergecomments):
   """take any new translations in p2 and write them into p1"""
   for po2 in p2.poelements:
+    if po2.isheader():
+      continue
     # there may be more than one entity due to msguniq merge
     entities = []
     for sourcecomment in po2.sourcecomments:
