@@ -319,6 +319,24 @@ class SetupIndex(SetupParser):
     tokenrange = dummysetup.getsectiontokenrange(shortcutentry)
     self.insertforeignsection(baseentry, shortcutentry, shortcutentrysection, dummysetup, tokenrange)
 
+  def addtozipfile(self, destdirectory, zipfileentry, filename, filecontents):
+    """adds a filename to a zip file"""
+    packedname = sparse.stringeval(self.getfieldvalue(zipfileentry, "PackedName"))
+    packedpath = os.path.join(destdirectory, packedname)
+    open(filename, 'w').write(filecontents)
+    print "doing zipfile", packedpath, filename
+    os.system('mv %s %s.zip' % (packedpath, packedpath))
+    os.system('zip %s.zip %s' % (packedpath, filename))
+    os.system('mv %s.zip %s' % (packedpath, packedpath))
+    os.remove(filename)
+
+  def readfromzipfile(self, zipfileentry, filename):
+    """reads contents of a file from a zip file"""
+    packedname = sparse.stringeval(self.getfieldvalue(zipfileentry, "PackedName"))
+    srcdirectory = os.path.dirname(self.filename)
+    packedpath = os.path.join(srcdirectory, packedname)
+    return os.popen('unzip -p %s %s' % (packedpath, filename)).read()
+
   def addmanualfile(self, fileentry, filename, packedname, baseentry):
     """Inserts an external file into the build system"""
     fileinfo = os.stat_result(os.stat(filename))
@@ -420,6 +438,46 @@ class SetupIndex(SetupParser):
       os.system('zip -j %s.zip %s' % (packedpath, filename))
       os.system('mv %s.zip %s' % (packedpath, packedpath))
 
+desktopentries = {
+"kde" :
+"""[Desktop Entry]
+Version=0.92
+Encoding=UTF-8
+MultipleArgs=false
+Terminal=0
+Icon=ooo_languageselector.xpm
+Exec="<progpath_utf8>/program/ooswitchlang"
+Type=Application
+Name=<productname> Language Selector
+Name[en]=<productname> Language Selector
+""",
+"gnome" :
+"""[Desktop Entry]
+Version=0.92
+Encoding=Legacy-Mixed
+Name=<singleproductname> Language Selector
+Name[en]=<singleproductname> Language Selector
+MultipleArgs=false
+Terminal=false
+Icon=<progpath>/share/icons/ooo_languageselector.png
+Exec=<progpath>/program/ooswitchlang
+Type=Application
+""",
+"gnome2": 
+"""[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Terminal=false
+Categories=Application;Office;
+Icon=<progpath>/share/icons/ooo_languageselector.png
+Exec=<progpath_utf8>/program/ooswitchlang
+Type=Application
+Name=<productname> Language Selector
+StartupNotify=false
+Name[en]=<productname> Language Selector
+"""
+}
+
 if __name__ == '__main__':
   try:
     import psyco
@@ -500,6 +558,30 @@ if __name__ == '__main__':
         destfile = os.path.join(outputdir, destname)
         print '%s -> %s' % (srcfile, destfile)
         os.system('cp -p %s %s' % (srcfile, destfile))
-
-
+  if options.switchlangexe is not None:
+    # add desktop (menu) entries and icons for KDE
+    # icons require file icons/ooo_languageselector.png
+    if "gid_File_Extra_Kdeapplnk" in mainsetupfile.definitions:
+      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Kdeapplnk", "languageselector.desktop", desktopentries["kde"])
+    if "gid_File_Extra_Kdeicons" in mainsetupfile.definitions and os.path.exists("icons/ooo_languageselector.png"):
+      os.system("for f in hicolor/{16x16,22x22,32x32,48x48} locolor/{16x16,22x22,32x32} ; do mkdir -p share/icons/$f/apps ; convert icons/ooo_languageselector.png -scale `basename $f` share/icons/$f/apps/ooo_languageselector.xpm ; done")
+      for scale in [16,22,32,48]:
+        xpmfilename = os.path.join("share", "icons", "hicolor", "%dx%d" % (scale, scale), "apps", "ooo_languageselector.xpm")
+        xpmcontents = open(xpmfilename, "rb").read()
+        mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename, xpmcontents)
+      for scale in [16,22,32]:
+        xpmfilename = os.path.join("share", "icons", "locolor", "%dx%d" % (scale, scale), "apps", "ooo_languageselector.xpm")
+        xpmcontents = open(xpmfilename, "rb").read()
+        mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename, xpmcontents)
+    # add desktop (menu) entries and icons for Gnome and Gnome2
+    if "gid_File_Extra_Gnome_Apps" in mainsetupfile.definitions:
+      ordercontents = mainsetupfile.readfromzipfile("gid_File_Extra_Gnome_Apps", ".order")
+      ordercontents += "languageselector.desktop\n"
+      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Gnome_Apps", "languageselector.desktop", desktopentries["gnome"])
+      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Gnome_Apps", ".order", ordercontents)
+    if "gid_File_Extra_Gnome_Icons" in mainsetupfile.definitions and os.path.exists("icons/ooo_languageselector.png"):
+      pngcontents = open("icons/ooo_languageselector.png", "rb").read()
+      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Gnome_Icons", "icons/ooo_languageselector.png", pngcontents)
+    if "gid_File_Extra_Gnome2_Apps" in mainsetupfile.definitions:
+      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Gnome2_Apps", "ooo645_languageselector.desktop", desktopentries["gnome2"])
 
