@@ -29,7 +29,7 @@ def wordsinpoel(poel):
   msgstrwords = wordcount(poel.msgstr)
   return msgidwords, msgstrwords
 
-def summarize(elements):
+def summarize(title, elements, CSVstyle=False):
   # ignore totally blank or header elements
   elements = filter(lambda poel: not poel.isheader(), elements)
   translated = filter(lambda poel: not poel.isblankmsgstr() and not poel.isfuzzy(), elements)
@@ -39,18 +39,34 @@ def summarize(elements):
   wordcounts = dict(map(lambda poel: (poel, wordsinpoel(poel)), elements))
   msgidwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][0], elementlist))
   msgstrwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][1], elementlist))
-  print "type           strings words (source) words (translation)"
-  print "translated:   %5d %10d %15d" % (len(translated), msgidwords(translated), msgstrwords(translated))
-  print "fuzzy:        %5d %10d             n/a" % (len(fuzzy), msgidwords(fuzzy))
-  print "untranslated: %5d %10d             n/a" % (len(untranslated), msgidwords(untranslated))
-  print "Total:        %5d %10d %15d" % (len(translated) + len(fuzzy) + len(untranslated), msgidwords(translated) + msgidwords(fuzzy) + msgidwords(untranslated), msgstrwords(translated))
-  if len(review) > 0:
-    print "review:       %5d %10d             n/a" % (len(review), msgidwords(review))
+  if CSVstyle:
+    print "%s, " % title,
+    print "%d, %d, %d," % (len(translated), msgidwords(translated), msgstrwords(translated)),
+    print "%d, %d," % (len(fuzzy), msgidwords(fuzzy)),
+    print "%d, %d" % (len(untranslated), msgidwords(untranslated)),
+    if len(review) > 0:
+      print ", %d, %d" % (len(review), msgidwords(review)),
+    print
+  else:
+    print title
+    print "type           strings words (source) words (translation)"
+    print "translated:   %5d %10d %15d" % (len(translated), msgidwords(translated), msgstrwords(translated))
+    print "fuzzy:        %5d %10d             n/a" % (len(fuzzy), msgidwords(fuzzy))
+    print "untranslated: %5d %10d             n/a" % (len(untranslated), msgidwords(untranslated))
+    print "Total:        %5d %10d %15d" % (len(translated) + len(fuzzy) + len(untranslated), msgidwords(translated) + msgidwords(fuzzy) + msgidwords(untranslated), msgstrwords(translated))
+    if len(review) > 0:
+      print "review:       %5d %10d             n/a" % (len(review), msgidwords(review))
+    print
 
 class summarizer:
-  def __init__(self, filenames):
+  def __init__(self, filenames, CSVstyle):
     self.allelements = []
     self.filecount = 0
+    self.CSVstyle = CSVstyle
+    if self.CSVstyle:
+      print "Filename, Translated Messages, Translated Source Words, Translated \
+Target Words, Fuzzy Messages, Fuzzy Source Words, Untranslated Messages, \
+Untranslated Source Words, Review Messages, Review Source Words"
     for filename in filenames:
       if not os.path.exists(filename):
         print >>sys.stderr, "cannot process %s: does not exist" % filename
@@ -59,9 +75,8 @@ class summarizer:
         self.handledir(filename)
       else:
         self.handlefile(filename)
-    if self.filecount > 1:
-      print "TOTAL:"
-      summarize(self.allelements)
+    if self.filecount > 1 and not self.CSVstyle:
+      summarize("TOTAL:", self.allelements)
       print "File count:   %5d" % (self.filecount)
       print
 
@@ -71,9 +86,7 @@ class summarizer:
     pof.fromlines(infile.readlines())
     infile.close()
     self.allelements.extend(pof.poelements)
-    print filename
-    summarize(pof.poelements)
-    print
+    summarize(filename, pof.poelements, self.CSVstyle)
     self.filecount += 1
 
   def handlefiles(self, arg, dirname, filenames):
@@ -87,5 +100,9 @@ class summarizer:
 
 def main():
   # TODO: make this handle command line options using optparse...
-  summarizer(sys.argv[1:])
+  CSVstyle = False
+  if "--csv" in sys.argv:
+    sys.argv.remove("--csv")
+    CSVstyle = True
+  summarizer(sys.argv[1:], CSVstyle)
 
