@@ -24,19 +24,9 @@ from __future__ import generators
 import zipfile
 import os.path
 from translate import __version__
-try:
-  import cStringIO
-  class NamedStringStream:
-    def __init__(self, *args, **kwargs):
-      self.__dict__["__i"] = cStringIO.StringIO(*args, **kwargs)
-    def __getattr__(self, *args, **kwargs):
-      return getattr(self.__dict__["__i"], *args, **kwargs)
-  NamedStringInput = NamedStringStream
-  NamedStringOutput = NamedStringStream
-except ImportError:
-  import StringIO
-  NamedStringInput = StringIO.StringIO
-  NamedStringOutput = StringIO.StringIO
+import StringIO
+NamedStringInput = StringIO.StringIO
+NamedStringOutput = StringIO.StringIO
 
 # TODO: use jarfile names instead of trying to do intelligent common-prefix-stripping
 # TODO: pick up lang name etc from command-line param and rename en-US to lang-reg
@@ -52,8 +42,8 @@ def _commonprefix(itemlist):
   else:
     return ''
 
-class CatchStringOutput(NamedStringOutput):
-  """catches the output before it is written and sends it to an onclose method"""
+class CatchStringOutput(NamedStringOutput, object):
+  """catches the output before it is closed and sends it to an onclose method"""
   def __init__(self, onclose):
     """Set up the output stream, and remember a method to call on closing"""
     NamedStringOutput.__init__(self)
@@ -62,7 +52,40 @@ class CatchStringOutput(NamedStringOutput):
     """wrap the underlying close method, to pass the value to onclose before it goes"""
     value = self.getvalue()
     self.onclose(value)
-    self.__dict__["__i"].close()
+    super(CatchStringOutput, self).close()
+  def slam(self):
+    """use this method to force the closing of the stream if it isn't closed yet"""
+    if not self.closed:
+      self.close()
+
+def rememberchanged(self, method):
+  def changed(*args, **kwargs):
+    self.changed = True
+    method(*args, **kwargs)
+  return changed
+
+class CatchPotentialOutput(NamedStringInput, object):
+  """catches output if there has been, before closing"""
+  def __init__(self, contents, onclose):
+    """Set up the output stream, and remember a method to call on closing"""
+    NamedStringInput.__init__(self, contents)
+    self.onclose = onclose
+    self.changed = False
+    s = super(CatchPotentialOutput, self)
+    self.write = rememberchanged(self, s.write)
+    self.writelines = rememberchanged(self, s.writelines)
+    self.truncate = rememberchanged(self, s.truncate)
+  def close(self):
+    """wrap the underlying close method, to pass the value to onclose before it goes"""
+    if self.changed:
+      value = self.getvalue()
+      self.onclose(value)
+    NamedStringInput.close(self)
+  def flush(self):
+    """zip files call flush, not close, on file-like objects"""
+    value = self.getvalue()
+    self.onclose(value)
+    NamedStringInput.flush(self)
   def slam(self):
     """use this method to force the closing of the stream if it isn't closed yet"""
     if not self.closed:
@@ -78,7 +101,8 @@ class ZipFileCatcher(zipfile.ZipFile, object):
   def addcatcher(self, pendingsave):
     """remember to call the given method before closing"""
     if hasattr(self, "pendingsaves"):
-      self.pendingsaves.append(pendingsave)
+      if not pendingsave in self.pendingsaves:
+        self.pendingsaves.append(pendingsave)
     else:
       self.pendingsaves = [pendingsave]
   def close(self):
@@ -111,7 +135,7 @@ class XpiFile(ZipFileCatcher):
       if filename.lower().endswith('.jar'):
         if filename not in self.jarfiles:
           jarstream = self.openinputstream(None, filename)
-          jarfile = ZipFileCatcher(jarstream)
+          jarfile = ZipFileCatcher(jarstream, self.mode)
           self.jarfiles[filename] = jarfile
         else:
           jarfile = self.jarfiles[filename]
@@ -225,10 +249,13 @@ class XpiFile(ZipFileCatcher):
     """opens a file (possibly inside a jarfile as a StringIO"""
     if jarfilename is None:
       contents = self.read(filename)
+      def onclose(contents):
+        self.writestr(filename, contents)
+      inputstream = CatchPotentialOutput(contents, onclose)
     else:
       jarfile = self.jarfiles[jarfilename]
       contents = jarfile.read(filename)
-    inputstream = NamedStringInput(contents)
+      inputstream = NamedStringInput(contents)
     inputstream.name = self.jartoospath(jarfilename, filename)
     if hasattr(self.fp, 'name'):
       inputstream.name = "%s:%s" % (self.fp.name, inputstream.name)
