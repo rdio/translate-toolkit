@@ -36,50 +36,37 @@ from translate.misc import quote
 from translate import __version__
 from translate.convert import convert
 
-xpirecursion = 3
-
 class MozConvertOptionParser(convert.ConvertOptionParserExt):
   def __init__(self, inputformats, outputformats, usetemplates=False, usepots=False, templateslikeinput=None):
-    convert.ConvertOptionParserExt.__init__(self, xpirecursion, inputformats, outputformats,
+    convert.ConvertOptionParserExt.__init__(self, convert.defaultrecursion, inputformats, outputformats,
       usetemplates, usepots, templateslikeinput)
 
   def setrecursion(self, recursion):
-    self.argumentdesc = "xpi/dir"
-    if self.has_option("-x"):
-      self.remove_option("-x")
-    self.add_option("-x", "--xpi", action="store_const", dest="recursive", default=True, \
-      const="xpi", help="recurse inside an xpi file")
-    self.recursion = recursion
+    super(MozConvertOptionParser, self).setrecursion(recursion)
+    self.argumentdesc = "xpi file/dir"
 
   def runconversion(self, options, convertmethod):
     """runs the conversion method using the given commandline options..."""
-    if options.recursive == "xpi":
-      if options.input is None:
-        self.error(optparse.OptionValueError("cannot use stdin for xpi run. please specify inputfile"))
-      if not os.path.isfile(options.input):
-        self.error(optparse.OptionValueError("inputfile must be file for xpi run."))
-      if options.output is None:
-        self.error(optparse.OptionValueError("must specify output directory for xpi run."))
-      if not os.path.isdir(options.output):
-        self.error(optparse.OptionValueError("output must be existing directory for xpi run."))
-      self.recurseconversion(options)
-    elif options.recursive:
-      if options.input is None:
-        self.error(optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile"))
-      if not os.path.isdir(options.input):
-        self.error(optparse.OptionValueError("inputfile must be directory for recursive run."))
-      if options.output is None:
-        self.error(optparse.OptionValueError("must specify output directory for recursive run."))
-      if not os.path.isdir(options.output):
-        self.error(optparse.OptionValueError("output must be existing directory for recursive run."))
-      self.recurseconversion(options)
+    if options.input is None:
+      self.error(optparse.OptionValueError("cannot use stdin for xpi/recursive run. please specify inputfile"))
+    if not (os.path.isfile(options.input) or os.path.isdir(options.input)):
+      self.error(optparse.OptionValueError("inputfile must be file for xpi run or directory for recursive run."))
+    if options.output is None:
+      self.error(optparse.OptionValueError("must specify output directory for xpi/recursive run."))
+    if not os.path.isdir(options.output):
+      self.error(optparse.OptionValueError("output must be existing directory for xpi/recursive run."))
+    self.recurseconversion(options)
+
+  def inputisxpi(self, options):
+    """returns whether the input is via an xpi file"""
+    return os.path.isfile(options.input)
 
   def recursefiles(self, options):
     """recurse through xpi file / directories and return files to be converted"""
-    if options.recursive != "xpi":
-      return super(MozConvertOptionParser, self).recursefiles(options)
-    else:
+    if self.inputisxpi(options):
       return self.recursexpifiles(options)
+    else:
+      return super(MozConvertOptionParser, self).recursefiles(options)
 
   def recursexpifiles(self, options):
     """recurse through xpi files and convert files"""
@@ -92,7 +79,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
 
   def openinputfile(self, options, fullinputpath):
     """opens the input file"""
-    if options.recursive == 'xpi':
+    if self.inputisxpi(options):
       jarfilename, filename = options.inputxpi.ostojarpath(fullinputpath)
       return options.inputxpi.openinputstream(jarfilename, filename)
     else:
@@ -100,7 +87,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
 
   def getfullinputpath(self, options, inputpath):
     """gets the absolute path to an input file"""
-    if options.recursive == 'xpi':
+    if self.inputisxpi(options):
       return inputpath
     else:
       return os.path.join(options.input, inputpath)

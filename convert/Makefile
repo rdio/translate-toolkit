@@ -86,7 +86,7 @@ test-moz2po-xpinotemplate: output=test-moz2po-xpinotemplate
 test-moz2po-xpinotemplate:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./moz2po --progress=$(progress) -P -x -i $(input) -o $(output)
+	./moz2po --progress=$(progress) -P -i $(input) -o $(output)
 
 test-moz2po-withtemplate: input=$(dtddir)/de-AT-1.6
 test-moz2po-withtemplate: output=test-moz2po-withtemplate
