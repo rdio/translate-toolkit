@@ -268,6 +268,11 @@ class TranslationProject:
     orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
     return orig, trans
 
+  def getitemclasses(self, pofilename, item):
+    """returns which classes this item belongs to"""
+    pofile = self.getpofile(pofilename)
+    return [classname for (classname, classitems) in pofile.classify.iteritems() if item in classitems]
+
   def getitems(self, pofilename, itemstart, itemstop):
     """returns num items before the given item, as context"""
     pofile = self.getpofile(pofilename)
