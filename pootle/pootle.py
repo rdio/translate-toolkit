@@ -48,7 +48,7 @@ class PootleServer(users.OptionalLoginAppServer):
       if session.isopen:
         redirecttext = pagelayout.IntroText("Redirecting to home page...")
         redirectpage = pagelayout.PootlePage("Redirecting to home page...", redirecttext, session)
-        return server.Redirect("my/", withpage=redirectpage)
+        return server.Redirect("home/", withpage=redirectpage)
       if 'username' in argdict:
         session.username = argdict["username"]
       return users.LoginPage(session, languagenames=self.languagenames)
@@ -75,7 +75,7 @@ class PootleServer(users.OptionalLoginAppServer):
           top = ""
         if not top or top == "index.html":
           return indexpage.ProjectLanguageIndex(self.potree, projectcode, session)
-    elif top == "my":
+    elif top == "home":
       pathwords = pathwords[1:]
       if pathwords:
         top = pathwords[0]

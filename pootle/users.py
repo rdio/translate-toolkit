@@ -179,6 +179,12 @@ class OptionalLoginAppServer(server.LoginAppServer):
       return ActivatePage(session, argdict)
 
 class PootleSession(session.LoginSession):
+  """a session object that knows about Pootle"""
+  def __init__(self, sessioncache, server, sessionstring = None, loginchecker = None):
+    """sets up the session and remembers the users prefs"""
+    super(PootleSession, self).__init__(sessioncache, server, sessionstring, loginchecker)
+    self.prefs = getattr(self.loginchecker.users, self.username)
+
   def validate(self):
     """checks if this session is valid (which means the user must be activated)"""
     if not super(PootleSession, self).validate():
@@ -188,34 +194,31 @@ class PootleSession(session.LoginSession):
       self.status = "username has not yet been activated"
     return self.isvalid
 
-  def getprefs(self):
-    """gets the prefs node for this user"""
-    return getattr(self.loginchecker.users, self.username)
-
   def setoptions(self, argdict):
     """sets the user options"""
-    userprefs = self.getprefs()
     userprojects = argdict.get("projects", [])
     if isinstance(userprojects, (str, unicode)):
       userprojects = [userprojects]
-    setattr(userprefs, "projects", ",".join(userprojects))
+    setattr(self.prefs, "projects", ",".join(userprojects))
     userlanguages = argdict.get("languages", [])
     if isinstance(userlanguages, (str, unicode)):
       userlanguages = [userlanguages]
-    setattr(userprefs, "languages", ",".join(userlanguages))
+    setattr(self.prefs, "languages", ",".join(userlanguages))
     self.saveprefs()
 
   def getprojects(self):
     """gets the user's projects"""
-    userprefs = self.getprefs()
-    userprojects = getattr(userprefs, "projects", "")
+    userprojects = getattr(self.prefs, "projects", "")
     return userprojects.split(",")
 
   def getlanguages(self):
     """gets the user's languages"""
-    userprefs = self.getprefs()
-    userlanguages = getattr(userprefs, "languages", "")
+    userlanguages = getattr(self.prefs, "languages", "")
     return userlanguages.split(",")
+
+  def getrights(self):
+    """gets the user's rights"""
+    return getattr(self.prefs, "rights", None)
 
   def saveprefs(self):
     """saves changed preferences back to disk"""
