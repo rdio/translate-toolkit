@@ -159,7 +159,7 @@ class POTree:
     if not self.haslanguage(languagecode):
       return False
     try:
-      podir = self.getpodir(languagecode, projectcode)
+      self.getpodir(languagecode, projectcode)
       return True
     except IndexError:
       return False
@@ -196,7 +196,7 @@ class POTree:
     """creates a new TranslationProject"""
     if self.hasproject(languagecode, projectcode):
       raise ValueError("projects.TranslationProject for project %s, language %s already exists" % (projectcode, languagecode))
-    translationproject = projects.TranslationProject(languagecode, projectcode, self, create=True)
+    self.projectcache[languagecode, projectcode] = projects.TranslationProject(languagecode, projectcode, self, create=True)
 
   def getprojectname(self, projectcode):
     """returns the full name of the project"""
