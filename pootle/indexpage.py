@@ -780,7 +780,7 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       linkbase = basename + "?translate=1"
     if total and self.showchecks:
-      statsdetails += self.getcheckdetails(projectstats, linkbase)
+      statsdetails = statsdetails + self.getcheckdetails(projectstats, linkbase)
     if total and self.showtracks:
       trackfilter = (self.dirfilter or "") + basename
       trackpofilenames = self.project.browsefiles(trackfilter)
@@ -803,14 +803,19 @@ class ProjectIndex(pagelayout.PootlePage):
   def getcheckdetails(self, projectstats, linkbase):
     """return a list of strings describing the results of checks"""
     total = max(projectstats.get("total", 0), 1)
-    for checkname, checkcount in projectstats.iteritems():
+    checklinks = []
+    keys = projectstats.keys()
+    keys.sort()
+    for checkname in keys:
       if not checkname.startswith("check-"):
         continue
+      checkcount = projectstats[checkname]
       checkname = checkname.replace("check-", "", 1)
       if total and checkcount:
         checklink = widgets.Link(self.makelink(linkbase, **{checkname:1}), checkname)
         stats = self.localize("%d strings (%d%%) failed") % (checkcount, (checkcount * 100 / total))
-        yield [checklink, stats]
+        checklinks += [[checklink, stats]]
+    return checklinks
 
   def getassigndetails(self, projectstats, linkbase, removelinkbase):
     """return a list of strings describing the assigned strings"""
