@@ -5,12 +5,16 @@
 import codecs
 from translate.misc import sparse
 import sys
+import operator
 
 class SetupIndex(sparse.SimpleParser):
   def __init__(self, filename=None):
     sparse.SimpleParser.__init__(self)
+    self.defaulttokenlist.extend(';\n')
+    self.whitespacechars = " \t\r"
     self.quotechars = ('"', '{')
     self.endquotechars = {'"':'"', '{':'}'}
+    self.stringescaping = 0
     self.sectiontypes = ('ConfigurationItem', 'Custom', 'DataCarrier', 'Directory',
       'File', 'Folder', 'FolderItem', 'Function', 'HelpText', 'Installation', 'Module', 'Procedure',
       'Profile', 'ProfileItem', 'RegistryItem', 'Shortcut', 'StarRegistry', 'StarRegistryItem')
@@ -37,36 +41,47 @@ class SetupIndex(sparse.SimpleParser):
     while tokennum < len(self.tokens):
       sectiontype = self.tokens[tokennum]
       if sectiontype not in self.sectiontypes:
-        print >>sys.stderr, "unknown sectiontype....", sectiontype
+        print >>sys.stderr, "unknown sectiontype....", sectiontype, "last section", sectionname
         if sectiontype not in self.bytype:
           self.bytype[sectiontype] = {}
       sectionname = self.tokens[tokennum + 1]
       section = {}
       if sectionname in self.definitions:
-        print >>sys.stderr, "duplicate", section
+        print >>sys.stderr, "duplicate", sectionname
       self.definitions[sectionname] = section
       self.bytype[sectiontype][sectionname] = section
       section['type'] = sectiontype
-      section['tokennum'] = tokennum
+      section['tokennums'] = {'type':tokennum}
       tokennum += 2
+      while self.tokens[tokennum] == '\n':
+        tokennum += 1
       while self.tokens[tokennum].lower() != 'end':
         varname = self.tokens[tokennum]
         if self.tokens[tokennum+1] != '=':
-          print >>sys.stderr, "hmmm..."
+          print >>sys.stderr, "expected =...", sectiontype, sectionname, varname
         startvardef = tokennum+2
-        while self.tokens[tokennum] != ';':
+        nestlevel = 0
+        while self.tokens[tokennum] != '\n' or nestlevel > 0:
           varpart = self.tokens[tokennum]
           if varpart.lower().startswith('gid_'):
             self.referrals.append((varpart, tokennum))
+          if varpart == '(':
+            nestlevel += 1
+          elif varpart == ')':
+            nestlevel -= 1
           tokennum += 1
         value = "".join(self.tokens[startvardef:tokennum])
+        if value.endswith(";"): value = value[:-1]
         section[varname] = value
+        section['tokennums'][varname] = startvardef
         tokennum = tokennum + 1
       tokennum += 1
+      while tokennum < len(self.tokens) and self.tokens[tokennum] == '\n':
+        tokennum += 1
 
   def rename(self, sectionname, newname):
     section = self.definitions[sectionname]
-    tokennum = section['tokennum']
+    tokennum = section['tokennums']['type']
     self.tokens[tokennum+1] = newname
     for varpart, tokennum in self.referrals:
       if varpart.lower() == sectionname.lower():
@@ -85,6 +100,50 @@ class SetupIndex(sparse.SimpleParser):
     sourceparts.append(self.source[tokenpos:])
     return "".join(sourceparts)
 
+  def getfieldvalue(self, sectionname, fieldname):
+    section = self.definitions[sectionname]
+    return section[fieldname]
+
+  def getfieldtokennum(self, sectionname, fieldname):
+    section = self.definitions[sectionname]
+    return section['tokennums'][fieldname]
+
+  def setfieldvalue(self, sectionname, fieldname, fieldvalue):
+    fieldtokennum = self.getfieldtokennum(sectionname, fieldname)
+    self.tokens[fieldtokennum] = fieldvalue
+
+  def merge(self, otherindexes):
+    """merges this with another index... hmmm ...."""
+    indexes = [self] + otherindexes
+    languages = [index.getfieldvalue('gid_Installation', 'Languages') for index in indexes]
+    languages = [sparse.stringeval(languagevalues).split(",") for languagevalues in languages]
+    languages = reduce(operator.add, languages)
+    languages.sort()
+    languages = ",".join(languages)
+    self.setfieldvalue('gid_Installation', 'Languages', '"%s"' % languages)
+    # can't do anything about HelpText yet...
+    directoriestorename = {}
+    for index in indexes:
+      index.directorychildren = {}
+      for directory in index.bytype["Directory"]:
+        if directory.find('_Language') != -1 or directory.find("_Isolanguage") != -1:
+          directoriestorename[directory] = 1
+        parentid = index.getfieldvalue(directory, 'ParentID')
+        if parentid not in index.directorychildren:
+          index.directorychildren[parentid] = [directory]
+        else:
+          index.directorychildren[parentid].append(directory)
+    for directory in directoriestorename:
+      hostname = sparse.stringeval(self.getfieldvalue(directory, "HostName"))
+      newname = directory.replace("_Language", "_%s" % hostname)
+      self.renamedirectory(directory, newname, "_%s" % hostname)
+
+  def renamedirectory(self, directory, newname, suffix):
+    self.rename(directory, newname)
+    if directory in self.directorychildren:
+      for child in self.directorychildren[directory]:
+        self.renamedirectory(child, child + suffix, suffix)
+
 if __name__ == '__main__':
   import sys
   try:
@@ -93,9 +152,11 @@ if __name__ == '__main__':
   except:
     pass
   setupfiles = {}
-  for arg in sys.argv[1:]:
-    setupfiles[arg] = SetupIndex(arg)
-    # setupfiles[arg].rename("gid_File_Extra_Webcast_Pl", "gid_File_Extra_Webcast_Pl_zulu")
-    sys.stdout.write(setupfiles[arg].getsource())
+  mainsetupfile = SetupIndex(sys.argv[1])
+  othersetupfiles = []
+  for arg in sys.argv[2:-1]:
+    othersetupfiles.append(SetupIndex(arg))
+  mainsetupfile.merge(othersetupfiles)
+  open(sys.argv[-1], 'w').write(mainsetupfile.getsource())
 
 
