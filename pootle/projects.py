@@ -79,6 +79,16 @@ class pootlefile(po.pofile):
     self.getstats()
     self.getassigns()
 
+  def readpofile(self):
+    """reads and parses the main po file"""
+    self.poelements = []
+    pomtime = getmodtime(self.filename)
+    self.parse(open(self.filename, 'r'))
+    # we ignore all the headers by using this filtered set
+    self.transelements = [poel for poel in self.poelements if not (poel.isheader() or poel.isblank())]
+    self.classifyelements()
+    self.pomtime = pomtime
+
   def savepofile(self):
     """saves changes to the main file to disk..."""
     lines = self.tolines()
