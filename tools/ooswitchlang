@@ -1,0 +1,108 @@
+#!/usr/bin/env python
+
+import wx
+import os
+from translate.misc import xmlwrapper
+
+availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'zu': 'Zulu'}
+
+class oosetupfile(xmlwrapper.XMLWrapper):
+  def __init__(self, setupfile):
+    self.setupfile = setupfile
+    if not os.path.isfile(self.setupfile):
+      raise ValueError("Could not find setup file: %s" % self.setupfile)
+    contents = open(self.setupfile, 'r').read()
+    root = xmlwrapper.BuildTree(contents)
+    xmlwrapper.XMLWrapper.__init__(self, root)
+
+  def getcurrentlanguage(self):
+    for node in self.getchildren("node"):
+      if node.getattr("name") == "L10N":
+        for prop in self.getchildren("prop"):
+          if prop.getattr("name") == "ooLocale":
+            language = prop.getplaintext().strip()
+            return language
+    raise ValueError("Error finding language node")
+
+  def setcurrentlanguage(self, language):
+    for node in self.getchildren("node"):
+      if node.getattr("name") == "L10N":
+        for prop in self.getchildren("prop"):
+          if prop.getattr("name") == "ooLocale":
+            value = prop.getchild("value")
+            value.obj.text = language
+            return
+    raise ValueError("Error finding language node")
+
+  def savetofile(self, filename=None):
+    if filename is None:
+      filename = self.setupfile
+    oonamespace = {'http://openoffice.org/2001/registry': 'oor', 'http://www.w3.org/2001/XMLSchema': 'xs'}
+    self.obj.attrib['xmlns:xs'] = "http://www.w3.org/2001/XMLSchema"
+    xmlwrapper.ElementTree.fixtag = xmlwrapper.makefixtagproc(oonamespace)
+    self.write(open(filename, 'w'))
+
+class LanguageSelectionWindow(wx.Frame):
+  """Window for selecting language"""
+  def __init__(self, parent, id, title):
+    wx.Frame.__init__(self, parent, id, title)
+    setupfile = os.path.join('share', 'registry', 'data', 'org', 'openoffice', 'Setup.xcu')
+    self.config = oosetupfile(setupfile)
+    self.panel = wx.Panel(self, wx.ID_ANY)
+    self.optionssizer = wx.BoxSizer(wx.HORIZONTAL)
+    self.languagelabel = wx.StaticText(self.panel, wx.ID_ANY, "Select language:")
+    self.optionssizer.Add(self.languagelabel)
+    self.languages = availablelanguages
+    languagenames = self.languages.values()
+    languagenames.sort()
+    self.languagelist = wx.ListBox(self.panel, wx.ID_ANY, choices=languagenames)
+    currentisocode = self.config.getcurrentlanguage()
+    currentlanguagename = self.languages.get(currentisocode, None)
+    if currentlanguagename in languagenames:
+      self.languagelist.Select(languagenames.index(currentlanguagename))
+    
+    self.optionssizer.Add(self.languagelist)
+
+    self.applybutton = wx.Button(self.panel, wx.ID_ANY, "Apply Changes")
+    self.applybutton.SetDefault()
+    wx.EVT_BUTTON(self, self.applybutton.GetId(), self.OnApply)
+    self.cancelbutton = wx.Button(self.panel, wx.ID_ANY, "Cancel")
+    wx.EVT_BUTTON(self, self.cancelbutton.GetId(), self.OnCancel)
+    self.buttonsizer = wx.BoxSizer(wx.HORIZONTAL)
+    self.buttonsizer.Add(self.applybutton, 0)
+    self.buttonsizer.Add(self.cancelbutton, 0)
+
+    self.sizer = wx.BoxSizer(wx.VERTICAL)
+    self.sizer.Add(self.optionssizer, 0)
+    self.sizer.Add(self.buttonsizer, 0)
+    self.panel.SetAutoLayout(1)
+    self.panel.SetSizer(self.sizer)
+    self.Show(1)
+
+  def OnApply(self, event):
+    """Apply the changes and quit"""
+    currentlanguagename = self.languagelist.GetStringSelection()
+    if currentlanguagename:
+      currentisocode = None
+      for isocode, languagename in self.languages.iteritems():
+        if languagename == currentlanguagename:
+          currentisocode = isocode
+          break
+      if currentisocode is None:
+        wx.MessageBox("Error finding language code", "Error", wx.ICON_ERROR, self)
+      else:
+        self.config.setcurrentlanguage(currentisocode)
+        self.config.savetofile()
+        self.Close(1)
+    else:
+      wx.MessageBox("First select a language (Cancel to quit)", "Error", wx.ICON_ERROR, self)
+
+  def OnCancel(self, event):
+    """Cancel without applying changes"""
+    self.Close(1)
+
+if __name__ == '__main__':
+  app = wx.PySimpleApp()
+  frame = LanguageSelectionWindow(None, -1, "Choose language")
+  app.MainLoop()
+
