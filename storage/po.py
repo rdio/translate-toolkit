@@ -447,6 +447,10 @@ class pofile:
     header.markfuzzy(False)
     return header
 
+  def updateheaderplural(self, nplural, plural):
+    """update the Plural-Form PO header"""
+    self.updateheader( Plural_Forms = "nplurals=%d; plural=%s;" % (nplural, plural) )
+
   def changeencoding(self, newencoding):
     """changes the encoding on the file"""
     self.encoding = newencoding
