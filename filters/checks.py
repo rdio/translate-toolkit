@@ -265,7 +265,7 @@ class StandardChecker(TranslationChecker):
     return helpers.countsmatch(prefilters.removekdecomments(str1), str2, ".")
 
   def startcaps(self, str1, str2):
-    """ checks that the message starts with the correct capitalisation"""
+    """checks that the message starts with the correct capitalisation"""
     punc = "\\.,/?!`'\"[]{}()@#$%^&*_-;:<>"
     str1 = self.filtervariables(prefilters.removekdecomments(str1)).lstrip().lstrip(punc)
     str2 = self.filtervariables(str2).lstrip().lstrip(punc)
