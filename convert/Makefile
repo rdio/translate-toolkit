@@ -102,11 +102,12 @@ test-po2csv:
 	mkdir $(output)
 	./po2csv.py --progress=$(progress) -R -i $(input) -o $(output)
 
-test-csv2po: input=$(oopodir)/af
+test-csv2po: input=test-po2csv
 test-csv2po: output=test-csv2po
+test-csv2po: template=$(oopodir)/af
 test-csv2po: test-po2csv
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./csv2po.py --progress=$(progress) -R -i $(input) -o $(output)
+	./csv2po.py --progress=$(progress) -R -i $(input) -o $(output) -t $(template)
 
 
