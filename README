@@ -8,7 +8,7 @@ and scripts to convert between different kinds of storage formats
 translate is part of the translate.sourceforge.net project, hosted at http://translate.sourceforge.net/
 
 Requirements:
-  Python2.2 or higher
+  Python 2.2 or higher, but often only tested with Python 2.3 :-)
 
 You can find a whole lot of documentation at http://translate.sourceforge.net/doc/
 
