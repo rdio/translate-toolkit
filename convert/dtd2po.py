@@ -74,6 +74,8 @@ class dtd2po:
     unquoted = unquoted.replace("\\", "\\\\")
     if not unquoted:
       # don't include this element if the msgid is empty
+      # TODO: with throwing away blank elements we may lose some comments
+      # these could perhaps be included (although they may refer to the blank element...)
       return 0
     # now split the string into lines and quote them
     msgid = [quote.quotestr(line) for line in unquoted.split('\n')]
