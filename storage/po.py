@@ -433,14 +433,12 @@ class pofile:
     """update field(s) in the PO header"""
     headeritems = {}
     headeritems = self.parseheader()
-    print headeritems
     if not headeritems:
       self.makeheader()
       headeritems = self.parseheader()
     for key, value in kwargs.items():
       key = key.replace("_", "-")
       headeritems[key] = value
-      print key, value
     headerlines = [""]
     for key, value in headeritems.items():
       headerlines.append("%s: %s\\n" % (key, value))
