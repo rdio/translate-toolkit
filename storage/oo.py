@@ -28,16 +28,30 @@ import sys
 from translate.misc import quote
 from translate.misc import wStringIO
 
+normalfilenamechars = "/#.0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 normalizetable = ""
 for i in map(chr, range(256)):
-  if i in "/#.0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
+  if i in normalfilenamechars:
     normalizetable += i
   else:
     normalizetable += "_"
 
+class unormalizechar(dict):
+  def __init__(self, normalchars):
+    self.normalchars = {}
+    for char in normalchars:
+      self.normalchars[ord(char)] = char
+  def __getitem__(self, key):
+    return self.normalchars.get(key, u"_")
+
+unormalizetable = unormalizechar(normalfilenamechars.decode("ascii"))
+
 def normalizefilename(filename):
   """converts any non-alphanumeric (standard roman) characters to _"""
-  return filename.translate(normalizetable)
+  if isinstance(filename, str):
+    return filename.translate(normalizetable)
+  else:
+    return filename.translate(unormalizetable)
 
 class ooline:
   """this represents one line, one translation in an .oo file"""
