@@ -355,8 +355,7 @@ class RecursiveOptionParser(optparse.OptionParser, object):
   def reportprogress(self, filename, success):
     """shows that we are progressing..."""
     self.progressbar.amount += 1
-    if success:
-      self.progressbar.show(filename)
+    self.progressbar.show(filename)
 
   def mkdir(self, parent, subdir):
     """makes a subdirectory (recursively if neccessary)"""
