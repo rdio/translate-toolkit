@@ -105,6 +105,5 @@ class ZipFileExt(ZipFile, object):
             endrec = struct.pack(structEndArchive, stringEndArchive,
                      0, 0, count, count, pos2 - pos1, pos1, 0)
             self.fp.write(endrec)
-            self.fp.flush()
             self.fp.seek(pos1)
 
