@@ -34,7 +34,10 @@ def _commonprefix(itemlist):
     for n in range(l):
       if a[n] != b[n]: return a[:n]
     return a[:l]
-  return reduce(cp, itemlist, "")
+  if itemlist:
+    return reduce(cp, itemlist)
+  else:
+    return ''
 
 class XpiFile(zipfile.ZipFile):
   def __init__(self, *args, **kwargs):
