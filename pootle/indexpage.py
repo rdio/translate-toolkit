@@ -3,6 +3,7 @@
 from jToolkit.widgets import widgets
 from translate.pootle import pagelayout
 from translate.pootle import projects
+from translate.pootle import pootlefile
 from translate.pootle import versioncontrol
 import os
 
@@ -215,12 +216,10 @@ class ProjectIndex(pagelayout.PootlePage):
     if dirfilter:
       dirs = self.dirfilter.split("/")
       count = len(dirs)
-      for dir in dirs:
-        backlinks = ""
-        for i in range(count):
-          backlinks = backlinks + "../"
+      for backlinkdir in dirs:
+        backlinks = "../" * count
         count = count - 1
-        dirlink = widgets.Link(self.getbrowseurl(backlinks + dir + "/"), dir)
+        dirlink = widgets.Link(self.getbrowseurl(backlinks + backlinkdir + "/"), backlinkdir)
         pathlinks.append(dirlink)
         if count != 0:
           pathlinks.append("/ ")
@@ -253,7 +252,7 @@ class ProjectIndex(pagelayout.PootlePage):
       action = self.argdict.pop("action", None)
       if not assignto and action:
         raise ValueError("cannot doassign, need assignto and action")
-      search = projects.Search(dirfilter=self.dirfilter)
+      search = pootlefile.Search(dirfilter=self.dirfilter)
       assigncount = self.project.assignpoitems(self.session, search, assignto, action)
       print "assigned %d strings to %s for %s" % (assigncount, assignto, action)
       del self.argdict["doassign"]
@@ -265,7 +264,7 @@ class ProjectIndex(pagelayout.PootlePage):
           removefilter = self.dirfilter + removefilter
       else:
         removefilter = self.dirfilter
-      search = projects.Search(dirfilter=removefilter)
+      search = pootlefile.Search(dirfilter=removefilter)
       search.assignedto = assignedto
       assigncount = self.project.unassignpoitems(self.session, search, assignedto)
       print "removed %d assigns from %s" % (assigncount, assignedto)

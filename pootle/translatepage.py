@@ -4,6 +4,7 @@ from jToolkit.widgets import widgets
 from jToolkit.widgets import table
 from translate.pootle import pagelayout
 from translate.pootle import projects
+from translate.pootle import pootlefile
 import difflib
 
 def oddoreven(polarity):
@@ -216,7 +217,7 @@ class TranslatePage(pagelayout.PootlePage):
     item = self.argdict.get("item", None)
     if item is None:
       try:
-        search = projects.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext)
+        search = pootlefile.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext)
         # TODO: find a nicer way to let people search stuff assigned to them (does it by default now)
         # search.assignedto = self.argdict.get("assignedto", self.session.username)
         search.assignedto = self.argdict.get("assignedto", None)
