@@ -36,23 +36,31 @@ class TranslatePage(pagelayout.PootlePage):
       pagelinks = []
     translatediv = pagelayout.TranslateForm([pagelinks, translateform])
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
+    self.addfilelinks(self.pofilename, self.matchnames)
+    self.addfolderlinks(dirfilter)
+    autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
+    self.headerwidgets.append(autoexpandscript)
+
+  def addfilelinks(self, pofilename, matchnames):
+    """adds a section on the current file, including any checks happening"""
     self.links.addcontents(pagelayout.SidebarTitle("current file"))
-    self.links.addcontents(pagelayout.SidebarText(self.pofilename))
-    if self.matchnames:
-      checknames = [matchname.replace("check-", "", 1) for matchname in self.matchnames]
+    self.links.addcontents(pagelayout.SidebarText(pofilename))
+    if matchnames:
+      checknames = [matchname.replace("check-", "", 1) for matchname in matchnames]
       self.links.addcontents(pagelayout.SidebarText("checking %s" % ", ".join(checknames)))
+    postats = self.project.getpostats(self.pofilename)
+    blank, fuzzy = postats["blank"], postats["fuzzy"]
+    translated, total = postats["translated"], postats["total"]
+    self.links.addcontents(pagelayout.SidebarText("%d/%d translated\n(%d blank, %d fuzzy)" % (translated, total, blank, fuzzy)))
+
+  def addfolderlinks(self, dirfilter):
+    """adds a section on the current folder"""
     self.links.addcontents(pagelayout.SidebarTitle("current folder"))
     if dirfilter is None:
       currentfolderlink = widgets.Link("index.html", "/")
     else:
       currentfolderlink = widgets.Link("index.html", dirfilter)
     self.links.addcontents(pagelayout.SidebarText(currentfolderlink))
-    postats = self.project.getpostats(self.pofilename)
-    blank, fuzzy = postats["blank"], postats["fuzzy"]
-    translated, total = postats["translated"], postats["total"]
-    self.links.addcontents(pagelayout.SidebarText("%d/%d translated\n(%d blank, %d fuzzy)" % (translated, total, blank, fuzzy)))
-    autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
-    self.headerwidgets.append(autoexpandscript)
 
   def receivetranslations(self):
     """receive any translations submitted by the user"""
