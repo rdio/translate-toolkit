@@ -26,33 +26,6 @@ from translate.misc import sparse
 from translate.storage import po
 from translate.storage import csvl10n
 
-# TODO: merge csv2po and repo into one class, merge the escaping logic etc
-
-class csv2po:
-  def convertstrings(self,thecsv,thepo):
-    # currently let's just get the source, msgid and msgstr back
-    thepo.sourcecomments = ["#: " + thecsv.source + "\n"]
-    thepo.msgid = [quote.quotestr(line) for line in thecsv.msgid.split('\n')]
-    thepo.msgstr = [quote.quotestr(line) for line in thecsv.msgstr.split('\n')]
-
-  def convertelement(self,thecsv):
-     thepo = po.poelement()
-     self.convertstrings(thecsv,thepo)
-     return thepo
-
-  def convertfile(self, thecsvfile):
-    thepofile = po.pofile()
-    for thecsv in thecsvfile.csvelements:
-      thepo = self.convertelement(thecsv)
-      if thepo is not None:
-        thepofile.poelements.append(thepo)
-    return thepofile
-
-def simplify(string):
-  return filter(str.isalnum, string)
-  tokens = sparse.tokenize(string)
-  return " ".join(tokens)
-
 def replacestrings(source, *pairs):
   for orig, new in pairs:
     source = source.replace(orig, new)
@@ -61,20 +34,26 @@ def replacestrings(source, *pairs):
 def quotecsvstr(source):
   return '"' + replacestrings(source, ('\\"','"'), ('"','\\"'), ("\\\\'", "\\'"), ('\\\\n', '\\n')) + '"'
 
-class repo:
+def simplify(string):
+  return filter(str.isalnum, string)
+  tokens = sparse.tokenize(string)
+  return " ".join(tokens)
+
+class csv2po:
   """a class that takes translations from a .csv file and puts them in a .po file"""
-  def __init__(self, templatepo):
+  def __init__(self, templatepo=None):
     """construct the converter..."""
-    self.unmatched = 0
-    self.p = templatepo
-    self.makeindex()
+    self.pofile = templatepo
+    if self.pofile is not None:
+      self.unmatched = 0
+      self.makeindex()
 
   def makeindex(self):
     """makes indexes required for searching..."""
     self.sourceindex = {}
     self.msgidindex = {}
     self.simpleindex = {}
-    for thepo in self.p.poelements:
+    for thepo in self.pofile.poelements:
       sourceparts = []
       for sourcecomment in thepo.sourcecomments:
         sourceparts.append(sourcecomment.replace("#:","",1).strip())
@@ -92,6 +71,14 @@ class repo:
         self.simpleindex[simpleid] = [thepo]
       # also match by standard msgid
       self.msgidindex[unquotedid] = thepo
+
+  def convertelement(self,thecsv):
+    """converts csv element to po element"""
+    thepo = po.poelement()
+    thepo.sourcecomments = ["#: " + thecsv.source + "\n"]
+    thepo.msgid = [quotecsvstr(line) for line in thecsv.msgid.split('\n')]
+    thepo.msgstr = [quotecsvstr(line) for line in thecsv.msgstr.split('\n')]
+    return thepo
 
   def handlecsvelement(self, thecsv):
     """handles reintegrating a csv element into the .po file"""
@@ -119,25 +106,30 @@ class repo:
       return
     thepo.msgstr = [quotecsvstr(quote.doencode(line)) for line in thecsv.msgstr.split('\n')]
 
-  def convertfile(self, csvfile):
-    """takes the translations from the given csvfile and puts them into the pofile"""
-    self.c = csvfile
-    # translate the strings
+  def convertfile(self, thecsvfile):
+    """converts a csvfile to a pofile, and returns it. uses templatepo if given at construction"""
+    if self.pofile is None:
+      self.pofile = po.pofile()
+      mergemode = False
+    else:
+      mergemode = True
     self.mightbeheader = 1
-    for thecsv in self.c.csvelements:
-      # there may be more than one element due to msguniq merge
-      self.handlecsvelement(thecsv)
+    for thecsv in thecsvfile.csvelements:
+      if mergemode:
+        self.handlecsvelement(thecsv)
+      else:
+        thepo = self.convertelement(thecsv)
+        self.pofile.poelements.append(thepo)
       self.mightbeheader = 0
-    # returned the transformed po
-    return self.p
-    # TODO: work out how to do the following if in verbose mode
-    # print >>sys.stderr, "%d unmatched out of %d strings" % (self.unmatched, len(self.p.poelements))
+    return self.pofile
+
+  def getmissing(self):
+    """get the number of missing translations..."""
+    # TODO: work out how to print out the following if in verbose mode
     missing = 0
-    for thepo in self.p.poelements:
-      if len(po.getunquotedstr(thepo.msgstr).strip()) == 0:
+    for thepo in self.pofile.poelements:
+      if thepo.isblankmsgstr():
         missing += 1
-    # print >>sys.stderr, "%d still missing out of %d strings" % (missing, len(self.p.poelements))
-    return self.p
 
 def convertcsv(inputfile, outputfile, templatefile):
   """reads in inputfile using csvl10n, converts using csv2po, writes to outputfile"""
@@ -146,7 +138,7 @@ def convertcsv(inputfile, outputfile, templatefile):
     convertor = csv2po()
   else:
     templatepo = po.pofile(templatefile)
-    convertor = repo(templatepo)
+    convertor = csv2po(templatepo)
   outputpo = convertor.convertfile(inputcsv)
   if outputpo.isempty():
     return 0
