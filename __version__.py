@@ -1,4 +1,4 @@
-#!/usr/bin/python2.2
+#!/usr/bin/env python
 """this file contains the version of translate"""
-ver = "0.6"
+ver = "0.7"
 
