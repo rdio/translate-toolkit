@@ -34,8 +34,8 @@ from translate import __version__
 
 def extractpoline(line):
   backslash = '\\'
-  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=1)[0]
-  return extracted.replace('\\"', '"')
+  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=0)[0]
+  return extracted # .replace('\\"', '"')
 
 def dounquotepo(thepo):
   unquotedid = "".join([extractpoline(line) for line in thepo.msgid])
@@ -64,6 +64,8 @@ class reoo:
       fullid = groupid + localid
     else:
       fullid = groupid + "." + localid
+    if resourcetype:
+      fullid = fullid + "." + resourcetype
     key = "%s#%s" % (sourcebase, fullid)
     return oo.normalizefilename(key)
 
