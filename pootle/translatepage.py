@@ -3,6 +3,7 @@
 from jToolkit.widgets import widgets
 from jToolkit.widgets import table
 from translate.pootle import pagelayout
+import difflib
 
 class TranslatePage(pagelayout.PootlePage):
   """the page which lets people edit translations"""
@@ -231,29 +232,64 @@ class TranslatePage(pagelayout.PootlePage):
     transdiv = widgets.Division([textarea, skipbutton, suggestbutton, submitbutton], "trans%d" % item, cls="translate-translation")
     return transdiv
 
+  def highlightdiffs(self, text, diffs, issrc=True):
+    """highlights the differences in diffs in the text.
+    diffs should be list of diff opcodes
+    issrc specifies whether to use the src or destination positions in reconstructing the text"""
+    if issrc:
+      diffstart = [(i1, 'start', tag) for (tag, i1, i2, j1, j2) in diffs if tag != 'equal']
+      diffstop = [(i2, 'stop', tag) for (tag, i1, i2, j1, j2) in diffs if tag != 'equal']
+    else:
+      diffstart = [(j1, 'start', tag) for (tag, i1, i2, j1, j2) in diffs if tag != 'equal']
+      diffstop = [(j2, 'stop', tag) for (tag, i1, i2, j1, j2) in diffs if tag != 'equal']
+    diffswitches = diffstart + diffstop
+    diffswitches.sort()
+    textdiff = ""
+    textnest = 0
+    textpos = 0
+    for i, switch, tag in diffswitches:
+      textdiff += text[textpos:i]
+      if switch == 'start':
+        textnest += 1
+      elif switch == 'stop':
+        textnest -= 1
+      if switch == 'start' and textnest == 1:
+        # start of a textition
+        textdiff += "<span style='background-color: #ffff00'>"
+      elif switch == 'stop' and textnest == 0:
+        # start of an equals block
+        textdiff += "</span>"
+      textpos = i
+    textdiff += text[textpos:]
+    return textdiff
+
   def gettransreview(self, item, trans, suggestions):
     if isinstance(trans, str):
       trans = trans.decode("utf8")
     currenttitle = widgets.Division("<b>Current Translation:</b>")
-    currenttext = pagelayout.TranslationText(widgets.Font(trans, {"color":self.textcolors[item % 2]}))
+    diffcodes = [difflib.SequenceMatcher(None, trans, suggestion).get_opcodes() for suggestion in suggestions]
+    combineddiffs = reduce(list.__add__, diffcodes)
+    transdiff = self.highlightdiffs(trans, combineddiffs, issrc=True)
+    currenttext = pagelayout.TranslationText(widgets.Font(transdiff, {"color":self.textcolors[item % 2]}))
     editlink = pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit",
 "editlink%d" % item)
-    
     suggdivs = []
     for suggid, suggestion in enumerate(suggestions):
+      suggdiffcodes = diffcodes[suggid]
+      suggdiff = self.highlightdiffs(suggestion, suggdiffcodes, issrc=False)
       if isinstance(suggestion, str):
         suggestion = suggestion.decode("utf8")
       if len(suggestions) > 1:
         suggtitle = widgets.Division("<b>Suggestion %d:</b>" % suggid)
       else:
         suggtitle = widgets.Division("<b>Suggestion:</b>")
-      suggestiontext = pagelayout.TranslationText(widgets.Font(suggestion, {"color":self.textcolors[item % 2]}))
+      suggestiontext = pagelayout.TranslationText(widgets.Font(suggdiff, {"color":self.textcolors[item % 2]}))
       suggestionhidden = widgets.Input({'type': 'hidden', "name": "sugg%d.%d" % (item, suggid), 'value': suggestion})
       acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
       rejectbutton = widgets.Input({"type":"submit", "name":"reject%d.%d" % (item, suggid), "value":"reject"}, "reject")
-      suggdiv = widgets.Division([suggtitle, suggestiontext, suggestionhidden, acceptbutton, rejectbutton], "sugg%d" % item)
+      suggdiv = widgets.Division([suggtitle, suggestiontext, suggestionhidden, "<br/>", acceptbutton, rejectbutton], "sugg%d" % item)
       suggdivs.append(suggdiv)
-    transdiv = widgets.Division([currenttitle, currenttext, editlink] + suggdivs, "trans%d" % item, cls="translate-translation")
+    transdiv = widgets.Division([currenttitle, currenttext, editlink, "<br/>"] + suggdivs, "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def gettransview(self, item, trans):
