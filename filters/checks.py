@@ -30,18 +30,28 @@ from translate.filters import prefilters
 class TranslationChecker:
   def __init__(self, accelerators=[], varmatches=[]):
     """construct the TranslationChecker..."""
-    self.prefilters = {}
-    for prefilter in (self.filtervariables, self.filteraccelerators, self.filterwordswithpunctuation):
-      self.prefilters[getattr(prefilter, 'name', prefilter.__name__)] = prefilter
     self.setaccelerators(accelerators)
     self.setvarmatches(varmatches)
     # exclude functions defined in TranslationChecker from being treated as tests...
     self.helperfunctions = {}
     for functionname in dir(TranslationChecker):
-      if functionname in self.prefilters: continue
       function = getattr(self, functionname)
       if callable(function):
         self.helperfunctions[functionname] = function
+
+  def getfilters(self, excludefilters={}, limitfilters=None):
+    """returns dictionary of available filters, including/excluding those in the given lists"""
+    filters = {}
+    if limitfilters is None:
+      # use everything available unless instructed
+      limitfilters = dir(self)
+    for functionname in limitfilters:
+      if functionname in excludefilters: continue
+      if functionname in self.helperfunctions: continue
+      filterfunction = getattr(self, functionname)
+      if not callable(filterfunction): continue
+      filters[functionname] = filterfunction
+    return filters
 
   def setaccelerators(self, accelerators):
     """sets the accelerator list"""
@@ -69,17 +79,13 @@ class TranslationChecker:
     """replaces words with punctuation with their unpunctuated equivalents..."""
     return prefilters.filterwordswithpunctuation(str1)
 
-  def run_all(self, str1, str2, ignoretests={}):
+  def run_filters(self, str1, str2, excludefilters={}, limitfilters=None):
     """run all the tests in this suite"""
     failures = []
-    for functionname in dir(self):
-      if functionname in self.prefilters or functionname in self.helperfunctions: continue
-      if functionname in ignoretests: continue
-      checkfunction = getattr(self, functionname)
-      if callable(checkfunction):
-        if not checkfunction(str1, str2):
-          checkname = getattr(checkfunction, 'name', checkfunction.__name__)
-          failures.append("%s: %s" % (checkname, checkfunction.__doc__))
+    filters = self.getfilters(excludefilters, limitfilters)
+    for functionname, filterfunction in filters.iteritems():
+      if not filterfunction(str1, str2):
+        failures.append("%s: %s" % (functionname, filterfunction.__doc__))
     return failures
 
 class StandardChecker(TranslationChecker):
@@ -171,7 +177,7 @@ class MozillaChecker(StandardChecker):
 def runtests(str1, str2, ignorelist=()):
   """verifies that the tests pass for a pair of strings"""
   checker = StandardChecker()
-  failures = checker.run_all(str1, str2, ignorelist)
+  failures = checker.run_filters(str1, str2, excludefilters=ignorelist)
   for failure in failures:
     print "failure: %s\n  %r\n  %r" % (failure, str1, str2)
   return failures
