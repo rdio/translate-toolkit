@@ -93,6 +93,9 @@ class UserIndex(pagelayout.PootlePage):
           projecttitle = self.localize("%s %s" % (languagename, projectname))
           languagelinks.append([widgets.Link(projecturl, projecttitle), "<br/>"])
       quicklinks.append(pagelayout.ItemDescription(languagelinks))
+    if not quicklinks:
+      setoptionstext = self.localize("Please click on 'Change options' and select some languages and projects")
+      quicklinks.append(pagelayout.ItemDescription(setoptionstext))
     return pagelayout.Contents([quicklinkstitle, quicklinks])
 
 class UserOptions(pagelayout.PootlePage):
