@@ -51,7 +51,9 @@ class PoXliffParser(xliff.XliffParser):
     bodynode = self.getbodynode(filenode, createifmissing=createifmissing)
     if bodynode is None: return False
     bodynode.appendChild(transunitnode)
-    # transunitnode.setIdAttribute("message1")
+    transunitnode.ownerDocument = self.document
+    messagenum = len(bodynode.getElementsByTagName("trans-unit"))
+    transunitnode.setAttribute("id", "messages_%d" % messagenum)
     return True
 
   def getheadernode(self, filenode, createifmissing=False):
