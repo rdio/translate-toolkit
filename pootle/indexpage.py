@@ -3,6 +3,7 @@
 from jToolkit.widgets import widgets
 from translate.pootle import pagelayout
 from translate.pootle import projects
+import os
 
 class PootleIndex(pagelayout.PootlePage):
   """the main page"""
@@ -20,6 +21,8 @@ class PootleIndex(pagelayout.PootlePage):
     return pagelayout.Contents(projectitems)
 
   def getprojectitem(self, projectcode, project):
+    if not hasattr(project, "fullname"):
+      project.fullname = projectcode
     bodytitle = '<h3 class="title">%s</h3>' % project.fullname
     bodydescription = pagelayout.ItemDescription('<a href="%s/">%s projects</a>' % (projectcode, project.fullname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
@@ -60,5 +63,60 @@ class ProjectIndex(pagelayout.PootlePage):
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
     stats = pagelayout.ItemStatistics("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
+    return pagelayout.Item([body, stats])
+
+class SubprojectIndex(pagelayout.PootlePage):
+  """the main page"""
+  def __init__(self, subproject, session, dirfilter=None):
+    self.subproject = subproject
+    self.instance = session.instance
+    self.translationproject = projects.getproject(self.subproject)
+    startlink = widgets.Link("translate.html", "Start Translating")
+    processlinks = [startlink]
+    if dirfilter is None:
+      depth = 0
+    else:
+      depth = dirfilter.count(os.path.sep) + 1
+    direntries = []
+    fileentries = []
+    for childdir in self.translationproject.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=False):
+      direntry = self.getdiritem(childdir)
+      direntries.append(direntry)
+    for childfile in self.translationproject.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
+      fileentry = self.getfileitem(childfile)
+      fileentries.append(fileentry)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.subproject.fullname, [processlinks, direntries, fileentries], session)
+
+  def getdiritem(self, direntry):
+    basename = os.path.basename(direntry)
+    bodytitle = '<h3 class="title">%s</h3>' % basename
+    browselink = widgets.Link(basename+"/", 'Browse %s' % basename)
+    startlink = widgets.Link("%s/translate.html" % basename, "Start Translating %s" % basename)
+    bodydescription = pagelayout.ItemDescription([browselink, startlink])
+    pofilenames = self.translationproject.browsefiles(direntry)
+    numfiles = len(pofilenames)
+    projectstats = self.translationproject.calculatestats(pofilenames)
+    translated = projectstats.get("translated", 0)
+    total = projectstats.get("total", 0)
+    percentfinished = (translated*100/max(total, 1))
+    body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    stats = pagelayout.ItemStatistics("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
+    return pagelayout.Item([body, stats])
+
+  def getfileitem(self, fileentry):
+    basename = os.path.basename(fileentry)
+    bodytitle = '<h3 class="title">%s</h3>' % basename
+    browselink = widgets.Link('%s?translate=1' % basename, 'Translate %s' % basename)
+    downloadlink = widgets.Link(basename, 'Download %s' % basename)
+    csvname = basename.replace(".po", ".csv")
+    csvlink = widgets.Link(csvname, 'Download %s as csv' % csvname)
+    bodydescription = pagelayout.ItemDescription([browselink, downloadlink, csvlink])
+    pofilenames = [fileentry]
+    projectstats = self.translationproject.calculatestats(pofilenames)
+    translated = projectstats.get("translated", 0)
+    total = projectstats.get("total", 0)
+    percentfinished = (translated*100/max(total, 1))
+    body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    stats = pagelayout.ItemStatistics("files, %d/%d strings (%d%%) translated" % (translated, total, percentfinished))
     return pagelayout.Item([body, stats])
 
