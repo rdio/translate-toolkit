@@ -46,6 +46,7 @@ class pootlefile(po.pofile):
     self.pendingfile = None
     # we delay parsing until it is required
     self.parsed = False
+    self.getstats()
 
   def readpofile(self):
     """reads and parses the main po file"""
@@ -91,7 +92,10 @@ class pootlefile(po.pofile):
 
   def getstats(self):
     """reads the stats if neccessary or returns them from the cache"""
-    frompomtime, self.stats = self.readstats()
+    if os.path.exists(self.statsfilename):
+      frompomtime, self.stats = self.readstats()
+    else:
+      frompomtime = None
     pomtime = self.getmodtime()
     if pomtime != frompomtime:
       self.calcstats()
@@ -126,7 +130,8 @@ class pootlefile(po.pofile):
 
   def calcstats(self):
     """calculates translation statistics for the given po file"""
-    # assumes classify has already been done
+    if not self.parsed:
+      self.readpofile()
     postats = dict([(name, len(items)) for name, items in self.classify.iteritems()])
     self.stats = postats
 
@@ -192,6 +197,8 @@ class pootlefile(po.pofile):
         else:
           self.classify[classname].remove(item)
         self.classify[classname].sort()
+    self.calcstats()
+    self.savestats()
 
   def getsuggestions(self, item):
     """find all the suggestion items submitted for the given (pofile or pofilename) and item"""
@@ -213,7 +220,6 @@ class pootlefile(po.pofile):
     newpo.markfuzzy(False)
     self.pendingfile.poelements.append(newpo)
     self.savependingfile()
-    # check implications for statistics
     self.reclassifyelement(item)
 
   def deletesuggestion(self, item, suggitem):
@@ -223,7 +229,6 @@ class pootlefile(po.pofile):
     # TODO: remove the suggestion in a less brutal manner
     del self.pendingfile.poelements[suggitem]
     self.savependingfile()
-    # check implications for statistics
     self.reclassifyelement(item)
 
 class TranslationProject:
@@ -239,8 +244,7 @@ class TranslationProject:
     checkerclasses = [checks.projectcheckers.get(projectcode, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses)
     self.pofiles = {}
-    self.stats = {}
-    self.initstatscache()
+    self.initpootlefiles()
 
   def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
     """gets a list of pofilenames, optionally filtering with the parent directory"""
@@ -334,24 +338,10 @@ class TranslationProject:
       session.translationsessions[self.languagecode, self.projectcode] = TranslationSession(self, session)
     return session.translationsessions[self.languagecode, self.projectcode]
 
-  def initstatscache(self):
-    """reads cached statistics from the disk"""
+  def initpootlefiles(self):
+    """sets up pootle files (without neccessarily parsing them)"""
     for pofilename in self.pofilenames:
       self.pofiles[pofilename] = pootlefile(self, pofilename)
-      if not pofilename in self.stats:
-        abspofilename = os.path.join(self.podir, pofilename)
-        pomtime = os.stat(abspofilename)[os.path.stat.ST_MTIME]
-        statsfilename = abspofilename + os.extsep + "stats"
-        if os.path.exists(statsfilename):
-          try:
-            statsmtime, postats = self.pofiles[pofilename].readstats()
-          except Exception, e:
-            # TODO: provide some logging here for debugging...
-            print "error processing stats for %s: %s" % (pofilename, e)
-            continue
-          if pomtime != statsmtime:
-            continue
-          self.stats[pofilename] = postats
 
   def calculatestats(self, pofilenames=None):
     """calculates translation statistics for the given po files (or all if None given)"""
