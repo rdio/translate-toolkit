@@ -232,8 +232,10 @@ class TranslatePage(pagelayout.PootlePage):
       return self.project.getitems(self.pofilename, self.item, self.item+10)
     else:
       self.editable = [self.item]
+      fromitem = self.item - 3
       self.firstitem = max(self.item - 3, 0)
-      return self.project.getitems(self.pofilename, self.item-3, self.item+4)
+      toitem = self.firstitem + 7
+      return self.project.getitems(self.pofilename, fromitem, toitem)
 
   def maketable(self):
     self.translations = self.gettranslations()
