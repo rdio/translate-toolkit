@@ -241,7 +241,6 @@ class TranslatePage(pagelayout.PootlePage):
     
     suggdivs = []
     for suggid, suggestion in enumerate(suggestions):
-      # TODO: include hidden widgets so the suggestiontext is included in the form
       if isinstance(suggestion, str):
         suggestion = suggestion.decode("utf8")
       if len(suggestions) > 1:
@@ -249,9 +248,10 @@ class TranslatePage(pagelayout.PootlePage):
       else:
         suggtitle = widgets.Division("<b>Suggestion:</b>")
       suggestiontext = pagelayout.TranslationText(widgets.Font(suggestion, {"color":self.textcolors[item % 2]}))
+      suggestionhidden = widgets.Input({'type': 'hidden', "name": "sugg%d.%d" % (item, suggid), 'value': suggestion})
       acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
       rejectbutton = widgets.Input({"type":"submit", "name":"reject%d.%d" % (item, suggid), "value":"reject"}, "reject")
-      suggdiv = widgets.Division([suggtitle, suggestiontext, acceptbutton, rejectbutton], "sugg%d" % item)
+      suggdiv = widgets.Division([suggtitle, suggestiontext, suggestionhidden, acceptbutton, rejectbutton], "sugg%d" % item)
       suggdivs.append(suggdiv)
     transdiv = widgets.Division([currenttitle, currenttext, editlink] + suggdivs, "trans%d" % item, cls="translate-translation")
     return transdiv
