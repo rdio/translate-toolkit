@@ -76,7 +76,9 @@ class ooconfigurator:
     if admin: cmdline.append("-a")
     if force: cmdline.append("-f")
     cmdline.append(newisocode)
+    wx.BeginBusyCursor()
     retcode = os.system(" ".join(cmdline))
+    wx.EndBusyCursor()
     if retcode == 1:
       raise ValueError("The language is not supported by this office installation")
     elif retcode == 2:
@@ -85,7 +87,6 @@ class ooconfigurator:
       raise ValueError("An internal error occurred")
     elif retcode:
       raise ValueError("Unknown error: %d" % retcode)
-    wx.MessageBox("Setting language successful", "ooswitchlang")
 
   def setuserlanguage(self, newisocode):
     """sets the language for the user"""
@@ -146,6 +147,7 @@ class LanguageSelectionWindow(wx.Frame):
       self.config.setadminlanguage(newisocode)
     else:
       self.config.setuserlanguage(newisocode)
+    wx.MessageBox("Setting language successful", "ooswitchlang", wx.OK, self)
 
   def showcurrentlanguage(self):
     currentisocode = self.getlanguage()
