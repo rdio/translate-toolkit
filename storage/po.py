@@ -449,6 +449,21 @@ class pofile:
     """update the Plural-Form PO header"""
     self.updateheader( Plural_Forms = "nplurals=%d; plural=%s;" % (nplural, plural) )
 
+  def getheaderplural(self):
+    """returns the nplural and plural values from the header"""
+    pluralformvalue = self.parseheader()['Plural-Forms']
+    nplural = sre.findall("nplurals=(.+?);", pluralformvalue)
+    plural = sre.findall("plural=(.+?);", pluralformvalue)
+    if nplural[0] == "INTEGER":
+      nplural = None
+    else:
+      nplural = nplural[0]
+    if plural[0] == "EXPRESSION":
+      plural = None
+    else:
+      plural = plural[0]
+    return nplural, plural
+
   def changeencoding(self, newencoding):
     """changes the encoding on the file"""
     self.encoding = newencoding
