@@ -425,6 +425,26 @@ class pofile:
       lineitem = ""
     return headervalues
 
+  def updateheader(self, **kwargs):
+    """update field(s) in the PO header"""
+    headeritems = {}
+    headeritems = self.parseheader()
+    print headeritems
+    if not headeritems:
+      self.makeheader()
+      headeritems = self.parseheader()
+    for key, value in kwargs.items():
+      key = key.replace("_", "-")
+      headeritems[key] = value
+      print key, value
+    headerlines = [""]
+    for key, value in headeritems.items():
+      headerlines.append("%s: %s\\n" % (key, value))
+    header = self.poelements[0]
+    header.msgstr = [quote.quotestr(headerline) for headerline in headerlines]
+    header.markfuzzy(False)
+    return header
+
   def changeencoding(self, newencoding):
     """changes the encoding on the file"""
     self.encoding = newencoding
