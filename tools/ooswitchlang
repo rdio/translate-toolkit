@@ -311,6 +311,7 @@ class LanguageSelectionWindow(wx.Frame):
       self.versionchoice.SetStringSelection(versionname)
       self.dirbox.SetValue(versiondir)
       self.setinstalldir(versiondir)
+      return
     # see if the current directory is an openoffice.org directory anyway...
     for versiondir in (currentdir, os.path.dirname(currentdir)):
       if os.path.isdir(os.path.join(versiondir, 'share', 'registry', 'data', 'org', 'openoffice')):
