@@ -461,7 +461,7 @@ class ProjectIndex(pagelayout.PootlePage):
     folderimage = pagelayout.Icon("goal.png")
     browseurl = self.makelink("index.html", goal=goalname)
     bodytitle = widgets.Link(browseurl, bodytitle)
-    actionlinks = self.getactionlinks("?goal=%s" % goalname, projectstats)
+    actionlinks = self.getactionlinks("index.html", projectstats, linksrequired=["check", "assign", "review", "zip"], goal=goalname)
     bodydescription = pagelayout.ActionLinks(actionlinks)
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(goalname, projectstats, len(pofilenames))
@@ -521,7 +521,7 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       return self.makelink(basename, translate=1, view=1)
 
-  def getactionlinks(self, basename, projectstats, linksrequired=None, filepath=None):
+  def getactionlinks(self, basename, projectstats, linksrequired=None, filepath=None, goal=None):
     """get links to the actions that can be taken on an item (directory / file)"""
     if linksrequired is None:
       linksrequired = ["review", "quick", "all"]
@@ -529,12 +529,12 @@ class ProjectIndex(pagelayout.PootlePage):
     if not basename or basename.endswith("/"):
       baseactionlink = basename + "translate.html?"
       baseindexlink = basename + "index.html?"
-    elif "?" in basename:
-      baseactionlink = "%s&translate=1" % basename
-      baseindexlink = "%s&index=1" % basename
     else:
       baseactionlink = "%s?translate=1" % basename
       baseindexlink = "%s?index=1" % basename
+    if goal:
+      baseactionlink += "&goal=%s" % goal
+      baseindexlink += "&goal=%s" % goal
     def addoptionlink(linkname, rightrequired, attrname, showtext, hidetext):
       if linkname in linksrequired:
         if rightrequired and not rightrequired in self.rights:
@@ -577,11 +577,18 @@ class ProjectIndex(pagelayout.PootlePage):
         currentfolder = "/".join(filepath.split("/")[:-1])
       else:
         currentfolder = filepath
+      archivename = "%s-%s" % (self.project.projectcode, self.project.languagecode)
       if currentfolder:
-        archivename = "%s-%s-%s.zip" % (self.project.projectcode, self.project.languagecode, currentfolder.replace("/", "-"))
+        archivename += "-%s" % currentfolder.replace("/", "-")
+      if goal:
+        archivename += "-%s" % goal
+      archivename += ".zip"
+      if goal:
+        archivename += "?goal=%s" % goal
+        linktext = self.localize('ZIP of goal')
       else:
-        archivename = "%s-%s.zip" % (self.project.projectcode, self.project.languagecode)
-      ziplink = widgets.Link(archivename, self.localize('ZIP of folder'), {'title': archivename})
+        linktext = self.localize('ZIP of folder')
+      ziplink = widgets.Link(archivename, linktext, {'title': archivename})
       actionlinks.append(ziplink)
     return actionlinks
 

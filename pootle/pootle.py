@@ -261,7 +261,14 @@ class PootleServer(users.OptionalLoginAppServer):
             dirfilter = os.path.join(*pathwords[:-1])
 	  else:
 	    dirfilter = None
-          pofilenames = project.browsefiles(dirfilter)
+          goal = argdict.get("goal", None)
+          if goal:
+            goalfiles = project.getgoal(goal)
+            pofilenames = []
+            for goalfile in goalfiles:
+              pofilenames.extend(project.browsefiles(goalfile))
+          else:
+            pofilenames = project.browsefiles(dirfilter)
           archivecontents = project.getarchive(pofilenames)
           page = widgets.PlainContents(archivecontents)
           page.content_type = "application/zip"
