@@ -29,3 +29,4 @@ New tools
 
 pocount
 	- Fix po class so that it handles KDE style plurals there not in pocount
+    - Count word\nword and word<tag>word as 2 words
