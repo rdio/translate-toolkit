@@ -46,9 +46,9 @@ class PootleServer(users.OptionalLoginAppServer):
       return configpage.ResourcePage(self, session)
     elif top == "login.html":
       if session.isopen:
-        redirecttext = pagelayout.IntroText("Redirecting to index...")
-        redirectpage = pagelayout.PootlePage("Redirecting to index...", redirecttext, session)
-        return server.Redirect("index.html", withpage=redirectpage)
+        redirecttext = pagelayout.IntroText("Redirecting to home page...")
+        redirectpage = pagelayout.PootlePage("Redirecting to home page...", redirecttext, session)
+        return server.Redirect("my/", withpage=redirectpage)
       if 'username' in argdict:
         session.username = argdict["username"]
       return users.LoginPage(session, languagenames=self.languagenames)
