@@ -27,7 +27,7 @@ from translate.filters import prefilters
 # actual test methods
 
 class TranslationChecker:
-  def __init__(self, accelerators=[], varmatches=[]):
+  def __init__(self, accelerators=[], varmatches=[], excludefilters={}, limitfilters=None):
     """construct the TranslationChecker..."""
     self.setaccelerators(accelerators)
     self.setvarmatches(varmatches)
@@ -37,6 +37,7 @@ class TranslationChecker:
       function = getattr(self, functionname)
       if callable(function):
         self.helperfunctions[functionname] = function
+    self.defaultfilters = self.getfilters(excludefilters, limitfilters)
 
   def getfilters(self, excludefilters={}, limitfilters=None):
     """returns dictionary of available filters, including/excluding those in the given lists"""
@@ -78,11 +79,10 @@ class TranslationChecker:
     """replaces words with punctuation with their unpunctuated equivalents..."""
     return prefilters.filterwordswithpunctuation(str1)
 
-  def run_filters(self, str1, str2, excludefilters={}, limitfilters=None):
+  def run_filters(self, str1, str2):
     """run all the tests in this suite"""
     failures = []
-    filters = self.getfilters(excludefilters, limitfilters)
-    for functionname, filterfunction in filters.iteritems():
+    for functionname, filterfunction in self.defaultfilters.iteritems():
       if not filterfunction(str1, str2):
         failures.append("%s: %s" % (functionname, filterfunction.__doc__))
     return failures
@@ -182,39 +182,43 @@ class StandardChecker(TranslationChecker):
 # code to actually run the tests (use unittest?)
 
 class OpenOfficeChecker(StandardChecker):
-  def __init__(self):
+  def __init__(self, **kwargs):
     StandardChecker.__init__(self,
       accelerators = ("~"),
-      varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("#", "#"))
+      varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("#", "#")),
+      **kwargs
       )
 
 class MozillaChecker(StandardChecker):
-  def __init__(self):
+  def __init__(self, **kwargs):
     StandardChecker.__init__(self,
       accelerators = ("&"),
-      varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None))
+      varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None)),
+      **kwargs
       )
 
 class GnomeChecker(StandardChecker):
-  def __init__(self):
+  def __init__(self, **kwargs):
     StandardChecker.__init__(self,
       accelerators = ("_"),
-      varmatches = (("%", 1),)
+      varmatches = (("%", 1),),
+      **kwargs
       )
 
 class KdeChecker(StandardChecker):
-  def __init__(self):
+  def __init__(self, **kwargs):
 	# TODO allow setup of KDE plural and translator comments so that they do
 	# not create false postives
     StandardChecker.__init__(self,
       accelerators = ("&"),
-      varmatches = (("%", 1),)
+      varmatches = (("%", 1),),
+      **kwargs
       )
 
 def runtests(str1, str2, ignorelist=()):
   """verifies that the tests pass for a pair of strings"""
-  checker = StandardChecker()
-  failures = checker.run_filters(str1, str2, excludefilters=ignorelist)
+  checker = StandardChecker(excludefilters=ignorelist)
+  failures = checker.run_filters(str1, str2)
   for failure in failures:
     print "failure: %s\n  %r\n  %r" % (failure, str1, str2)
   return failures

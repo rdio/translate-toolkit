@@ -25,12 +25,13 @@ from translate.filters import checks
 from translate.misc import optrecurse
 
 class pocheckfilter:
-  def __init__(self, checker=None):
+  def __init__(self, checkerclass=None, includereview=1, includefuzzy=0, excludefilters={}, limitfilters=None):
     """builds a pocheckfilter using the given checker"""
-    if checker is None:
-      self.checker = checks.StandardChecker()
-    else:
-      self.checker = checker
+    if checkerclass is None:
+      checkerclass = checks.StandardChecker
+    self.checker = checkerclass(excludefilters=excludefilters, limitfilters=limitfilters)
+    self.includereview = includereview
+    self.includefuzzy = includefuzzy
 
   def getfilterdocs(self):
     """lists the docs for filters available on checker..."""
@@ -39,32 +40,32 @@ class pocheckfilter:
     filterdocs.sort()
     return "\n".join(filterdocs)
 
-  def filterelement(self, thepo, includereview=1, includefuzzy=0, excludefilters={}, limitfilters=None):
+  def filterelement(self, thepo):
     """runs filters on an element"""
     if thepo.isheader(): return []
     if thepo.hasplural():
       unquotedid = po.getunquotedstr(thepo.msgid)
       unquotedstr = po.getunquotedstr(thepo.msgstr[0])
-      failures = self.checker.run_filters(unquotedid, unquotedstr, excludefilters, limitfilters)
+      failures = self.checker.run_filters(unquotedid, unquotedstr)
       unquotedid = po.getunquotedstr(thepo.msgid_plural)
       unquotedstr = po.getunquotedstr(thepo.msgstr[1])
-      failures += self.checker.run_filters(unquotedid, unquotedstr, excludefilters, limitfilters)
+      failures += self.checker.run_filters(unquotedid, unquotedstr)
     else:
       unquotedid = po.getunquotedstr(thepo.msgid)
       unquotedstr = po.getunquotedstr(thepo.msgstr)
-      failures = self.checker.run_filters(unquotedid, unquotedstr, excludefilters, limitfilters)
+      failures = self.checker.run_filters(unquotedid, unquotedstr)
     if not failures:
-      if includereview and thepo.hastypecomment("review"):
+      if self.includereview and thepo.hastypecomment("review"):
         failures.append("marked for review")
-      if includefuzzy and thepo.isfuzzy():
+      if self.includefuzzy and thepo.isfuzzy():
         failures.append("fuzzy")
     return failures
 
-  def filterfile(self, thepofile, includereview=1, includefuzzy=0, excludefilters={}, limitfilters=None):
+  def filterfile(self, thepofile):
     """runs filters on a file"""
     thenewpofile = po.pofile()
     for thepo in thepofile.poelements:
-      failures = self.filterelement(thepo, includereview, includefuzzy, excludefilters, limitfilters)
+      failures = self.filterelement(thepo)
       if failures:
         thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in failures])
         if ("".join(thepo.typecomments)).find("fuzzy") == -1:
@@ -84,20 +85,19 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
   def run(self):
     """parses the arguments, and runs recursiveprocess with the resulting options"""
     (options, args) = self.parse_args()
-    # TODO: handle all the arguments in checkfilter constructor, not per-string
-    options.checkfilter = pocheckfilter(options.filterobject)
+    options.checkfilter = pocheckfilter(options.filterclass, options.includereview, options.includefuzzy, \
+        options.excludefilters, options.limitfilters)
     options.inputformats = self.inputformats
     options.outputoptions = self.outputoptions
     if options.listfilters:
-      print pocheckfilter.getfilterdocs()
+      print options.checkfilter.getfilterdocs()
     else:
       self.recursiveprocess(options)
 
-def runpofilter(inputfile, outputfile, templatefile, includereview=False, includefuzzy=False, checkfilter=None, \
-                excludefilters={}, limitfilters=None):
+def runpofilter(inputfile, outputfile, templatefile, checkfilter=None):
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
   fromfile = po.pofile(inputfile)
-  tofile = checkfilter.filterfile(fromfile, includereview, includefuzzy, excludefilters, limitfilters)
+  tofile = checkfilter.filterfile(fromfile)
   if tofile.isempty():
     return 0
   tolines = tofile.tolines()
@@ -113,17 +113,17 @@ if __name__ == '__main__':
   parser.add_option("", "--fuzzy", dest="includefuzzy",
     action="store_true", default=False,
     help="include elements marked fuzzy")
-  parser.add_option("", "--openoffice", dest="filterobject",
-    action="store_const", default=None, const=checks.OpenOfficeChecker(),
+  parser.add_option("", "--openoffice", dest="filterclass",
+    action="store_const", default=None, const=checks.OpenOfficeChecker,
     help="use the standard checks for OpenOffice translations")
-  parser.add_option("", "--mozilla", dest="filterobject",
-    action="store_const", default=None, const=checks.MozillaChecker(),
+  parser.add_option("", "--mozilla", dest="filterclass",
+    action="store_const", default=None, const=checks.MozillaChecker,
     help="use the standard checks for Mozilla translations")
-  parser.add_option("", "--gnome", dest="filterobject",
-    action="store_const", default=None, const=checks.GnomeChecker(),
+  parser.add_option("", "--gnome", dest="filterclass",
+    action="store_const", default=None, const=checks.GnomeChecker,
     help="use the standard checks for Gnome translations")
-  parser.add_option("", "--kde", dest="filterobject",
-    action="store_const", default=None, const=checks.KdeChecker(),
+  parser.add_option("", "--kde", dest="filterclass",
+    action="store_const", default=None, const=checks.KdeChecker,
     help="use the standard checks for KDE translations")
   parser.add_option("-x", "--exclude", dest="excludefilters",
     action="append", default=[], type="string", metavar="FILTER",
@@ -131,6 +131,6 @@ if __name__ == '__main__':
   parser.add_option("-t", "--test", dest="limitfilters",
     action="append", default=None, type="string", metavar="FILTER",
     help="only use test FILTERs specified with this option when filtering")
-  parser.passthrough.extend(['includereview', 'includefuzzy', 'excludefilters', 'limitfilters', 'checkfilter'])
+  parser.passthrough.append('checkfilter')
   parser.run()
 
