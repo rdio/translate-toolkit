@@ -11,6 +11,10 @@ from translate.tools import pogrep
 from jToolkit import timecache
 import time
 import os
+try:
+  import PyLucene
+except:
+  PyLucene = None
 
 def getmodtime(filename, default=None):
   """gets the modificationtime of the given file"""
@@ -456,6 +460,7 @@ class TranslationProject:
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses, errorhandler=self.filtererrorhandler)
     self.pofiles = potimecache(15*60, self)
     self.initpootlefiles()
+    self.initindex()
 
   def filtererrorhandler(self, functionname, str1, str2, e):
     print "error in filter %s: %r, %r, %s" % (functionname, str1, str2, e)
@@ -525,6 +530,73 @@ class TranslationProject:
       yield self.pofilenames[index]
       index += 1
 
+  def initindex(self):
+    """initializes the search index"""
+    if PyLucene is None:
+      return
+    self.indexdir = os.path.join(self.podir, ".poindex-%s-%s" % (self.projectcode, self.languagecode))
+    self.analyzer = PyLucene.StandardAnalyzer()
+    if not os.path.exists(self.indexdir):
+      os.mkdir(self.indexdir)
+      self.indexstore = PyLucene.FSDirectory.getDirectory(self.indexdir, True)
+      writer = PyLucene.IndexWriter(self.indexstore, self.analyzer, True)
+      writer.close()
+    else:
+      self.indexstore = PyLucene.FSDirectory.getDirectory(self.indexdir, False)
+    self.indexreader = PyLucene.IndexReader.open(self.indexstore)
+    self.searcher = PyLucene.IndexSearcher(self.indexreader)
+    addlist, deletelist = [], []
+    for pofilename in self.pofiles:
+      self.updateindex(pofilename, addlist, deletelist)
+    # TODO: this is all unneccessarily complicated, there must be a simpler way.
+    if deletelist:
+      for docid in deletelist:
+        self.indexreader.deleteDocument(docid)
+      self.searcher.close()
+      self.indexreader.close()
+    if addlist:
+      self.indexwriter = PyLucene.IndexWriter(self.indexstore, self.analyzer, False)
+      for doc in addlist:
+        self.indexwriter.addDocument(doc)
+      self.indexwriter.optimize(True)
+      self.indexwriter.close()
+    if deletelist:
+      self.indexreader = PyLucene.IndexReader.open(self.indexstore)
+      self.searcher = PyLucene.IndexSearcher(self.indexreader)
+
+  def updateindex(self, pofilename, addlist, deletelist):
+    """updates the index with the contents of pofilename"""
+    if PyLucene is None:
+      return
+    needsupdate = True
+    pofile = self.pofiles[pofilename]
+    presencecheck = PyLucene.QueryParser.parse(pofilename, "filename", self.analyzer)
+    hits = self.searcher.search(presencecheck)
+    pomtime = getmodtime(pofile.filename)
+    for hit in xrange(hits.length()):
+      doc = hits.doc(hit)
+      if doc.get("pomtime") == str(pomtime):
+        needsupdate = False
+    if needsupdate:
+      # TODO: update this to index items individually rather than the whole file
+      for hit in xrange(hits.length()):
+        docid = hits.id(hit)
+        deletelist.append(docid)
+      pofile.pofreshen()
+      doc = PyLucene.Document()
+      doc.add(PyLucene.Field("filename", pofilename, True, True, True))
+      doc.add(PyLucene.Field("pomtime", str(pomtime), True, True, True))
+      allorig, alltrans = [], []
+      for thepo in pofile.transelements:
+        orig, trans = self.unquotefrompo(thepo.msgid), self.unquotefrompo(thepo.msgstr)
+        allorig.append(orig)
+        alltrans.append(trans)
+      allorig = "\n".join(allorig)
+      alltrans = "\n".join(alltrans)
+      doc.add(PyLucene.Field("orig", allorig, False, True, True))
+      doc.add(PyLucene.Field("trans", alltrans, False, True, True))
+      addlist.append(doc)
+
   def matchessearch(self, pofilename, search):
     """returns whether any items in the pofilename match the search (based on collected stats etc)"""
     if search.dirfilter is not None and not pofilename.startswith(search.dirfilter):
@@ -548,6 +620,18 @@ class TranslationProject:
           matches = True
       if not matches:
         return False
+    if PyLucene and search.searchtext:
+      # TODO: move this up a level, use index to manage whole search
+      origquery = PyLucene.QueryParser.parse(search.searchtext, "orig", self.analyzer)
+      transquery = PyLucene.QueryParser.parse(search.searchtext, "trans", self.analyzer)
+      textquery = PyLucene.BooleanQuery()
+      textquery.add(origquery, False, False)
+      textquery.add(transquery, False, False)
+      hits = self.searcher.search(textquery)
+      for hit in xrange(hits.length()):
+        if hits.doc(hit).get("filename") == pofilename:
+          return True
+      return False
     return True
 
   def searchpofilenames(self, lastpofilename, search, includelast=False):
