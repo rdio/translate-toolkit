@@ -173,9 +173,8 @@ class dtd2po:
 
     return thepo
 
-  def convertfile(self,thedtdfile,filename="unknown file"):
-    thepofile = po.pofile()
-    # create a header for the file
+  def makeheader(self, filename):
+    """create a header for the given filename"""
     headerpo = po.poelement()
     headerpo.othercomments.append("# extracted from %s\n" % filename)
     headerpo.typecomments.append("#, fuzzy\n")
@@ -195,6 +194,11 @@ class dtd2po:
     headeritems.append("Content-Type: text/plain; charset=CHARSET\\n")
     headeritems.append("Content-Transfer-Encoding: ENCODING\\n")
     headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
+    return headerpo
+
+  def convertfile(self,thedtdfile,filename="unknown file"):
+    thepofile = po.pofile()
+    headerpo = self.makeheader(filename)
     thepofile.poelements.append(headerpo)
     # remember the current groups we're in
     self.currentgroups = []
