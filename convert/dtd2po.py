@@ -196,15 +196,9 @@ class dtd2po:
     headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
     return headerpo
 
-  def convertfile(self,thedtdfile,filename="unknown file"):
-    thepofile = po.pofile()
-    headerpo = self.makeheader(filename)
-    thepofile.poelements.append(headerpo)
-    # remember the current groups we're in
-    self.currentgroups = []
-    # go through the dtd and convert each element
-    thedtdfile.makeindex()
-    mixedentities = [] # those entities which have a .label and .accesskey combined
+  def findmixedentities(self, thedtdfile):
+    """creates self.mixedentities from the dtd file..."""
+    self.mixedentities = {} # those entities which have a .label and .accesskey combined
     for entity in thedtdfile.index.keys():
       if entity.endswith(".label"):
         entitybase = entity[:entity.rfind(".label")]
@@ -212,30 +206,49 @@ class dtd2po:
         # mixed entity
         if thedtdfile.index.has_key(entitybase + ".accesskey"):
           # add both versions to the list of mixed entities
-          mixedentities += [entity,entitybase+".accesskey"]
+          self.mixedentities[entity] = 0
+          self.mixedentities[entitybase+".accesskey"] = 0
       # check if this could be a mixed entity (".label" and ".accesskey")
-    for thedtd in thedtdfile.dtdelements:
-      # keep track of whether acceskey and label were combined
-      successfulmix = 0
-      if thedtd.entity in mixedentities:
-        # use special convertmixed element which produces one poelement with
-        # both combined for the label and None for the accesskey
+
+  def convertdtdelement(self, thedtdfile, thedtd):
+    """converts a dtd element from thedtdfile to a po element, handling mixed entities along the way..."""
+    # keep track of whether acceskey and label were combined
+    if thedtd.entity in self.mixedentities:
+      # use special convertmixed element which produces one poelement with
+      # both combined for the label and None for the accesskey
+      alreadymixed = self.mixedentities[thedtd.entity]
+      if alreadymixed:
+        # we are successfully throwing this away...
+        return None
+      else:
+        # depending on what we come across first, work out the label and the accesskey
         if thedtd.entity.endswith(".label"):
-          accesskeydtd = thedtdfile.index[thedtd.entity[:thedtd.entity.rfind(".label")]+".accesskey"]
-          thepo = self.convertmixedelement(thedtd,accesskeydtd)
-          if thepo is not None:
-            successfulmix = 1
-          else:
-            # successfulmix == 0 will mean the label will be handled anyway
-            # manually add the separate access key as well as mix failed...
-            accesskeypo = self.convertelement(accesskeydtd)
-            if accesskeypo is not None:
-              thepofile.poelements.append(accesskeypo)
-        else:
-          successfulmix = 1 # we are successfully throwing this away...
-          thepo = None
-      if not successfulmix:
-        thepo = self.convertelement(thedtd)
+          labelentity, labeldtd = thedtd.entity, thedtd
+          accesskeyentity = labelentity[:labelentity.rfind(".label")]+".accesskey"
+          accesskeydtd = thedtdfile.index[accesskeyentity]
+        elif thedtd.entity.endswith(".accesskey"):
+          accesskeyentity, accesskeydtd = thedtd.entity, thedtd
+          labelentity = accesskeyentity[:accesskeyentity.rfind(".accesskey")]+".label"
+          labeldtd = thedtdfile.index[labelentity]
+        thepo = self.convertmixedelement(labeldtd, accesskeydtd)
+        if thepo is not None:
+          self.mixedentities[accesskeyentity] = 1
+          self.mixedentities[labelentity] = 1
+          return thepo
+        # otherwise the mix failed. add each one separately...
+    return self.convertelement(thedtd)
+
+  def convertfile(self, thedtdfile, filename="unknown file"):
+    thepofile = po.pofile()
+    headerpo = self.makeheader(filename)
+    thepofile.poelements.append(headerpo)
+    # remember the current groups we're in
+    self.currentgroups = []
+    # go through the dtd and convert each element
+    thedtdfile.makeindex()
+    self.findmixedentities(thedtdfile)
+    for thedtd in thedtdfile.dtdelements:
+      thepo = self.convertdtdelement(thedtdfile, thedtd)
       if thepo is not None:
         thepofile.poelements.append(thepo)
     thepofile.removeduplicates()
