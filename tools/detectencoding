@@ -168,6 +168,8 @@ class detector:
         decoded = translation.decode(encoding)
       except UnicodeDecodeError:
         continue
+      except:
+        continue
       self.updatecountmap(decoded, self.excludestring, countmap)
     return countmap
 
@@ -179,6 +181,7 @@ class detector:
     validencodings = {}
     encodingdeltas = {}
     for encoding in self.listencodings():
+      encodingdeltas[encoding] = 99999999
       countmap = self.makecountmap(encoding)
       validencodings[encoding] = countmap
       if dictcountmap:
@@ -193,7 +196,10 @@ class detector:
       # sort alphabetically
       validkeys = validencodings.keys()
       validkeys.sort()
-    keylen = max([len("%s (%d):" % (key, encodingdeltas[key])) for key in validencodings])
+    if encodingdeltas:
+      keylen = max([len("%s (%d):" % (key, encodingdeltas[key])) for key in validencodings if key in encodingdeltas])
+    else:
+      keylen = 0
     for validencoding in validkeys:
       sortedstring = self.countmaptostring(validencodings[validencoding])
       validencoding = "%s (%d):" % (validencoding, encodingdeltas[validencoding])
