@@ -24,6 +24,7 @@ gettext-style .po (or .pot) files are used in translations for KDE et al (see kb
 from __future__ import generators
 from translate.misc import quote
 import sre
+import datetime
 
 def getunquotedstr(lines, joinwithlinebreak=True, includeescapes=True):
   esc = '\\'
@@ -303,6 +304,7 @@ class pofile:
     headeritems = [""]
     headeritems.append("Project-Id-Version: PACKAGE VERSION\\n")
     headeritems.append("POT-Creation-Date: 2002-07-15 17:13+0100\\n")
+    headeritems.append("POT-Creation-Date: " + datetime.datetime.utcnow().strftime("%F %H:%M%z") + "\\n")
     headeritems.append("PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n")
     headeritems.append("Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n")
     headeritems.append("Language-Team: LANGUAGE <LL@li.org>\\n")

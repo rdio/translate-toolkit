@@ -13,12 +13,12 @@ moz2po
 
 headers
   charset=UTF-8
-  correct POT generation dates
 
 csv2po
-  --charset to allow setting of po header charset
-  change order of columns: original, translation, other stuff
+  * --charset to allow setting of po header charset
+  * change order of columns: original, translation, other stuff
+  * It does not currently reflow text to create a newline around literal \n
+  making it difficult to check files
 
 oo2po / po2oo
   fix problem with OOO_VENDOR and \" quoting in offmgr.po (see help - about)
-
