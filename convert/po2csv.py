@@ -96,44 +96,34 @@ def handleoptions(options, inputformat, outputformat):
   if options.recursive:
     if options.pot:
       inputformat = "pot"
-    if options.inputfile is None:
+    if options.input is None:
       raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile")
-    if not os.path.isdir(options.inputfile):
+    if not os.path.isdir(options.input):
       raise optparse.OptionValueError("inputfile must be directory for recursive run.")
-    if options.outputfile is None:
+    if options.output is None:
       raise optparse.OptionValueError("must specify output directory for recursive run.")
-    if not os.path.isdir(options.outputfile):
+    if not os.path.isdir(options.output):
       raise optparse.OptionValueError("output must be existing directory for recursive run.")
-    recurse(options.inputfile, options.outputfile, inputformat, outputformat)
+    recurse(options.input, options.output, inputformat, outputformat)
   else:
-    if options.inputfile is None:
+    if options.input is None:
       inputfile = sys.stdin
     else:
-      inputfile = open(options.inputfile, 'r')
-    if options.outputfile is None:
+      inputfile = open(options.input, 'r')
+    if options.output is None:
       outputfile = sys.stdout
     else:
-      outputfile = open(options.outputfile, 'w')
+      outputfile = open(options.output, 'w')
     convertfile(inputfile, outputfile)
 
 if __name__ == '__main__':
   # handle command line options
-  try:
-    import optparse
-  except ImportError:
-    from translate.misc import optparse
+  from translate.convert import convert
   inputformat = "po"
   outputformat = "csv"
-  parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile]",
-                                 version="%prog "+__version__.ver)
-  parser.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False, \
-                    help="recurse subdirectories")
+  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformat, outputformat)
   parser.add_option("-P", "--pot", action="store_true", dest="pot", default=False, \
                     help="convert PO template (.pot) with blank msgstrs")
-  parser.add_option("-i", "--input-file", dest="inputfile", default=None,
-                    help="read from inputfile in "+inputformat+" format", metavar="inputfile")
-  parser.add_option("-o", "--output-file", dest="outputfile", default=None,
-                    help="write to outputfile in "+outputformat+" format", metavar="outputfile")
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:

@@ -201,16 +201,16 @@ def recurse(inputdir, outputdir, templatedir, languagecode=None):
 def handleoptions(options):
   """handles the options, and runs the neccessary functions..."""
   # TODO: make it handle non-recursive as well!
-  if options.inputfile is None:
+  if options.input is None:
     raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputdir")
-  if not os.path.isdir(options.inputfile):
+  if not os.path.isdir(options.input):
     raise optparse.OptionValueError("inputfile must be directory for recursive run.")
-  if options.outputfile is None:
+  if options.output is None:
     raise optparse.OptionValueError("must specify output directory for recursive run.")
-  if not os.path.isdir(options.outputfile):
+  if not os.path.isdir(options.output):
     raise optparse.OptionValueError("output must be existing directory for recursive run.")
-  if options.templatefile is not None:
-    if not os.path.isdir(options.templatefile):
+  if options.template is not None:
+    if not os.path.isdir(options.template):
       raise optparse.OptionValueError("template must be existing directory for recursive run.")
   if options.languagecode is None:
     languagecode = None
@@ -220,26 +220,14 @@ def handleoptions(options):
     except ValueError:
       raise optparse.OptionValueError("languagecode must be a two-digit number")
     languagecode = "%02d" % languagecode
-  recurse(options.inputfile, options.outputfile, options.templatefile, languagecode)
+  recurse(options.input, options.output, options.template, languagecode)
 
 if __name__ == '__main__':
   # handle command line options
-  try:
-    import optparse
-  except ImportError:
-    from translate.misc import optparse
-  parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]",
-                                 version="%prog "+__version__.ver)
-  parser.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False,
-                    help="recurse subdirectories")
+  from translate.convert import convert
+  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformat, outputformat, usetemplates=True)
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
-  parser.add_option("-i", "--input-file", dest="inputfile", default=None,
-                    help="read from inputfile in "+inputformat+" format", metavar="inputfile")
-  parser.add_option("-o", "--output-file", dest="outputfile", default=None,
-                    help="write to outputfile in "+outputformat+" format", metavar="outputfile")
-  parser.add_option("-t", "--template", dest="templatefile", default=None,
-                    help="read from template in "+templateformat+" format", metavar="template")
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:

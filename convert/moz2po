@@ -119,20 +119,20 @@ def recurse(inputdir, outputdir, templatedir, inputformats, outputformat):
 
 def handleoptions(options, inputformats, outputformat):
   """handles the options, and runs the neccessary functions..."""
-  if options.inputdir is None:
+  if options.input is None:
     raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputdir")
-  if not os.path.isdir(options.inputdir):
+  if not os.path.isdir(options.input):
     raise optparse.OptionValueError("inputdir must be directory for recursive run.")
-  if options.outputdir is None:
+  if options.output is None:
     raise optparse.OptionValueError("must specify output directory for recursive run.")
-  if not os.path.isdir(options.outputdir):
+  if not os.path.isdir(options.output):
     raise optparse.OptionValueError("output must be existing directory for recursive run.")
-  if options.templatedir is not None:
-    if not os.path.isdir(options.templatedir):
+  if options.template is not None:
+    if not os.path.isdir(options.template):
       raise optparse.OptionValueError("template must be existing directory for recursive run.")
   if options.pot:
     outputformat = "pot"
-  recurse(options.inputdir, options.outputdir, options.templatedir, inputformats, outputformat)
+  recurse(options.input, options.output, options.template, inputformats, outputformat)
 
 if __name__ == '__main__':
   # handle command line options

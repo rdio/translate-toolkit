@@ -146,35 +146,24 @@ def main(inputfile, outputfile, templatefile):
 
 if __name__ == '__main__':
   # handle command line options
-  try:
-    import optparse
-  except ImportError:
-    from translate.misc import optparse
+  from translate.convert import convert
   inputformat = "properties"
   outputformat = "po"
-  templateformat = "properties"
-  parser = optparse.OptionParser(usage="%prog [-i|--input-file inputfile] [-o|--output-file outputfile]",
-                                 version="%prog "+__version__.ver)
-  parser.add_option("-i", "--input-file", dest="inputfile", default=None,
-                    help="read from inputfile in "+inputformat+" format", metavar="inputfile")
-  parser.add_option("-o", "--output-file", dest="outputfile", default=None,
-                    help="write to outputfile in "+outputformat+" format", metavar="outputfile")
-  parser.add_option("-t", "--template", dest="templatefile", default=None,
-                    help="read from template in "+templateformat+" format", metavar="template")
+  parser = convert.ConvertOptionParser(convert.norecursion, inputformat, outputformat, usetemplates=True)
   (options, args) = parser.parse_args()
   # open the appropriate files
-  if options.inputfile is None:
+  if options.input is None:
     inputfile = sys.stdin
   else:
-    inputfile = open(options.inputfile, 'r')
-  if options.outputfile is None:
+    inputfile = open(options.input, 'r')
+  if options.output is None:
     outputfile = sys.stdout
   else:
-    outputfile = open(options.outputfile, 'w')
-  if options.templatefile is None:
+    outputfile = open(options.output, 'w')
+  if options.template is None:
     templatefile = None
   else:
-    templatefile = open(options.templatefile, 'r')
+    templatefile = open(options.template, 'r')
   main(inputfile, outputfile, templatefile)
 
 

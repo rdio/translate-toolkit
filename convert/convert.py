@@ -28,11 +28,11 @@ norecursion = 0
 optionalrecursion = 1
 defaultrecursion = 2
 
-class ConvertOptionParser(optparse.OptionParser, object):
+class ConvertOptionParser(optparse.OptionParser):
   """a specialized Option Parser for convertor tools..."""
-  def __init__(self, recursive, inputformats, outputformats, usetemplates):
+  def __init__(self, recursive, inputformats, outputformats, usetemplates=False):
     """construct the specialized Option Parser"""
-    super(ConvertOptionParser, self).__init__(version="%prog "+__version__.ver)
+    optparse.OptionParser.__init__(self, version="%prog "+__version__.ver)
     usage = "%prog [options] "
     if recursive == defaultrecursion:
       argumentdesc = "dir"
