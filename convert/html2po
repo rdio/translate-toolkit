@@ -38,8 +38,8 @@ class html2po:
     contents = inputfile.read()
     htmlparser.feed(contents)
     for blocknum in range(len(htmlparser.blocks)):
-      block = htmlparser.blocks[blocknum]
-      if not block.strip(): continue
+      block = htmlparser.blocks[blocknum].strip()
+      if not block: continue
       thepo = po.poelement()
       thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum+1))
       thepo.msgid = [quote.quotestr(quote.rstripeol(block))]
