@@ -73,12 +73,13 @@ class StandardPOChecker(POChecker):
     return not thepo.hastypecomment("review")
 
 class pocheckfilter:
-  def __init__(self, checkerclasses=None, excludefilters={}, limitfilters=None, includeheader=False):
+  def __init__(self, checkerclasses=None, excludefilters={}, limitfilters=None, includeheader=False, includefuzzy=False):
     """builds a pocheckfilter using the given checker (a list is allowed too)"""
     if checkerclasses is None:
       checkerclasses = [checks.StandardChecker, StandardPOChecker]
     self.checker = POTeeChecker(excludefilters=excludefilters, limitfilters=limitfilters, checkerclasses=checkerclasses)
     self.includeheader = includeheader
+    self.includefuzzy = includefuzzy
 
   def getfilterdocs(self):
     """lists the docs for filters available on checker..."""
@@ -90,6 +91,7 @@ class pocheckfilter:
   def filterelement(self, thepo):
     """runs filters on an element"""
     if thepo.isheader(): return []
+    if not self.includefuzzy and thepo.isfuzzy(): return []
     if thepo.hasplural():
       unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
       unquotedstr = po.getunquotedstr(thepo.msgstr[0], joinwithlinebreak=False)
@@ -138,7 +140,7 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
       checkerclasses = [checks.StandardChecker, StandardPOChecker]
     else:
       checkerclasses = [options.filterclass, StandardPOChecker]
-    options.checkfilter = pocheckfilter(checkerclasses, options.excludefilters, options.limitfilters, options.includeheader)
+    options.checkfilter = pocheckfilter(checkerclasses, options.excludefilters, options.limitfilters, options.includeheader, options.includefuzzy)
     if not options.checkfilter.checker.combinedfilters:
       self.error("No valid filters were specified")
     options.inputformats = self.inputformats
