@@ -29,11 +29,15 @@ class ItemStatistics(widgets.Division):
 
 class SidebarTitle(widgets.Division):
   def __init__(self, contents):
-    widgets.Division.__init__(self, contents, cls="sidecontents")
+    widgets.Division.__init__(self, contents, cls="sidetitle")
 
 class SidebarText(widgets.Division):
   def __init__(self, contents):
     widgets.Division.__init__(self, contents, cls="side")
+
+class TranslateForm(widgets.Division):
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="translate-form")
 
 class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
