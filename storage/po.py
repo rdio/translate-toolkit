@@ -284,7 +284,7 @@ class poelement:
         yield typecomment
       for obsoletemessage in self.obsoletemessages:
         yield obsoletemessage
-        return
+      return
     # if there's no msgid don't do msgid and string, unless we're the header
     # this will also discard any comments other than plain othercomments...
     if (len(self.msgid) == 0) or ((len(self.msgid) == 1) and (self.msgid[0] == '""')):
