@@ -347,7 +347,7 @@ class TranslationProject:
     suggestions = [po.getunquotedstr(suggestpo.msgstr) for suggestpo in suggestpos]
     return suggestions
 
-  def acceptsuggestion(self, pofile, item, newtrans):
+  def acceptsuggestion(self, pofile, item, suggitem, newtrans):
     """accepts the suggestion into the main pofile"""
     if isinstance(pofile, (str, unicode)):
       pofilename = pofile
@@ -355,11 +355,11 @@ class TranslationProject:
       pendingfile = self.getpendingfile(pofilename)
     else:
       pendingfile = self.getpendingfile(pofile.filename)
-    # TODO: remove the suggestion
     self.updatetranslation(pofilename, item, newtrans)
-    print "accepted: %r" % newtrans
+    # TODO: remove the suggestion in a less brutal manner
+    del pendingfile.poelements[suggitem]
 
-  def rejectsuggestion(self, pofile, item, newtrans):
+  def rejectsuggestion(self, pofile, item, suggitem, newtrans):
     """rejects the suggestion and removes it from the pending file"""
     if isinstance(pofile, (str, unicode)):
       pofilename = pofile
@@ -367,8 +367,8 @@ class TranslationProject:
       pendingfile = self.getpendingfile(pofilename)
     else:
       pendingfile = self.getpendingfile(pofile.filename)
-    # TODO: remove the suggestion
-    print "rejected: %r" % newtrans
+    # TODO: remove the suggestion in a less brutal manner
+    del pendingfile.poelements[suggitem]
 
   def savepofile(self, pofilename):
     """saves changes to disk..."""

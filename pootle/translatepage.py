@@ -15,7 +15,7 @@ class TranslatePage(pagelayout.PootlePage):
     # TODO: fix this in jToolkit
     if isinstance(self.searchtext, unicode):
       self.searchtext = self.searchtext.encode("utf8")
-    self.translationsession = self.project.gettranslationsession(session)
+    self.session = self.project.gettranslationsession(session)
     self.instance = session.instance
     self.pofilename = None
     self.lastitem = None
@@ -112,21 +112,21 @@ class TranslatePage(pagelayout.PootlePage):
       if item is not None:
         suggestions[item, suggid] = value
     for item in skips:
-      self.translationsession.skiptranslation(self.pofilename, item)
+      self.session.skiptranslation(self.pofilename, item)
     for item in submits:
       if item in skips or item not in translations:
         continue
       value = translations[item]
-      self.translationsession.receivetranslation(self.pofilename, item, value)
+      self.session.receivetranslation(self.pofilename, item, value)
       self.lastitem = item
     for item, suggid in rejects:
       value = suggestions[item, suggid]
-      self.project.rejectsuggestion(self.pofilename, item, value)
+      self.project.rejectsuggestion(self.pofilename, item, suggid, value)
     for item, suggid in accepts:
       if (item, suggid) in rejects or (item, suggid) not in suggestions:
         continue
       value = suggestions[item, suggid]
-      self.project.acceptsuggestion(self.pofilename, item, value)
+      self.project.acceptsuggestion(self.pofilename, item, suggid, value)
 
   def getmatchnames(self, checker): 
     """returns any checker filters the user has asked to match..."""
@@ -146,7 +146,7 @@ class TranslatePage(pagelayout.PootlePage):
       try:
         self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, self.matchnames, self.dirfilter, self.searchtext).next()
       except StopIteration:
-        if self.translationsession.lastitem is None:
+        if self.session.lastitem is None:
           raise StopIteration("There are no items matching that search")
         else:
           raise StopIteration("You have finished going through the items you selected")
