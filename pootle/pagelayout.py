@@ -3,13 +3,45 @@
 from jToolkit.widgets import widgets
 from jToolkit.widgets import table
 
+class Blog(widgets.Division):
+  def __init__(self, title):
+    widgets.Division.__init__(self, title, cls="blog")
+
+class BlogBody(widgets.Division):
+  def __init__(self, title):
+    widgets.Division.__init__(self, title, cls="blogbody")
+
+class IntroText(widgets.Division):
+  def __init__(self, title):
+    widgets.Division.__init__(self, title, cls="intro")
+
+class Item(widgets.Division):
+  def __init__(self, title):
+    widgets.Division.__init__(self, title, cls="item")
+
+class ItemDescription(widgets.Division):
+  def __init__(self, title):
+    widgets.Division.__init__(self, title, cls="item-description")
+
+class Posted(widgets.Division):
+  def __init__(self, title):
+    widgets.Division.__init__(self, title, cls="posted")
+
+class SidebarTitle(widgets.Division):
+  def __init__(self, title):
+    widgets.Division.__init__(self, title, cls="sidetitle")
+
+class SidebarText(widgets.Division):
+  def __init__(self, title):
+    widgets.Division.__init__(self, title, cls="side")
+
 class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
   def __init__(self, session):
     baseurl = session.instance.baseurl
-    title = widgets.Division(session.instance.title, cls="sidetitle")
-    description = widgets.Division(session.instance.description, cls="side")
-    logintitle = widgets.Division("login status", cls="sidetitle")
+    title = SidebarTitle(session.instance.title)
+    description = SidebarText(session.instance.description)
+    logintitle = SidebarTitle("login status")
     if session.status:
       loginstatus = session.status
     else:
@@ -18,8 +50,8 @@ class PootleSidebar(widgets.Division):
       loginlink = widgets.Link(baseurl+"?islogout=1", "Log Out")
     else:
       loginlink = widgets.Link(baseurl+"login.html", "Log In")
-    loginstatus = widgets.Division(loginstatus, cls="side")
-    loginlink = widgets.Division(loginlink, cls="side")
+    loginstatus = SidebarText(loginstatus)
+    loginlink = SidebarText(loginlink)
     widgets.Division.__init__(self, [title, description, logintitle, loginstatus, loginlink], "links")
 
 class PootleBanner(widgets.Division):

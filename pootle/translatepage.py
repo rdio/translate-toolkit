@@ -30,12 +30,12 @@ class TranslatePage(pagelayout.PootlePage):
     translatediv = widgets.Division(translateform, None, {"style": divstyle})
     contents = widgets.Division([translatediv], "content")
     pagelayout.PootlePage.__init__(self, title, contents, session, bannerheight=81)
-    self.links.addcontents(widgets.Division("current file", cls="sidetitle"))
-    self.links.addcontents(widgets.Division(self.pofilename, cls="side"))
+    self.links.addcontents(pagelayout.SidebarTitle("current file"))
+    self.links.addcontents(pagelayout.SidebarText(self.pofilename))
     postats = self.translationproject.getpostats(self.pofilename)
     blank, fuzzy = postats["blank"], postats["fuzzy"]
     translated, total = postats["translated"], postats["total"]
-    self.links.addcontents(widgets.Division("%d/%d translated\n(%d blank, %d fuzzy)" % (translated, total, blank, fuzzy), cls="side"))
+    self.links.addcontents(pagelayout.SidebarText("%d/%d translated\n(%d blank, %d fuzzy)" % (translated, total, blank, fuzzy)))
     autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
     self.headerwidgets.append(autoexpandscript)
 
