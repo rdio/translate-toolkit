@@ -235,6 +235,7 @@ class ProjectsAdminPage(pagelayout.PootlePage):
     projects.setcell(0, 3, table.TableCell(pagelayout.Title(self.localize("Checker Style"))))
     projects.setcell(0, 4, table.TableCell(pagelayout.Title(self.localize("Remove project"))))
     for projectcode in self.potree.getprojectcodes():
+      projectadminlink = "../projects/%s/admin.html" % projectcode
       projectname = self.potree.getprojectname(projectcode)
       projectdescription = self.potree.getprojectdescription(projectcode)
       projectname = self.potree.getprojectname(projectcode)
@@ -244,7 +245,7 @@ class ProjectsAdminPage(pagelayout.PootlePage):
       checkerstyletextbox = widgets.Input({"name": "projectcheckerstyle-%s" % projectcode, "value": projectcheckerstyle})
       removecheckbox = widgets.Input({"name": "projectremove-%s" % projectcode, "type": "checkbox"})
       rownum = projects.maxrownum()+1
-      projects.setcell(rownum, 0, table.TableCell(projectcode))
+      projects.setcell(rownum, 0, table.TableCell(widgets.Link(projectadminlink, projectcode)))
       projects.setcell(rownum, 1, table.TableCell(nametextbox))
       projects.setcell(rownum, 2, table.TableCell(descriptiontextbox))
       projects.setcell(rownum, 3, table.TableCell(checkerstyletextbox))
@@ -275,7 +276,7 @@ class UsersAdminPage(pagelayout.PootlePage):
       adminlink = pagelayout.IntroText(widgets.Link("index.html", self.localize("Admin page")))
       contents = [homelink, adminlink, self.getusers()]
     else:
-      contents = pagelayout.IntroText(self.localize("You do not have the rights to administer pootle."))
+      contents = pagelayout.IntroText(self.localize("You do not have the rights to administer Pootle."))
     pagelayout.PootlePage.__init__(self, self.localize("Pootle User Admin Page"), contents, session)
 
   def getusers(self):
@@ -396,6 +397,52 @@ class ProjectLanguageIndex(pagelayout.PootlePage):
     percentfinished = (translated*100/max(total, 1))
     stats = pagelayout.ItemStatistics(self.localize("%d files, %d/%d strings (%d%%) translated") % (numfiles, translated, total, percentfinished))
     return pagelayout.Item([body, stats])
+
+class ProjectAdminPage(pagelayout.PootlePage):
+  """list of languages belonging to a project"""
+  def __init__(self, potree, projectcode, session, argdict):
+    self.potree = potree
+    self.projectcode = projectcode
+    self.session = session
+    self.localize = session.localize
+    projectname = self.potree.getprojectname(self.projectcode)
+    if self.session.issiteadmin():
+      if "doaddlanguage" in argdict:
+        newlanguage = argdict.get("newlanguage", None)
+        if not newlanguage:
+          raise ValueError("You must select a new language")
+        self.potree.addtranslationproject(newlanguage, self.projectcode)
+      languagestitle = pagelayout.Title(self.localize("Existing languages"))
+      languagelinks = self.getlanguagelinks()
+      existing = pagelayout.ContentsItem([languagestitle, languagelinks])
+      newlangform = self.getnewlangform()
+      contents = [existing, newlangform]
+    else:
+      contents = pagelayout.IntroText(self.localize("You do not have the rights to administer this project."))
+    pagelayout.PootlePage.__init__(self, "Pootle Admin: "+projectname, contents, session, bannerheight=81)
+
+  def getlanguagelinks(self):
+    """gets the links to the languages"""
+    languagecodes = self.potree.getlanguagecodes(self.projectcode)
+    languageitems = [self.getlanguageitem(languagecode) for languagecode in languagecodes]
+    return pagelayout.Item(languageitems)
+
+  def getlanguageitem(self, languagecode):
+    languagename = self.potree.getlanguagename(languagecode)
+    bodydescription = pagelayout.ItemDescription(widgets.Link("../../%s/%s/" % (languagecode, self.projectcode), languagename))
+    return bodydescription
+
+  def getnewlangform(self):
+    """returns a box that lets the user add new languages"""
+    existingcodes = self.potree.getlanguagecodes(self.projectcode)
+    allcodes = self.potree.getlanguagecodes()
+    newcodes = [code for code in allcodes if not code in existingcodes]
+    newcodes.sort()
+    newoptions = [(code, self.potree.getlanguagename(code)) for code in newcodes]
+    languageselect = widgets.Select({'name':'newlanguage'}, options=newoptions)
+    submitbutton = widgets.Input({"type": "submit", "name": "doaddlanguage", "value": self.localize("Add Language")})
+    newlangform = widgets.Form([languageselect, submitbutton], {"action": "", "name":"newlangform"})
+    return newlangform
 
 class ProjectIndex(pagelayout.PootlePage):
   """the main page"""

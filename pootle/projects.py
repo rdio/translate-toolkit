@@ -1081,8 +1081,10 @@ class POTree:
 
   def hasproject(self, languagecode, projectcode):
     """returns whether the project exists for the language"""
+    if not hasattr(self.projects, projectcode):
+      return False
     if languagecode is None:
-      return hasattr(self.projects, projectcode)
+      return True
     if not self.haslanguage(languagecode):
       return False
     try:
@@ -1096,6 +1098,22 @@ class POTree:
     if (languagecode, projectcode) not in self.projectcache:
       self.projectcache[languagecode, projectcode] = TranslationProject(languagecode, projectcode, self)
     return self.projectcache[languagecode, projectcode]
+
+  def addtranslationproject(self, languagecode, projectcode):
+    """creates a new TranslationProject"""
+    if self.hasproject(languagecode, projectcode):
+      raise ValueError("TranslationProject for project %s, language %s already exists" % (projectcode, languagecode))
+    gnustyle = False
+    projectdir = os.path.join(self.podirectory, projectcode)
+    for otherlanguagecode in self.getlanguagecodes(projectcode):
+      if self.hasgnufiles(projectdir, otherlanguagecode):
+        gnustyle = True
+        break
+    if gnustyle:
+      raise NotImplementedError("Can't yet create GNU translationprojects")
+    else:
+      languagedir = os.path.join(projectdir, languagecode)
+      os.mkdir(languagedir)
 
   def getprojectname(self, projectcode):
     """returns the full name of the project"""
