@@ -145,7 +145,7 @@ class ProjectIndex(pagelayout.PootlePage):
       projectstats = self.project.calculatestats(pofilenames)
       actionlinks = self.getactionlinks("", projectstats)
       actionlinks = pagelayout.ActionLinks(actionlinks)
-      mainstats = self.getitemstats((dirfilter or "") + "/", projectstats, len(pofilenames))
+      mainstats = self.getitemstats("", projectstats, len(pofilenames))
     mainitem = pagelayout.MainItem([bodytitle, actionlinks, mainstats])
     childitems = self.getchilditems(dirfilter)
     pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, mainitem, childitems], session, bannerheight=81)
@@ -243,7 +243,7 @@ class ProjectIndex(pagelayout.PootlePage):
     if numfiles is not None:
       statssummary = ("%d files, " % numfiles) + statssummary
     if total and self.showchecks:
-      if basename.endswith("/"):
+      if not basename or basename.endswith("/"):
         checklinkbase = basename + "translate.html?"
       else:
         checklinkbase = basename + "?translate=1"
