@@ -69,7 +69,9 @@ Installation
 To install the Translate Toolkit
 
 * Windows
-TODO
+Double Click on translate-N.N-py2exe.zip and extract to a directory
+From a DOS Window 
+<path-to-tools>\<command>
 
 * Linux
 tar xzf translate-N.N.tar.gz
