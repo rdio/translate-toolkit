@@ -50,7 +50,7 @@ class propelement:
 class propfile:
   """this class represents a .properties file, made up of propelements"""
   def __init__(self, inputfile=None):
-    """construct a pofile, optionally reading in from inputfile"""
+    """construct a propfile, optionally reading in from inputfile"""
     self.propelements = []
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
@@ -59,7 +59,7 @@ class propfile:
       self.fromlines(proplines)
 
   def fromlines(self, lines):
-    """read the lines of a po file in and include them as poelements"""
+    """read the lines of a properties file in and include them as propelements"""
     newpe = propelement()
     inmultilinemsgid = 0
     for line in lines:
@@ -112,6 +112,12 @@ class propfile:
       pelines = pe.tolines()
       lines.extend(pelines)
     return lines
+
+  def makeindex(self):
+    """makes self.index dictionary keyed on the name"""
+    self.index = {}
+    for pe in self.propelements:
+      self.index[pe.name] = pe
 
 if __name__ == '__main__':
   import sys
