@@ -8,6 +8,7 @@ from translate.filters import checks
 from translate.filters import pofilter
 from translate.convert import po2csv
 from translate.tools import pogrep
+from jToolkit import timecache
 import os
 
 def getmodtime(filename, default=None):
@@ -421,6 +422,20 @@ class Search:
     self.assignedaction = assignedaction
     self.searchtext = searchtext
 
+class potimecache(timecache.timecache):
+  """caches pootlefile objects, remembers time, and reverts back to statistics when neccessary..."""
+  def __init__(self, expiryperiod, project):
+    """initialises the cache to keep objects for the given expiryperiod, and point back to the project"""
+    timecache.timecache.__init__(self, expiryperiod)
+    self.project = project
+
+  def expire(self, pofilename):
+    """expires the given pofilename by recreating it (holding only stats)"""
+    timestamp, currentfile = dict.__getitem__(self, pofilename)
+    # TODO: look at extra situations where the parsed file has been kept (if it has been used/modified recently)
+    if currentfile.pomtime is not None:
+      self.__setitem__(pofilename, pootlefile(self.project, pofilename))
+ 
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
   def __init__(self, languagecode, projectcode, potree):
@@ -433,7 +448,7 @@ class TranslationProject:
     self.pofilenames = potree.getpofiles(languagecode, projectcode)
     checkerclasses = [checks.projectcheckers.get(projectcode, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses)
-    self.pofiles = {}
+    self.pofiles = potimecache(15*60, self)
     self.initpootlefiles()
 
   def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
