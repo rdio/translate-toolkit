@@ -28,6 +28,5 @@ pocount
 	- Only provide total if more than one file processed
 	- Count blank "   " messages seperately - currently does not count them but
 	  then figure is different to msgfmt --statistics.
-	- Handle Gettext plurals
 	- Optionally count items marked for review
 	- Provide Grand Total per item ie fuzzy+translated+untranslated
