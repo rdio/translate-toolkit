@@ -26,17 +26,17 @@ class PootleIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % language.fullname
     bodydescription = pagelayout.ItemDescription(widgets.Link(languagecode+"/", language.fullname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    subprojects = [projects.getproject(subproject) for (subprojectcode, subproject) in language.subprojects.iteritems()]
-    subprojectcount = len(subprojects)
+    projectlist = [projects.getproject(project) for (projectcode, project) in language.projects.iteritems()]
+    projectcount = len(projectlist)
     totalstats = {"translated":0, "total":0}
-    for subproject in subprojects:
-      projectstats = subproject.calculatestats()
+    for project in projectlist:
+      projectstats = project.calculatestats()
       for name, count in projectstats.iteritems():
         totalstats[name] = totalstats.get(name, 0) + count
     translated = totalstats["translated"]
     total = totalstats["total"]
     percentfinished = (translated*100/max(total, 1))
-    stats = pagelayout.ItemStatistics("%d subprojects, %d%% translated" % (subprojectcount, percentfinished))
+    stats = pagelayout.ItemStatistics("%d projects, %d%% translated" % (projectcount, percentfinished))
     return pagelayout.Item([body, stats])
 
 class LanguageIndex(pagelayout.PootlePage):
@@ -44,19 +44,19 @@ class LanguageIndex(pagelayout.PootlePage):
   def __init__(self, language, session):
     self.language = language
     self.instance = session.instance
-    subprojectlinks = self.getsubprojectlinks()
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.language.fullname, subprojectlinks, session, bannerheight=81)
+    projectlinks = self.getprojectlinks()
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.language.fullname, projectlinks, session, bannerheight=81)
 
-  def getsubprojectlinks(self):
+  def getprojectlinks(self):
     """gets the links to the projects"""
-    subprojectitems = [self.getsubprojectitem(subprojectcode, subproject) for subprojectcode, subproject in self.language.subprojects.iteritems()]
-    return pagelayout.Contents(subprojectitems)
+    projectitems = [self.getprojectitem(projectcode, project) for projectcode, project in self.language.projects.iteritems()]
+    return pagelayout.Contents(projectitems)
 
-  def getsubprojectitem(self, subprojectcode, subproject):
-    bodytitle = '<h3 class="title">%s</h3>' % subproject.fullname
-    bodydescription = pagelayout.ItemDescription(widgets.Link(subprojectcode+"/", '%s subproject' % subproject.fullname))
+  def getprojectitem(self, projectcode, project):
+    bodytitle = '<h3 class="title">%s</h3>' % project.fullname
+    bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", '%s project' % project.fullname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    translationproject = projects.getproject(subproject)
+    translationproject = projects.getproject(project)
     numfiles = len(translationproject.pofilenames)
     projectstats = translationproject.calculatestats()
     translated = projectstats.get("translated", 0)
@@ -65,12 +65,12 @@ class LanguageIndex(pagelayout.PootlePage):
     stats = pagelayout.ItemStatistics("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
     return pagelayout.Item([body, stats])
 
-class SubprojectIndex(pagelayout.PootlePage):
+class ProjectIndex(pagelayout.PootlePage):
   """the main page"""
-  def __init__(self, subproject, session, dirfilter=None):
-    self.subproject = subproject
+  def __init__(self, project, session, dirfilter=None):
+    self.project = project
     self.instance = session.instance
-    self.translationproject = projects.getproject(self.subproject)
+    self.translationproject = projects.getproject(self.project)
     startlink = pagelayout.IntroText(widgets.Link("translate.html", "Start Translating"))
     processlinks = [startlink]
     if dirfilter is None:
@@ -85,7 +85,7 @@ class SubprojectIndex(pagelayout.PootlePage):
     for childfile in self.translationproject.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
       fileentry = self.getfileitem(childfile)
       fileentries.append(fileentry)
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.subproject.fullname, [processlinks, direntries, fileentries], session, bannerheight=81)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.fullname, [processlinks, direntries, fileentries], session, bannerheight=81)
 
   def getdiritem(self, direntry):
     basename = os.path.basename(direntry)

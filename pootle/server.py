@@ -55,9 +55,9 @@ class PootleServer(OptionalLoginAppServer):
     for languagecode, language in self.instance.languages.iteritems():
       if not hasattr(language, "fullname"):
         language.fullname = languagecode
-      for subprojectcode, subproject in language.subprojects.iteritems():
-        if not hasattr(subproject, "fullname"):
-          subproject.fullname = subprojectcode
+      for projectcode, project in language.projects.iteritems():
+        if not hasattr(project, "fullname"):
+          project.fullname = projectcode
 
   def saveprefs(self):
     """saves changed preferences back to disk"""
@@ -116,41 +116,41 @@ class PootleServer(OptionalLoginAppServer):
 	bottom = ""
       if not top or top == "index.html":
         return indexpage.LanguageIndex(language, session)
-      if hasattr(language.subprojects, top):
-        subproject = getattr(language.subprojects, top)
+      if hasattr(language.projects, top):
+        project = getattr(language.projects, top)
         pathwords = pathwords[1:]
         if pathwords:
           top = pathwords[0]
         else:
           top = ""
         if not top or top == "index.html":
-	  return indexpage.SubprojectIndex(subproject, session)
+	  return indexpage.ProjectIndex(project, session)
 	elif bottom == "translate.html":
 	  if len(pathwords) > 1:
             dirfilter = os.path.join(*pathwords[:-1])
 	  else:
 	    dirfilter = ""
-          return translatepage.TranslatePage(language, subproject, session, argdict, dirfilter)
+          return translatepage.TranslatePage(language, project, session, argdict, dirfilter)
 	elif bottom.endswith(".po"):
 	  pofilename = os.path.join(*pathwords)
 	  if argdict.get("translate", 0):
-            return translatepage.TranslatePage(language, subproject, session, argdict, dirfilter=pofilename)
+            return translatepage.TranslatePage(language, project, session, argdict, dirfilter=pofilename)
 	  else:
-	    translationproject = projects.getproject(subproject)
+	    translationproject = projects.getproject(project)
 	    contents = translationproject.getsource(pofilename)
 	    page = widgets.PlainContents(contents)
 	    page.content_type = "text/plain"
 	    return page
 	elif bottom.endswith(".csv"):
 	  csvfilename = os.path.join(*pathwords)
-	  translationproject = projects.getproject(subproject)
+	  translationproject = projects.getproject(project)
 	  contents = translationproject.getcsv(csvfilename)
 	  page = widgets.PlainContents(contents)
 	  page.content_type = "text/plain"
 	  return page
 	elif bottom == "index.html":
-	  return indexpage.SubprojectIndex(subproject, session, os.path.join(*pathwords[:-1]))
+	  return indexpage.ProjectIndex(project, session, os.path.join(*pathwords[:-1]))
 	else:
-	  return indexpage.SubprojectIndex(subproject, session, os.path.join(*pathwords))
+	  return indexpage.ProjectIndex(project, session, os.path.join(*pathwords))
     return None
 
