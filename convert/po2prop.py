@@ -40,7 +40,7 @@ class reprop:
     self.inecho = 0
     self.makepodict(pofile)
     outputlines = []
-    for line in self.templatefile.xreadlines():
+    for line in self.templatefile.readlines():
       outputstr = self.convertline(line)
       outputlines.append(outputstr)
     return outputlines
