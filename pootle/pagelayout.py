@@ -53,7 +53,7 @@ class PootleSidebar(widgets.Division):
     if session.isopen:
       loginlink = widgets.Link(baseurl+"?islogout=1", "Log Out")
     else:
-      loginlink = widgets.Link(baseurl+"login.html", "Log In")
+      loginlink = [widgets.Link(baseurl+"login.html", "Log In"), " / ", widgets.Link(baseurl+"register.html", "Register")]
     loginstatus = SidebarText(loginstatus)
     loginlink = SidebarText(loginlink)
     widgets.Division.__init__(self, [title, description, logintitle, loginstatus, loginlink], "links")

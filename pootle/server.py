@@ -4,17 +4,21 @@ from jToolkit.web import server
 from jToolkit.web.session import md5hexdigest
 from jToolkit.widgets import widgets
 from jToolkit.widgets import form
+from jToolkit import mailer
 from translate.pootle import indexpage
 from translate.pootle import translatepage
 from translate.pootle import pagelayout
+from translate.pootle import passwordgen
 
 class LoginPage(server.LoginPage, pagelayout.PootlePage):
   """wraps the normal login page in a PootlePage layout"""
   def __init__(self, session, extraargs={}, confirmlogin=0, specialmessage=None, languagenames=None):
     server.LoginPage.__init__(self, session, extraargs, confirmlogin, specialmessage, languagenames)
-    loginform = self.contents
-    contents = pagelayout.IntroText(loginform)
+    contents = pagelayout.IntroText(self.contents)
     pagelayout.PootlePage.__init__(self, "Login to Pootle", contents, session)
+
+  def getcontents(self):
+    return pagelayout.PootlePage.getcontents(self)
 
 class RegisterPage(pagelayout.PootlePage):
   """page for new registrations"""
@@ -66,7 +70,16 @@ class PootleServer(OptionalLoginAppServer):
     elif top == "register.html":
       if "username" in argdict:
         username = argdict["username"]
-        session.db.insert("users", {"username":username, "passwdhash":md5hexdigest(username)})
+        password = passwordgen.createpassword()
+        userexists = session.db.singlevalue("select count(*) from users where username='%s'" % username.replace("'", "''"))
+        if userexists:
+          session.db.update("users", "username", username, {"passwdhash":md5hexdigest(password)})
+          message = "your password has been updated\n"
+        else:
+          session.db.insert("users", {"username":username, "passwdhash":md5hexdigest(password)})
+          message = "an account has been created for you\n"
+        message += "username: %s\npassword: %s\n" % (username, password)
+        mailer.dosendmessage(self.instance.registration.fromaddress, [username], message)
         return LoginPage(session)
       else:
         return RegisterPage(session)
