@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+
+"""tool for editing openoffice.org setup files"""
+
+import codecs
+from translate.misc import sparse
+import sys
+
+class SetupIndex(sparse.SimpleParser):
+  def __init__(self, filename=None):
+    sparse.SimpleParser.__init__(self)
+    self.quotechars = ('"', '{')
+    self.endquotechars = {'"':'"', '{':'}'}
+    self.sectiontypes = ('ConfigurationItem', 'Custom', 'DataCarrier', 'Directory',
+      'File', 'Folder', 'FolderItem', 'Function', 'HelpText', 'Installation', 'Module', 'Procedure',
+      'Profile', 'ProfileItem', 'RegistryItem', 'Shortcut', 'StarRegistry', 'StarRegistryItem')
+    self.definitions = {}
+    self.bytype = {}
+    self.referrals = []
+    for sectiontype in self.sectiontypes:
+      self.bytype[sectiontype] = {}
+    if filename is not None:
+      self.readfile(filename)
+
+  def readfile(self, filename):
+    self.filename = filename
+    # f = codecs.open(self.filename, 'r', encoding='utf8')
+    f = open(self.filename, 'r')
+    contents = f.read()
+    f.close()
+    self.parse(contents)
+
+  def parse(self, contents):
+    self.tokenize(contents)
+    self.originaltokens = self.tokens[:]
+    tokennum = 0
+    while tokennum < len(self.tokens):
+      sectiontype = self.tokens[tokennum]
+      if sectiontype not in self.sectiontypes:
+        print >>sys.stderr, "unknown sectiontype....", sectiontype
+        if sectiontype not in self.bytype:
+          self.bytype[sectiontype] = {}
+      sectionname = self.tokens[tokennum + 1]
+      section = {}
+      if sectionname in self.definitions:
+        print >>sys.stderr, "duplicate", section
+      self.definitions[sectionname] = section
+      self.bytype[sectiontype][sectionname] = section
+      section['type'] = sectiontype
+      section['tokennum'] = tokennum
+      tokennum += 2
+      while self.tokens[tokennum].lower() != 'end':
+        varname = self.tokens[tokennum]
+        if self.tokens[tokennum+1] != '=':
+          print >>sys.stderr, "hmmm..."
+        startvardef = tokennum+2
+        while self.tokens[tokennum] != ';':
+          varpart = self.tokens[tokennum]
+          if varpart.lower().startswith('gid_'):
+            self.referrals.append((varpart, tokennum))
+          tokennum += 1
+        value = "".join(self.tokens[startvardef:tokennum])
+        section[varname] = value
+        tokennum = tokennum + 1
+      tokennum += 1
+
+  def rename(self, sectionname, newname):
+    section = self.definitions[sectionname]
+    tokennum = section['tokennum']
+    self.tokens[tokennum+1] = newname
+    for varpart, tokennum in self.referrals:
+      if varpart.lower() == sectionname.lower():
+        self.tokens[tokennum] = newname
+
+  def getsource(self):
+    sourceparts = []
+    tokenpos = 0
+    lastprint = 0
+    for tokennum in range(len(self.tokens)):
+      originaltoken = self.originaltokens[tokennum]
+      nexttokenpos = self.source.find(originaltoken, tokenpos)
+      sourceparts.append(self.source[tokenpos:nexttokenpos])
+      sourceparts.append(self.tokens[tokennum])
+      tokenpos = nexttokenpos + len(originaltoken)
+    sourceparts.append(self.source[tokenpos:])
+    return "".join(sourceparts)
+
+if __name__ == '__main__':
+  import sys
+  try:
+    import psyco
+    psyco.full()
+  except:
+    pass
+  setupfiles = {}
+  for arg in sys.argv[1:]:
+    setupfiles[arg] = SetupIndex(arg)
+    # setupfiles[arg].rename("gid_File_Extra_Webcast_Pl", "gid_File_Extra_Webcast_Pl_zulu")
+    sys.stdout.write(setupfiles[arg].getsource())
+
+
