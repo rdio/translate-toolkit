@@ -192,13 +192,11 @@ class ConvertOptionParser(optparse.OptionParser, object):
   def getoutputoptions(self, inputpath, templatepath):
     """works out which conversion method to use..."""
     if inputpath:
-      inputbase, inputext = os.path.splitext(inputpath)
-      inputext = inputext.replace(os.extsep, "", 1)
+      inputbase, inputext = self.splitinputext(inputpath)
     else:
       inputext = None
     if templatepath:
-      templatebase, templateext = os.path.splitext(templatepath)
-      templateext = templateext.replace(os.extsep, "", 1)
+      templatebase, templateext = self.splittemplateext(templatepath)
     else:
       templateext = None
     if (inputext, templateext) in self.outputoptions:
@@ -390,15 +388,26 @@ class ConvertOptionParser(optparse.OptionParser, object):
       dirs.reverse()
       dirstack.extend(dirs)
 
+  def splitinputext(self, inputpath):
+    """splits an inputpath into name and extension"""
+    root, ext = os.path.splitext(inputpath)
+    ext = ext.replace(os.extsep, "", 1)
+    return (root, ext)
+
+  def splittemplateext(self, templatepath):
+    """splits a templatepath into name and extension"""
+    root, ext = os.path.splitext(templatepath)
+    ext = ext.replace(os.extsep, "", 1)
+    return (root, ext)
+
   def templateexists(self, options, templatepath):
     """returns whether the given template exists..."""
     fulltemplatepath = self.getfulltemplatepath(options, templatepath)
     return os.path.isfile(fulltemplatepath)
 
   def gettemplatename(self, options, inputname):
-    """gets an output filename based on the input filename"""
-    inputbase, inputext = os.path.splitext(inputname)
-    inputext = inputext.replace(os.extsep, "", 1)
+    """gets an output filename based on the input filename""" 
+    inputbase, inputext = self.splitinputext(inputname)
     if self.usetemplates and options.template:
       for inputext1, templateext1 in self.outputoptions:
         if inputext == inputext1:
@@ -411,15 +420,14 @@ class ConvertOptionParser(optparse.OptionParser, object):
   def getoutputname(self, options, inputname, outputformat):
     """gets an output filename based on the input filename"""
     if not inputname or not options.recursiveoutput: return options.output
-    inputbase, inputext = os.path.splitext(inputname)
+    inputbase, inputext = self.splitinputext(inputname)
     if self.usepots and options.pot and outputformat == "po":
       outputformat = "pot"
     return inputbase + os.extsep + outputformat
 
   def isvalidinputname(self, options, inputname):
     """checks if this is a valid input filename"""
-    inputbase, inputext = os.path.splitext(inputname)
-    inputext = inputext.replace(os.extsep, "", 1)
+    inputbase, inputext = self.splitinputext(inputname)
     if self.usepots and options.pot and inputext == "pot":
       inputext = "po"
     return inputext in self.inputformats
