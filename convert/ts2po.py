@@ -37,8 +37,8 @@ class ts2po:
     thepo.msgstr = [quote.quotestr(quote.rstripeol(line)) for line in msgstr.split("\n")]
     if len(msgcomments)>0:
       thepo.othercomments.append("# %s\n" %(msgcomments))
-    if transtype == "unfinished":
-      thepo.typecomments.append("#, fuzzy\n")
+    if transtype == "unfinished" and not thepo.isblankmsgstr():
+      thepo.markfuzzy()
     if transtype == "obsolete":
       thepo.visiblecomments.append("#_ OBSOLETE\n")
       # using the fact that -- quote -- "(this is nonsense)"
