@@ -43,9 +43,6 @@ class FixedStringIO(wStringIO.StringIO):
 NamedStringInput = wStringIO.StringIO
 NamedStringOutput = wStringIO.StringIO
 
-# TODO: use jarfile names instead of trying to do intelligent common-prefix-stripping
-# TODO: pick up lang name etc from command-line param and rename en-US to lang-reg
-
 def _commonprefix(itemlist):
   def cp(a, b):
     l = min(len(a), len(b))
@@ -159,11 +156,13 @@ class XpiFile(ZipFileCatcher):
       kwargs["compression"] = zipfile.ZIP_DEFLATED
     super(XpiFile, self).__init__(*args, **kwargs)
     self.jarfiles = {}
-    self.dirmap = {}
-    self.initdirmap()
+    self.locale = None
+    self.region = None
+    self.findlangreg()
     self.jarprefixes = self.findjarprefixes()
     self.reverseprefixes = dict([
       (prefix,jarfilename) for jarfilename, prefix in self.jarprefixes.iteritems() if prefix])
+    self.reverseprefixes["package/"] = None
 
   def iterjars(self):
     """iterate through the jar files in the xpi as ZipFile objects"""
@@ -182,7 +181,7 @@ class XpiFile(ZipFileCatcher):
     base, ext = os.path.splitext(filename)
     return ext in (os.extsep + "dtd", os.extsep + "properties")
 
-  def initdirmap(self):
+  def findlangreg(self):
     """finds the common prefix of all the files stored in the jar files"""
     dirstructure = {}
     for jarfilename, jarfile in self.iterjars():
@@ -217,11 +216,25 @@ class XpiFile(ZipFileCatcher):
           else:
             region = 0
     if locale:
-      self.dirmap[('locale', locale)] = ('lang-reg',)
       del localeentries[locale]
     if region:
-      self.dirmap[('locale', region)] = ('reg',)
       del localeentries[region]
+    self.setlangreg(locale, region)
+
+  def setlangreg(self, locale, region):
+    """set the locale and region of this xpi"""
+    # TODO: if we do this in clone, remove the rename code
+    if self.locale is not None:
+      # do a recursive rename
+      pass
+    if self.region is not None:
+      # do a recursive rename
+      pass
+    self.locale = locale
+    self.region = region
+    self.dirmap = {}
+    self.dirmap[('locale', self.locale)] = ('lang-reg',)
+    self.dirmap[('locale', self.region)] = ('reg',)
 
   def findjarprefixes(self):
     """checks the uniqueness of the jar files contents"""
@@ -291,7 +304,7 @@ class XpiFile(ZipFileCatcher):
       jarprefix = self.jarprefixes[jarfilename]
       return self.ziptoospath(jarprefix+self.mapfilename(filename))
     else:
-      return self.ziptoospath(filename)
+      return self.ziptoospath(os.path.join("package", filename))
 
   def ostojarpath(self, ospath):
     """converts an extracted os-style filepath to a jarfilename and filename"""
@@ -383,18 +396,67 @@ class XpiFile(ZipFileCatcher):
       jarfile.testzip()
     super(XpiFile, self).testzip()
 
-  def clone(self, newfilename, newmode=None):
+  def restructurejar(self, origjarfilename, newjarfilename, otherxpi, newlang, newregion):
+    """Create a new .jar file with the same contents as the given name, but rename directories, write to outputstream"""
+    jarfile = self.jarfiles[origjarfilename]
+    origlang = self.locale[:self.locale.find("-")]
+    newlocale = "%s-%s" % (newlang, newregion)
+    for filename in jarfile.namelist():
+      filenameparts = filename.split("/")
+      for i in range(len(filenameparts)):
+        part = filenameparts[i]
+        if part == origlang:
+          filenameparts[i] = newlang
+        elif part == self.locale:
+          filenameparts[i] = newlocale
+        elif part == self.region:
+          filenameparts[i] = newregion
+      newfilename = '/'.join(filenameparts)
+      fileoutputstream = otherxpi.openoutputstream(newjarfilename, newfilename)
+      fileinputstream = self.openinputstream(origjarfilename, filename)
+      fileoutputstream.write(fileinputstream.read())
+      fileinputstream.close()
+      fileoutputstream.close()
+
+  def clone(self, newfilename, newmode=None, newlang=None, newregion=None):
     """Create a new .xpi file with the same contents as this one..."""
     other = XpiFile(newfilename, "w")
+    origlang = self.locale[:self.locale.find("-")]
+    if newlang is None:
+      newlang = origlang
+    if newregion is None:
+      newregion = self.region
+    newlocale = "%s-%s" % (newlang, newregion)
     for filename in self.namelist():
-      inputstream = self.openinputstream(None, filename)
-      outputstream = other.openoutputstream(None, filename)
-      outputstream.write(inputstream.read())
-      inputstream.close()
-      outputstream.close()
+      filenameparts = filename.split('/')
+      basename = filenameparts[-1]
+      if basename.startswith(self.locale):
+        newbasename = basename.replace(self.locale, newlocale)
+      elif basename.startswith(origlang):
+        newbasename = basename.replace(origlang, newlang)
+      elif basename.startswith(self.region):
+        newbasename = basename.replace(self.region, newregion)
+      else:
+        newbasename = basename
+      if newbasename != basename:
+        filenameparts[-1] = newbasename
+        renamefilename = "/".join(filenameparts)
+        print "cloning", filename, "and renaming to", renamefilename
+      else:
+        print "cloning", filename
+        renamefilename = filename
+      if filename.lower().endswith(".jar"):
+        self.restructurejar(filename, renamefilename, other, newlang, newregion)
+      else:
+        inputstream = self.openinputstream(None, filename)
+        outputstream = other.openoutputstream(None, renamefilename)
+        outputstream.write(inputstream.read())
+        inputstream.close()
+        outputstream.close()
     other.close()
     if newmode is None: newmode = self.mode
     other = XpiFile(newfilename, newmode)
+    other.setlangreg(newlocale, newregion)
     return other
 
   def iterextractnames(self, includenonjars=False, includedirs=False):
