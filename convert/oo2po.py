@@ -52,10 +52,10 @@ class oo2po:
     project, sourcefile, resourcetype, groupid, localid, platform = ookey
     sourcefile = sourcefile.replace('\\','/')
     if len(groupid) == 0 or len(localid) == 0:
-      id = groupid + localid
+      ooid = groupid + localid
     else:
-      id = groupid + "." + localid
-    key = "%s/%s#%s" % (project, sourcefile, id)
+      ooid = groupid + "." + localid
+    key = "%s/%s#%s" % (project, sourcefile, ooid)
     return oo.normalizefilename(key)
 
   def convertelement(self, theoo):
@@ -102,7 +102,7 @@ class oo2po:
     headeritems.append("MIME-Version: 1.0\\n")
     headeritems.append("Content-Type: text/plain; charset=ISO-8859-1\\n")
     headeritems.append("Content-Transfer-Encoding: ENCODING\\n")
-    headerpo.msgstr = [quote.quotestr(str) for str in headeritems]
+    headerpo.msgstr = [quote.quotestr(headerline) for headerline in headeritems]
     thepofile.poelements.append(headerpo)
     # go through the oo and convert each element
     for theoo in theoofile.ooelements:
