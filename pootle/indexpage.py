@@ -449,9 +449,7 @@ class ProjectIndex(pagelayout.PootlePage):
       pathname = os.path.join(self.project.podir, self.dirname, uploadfile.filename)
       if os.path.exists(pathname):
         raise ValueError("that file already exists")
-      uploadfile.setstoragepath(os.path.join(self.project.podir, self.dirname))
-      uploadfile.savecontents(uploadfile.filename)
-      self.project.scanpofiles()
+      self.project.addnewpofile(self.dirname, uploadfile.filename, uploadfile.contents)
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []

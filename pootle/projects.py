@@ -487,6 +487,10 @@ class TranslationProject:
     self.projectdescription = self.potree.getprojectdescription(self.projectcode)
     self.projectcheckerstyle = self.potree.getprojectcheckerstyle(self.projectcode)
     self.podir = potree.getpodir(languagecode, projectcode)
+    if self.potree.hasgnufiles(self.podir, self.languagecode):
+      self.filestyle = "gnu"
+    else:
+      self.filestyle = "std"
     self.pofiles = potimecache(15*60, self)
     checkerclasses = [checks.projectcheckers.get(self.projectcheckerstyle, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses, errorhandler=self.filtererrorhandler)
@@ -503,6 +507,25 @@ class TranslationProject:
     for pofilename in self.pofiles.keys():
       if not pofilename in self.pofilenames:
         del self.pofiles[pofilename]
+
+  def addnewpofile(self, dirname, pofilename, contents):
+    """creates a new po file with the given contents"""
+    if os.path.isabs(dirname) or dirname.startswith("."):
+      raise ValueError("invalid/insecure file path: %s" % dirname)
+    if os.path.basename(pofilename) != pofilename or pofilename.startswith("."):
+      raise ValueError("invalid/insecure file name: %s" % pofilename)
+    if self.filestyle == "gnu":
+      if not self.potree.languagematch(self.languagecode, pofilename[:-len(".po")]):
+        raise ValueError("invalid GNU-style file name %s: must match '%s.po' or '%s_[A-Z]{2,3}.po'" % (pofilename, self.languagecode, self.languagecode))
+    dircheck = ""
+    for part in dirname.split(os.sep):
+      dircheck = os.path.join(dircheck, part)
+      if dircheck and not os.path.isdir(dircheck):
+        os.mkdir(dircheck)
+    pofile = open(os.path.join(self.podir, dirname, pofilename), "wb")
+    pofile.write(contents)
+    pofile.close()
+    self.scanpofiles()
 
   def filtererrorhandler(self, functionname, str1, str2, e):
     print "error in filter %s: %r, %r, %s" % (functionname, str1, str2, e)
