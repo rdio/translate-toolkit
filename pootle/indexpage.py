@@ -536,7 +536,8 @@ class ProjectIndex(pagelayout.PootlePage):
       mainicon = pagelayout.Icon("folder.png")
     mainitem = pagelayout.MainItem([mainicon, bodytitle, actionlinks, mainstats])
     childitems = self.getchilditems(dirfilter)
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, mainitem, childitems], session, bannerheight=81)
+    pagetitle = self.localize("Pootle: Project %s, Language %s") % (self.project.projectname, self.project.languagename)
+    pagelayout.PootlePage.__init__(self, pagetitle, [message, mainitem, childitems], session, bannerheight=81)
     self.addsearchbox(searchtext="", action="translate.html")
     if session.issiteadmin() and self.showassigns:
       self.addassignbox()
