@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 # Copyright 2005 Zuza Software Foundation
 # 
 # This file is part of the translate-toolkit
