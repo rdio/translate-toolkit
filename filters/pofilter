@@ -20,7 +20,6 @@
 
 """simple script to run all check filters on gettext .po localization file(s)"""
 
-import translatepath
 from translate.storage import po
 from translate.filters import checks
 from translate.misc import optrecurse

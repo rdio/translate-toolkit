@@ -21,7 +21,6 @@
 """script that merges .po files and overrides translations"""
 
 import sys
-import translatepath
 from translate.storage import po
 from translate.misc import quote
 
