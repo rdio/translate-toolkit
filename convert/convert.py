@@ -107,8 +107,9 @@ class ConvertOptionParser(optparse.OptionParser):
 
   def setprogressoptions(self):
     """sets the progress options depending on recursion etc"""
-    self.progresstypes = {"simple": progressbar.SimpleProgressBar, "console": progressbar.ConsoleProgressBar,
-                          "curses": progressbar.CursesProgressBar, "verbose": progressbar.VerboseProgressBar}
+    self.progresstypes = {"none": progressbar.NoProgressBar, "simple": progressbar.SimpleProgressBar,
+                          "console": progressbar.ConsoleProgressBar, "curses": progressbar.CursesProgressBar,
+                          "verbose": progressbar.VerboseProgressBar}
     progressoption = optparse.Option(None, "--progress", dest="progress", default="console", metavar="PROGRESS",
                       help="set progress type to one of %s" % (", ".join(self.progresstypes)))
     self.define_option(progressoption)
