@@ -234,13 +234,14 @@ class TranslatePage(pagelayout.PootlePage):
   def gettransreview(self, item, trans, suggestions):
     if isinstance(trans, str):
       trans = trans.decode("utf8")
-    origtitle = widgets.Division("<b>Original:</b>")
-    original = pagelayout.TranslationText(widgets.Font(trans, {"color":self.textcolors[item % 2]}))
+    currenttitle = widgets.Division("<b>Current Translation:</b>")
+    currenttext = pagelayout.TranslationText(widgets.Font(trans, {"color":self.textcolors[item % 2]}))
     editlink = pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit",
 "editlink%d" % item)
     
     suggdivs = []
     for suggid, suggestion in enumerate(suggestions):
+      # TODO: include hidden widgets so the suggestiontext is included in the form
       if isinstance(suggestion, str):
         suggestion = suggestion.decode("utf8")
       if len(suggestions) > 1:
@@ -252,7 +253,7 @@ class TranslatePage(pagelayout.PootlePage):
       rejectbutton = widgets.Input({"type":"submit", "name":"reject%d.%d" % (item, suggid), "value":"reject"}, "reject")
       suggdiv = widgets.Division([suggtitle, suggestiontext, acceptbutton, rejectbutton], "sugg%d" % item)
       suggdivs.append(suggdiv)
-    transdiv = widgets.Division([origtitle, original, editlink] + suggdivs, "trans%d" % item, cls="translate-translation")
+    transdiv = widgets.Division([currenttitle, currenttext, editlink] + suggdivs, "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def gettransview(self, item, trans):
