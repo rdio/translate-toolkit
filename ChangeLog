@@ -1,3 +1,20 @@
+2004-04-24 11:34  davidfraser
+
+	* ChangeLog: Added ChangeLog for 0.7
+
+2004-04-24 10:44  davidfraser
+
+	* __version__.py: version 0.7.1
+
+2004-04-24 10:44  davidfraser
+
+	* convert/Makefile: removed .py from files that have been renamed
+
+2004-04-24 10:43  davidfraser
+
+	* setup.py, MANIFEST.in: fixed MANIFEST.in to include scripts by
+	  auto-generating from setup.py
+
 2004-04-23 22:57  davidfraser
 
 	* storage/po.py: in merge, merge comments rather than adding them
