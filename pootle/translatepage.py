@@ -3,7 +3,6 @@
 from jToolkit.widgets import widgets
 from jToolkit.widgets import table
 from translate.pootle import pagelayout
-from translate.pootle import projects
 
 class TranslatePage(pagelayout.PootlePage):
   """the page which lets people edit translations"""
@@ -87,10 +86,11 @@ class TranslatePage(pagelayout.PootlePage):
     """returns any checker filters the user has asked to match..."""
     matchnames = []
     for checkname in self.argdict:
-      if checkname in checker.getfilters():
-        matchnames.append("check-" + checkname)
       if checkname in ["fuzzy", "blank", "translated"]:
         matchnames.append(checkname)
+      elif checkname in checker.getfilters():
+        matchnames.append("check-" + checkname)
+    matchnames.sort()
     return matchnames
 
   def addtransrow(self, rownum, origcell, transcell):
