@@ -48,6 +48,10 @@ class ConvertOptionParser(optparse.OptionParser, object):
     self.convertparameters = []
     self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
 
+  def warning(self, msg):
+    """Print a warning message incorporating 'msg' to stderr and exit."""
+    print >>sys.stderr, "%s: warning: %s" % (optparse.get_prog_name(), msg)
+
   def getusagestring(self, option):
     """returns the usage string for the given option"""
     optionstring = "|".join(option._short_opts + option._long_opts)
@@ -301,7 +305,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
       if os.path.isfile(fulltemplatepath):
         return open(fulltemplatepath, 'r')
       else:
-        print >>sys.stderr, "warning: missing template file %s" % fulltemplatepath
+        self.warning("missing template file %s" % fulltemplatepath)
     return None
 
   def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
@@ -376,7 +380,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
           dirs.append(inputpath)
           fulltemplatepath = self.getfulltemplatepath(options, inputpath)
           if fulltemplatepath and not os.path.isdir(fulltemplatepath):
-              print >>sys.stderr, "warning: missing template directory %s" % fulltemplatepath
+            self.warning("missing template directory %s" % fulltemplatepath)
         elif os.path.isfile(fullinputpath):
           if not self.isvalidinputname(options, name):
             # only handle names that match recognized input file extensions
