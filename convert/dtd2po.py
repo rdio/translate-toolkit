@@ -279,7 +279,7 @@ class dtd2po:
     thepofile.removeduplicates()
     return thepofile
 
-def main(inputfile, outputfile, templatefile):
+def convertdtd(inputfile, outputfile, templatefile):
   """reads in inputfile and templatefile using dtd, converts using dtd2po, writes to outputfile"""
   inputdtd = dtd.dtdfile(inputfile)
   convertor = dtd2po()
@@ -288,28 +288,21 @@ def main(inputfile, outputfile, templatefile):
   else:
     templatedtd = dtd.dtdfile(templatefile)
     outputpo = convertor.mergefiles(templatedtd, inputdtd)
+  if outputpo.isempty():
+    return 0
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
+  return 1
 
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  inputformat = "dtd"
+  inputformats = {"dtd": convertdtd}
   outputformat = "po"
-  parser = convert.ConvertOptionParserExt(convert.norecursion, inputformat, outputformat, usetemplates=True)
+  parser = convert.ConvertOptionParserExt(convert.defaultrecursion, inputformats, outputformat, usetemplates=True, usepots=True)
   (options, args) = parser.parse_args()
-  # open the appropriate files
-  if options.input is None:
-    inputfile = sys.stdin
-  else:
-    inputfile = open(options.input, 'r')
-  if options.output is None:
-    outputfile = sys.stdout
-  else:
-    outputfile = open(options.output, 'w')
-  if options.template is None:
-    templatefile = None
-  else:
-    templatefile = open(options.template, 'r')
-  main(inputfile, outputfile, templatefile)
+  try:
+    parser.runconversion(options, None)
+  except convert.optparse.OptParseError, message:
+    parser.error(message)
 

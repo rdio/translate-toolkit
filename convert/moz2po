@@ -30,41 +30,11 @@ from translate.storage import po
 from translate.misc import quote
 from translate import __version__
 
-def convertdtd(inputfile, outputfile, templatefile):
-  """reads in inputfile and templatefile using dtd, converts using dtd2po, writes to outputfile"""
-  inputdtd = dtd.dtdfile(inputfile)
-  convertor = dtd2po.dtd2po()
-  if templatefile is None:
-    outputpo = convertor.convertfile(inputdtd)
-  else:
-    templatedtd = dtd.dtdfile(templatefile)
-    outputpo = convertor.mergefiles(templatedtd, inputdtd)
-  if outputpo.isempty():
-    return 0
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
-  return 1
-
-def convertprop(inputfile, outputfile, templatefile):
-  """reads in inputfile using properties, converts using prop2po, writes to outputfile"""
-  inputprop = properties.propfile(inputfile)
-  convertor = prop2po.prop2po()
-  if templatefile is None:
-    outputpo = convertor.convertfile(inputprop)
-  else:
-    templateprop = properties.propfile(templatefile)
-    outputpo = convertor.mergefiles(templateprop, inputprop)
-  if outputpo.isempty():
-    return 0
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
-  return 1
-
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
   # TODO: add ability to import translations from another directory
-  inputformats = {"dtd": convertdtd, "properties": convertprop}
+  inputformats = {"dtd": dtd2po.convertdtd, "properties": prop2po.convertprop}
   outputformat = "po"
   parser = convert.ConvertOptionParserExt(convert.defaultrecursion, inputformats, outputformat, usetemplates=True, usepots=True)
   (options, args) = parser.parse_args()
