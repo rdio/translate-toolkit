@@ -31,6 +31,8 @@ NamedStringOutput = StringIO.StringIO
 # TODO: use jarfile names instead of trying to do intelligent common-prefix-stripping
 # TODO: pick up lang name etc from command-line param and rename en-US to lang-reg
 
+# TODO: work out how to prevent append from duplicating jars etc...
+
 def _commonprefix(itemlist):
   def cp(a, b):
     l = min(len(a), len(b))
@@ -289,6 +291,20 @@ class XpiFile(ZipFileCatcher):
     for jarfile in self.jarfiles.itervalues():
       jarfile.close()
     super(XpiFile, self).close()
+
+  def clone(self, newfilename, newmode=None):
+    """Create a new .xpi file with the same contents as this one..."""
+    other = XpiFile(newfilename, "w")
+    for filename in self.namelist():
+      inputstream = self.openinputstream(None, filename)
+      outputstream = other.openoutputstream(None, filename)
+      outputstream.write(inputstream.read())
+      inputstream.close()
+      outputstream.close()
+    other.close()
+    if newmode is None: newmode = self.mode
+    other = XpiFile(newfilename, newmode)
+    return other
 
   def iterextractnames(self, includenonjars=False, includedirs=False):
     """iterates through all the localization files with the common prefix stripped and a jarfile name added if neccessary"""
