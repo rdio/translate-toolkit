@@ -392,7 +392,7 @@ if __name__ == '__main__':
     action="store", default="utf8",
     help="the encoding of the dictionary/wordlist")
   optparser.add_option("", "--outputencoding", dest="outputencoding",
-    action="store", default="iso-8859-1",
+    action="store", default="utf8",
     help="the encoding of the output")
   optparser.add_option("", "--matchwords", dest="matchwords",
     action="store_true", default=False,
