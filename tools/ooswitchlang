@@ -11,7 +11,8 @@ import operator
 from translate.misc import xmlwrapper
 from translate import __version__
 
-availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'tn': 'Tswana', 'zu': 'Zulu'}
+# TODO: find a way to list the available languages outside the code
+availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'tn': 'Setswana', 'zu': 'IsiZulu'}
 
 class oosetupfile(xmlwrapper.XMLWrapper):
   """this represents an openoffice.org Setup.xcu file"""
@@ -82,15 +83,16 @@ class ooconfigurator:
     for ext in 'bin', 'exe':
       binname = os.path.join(programdir, 'setofficelang' + os.path.extsep + ext)
       if os.path.exists(binname):
-        cmdline.append(binname)
+        cmdline.append('"' + binname + '"')
         break
     if not cmdline:
       raise IOError("Could not find setofficelang executable in %s" % programdir)
     if admin: cmdline.append("-a")
     if force: cmdline.append("-f")
     cmdline.append(newisocode)
+    cmdline = " ".join(cmdline)
     wx.BeginBusyCursor()
-    retcode = os.system(" ".join(cmdline))
+    retcode = os.system(cmdline)
     wx.EndBusyCursor()
     if retcode == 1:
       raise ValueError("The language is not supported by this office installation")
