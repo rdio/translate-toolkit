@@ -2,7 +2,10 @@
 
 """tool for editing openoffice.org setup files"""
 
-from translate.misc import sparse
+try:
+  from translate.misc import sparse
+except ImportError:
+  import sparse
 import sys
 import operator
 import os
@@ -332,6 +335,9 @@ if __name__ == '__main__':
   except:
     pass
   setupfiles = {}
+  if len(sys.argv) < 3:
+    print >>sys.stderr, "usage: oosetupmerge mainlang/setup.ins lang2/setup.ins lang3/setup.ins ... output/setup.ins"
+    sys.exit()
   mainsetupfile = SetupIndex(sys.argv[1])
   othersetupfiles = []
   for arg in sys.argv[2:-1]:
