@@ -62,19 +62,32 @@ class ooconfigurator:
     self.installdir = installdir
     adminsetupfilename = os.path.join(self.installdir, 'share', 'registry', 'data', 'org', 'openoffice', 'Setup.xcu')
     usersetupfilename = os.path.join(self.installdir, 'user', 'registry', 'data', 'org', 'openoffice', 'Setup.xcu')
-    self.adminsetupfile = oosetupfile(adminsetupfilename)
-    self.usersetupfile = oosetupfile(usersetupfilename)
+    try:
+      self.adminsetupfile = oosetupfile(adminsetupfilename)
+    except ValueError:
+      self.adminsetupfile = None
+    try:
+      self.usersetupfile = oosetupfile(usersetupfilename)
+    except ValueError:
+      self.usersetupfile = None
 
   def getadminlanguage(self):
-    """gets the language set for this user"""
-    return self.adminsetupfile.getcurrentlanguage()
+    """gets the language set as default for all users"""
+    if self.adminsetupfile:
+      try:
+        return self.adminsetupfile.getcurrentlanguage()
+      except ValueError:
+        pass
+    return None
 
   def getuserlanguage(self):
     """gets the language set for this user"""
-    try:
-      return self.usersetupfile.getcurrentlanguage()
-    except ValueError:
-      return self.getadminlanguage()
+    if self.usersetupfile:
+      try:
+        return self.usersetupfile.getcurrentlanguage()
+      except ValueError:
+        pass
+    return self.getadminlanguage()
 
   def setofficelang(self, newisocode, admin=False, force=False):
     """sets the language using the setofficelang program"""
@@ -137,7 +150,7 @@ class ooinstallmanager(ConfigParser.RawConfigParser):
       try:
         versiondir = self.urltopath(versionurl)
       except ValueError, e:
-        wx.LogError("could not find version %s: %s" % (versionname, e))
+        wx.LogVerbose("could not find version %s: %s" % (versionname, e))
         continue
       versionlist.append((versionname, versiondir))
     return versionlist
@@ -265,30 +278,39 @@ class LanguageSelectionWindow(wx.Frame):
 
   def setinstalldir(self, installdir):
     """Sets the current installation we are working on..."""
-    self.installdir = installdir
-    self.config = ooconfigurator(installdir)
-    self.showcurrentlanguage()
+    if os.path.exists(installdir):
+      self.installdir = installdir
+      self.config = ooconfigurator(installdir)
+      self.showcurrentlanguage()
+    else:
+      wx.LogError("Could not find directory %s" % installdir)
+      self.dirbox.SetFocus()
+
+  def findregisteredversion(self, installdir):
+    """checks if the given directory is a registered version"""
+    # if we don't have os.path.samefile, just check if the paths are equal
+    samefile = getattr(os.path, 'samefile', operator.eq)
+    # make sure we are checking the normalized version of the path...
+    installdir = os.path.normcase(os.path.normpath(installdir))
+    for versionname, versiondir in self.versions.iteritems():
+      if samefile(versiondir, installdir):
+        return versionname
+      else:
+        normversiondir = os.path.normcase(os.path.normpath(versiondir))
+        if installdir.startswith(normversiondir):
+          return versionname
+    return None
 
   def findcurrentversion(self):
     """Tries to find the current installation"""
     currentdir = os.getcwd()
-    currentdir = os.path.normcase(os.path.normpath(currentdir))
-    # if we don't have os.path.samefile, just check if the paths are equal
-    samefile = getattr(os.path, 'samefile', operator.eq)
     # see if the current directory is in one of the described versions
-    for versionname, versiondir in self.versions.iteritems():
-      if samefile(versiondir, currentdir):
-        self.versionchoice.SetStringSelection(versionname)
-        self.dirbox.SetValue(versiondir)
-        self.setinstalldir(versiondir)
-        return
-      else:
-        normversiondir = os.path.normcase(os.path.normpath(versiondir))
-        if currentdir.startswith(normversiondir):
-          self.versionchoice.SetStringSelection(versionname)
-          self.dirbox.SetValue(versiondir)
-          self.setinstalldir(versiondir)
-          return
+    versionname = self.findregisteredversion(currentdir)
+    if versionname:
+      versiondir = self.versions[versionname]
+      self.versionchoice.SetStringSelection(versionname)
+      self.dirbox.SetValue(versiondir)
+      self.setinstalldir(versiondir)
     # see if the current directory is an openoffice.org directory anyway...
     for versiondir in (currentdir, os.path.dirname(currentdir)):
       if os.path.isdir(os.path.join(versiondir, 'share', 'registry', 'data', 'org', 'openoffice')):
@@ -325,13 +347,21 @@ class LanguageSelectionWindow(wx.Frame):
         if doforce == wx.YES:
           return self.setlanguage(newisocode, admin, True)
       return False
+    except IOError, error:
+      wx.LogError("Error setting language:\n%s" % error)
+      return False
 
   def showcurrentlanguage(self):
     """updates the GUI to display the current language"""
     currentisocode = self.getlanguage()
     currentlanguagename = self.languages.get(currentisocode, None)
-    if currentlanguagename in self.languagenames:
-      self.languagelist.Select(self.languagenames.index(currentlanguagename))
+    if currentlanguagename is not None:
+      self.languagelist.SetStringSelection(currentlanguagename)
+    else:
+      if currentisocode is None:
+        wx.LogWarning("Could not determine current language setting\nYou may have selected an invalid directory")
+      else:
+        wx.LogWarning("Current language code is %s, which is not supported by this language switcher" % currentisocode)
 
   def OnSetVersion(self, event):
     """Triggered when the current version is set..."""
@@ -347,6 +377,11 @@ class LanguageSelectionWindow(wx.Frame):
   def OnSetInstallDir(self, event):
     """Triggered when the install directory is set..."""
     installdir = self.dirbox.GetValue()
+    versionname = self.findregisteredversion(installdir)
+    if versionname:
+      self.versionchoice.SetStringSelection(versionname)
+    else:
+      self.versionchoice.SetStringSelection("(other)")
     self.setinstalldir(installdir)
     event.Skip()
 
@@ -356,6 +391,12 @@ class LanguageSelectionWindow(wx.Frame):
     dirdialog = wx.DirDialog(self, "Choose a directory:", defaultPath=installdir)
     if dirdialog.ShowModal() == wx.ID_OK:
       installdir = dirdialog.GetPath()
+      versionname = self.findregisteredversion(installdir)
+      if versionname:
+        self.versionchoice.SetStringSelection(versionname)
+      else:
+        self.versionchoice.SetStringSelection("(other)")
+      self.dirbox.SetValue(installdir)
       self.setinstalldir(installdir)
     dirdialog.Destroy()
     event.Skip()
