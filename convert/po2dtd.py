@@ -117,9 +117,10 @@ def getmixedentities(entities):
     if entity.endswith(".label"):
       entitybase = entity[:entity.rfind(".label")]
       # see if there is a matching accesskey, making this a mixed entity
-      if entitybase + ".accesskey" in entities:
-        # add both versions to the list of mixed entities
-        mixedentities += [entity,entitybase+".accesskey"]
+      for akeytype in (".accesskey", ".accessKey", ".akey"):
+        if entitybase + akeytype in entities:
+          # add both versions to the list of mixed entities
+          mixedentities += [entity,entitybase+akeytype]
   return mixedentities
 
 def applytranslation(entity, thedtd, thepo, mixedentities):
@@ -133,9 +134,11 @@ def applytranslation(entity, thedtd, thepo, mixedentities):
   if entity.endswith(".label"):
     if entity in mixedentities:
       unquotedstr = getlabel(unquotedstr)
-  elif entity.endswith(".accesskey"):
-    if entity in mixedentities:
-      unquotedstr = getaccesskey(unquotedstr)
+  else:
+    for akeytype in (".accesskey", ".accessKey", ".akey"):
+      if entity.endswith(akeytype):
+        if entity in mixedentities:
+          unquotedstr = getaccesskey(unquotedstr)
   # handle invalid left-over ampersands (usually unneeded access key shortcuts)
   unquotedstr = removeinvalidamps(entity, unquotedstr)
   # finally set the new definition in the dtd, but not if its empty
