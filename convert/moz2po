@@ -28,17 +28,23 @@ from translate.storage import dtd
 from translate.storage import po
 from translate.misc import quote
 
-def convertdtd(inputfile, outputfile):
+def convertdtd(inputfile, outputfile, templatefile):
+  # TODO: pass filename to convertor, so it puts the filename in the comment...
   inputdtd = dtd.dtdfile(inputfile)
   convertor = dtd2po.dtd2po()
-  outputpo = convertor.convertfile(inputdtd)
+  if templatefile is None:
+    outputpo = convertor.convertfile(inputdtd)
+  else:
+    templatedtd = dtd.dtdfile(templatefile)
+    outputpo = convertor.mergefiles(templatedtd, inputdtd)
   if outputpo.isempty():
     return 0
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
   return 1
 
-def convertprop(inputfile, outputfile):
+def convertprop(inputfile, outputfile, templatefile):
+  # TODO: handle templates here...
   convertor = prop2po.prop2po()
   outputpo = convertor.convertfile(inputfile, outputfile)
   return 1
@@ -46,7 +52,7 @@ def convertprop(inputfile, outputfile):
 inputformats = {"dtd": convertdtd, "properties": convertprop}
 outputformat = "po"
 
-def recurse(inputdir, outputdir, outputformat):
+def recurse(inputdir, outputdir, templatedir, outputformat):
   dirstack = ['']
   # discreated contains all the directories created, mapped to whether they've been used or not...
   dirscreated = {}
@@ -65,6 +71,10 @@ def recurse(inputdir, outputdir, outputformat):
           dirscreated[dirs[-1]] = 0
           if top in dirscreated:
             dirscreated[top] = 1
+        if templatedir is not None:
+          templatename = os.path.join(templatedir, top, name)
+          if not os.path.isdir(templatename):
+            print >>sys.stderr, "warning: missing template directory %s" % templatename
       elif os.path.isfile(inputname):
         base, inputext = os.path.splitext(name)
         inputext = inputext.replace(os.extsep, "", 1)
@@ -75,8 +85,15 @@ def recurse(inputdir, outputdir, outputformat):
         outputname = os.path.join(outputdir, top, name + os.extsep + outputformat)
         inputfile = open(inputname, 'r')
         outputfile = open(outputname, 'w')
+        templatefile = None
+        if templatedir is not None:
+          templatename = os.path.join(templatedir, top, name)
+          if os.path.isfile(templatename):
+            templatefile = open(templatename, 'r')
+          else:
+            print >>sys.stderr, "warning: missing template file %s" % templatename
         convertfile = inputformats[inputext]
-        if convertfile(inputfile, outputfile):
+        if convertfile(inputfile, outputfile, templatefile):
           if top in dirscreated:
             dirscreated[top] = 1
         else:
@@ -101,10 +118,13 @@ def handleoptions(options):
     raise optparse.OptionValueError("must specify output directory for recursive run.")
   if not os.path.isdir(options.outputdir):
     raise optparse.OptionValueError("output must be existing directory for recursive run.")
+  if options.templatedir is not None:
+    if not os.path.isdir(options.templatedir):
+      raise optparse.OptionValueError("template must be existing directory for recursive run.")
   if options.pot:
     global outputformat
     outputformat = "pot"
-  recurse(options.inputdir, options.outputdir, outputformat)
+  recurse(options.inputdir, options.outputdir, options.templatedir, outputformat)
 
 if __name__ == '__main__':
   # handle command line options
@@ -113,11 +133,13 @@ if __name__ == '__main__':
   except ImportError:
     from translate.misc import optparse
   # TODO: add ability to import translations from another directory
-  parser = optparse.OptionParser(usage="%prog [-P|--pot] [-i|--input-dir inputdir] [-o|--output-dir outputdir]")
+  parser = optparse.OptionParser(usage="%prog [-P|--pot] [-i|--input-dir inputdir] [-o|--output-dir outputdir] [-t|--template-dir templatedir]")
   parser.add_option("-i", "--input-dir", dest="inputdir", default=None,
                     help="read from inputdir in "+", ".join(inputformats)+" formats", metavar="inputdir")
   parser.add_option("-o", "--output-dir", dest="outputdir", default=None,
                     help="write to outputdir in "+outputformat+" format", metavar="outputdir")
+  parser.add_option("-t", "--template", dest="templatedir", default=None,
+                    help="read from templatedir in "+". ".join(inputformats)+" formats", metavar="templatedir")
   parser.add_option("-P", "--pot", action="store_true", dest="pot", default=False, \
                     help="produce PO template (.pot) with blank msgstrs")
   (options, args) = parser.parse_args()
