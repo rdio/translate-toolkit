@@ -14,3 +14,4 @@ other checks
     fallback to list of valid plurals for KDE.
   Supper basic machine translation - en_GB changes color -> colour
   tags - check XML/HTML tags to make sure that the counts are the same
+  emails/URLs - checks emails and URLs to make sure they have not been altered
