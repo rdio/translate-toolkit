@@ -60,6 +60,7 @@ class poelement:
   # sourcecomments = []     #   #: sourcefile.xxx:35
   # typecomments = []       #   #, fuzzy
   # visiblecomments = []    #   #_ note to translator  (this is nonsense)
+  # obsoletemessages = []   #   #~ msgid ""
   # msgidcomments = []      #   _: within msgid
   # msgid = []
   # msgstr = []
@@ -69,6 +70,7 @@ class poelement:
     self.sourcecomments = []
     self.typecomments = []
     self.visiblecomments = []
+    self.obsoletemessages = []
     self.msgidcomments = []
     self.msgid = []
     self.msgid_pluralcomments = []
@@ -81,6 +83,7 @@ class poelement:
     newpo.sourcecomments = self.sourcecomments
     newpo.typecomments = self.typecomments
     newpo.visiblecomments = self.visiblecomments
+    newpo.obsoletemessages = self.obsoletemessages = []
     newpo.msgidcomments = self.msgidcomments
     newpo.msgid = self.msgid
     newpo.msgid_pluralcomments = self.msgid_pluralcomments
@@ -109,6 +112,7 @@ class poelement:
       mergelists(self.sourcecomments, otherpo.sourcecomments)
       mergelists(self.typecomments, otherpo.typecomments)
       mergelists(self.visiblecomments, otherpo.visiblecomments)
+      mergelists(self.obsoletemessages, otherpo.obsoletemessages)
       mergelists(self.msgidcomments, otherpo.msgidcomments)
     if self.isblankmsgstr() or overwrite:
       self.msgstr = otherpo.msgstr
@@ -161,6 +165,9 @@ class poelement:
   def isnotblank(self):
     return not self.isblank()
 
+  def isobsolete(self):
+    return len(self.obsoletemessages) > 0
+
   def hasplural(self):
     """returns whether this poelement contains plural strings..."""
     return len(self.msgid_plural) > 0
@@ -186,6 +193,8 @@ class poelement:
           self.typecomments.append(line)
         elif line[1] == '_':
           self.visiblecomments.append(line)
+        elif line[1] == '~':
+          self.obsoletemessages.append(line)
         else:
           self.othercomments.append(line)
       else:
@@ -270,6 +279,12 @@ class poelement:
   def tolines(self):
     for othercomment in self.othercomments:
       yield othercomment
+    if self.isobsolete():
+      for typecomment in self.typecomments:
+        yield typecomment
+      for obsoletemessage in self.obsoletemessages:
+        yield obsoletemessage
+        return
     # if there's no msgid don't do msgid and string, unless we're the header
     # this will also discard any comments other than plain othercomments...
     if (len(self.msgid) == 0) or ((len(self.msgid) == 1) and (self.msgid[0] == '""')):
