@@ -49,17 +49,25 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
     """runs the conversion method using the given commandline options..."""
     if options.input is None:
       self.error(optparse.OptionValueError("cannot use stdin for xpi/recursive run. please specify inputfile"))
-    if not (os.path.isfile(options.input) or os.path.isdir(options.input)):
+    elif os.path.isfile(options.input):
+      options.inputxpi = xpi.XpiFile(options.input)
+    elif not os.path.isdir(options.input):
       self.error(optparse.OptionValueError("inputfile must be file for xpi run or directory for recursive run."))
     if options.output is None:
       self.error(optparse.OptionValueError("must specify output directory for xpi/recursive run."))
     if not os.path.isdir(options.output):
       self.error(optparse.OptionValueError("output must be existing directory for xpi/recursive run."))
+    if os.path.isfile(options.template):
+      options.templatexpi = xpi.XpiFile(options.template)
     self.recurseconversion(options)
 
   def inputisxpi(self, options):
     """returns whether the input is via an xpi file"""
     return os.path.isfile(options.input)
+
+  def templateisxpi(self, options):
+    """returns whether the input is via an xpi file"""
+    return os.path.isfile(options.template)
 
   def recursefiles(self, options):
     """recurse through xpi file / directories and return files to be converted"""
@@ -70,7 +78,6 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
 
   def recursexpifiles(self, options):
     """recurse through xpi files and convert files"""
-    options.inputxpi = xpi.XpiFile(options.input)
     for inputpath in options.inputxpi.iterextractnames():
       top, name = os.path.split(inputpath)
       if not self.isvalidinputname(options, name):
@@ -92,9 +99,30 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
     else:
       return os.path.join(options.input, inputpath)
 
+  def opentemplatefile(self, options, fulltemplatepath):
+    """opens the template file (if required)"""
+    if fulltemplatepath is not None:
+      if self.templateisxpi(options):
+        # TODO: deal with different names in input/template xpis
+        jarfilename, filename = options.templatexpi.ostojarpath(fulltemplatepath)
+        if options.templatexpi.jarfileexists(jarfilename, filename):
+          return options.templatexpi.openinputstream(jarfilename, filename)
+        else:
+          print >>sys.stderr, "warning: missing template file %s" % fulltemplatepath
+    return super(MozConvertOptionParser, self).opentemplatefile(options, fulltemplatepath)
+
+  def getfulltemplatepath(self, options, templatepath):
+    """gets the absolute path to a template file"""
+    if templatepath is not None and self.usetemplates and options.template:
+      if self.templateisxpi(options):
+        return templatepath
+      else:
+        return os.path.join(options.template, templatepath)
+    else:
+      return None
+
 if __name__ == '__main__':
   # TODO: add ability to import translations from another directory
-  # TODO: add ability to use templates as xpi files...
   inputformats = {"dtd": dtd2po.convertdtd, "properties": prop2po.convertprop}
   outputformat = "po"
   parser = MozConvertOptionParser(inputformats, outputformat, usetemplates=True, usepots=True)
