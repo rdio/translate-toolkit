@@ -131,7 +131,7 @@ class FilterOptionParser(optparse.OptionParser):
     else:
       return open(options.output, 'w')
 
-  def runfilter(self, options, filtermethod):
+  def runfilter(self, options, filtermethod, optionkeywords=[]):
     """runs the filter method using the given commandline options..."""
     if (self.recursion == optionalrecursion and options.recursive) or (self.recursion == defaultrecursion):
       if options.input is None:
@@ -142,9 +142,18 @@ class FilterOptionParser(optparse.OptionParser):
         self.error(optparse.OptionValueError("must specify output directory for recursive run."))
       if not os.path.isdir(options.output):
         self.error(optparse.OptionValueError("output must be existing directory for recursive run."))
-      self.recurseconversion(options)
+      self.recursefilter(options, optionkeywords)
     else:
-      filtermethod(self.getinputfile(options), self.getoutputfile(options), None)
+      requiredoptions = self.getrequiredoptions(options, optionkeywords)
+      filtermethod(self.getinputfile(options), self.getoutputfile(options), **requiredoptions)
+
+  def getrequiredoptions(self, options, optionkeywords):
+    """get the options required to pass to the filtermethod..."""
+    requiredoptions = {}
+    for optionname in dir(options):
+      if optionname in optionkeywords:
+        requiredoptions[optionname] = getattr(options, optionname)
+    return requiredoptions
 
   def getfiltermethod(self, inputext, outputext):
     """works out which conversion method to use..."""
@@ -155,7 +164,7 @@ class FilterOptionParser(optparse.OptionParser):
     else:
       raise ValueError("one of input/output formats must be a dict: %r, %r" % (self.inputformats, self.outputformats))
 
-  def recurseconversion(self, options):
+  def recursefilter(self, options, optionkeywords):
     """recurse through directories and filter files"""
     join = os.path.join
     allfiles = self.recursefiles(options)
@@ -172,7 +181,8 @@ class FilterOptionParser(optparse.OptionParser):
       fulloutputpath = join(options.output, outputpath)
       outputfile = open(fulloutputpath, 'w')
       filtermethod = self.getfiltermethod(inputext, outputext)
-      if filtermethod(inputfile, outputfile):
+      requiredoptions = self.getrequiredoptions(options, optionkeywords)
+      if filtermethod(inputfile, outputfile, **requiredoptions):
         outputsubdir = os.path.dirname(outputpath)
         self.usesubdir(outputsubdir)
         self.reportprogress(inputpath, True)
