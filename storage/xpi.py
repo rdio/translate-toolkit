@@ -28,16 +28,13 @@ try:
 except:
   from StringIO import StringIO
 
-def _commonprefix(filenamelist):
-  filelist = []
-  for filename in filenamelist:
-    filelist.append(filename.split('/'))
+def _commonprefix(itemlist):
   def cp(a, b):
     l = min(len(a), len(b))
     for n in range(l):
       if a[n] != b[n]: return a[:n]
     return a[:l]
-  return reduce(cp, filelist)
+  return reduce(cp, itemlist)
 
 class XpiFile(zipfile.ZipFile):
   def __init__(self, *args, **kwargs):
@@ -69,7 +66,7 @@ class XpiFile(zipfile.ZipFile):
 
   def findcommonprefix(self):
     """finds the common prefix of all the files stored in the jar files"""
-    return _commonprefix(self.iterjarcontents())
+    return _commonprefix([filename.split('/') for filename in self.iterjarcontents()])
 
   def stripcommonprefix(self, filename):
     """strips the common prefix off the filename"""
@@ -97,6 +94,12 @@ class XpiFile(zipfile.ZipFile):
         shortjarfilename = os.path.split(jarfilename)[1]
         shortjarfilename = os.path.splitext(shortjarfilename)[0]
         jarprefixes[jarfilename] = shortjarfilename+'/'
+    # this is a clever trick that will e.g. remove zu- from zu-win, zu-mac, zu-unix
+    commonjarprefix = _commonprefix([prefix for prefix in jarprefixes.itervalues() if prefix])
+    if commonjarprefix:
+      for jarfilename, prefix in jarprefixes.items():
+        if prefix:
+          jarprefixes[jarfilename] = prefix.replace(commonjarprefix, '', 1)
     return jarprefixes
 
   def ziptoospath(self, zippath):
