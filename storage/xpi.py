@@ -43,6 +43,8 @@ class XpiFile(zipfile.ZipFile):
     self.jarfiles = {}
     self.commonprefix = self.findcommonprefix()
     self.jarprefixes = self.findjarprefixes()
+    self.reverseprefixes = dict([
+      (prefix,jarfilename) for jarfilename, prefix in self.jarprefixes.iteritems() if prefix])
 
   def iterjars(self):
     """iterate through the jar files in the xpi as ZipFile objects"""
@@ -108,21 +110,47 @@ class XpiFile(zipfile.ZipFile):
 
   def ostozippath(self, ospath):
     """converts an os-style filepath to a zipfile filepath"""
-    return '/'.join(ospath.split(os.path.pathsep))
+    return '/'.join(ospath.split(os.path.sep))
+
+  def jartoospath(self, jarfilename, filename):
+    """converts a filename from within a jarfile to an os-style filepath"""
+    if jarfilename:
+      jarprefix = self.jarprefixes[jarfilename]
+      return self.ziptoospath(jarprefix+self.stripcommonprefix(filename))
+    else:
+      return self.ziptoospath(filename)
+
+  def ostojarpath(self, ospath):
+    """converts an extracted os-style filepath to a jarfilename and filename"""
+    zipparts = ospath.split(os.path.sep)
+    prefix = zipparts[0] + '/'
+    if prefix in self.reverseprefixes:
+      jarfilename = self.reverseprefixes[prefix]
+      filename = '/'.join(self.commonprefix + zipparts[1:])
+      return jarfilename, filename
+    else:
+      filename = self.ostozippath(ospath)
+      if filename in self.namelist():
+        return None, filename
+      filename = '/'.join(self.commonprefix + zipparts)
+      possiblejarfilenames = [jarfilename for jarfilename, prefix in self.jarprefixes.iteritems() if not prefix]
+      for jarfilename in possiblejarfilenames:
+        jarfile = self.jarfiles[jarfilename]
+        if filename in jarfile.namelist():
+          return jarfilename, filename
+      raise IndexError("ospath not found in xpi file, could not guess location: %r" % ospath)
 
   def iterextractnames(self, includenonjars=False):
     """iterates through all the localization files with the common prefix stripped and a jarfile name added if neccessary"""
     if includenonjars:
-      nonjarfilelist = []
       for filename in self.namelist():
         if filename.endswith('/'): continue
         if not filename.lower().endswith(".jar"):
-          yield self.ziptoospath(filename)
+          yield self.jartoospath(None, filename)
     for jarfilename, jarfile in self.iterjars():
-      jarprefix = self.jarprefixes[jarfilename]
       for filename in jarfile.namelist():
         if filename.endswith('/'): continue
-        yield self.ziptoospath(jarprefix+self.stripcommonprefix(filename))
+        yield self.jartoospath(jarfilename, filename)
 
 if __name__ == '__main__':
   try:
@@ -136,5 +164,5 @@ if __name__ == '__main__':
   else:
     x = XpiFile(args[0])
   for name in x.iterextractnames(True):
-    print name
+    print name, x.ostojarpath(name)
 
