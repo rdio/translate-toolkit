@@ -211,7 +211,8 @@ class SetupIndex(SetupParser):
     # TODO: reset the Languages list when supported by setup.ins
     # support for Languages is needed in setup2/source/ui/pages/plang.*
     # self.setfieldvalue('gid_Installation', 'Languages', '"%s"' % languages)
-    # can't do anything about HelpText yet...
+    # TODO: HelpText can be done by adding Text[nn] entries
+    # see http://installation.openoffice.org/pics/scpitem_helptext.html
     directoriestorename = {}
     for index in indexes:
       index.directorychildren = {}
