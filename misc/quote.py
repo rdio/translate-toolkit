@@ -82,7 +82,8 @@ def extractcomment(lines):
   return extractfromlines(lines,"<!--","-->",None)
 
 def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,includeescapes=1):
-  """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping"""
+  """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping
+  includeescapes can also be a function that takes the whole escaped string and returns whether to escape it"""
   # note that this doesn't returns the quote characters as well...
   instring = startinstring
   inescape = 0
@@ -98,7 +99,11 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
     c = source[pos]
     if instring and inescape:
       # if not including escapes in result, take them out
-      if not includeescapes:
+      if callable(includeescapes):
+        includethisescape = includeescapes(source[pos-len(escape):pos+1])
+      else:
+        includethisescape = includeescapes
+      if not includethisescape:
         extracted = extracted[:-len(escape)]
       # if in an escape, just add to the string
       extracted += c
