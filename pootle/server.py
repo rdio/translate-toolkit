@@ -14,7 +14,18 @@ class LoginPage(server.LoginPage, pagelayout.PootlePage):
     contents = widgets.Division(widgets.Division(loginform, None, {"class":"intro"}), "content")
     pagelayout.PootlePage.__init__(self, "Login to Pootle", contents, session)
 
-class PootleServer(server.LoginAppServer):
+class OptionalLoginAppServer(server.LoginAppServer):
+  """a server that enables login but doesn't require it except for specified pages"""
+  def handle(self, req, pathwords, argdict):
+    """handles the request and returns a page object in response"""
+    argdict = self.processargs(argdict)
+    session = self.getsession(req, argdict)
+    if session.isopen:
+      session.pagecount += 1
+      session.remote_ip = self.getremoteip(req)
+    return self.getpage(pathwords, session, argdict)
+
+class PootleServer(OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage, cachetables=None):
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass, cachetables)
