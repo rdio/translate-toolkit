@@ -4,6 +4,7 @@
 
 # this must be before wx to prevent expat-version conflicts with wx
 from translate.misc import xmlwrapper
+from xml.parsers import expat
 import wx
 import os
 import ConfigParser
@@ -322,6 +323,21 @@ class LanguageSelectionWindow(wx.Frame):
         self.dirbox.SetValue(versiondir)
         self.setinstalldir(versiondir)
         return
+    # see if the directory ooswitchlang is run from is in one of the described versions
+    setupdir = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+    versionname = self.findregisteredversion(setupdir)
+    if versionname:
+      versiondir = self.versions[versionname]
+      self.versionchoice.SetStringSelection(versionname)
+      self.dirbox.SetValue(versiondir)
+      self.setinstalldir(versiondir)
+      return
+    # see if the directory ooswitchlang is run from is an openoffice.org directory anyway...
+    if os.path.isdir(os.path.join(setupdir, 'share', 'registry', 'data', 'org', 'openoffice')):
+      self.versionchoice.SetStringSelection("(other)")
+      self.dirbox.SetValue(versiondir)
+      self.setinstalldir(versiondir)
+      return
     # otherwise use the first valid version...
     self.versionchoice.SetSelection(0)
     versiondir = self.versions.get(self.versionchoice.GetStringSelection(), '')
