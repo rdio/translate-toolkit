@@ -95,11 +95,11 @@ def filterwordswithpunctuation(str1):
       # remove any ' in the middle of a word...
       removeapostrophe = testword[:1] + testword[1:-1].replace("'","") + testword[-1:]
       if removeapostrophe != testword:
-        replacements.append((parser.findtokenpos(str1, words, n), testword, removeapostrophe))
+        replacements.append((parser.findtokenpos(n), testword, removeapostrophe))
         continue
     npword = wordswithpunctuation.get(testword.lower(), None)
     if npword is not None:
-      replacements.append((parser.findtokenpos(str1, words, n), testword, npword))
+      replacements.append((parser.findtokenpos(n), testword, npword))
   newstr1 = ""
   lastpos = 0
   for pos, origword, newword in replacements:
