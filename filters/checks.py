@@ -174,6 +174,13 @@ class MozillaChecker(StandardChecker):
       varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None))
       )
 
+class GnomeChecker(StandardChecker):
+  def __init__(self):
+    StandardChecker.__init__(self,
+      accelerators = ("_"),
+      varmatches = (("%", 1),)
+      )
+
 def runtests(str1, str2, ignorelist=()):
   """verifies that the tests pass for a pair of strings"""
   checker = StandardChecker()
