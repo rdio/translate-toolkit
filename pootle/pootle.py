@@ -82,6 +82,23 @@ class PootleServer(OptionalLoginAppServer):
       return LoginPage(session)
     elif top == "register.html":
       return self.registerpage(session, argdict)
+    elif top == "projects":
+      pathwords = pathwords[1:]
+      if pathwords:
+        top = pathwords[0]
+      else:
+        top = ""
+      if not top or top == "index.html":
+        return indexpage.ProjectsIndex(self.potree, session)
+      else:
+        projectcode = top
+        pathwords = pathwords[1:]
+        if pathwords:
+          top = pathwords[0]
+        else:
+          top = ""
+        if not top or top == "index.html":
+          return indexpage.ProjectLanguageIndex(self.potree, projectcode, session)
     elif self.potree.haslanguage(top):
       languagecode = top
       pathwords = pathwords[1:]

@@ -427,9 +427,13 @@ class POTree:
     """returns the language's full name"""
     return getattr(self.getlanguageprefs(languagecode), "fullname", languagecode)
 
-  def getlanguagecodes(self):
-    """returns a list of valid languagecodes"""
-    return [languagecode for languagecode, language in self.languages.iteritems()]
+  def getlanguagecodes(self, projectcode=None):
+    """returns a list of valid languagecodes for a given project or all projects"""
+    languagecodes = [languagecode for languagecode, language in self.languages.iteritems()]
+    if projectcode is None:
+      return languagecodes
+    else:
+      return [languagecode for languagecode in languagecodes if self.hasproject(languagecode, projectcode)]
 
   def getprojectcodes(self, languagecode=None):
     """returns a list of project codes that are valid for the given languagecode or all projects"""

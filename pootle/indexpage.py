@@ -38,11 +38,29 @@ class PootleIndex(pagelayout.PootlePage):
 
   def getprojectlinks(self):
     """gets the links to the projects"""
-    projectstitle = '<h3 class="title">Projects</h3>'
+    projectstitle = widgets.ContentWidget('h3', widgets.Link("projects/", "Projects"), {"class":"title"})
     projectlinks = []
     for projectcode in self.potree.getprojectcodes():
       projectname = self.potree.getprojectname(projectcode)
       projectlink = widgets.Link("projects/%s/" % projectcode, projectname)
+      projectlinks.append(projectlink)
+    listwidget = widgets.SeparatedList(projectlinks, ", ")
+    bodydescription = pagelayout.ItemDescription(listwidget)
+    return pagelayout.Contents([projectstitle, bodydescription])
+
+class ProjectsIndex(PootleIndex):
+  """the list of projects"""
+  def getlanguagelinks(self):
+    """we don't need language links on the project page"""
+    return ""
+
+  def getprojectlinks(self):
+    """gets the links to the projects"""
+    projectstitle = '<h3 class="title">Projects</h3>'
+    projectlinks = []
+    for projectcode in self.potree.getprojectcodes():
+      projectname = self.potree.getprojectname(projectcode)
+      projectlink = widgets.Link("%s/" % projectcode, projectname)
       projectlinks.append(projectlink)
     listwidget = widgets.SeparatedList(projectlinks, ", ")
     bodydescription = pagelayout.ItemDescription(listwidget)
@@ -73,6 +91,35 @@ class LanguageIndex(pagelayout.PootlePage):
     projectstats = project.calculatestats()
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
+    percentfinished = (translated*100/max(total, 1))
+    stats = pagelayout.ItemStatistics("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
+    return pagelayout.Item([body, stats])
+
+class ProjectLanguageIndex(pagelayout.PootlePage):
+  """list of languages belonging to a project"""
+  def __init__(self, potree, projectcode, session):
+    self.potree = potree
+    self.projectcode = projectcode
+    projectname = self.potree.getprojectname(self.projectcode)
+    languagelinks = self.getlanguagelinks()
+    pagelayout.PootlePage.__init__(self, "Pootle: "+projectname, languagelinks, session, bannerheight=81)
+
+  def getlanguagelinks(self):
+    """gets the links to the languages"""
+    languagecodes = self.potree.getlanguagecodes(self.projectcode)
+    languageitems = [self.getlanguageitem(languagecode) for languagecode in languagecodes]
+    return pagelayout.Contents(languageitems)
+
+  def getlanguageitem(self, languagecode):
+    languagename = self.potree.getlanguagename(languagecode)
+    bodytitle = '<h3 class="title">%s</h3>' % languagename
+    bodydescription = pagelayout.ItemDescription(widgets.Link("../../%s/%s/" % (languagecode, self.projectcode), '%s language' % languagename))
+    body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    language = self.potree.getproject(languagecode, self.projectcode)
+    numfiles = len(language.pofilenames)
+    languagestats = language.calculatestats()
+    translated = languagestats.get("translated", 0)
+    total = languagestats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
     stats = pagelayout.ItemStatistics("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
     return pagelayout.Item([body, stats])
