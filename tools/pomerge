@@ -34,7 +34,7 @@ def writepofile(outfile, pf):
   lines = pf.tolines()
   outfile.writelines(lines)
 
-def mergepofiles(p1, p2, mergeblanks=1, mergecomments=1):
+def mergepofiles(p1, p2, mergeblanks, mergecomments):
   """take any new translations in p2 and write them into p1"""
   for po2 in p2.poelements:
     # there may be more than one entity due to msguniq merge
@@ -77,14 +77,24 @@ def mergepofiles(p1, p2, mergeblanks=1, mergecomments=1):
         po1.merge(po2, overwrite=True, comments=mergecomments)
   return p1
 
-def mergepo(inputfile, outputfile, templatefile, mergecomments="yes"):
-  mergecomments = mergecomments.lower()
-  if mergecomments in ("yes", "true", "1"):
-    mergecomments = True
-  elif mergecomments in ("no", "false", "0"):
-    mergecomments = False
+def str2bool(option):
+  option = option.lower()
+  if option in ("yes", "true", "1"):
+    return True
+  elif option in ("no", "false", "0"):
+    return False
   else:
+    raise ValueError("invalid boolean value: %r" % option)
+
+def mergepo(inputfile, outputfile, templatefile, mergeblanks="no", mergecomments="yes"):
+  try:
+    mergecomments = str2bool(mergecomments)
+  except ValueError:
     raise ValueError("invalid mergecomments value: %r" % mergecomments)
+  try:
+    mergeblanks = str2bool(mergeblanks)
+  except ValueError:
+    raise ValueError("invalid mergeblanks value: %r" % mergeblanks)
   inputpo = po.pofile(inputfile)
   if templatefile is None:
     # just merge nothing
@@ -93,7 +103,7 @@ def mergepo(inputfile, outputfile, templatefile, mergecomments="yes"):
     templatepo = po.pofile(templatefile)
   templatepo.makeindex()
   inputpo.makeindex()
-  outputpo = mergepofiles(templatepo, inputpo, mergecomments=mergecomments)
+  outputpo = mergepofiles(templatepo, inputpo, mergeblanks, mergecomments)
   if outputpo.isempty():
     return 0
   outputfile.writelines(outputpo.tolines())
@@ -106,9 +116,13 @@ if __name__ == '__main__':
   potoutput = ("pot", mergepo)
   formats = {("po", "po"): pooutput, ("po", "pot"): pooutput, ("pot", "po"): pooutput, ("pot", "pot"): potoutput,
              "po": pooutput, "pot": pooutput}
+  mergeblanksoption = convert.optparse.Option("", "--mergeblanks", dest="mergeblanks",
+    action="store", default="yes", help="whether to overwrite existing translations with blank translations (yes/no)")
   mergecommentsoption = convert.optparse.Option("", "--mergecomments", dest="mergecomments",
     action="store", default="yes", help="whether to merge comments as well as translations (yes/no)")
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
+  parser.add_option(mergeblanksoption)
+  parser.convertparameters.append("mergeblanks")
   parser.add_option(mergecommentsoption)
   parser.convertparameters.append("mergecomments")
   parser.runconversion()
