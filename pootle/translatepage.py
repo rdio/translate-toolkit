@@ -73,6 +73,8 @@ class TranslatePage(pagelayout.PootlePage):
     """adds a section on the current file, including any checks happening"""
     searchcontextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     self.addsearchbox(self.searchtext, searchcontextinfo)
+    if self.session.session.issiteadmin():
+      self.addassignbox()
     self.links.addcontents(pagelayout.SidebarTitle(self.localize("current file")))
     self.links.addcontents(pagelayout.SidebarText(pofilename))
     if matchnames:
@@ -82,6 +84,15 @@ class TranslatePage(pagelayout.PootlePage):
     blank, fuzzy = postats["blank"], postats["fuzzy"]
     translated, total = postats["translated"], postats["total"]
     self.links.addcontents(pagelayout.SidebarText(self.localize("%d/%d translated\n(%d blank, %d fuzzy)") % (translated, total, blank, fuzzy)))
+
+  def addassignbox(self):
+    """adds a box that lets the user assign strings"""
+    self.links.addcontents(pagelayout.SidebarTitle(self.localize("Assign Strings")))
+    assigntobox = widgets.Input({"name": "assignto", "value": "", "title": self.localize("Assign to User")})
+    actionbox = widgets.Input({"name": "action", "value": "translate", "title": self.localize("Assign Action")})
+    submitbutton = widgets.Input({"type": "submit", "name": "doassign", "value": self.localize("Assign Strings")})
+    assignform = widgets.Form([assigntobox, actionbox, submitbutton], {"action": "?index=1", "name":"assignform"})
+    self.links.addcontents(assignform)
 
   def receivetranslations(self):
     """receive any translations submitted by the user"""
@@ -176,8 +187,8 @@ class TranslatePage(pagelayout.PootlePage):
     if item is None:
       try:
         search = projects.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext)
-        # TODO: add links to assigned work
-        search.assignedto = self.argdict.get("assignedto", None)
+        # TODO: find a nicer way to let people search stuff assigned to them (does it by default now)
+        search.assignedto = self.argdict.get("assignedto", self.session.session.username)
         search.assignedaction = self.argdict.get("assignedaction", None)
         self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, search).next()
       except StopIteration:
