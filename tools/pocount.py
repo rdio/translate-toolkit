@@ -34,6 +34,7 @@ def summarize(elements):
   elements = filter(lambda poel: not poel.isheader(), elements)
   translated = filter(lambda poel: not poel.isblankmsgstr() and not poel.isfuzzy(), elements)
   fuzzy = filter(lambda poel: poel.isfuzzy() and not poel.isblankmsgstr(), elements)
+  review = filter(lambda poel: poel.isreview(), elements)
   untranslated = filter(lambda poel: poel.isblankmsgstr(), elements)
   wordcounts = dict(map(lambda poel: (poel, wordsinpoel(poel)), elements))
   msgidwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][0], elementlist))
@@ -43,6 +44,8 @@ def summarize(elements):
   print "fuzzy:        %5d %10d             n/a" % (len(fuzzy), msgidwords(fuzzy))
   print "untranslated: %5d %10d             n/a" % (len(untranslated), msgidwords(untranslated))
   print "Total:        %5d %10d %15d" % (len(translated) + len(fuzzy) + len(untranslated), msgidwords(translated) + msgidwords(fuzzy) + msgidwords(untranslated), msgstrwords(translated))
+  if len(review) > 0:
+    print "review:       %5d %10d             n/a" % (len(review), msgidwords(review))
 
 class summarizer:
   def __init__(self, filenames):

@@ -155,6 +155,9 @@ class poelement:
   def markfuzzy(self, present=True):
     self.settypecomment("fuzzy", present)
 
+  def isreview(self):
+    return self.hastypecomment("review")
+
   def isnotblank(self):
     return not self.isblank()
 
