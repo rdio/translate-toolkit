@@ -959,7 +959,7 @@ class POTree:
       if key.startswith("languageremove-"):
         languagecode = key.replace("languageremove-", "", 1)
         if self.haslanguage(languagecode):
-          raise NotImplementedError("Can't remove languages")
+          delattr(self.languages, languagecode)
       elif key.startswith("languagename-"):
         languagecode = key.replace("languagename-", "", 1)
         if self.haslanguage(languagecode):
@@ -968,6 +968,8 @@ class POTree:
             self.setlanguagename(languagecode, value)
       elif key == "newlanguagecode":
         languagecode = value.lower()
+        if not languagecode.strip():
+          continue
         if not languagecode.isalpha():
           raise ValueError("Language code must be alphabetic")
         if self.haslanguage(languagecode):
@@ -982,7 +984,7 @@ class POTree:
       if key.startswith("projectremove-"):
         projectcode = key.replace("projectremove-", "", 1)
         if hasattr(self.projects, projectcode):
-          raise NotImplementedError("Can't remove projects")
+          delattr(self.projects, projectcode)
       elif key.startswith("projectname-"):
         projectcode = key.replace("projectname-", "", 1)
         if hasattr(self.projects, projectcode):
