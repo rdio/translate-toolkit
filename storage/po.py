@@ -343,7 +343,16 @@ class pofile:
       lines.extend(pelines)
       # add a line break
       lines.append('\n')
-    return lines
+    return self.utf8encode(lines)
+
+  def utf8encode(self, lines):
+    """encode any unicode strings in lines as utf8"""
+    newlines = []
+    for line in lines:
+      if isinstance(line, unicode):
+        line = line.encode("utf8")
+      newlines.append(line)
+    return newlines
 
   def todict(self):
     """returns a dictionary of elements based on msgid"""
