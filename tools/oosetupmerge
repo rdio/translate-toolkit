@@ -79,6 +79,7 @@ class SetupParser(sparse.SimpleParser):
       if value.endswith(";"): value = value[:-1]
       section[varname] = value
       section['tokennums'][varname] = startvardef - section['tokennums']['start']
+      section['tokennums'][varname+" end"] = tokennum - section['tokennums']['start']
       tokennum = tokennum + 1
     section['tokennums']['end'] = tokennum - section['tokennums']['start']
     tokennum += 1
@@ -100,6 +101,13 @@ class SetupParser(sparse.SimpleParser):
       tokennum += 1
     self.definitions[sectionname] = copy.deepcopy(section)
     self.definitions[sectionname]['tokennums']['start'] = tokennum
+    if tokennum in self.insertions:
+      self.insertions[tokennum].append((index, tokenrange))
+    else:
+      self.insertions[tokennum] = [(index, tokenrange)]
+
+  def insertforeignvalue(self, sectionname, index, tokenrange):
+    tokennum = self.getsectionendtokennum(sectionname) - 1
     if tokennum in self.insertions:
       self.insertions[tokennum].append((index, tokenrange))
     else:
@@ -145,12 +153,24 @@ class SetupParser(sparse.SimpleParser):
     fieldtokennum = self.getfieldtokennum(sectionname, fieldname)
     self.tokens[fieldtokennum] = fieldvalue
 
+  def renamefield(self, sectionname, fieldname, newfieldname):
+    fieldtokennum = self.getfieldtokennum(sectionname, fieldname)
+    self.tokens[fieldtokennum - 2] = newfieldname
+
   def getsectiontokenrange(self, sectionname):
     section = self.definitions[sectionname]
     start, end = section['tokennums']['start'], section['tokennums']['end']+1
     while self.tokens[start+end] == '\n' and start+end < len(self.tokens)-1:
       end += 1
     return (start, start+end)
+
+  def getfieldtokenrange(self, sectionname, fieldname):
+    section = self.definitions[sectionname]
+    sectionstart = section['tokennums']['start']
+    start, end = section['tokennums'][fieldname]-2, section['tokennums'][fieldname+' end']
+    while self.tokens[sectionstart+end] == '\n' and sectionstart+end < len(self.tokens)-1:
+      end += 1
+    return (sectionstart+start, sectionstart+end)
 
   def getmoduleentrytokennum(self, modulename, fileentry):
     start, end = self.getsectiontokenrange(modulename)
@@ -214,8 +234,6 @@ class SetupIndex(SetupParser):
     # TODO: reset the Languages list when supported by setup.ins
     # support for Languages is needed in setup2/source/ui/pages/plang.*
     # self.setfieldvalue('gid_Installation', 'Languages', '"%s"' % languages)
-    # TODO: HelpText can be done by adding Text[nn] entries
-    # see http://installation.openoffice.org/pics/scpitem_helptext.html
     directoriestorename = {}
     for index in indexes:
       for directory in index.bytype["Directory"]:
@@ -257,9 +275,8 @@ class SetupIndex(SetupParser):
           else:
             index.filemodules[fileentry].append(module)
     for index in indexes:
+      suffix = self.keymunge("_" + index.isocode)
       for directory in directoriestorename:
-        suffix = "_" + index.isocode
-        suffix = self.keymunge("_" + index.isocode)
         if directory.find('_Language') != -1:
           newname = directory.replace("_Language", suffix)
         elif directory.find('_Lang') != -1:
@@ -278,7 +295,6 @@ class SetupIndex(SetupParser):
       for fileentry in index.bytype["File"]:
         filename = sparse.stringeval(index.getfieldvalue(fileentry, 'Name'))
         if index.islocalizefile(filename):
-          suffix = self.keymunge("_" + index.isocode)
           index.rename(fileentry, fileentry + suffix)
           packedname = sparse.stringeval(index.getfieldvalue(fileentry, "PackedName"))
           newpackedname = packedname + suffix
@@ -294,10 +310,13 @@ class SetupIndex(SetupParser):
           isocodes = ",".join([eachindex.isocode for eachindex in indexes if eachindex.isocode.isalpha()])
           index.setfieldvalue(configitem, "Value", '"%s"' % isocodes)
         if key == index.isocode:
-          suffix = self.keymunge("_" + index.isocode)
           index.rename(configitem, configitem + suffix)
           if index != self:
             self.addforeignconfigitem(index, configitem, suffix)
+      for helpitem in index.bytype["HelpText"]:
+        index.renamefield(helpitem, "Text", "Text(%s)" % index.dialingcode)
+        if index != self:
+          self.addforeignhelptext(index, helpitem)
 
   def addmanualshortcut(self, shortcutentry, fileentry, iconid, baseentry):
     """Inserts a manual shortcut into the build system"""
@@ -381,6 +400,13 @@ class SetupIndex(SetupParser):
     configitemsection = index.definitions[configitem]
     # the config item will already have been renamed by the index.renamedirectory
     self.insertforeignsection(configitem, configitem + suffix, configitemsection, index, tokenrange)
+
+  def addforeignhelptext(self, index, helpitem):
+    """adds the foreign helpitem's text to the corresponding item in self"""
+    # see http://installation.openoffice.org/pics/scpitem_helptext.html
+    tokenrange = index.getfieldtokenrange(helpitem, "Text")
+    # the help item field will already have been renamed
+    self.insertforeignvalue(helpitem, index, tokenrange)
 
   def addforeignfile(self, index, fileentry, suffix):
     """adds the foreign file entry and updates the modules list..."""
