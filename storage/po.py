@@ -105,16 +105,20 @@ class poelement:
 
   def copy(self):
     newpo = poelement()
-    newpo.othercomments = self.othercomments
-    newpo.sourcecomments = self.sourcecomments
-    newpo.typecomments = self.typecomments
-    newpo.visiblecomments = self.visiblecomments
-    newpo.obsoletemessages = self.obsoletemessages = []
-    newpo.msgidcomments = self.msgidcomments
-    newpo.msgid = self.msgid
-    newpo.msgid_pluralcomments = self.msgid_pluralcomments
-    newpo.msgid_plural = self.msgid_plural
-    newpo.msgstr = self.msgstr
+    newpo.othercomments = self.othercomments[:]
+    newpo.sourcecomments = self.sourcecomments[:]
+    newpo.typecomments = self.typecomments[:]
+    newpo.visiblecomments = self.visiblecomments[:]
+    if hasattr(self, "obsoletemessages"):
+      newpo.obsoletemessages = self.obsoletemessages[:]
+    newpo.msgidcomments = self.msgidcomments[:]
+    newpo.msgid = self.msgid[:]
+    newpo.msgid_pluralcomments = self.msgid_pluralcomments[:]
+    newpo.msgid_plural = self.msgid_plural[:]
+    if isinstance(self.msgstr, dict):
+      newpo.msgstr = self.msgstr.copy()
+    else:
+      newpo.msgstr = self.msgstr[:]
     return newpo
 
   def msgidlen(self):
