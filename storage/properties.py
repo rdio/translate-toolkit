@@ -89,7 +89,10 @@ class propfile:
         newpe = propelement()
       else:
         # handle unicode-escape encoding
-        line = quote.mozillapropertiesdecode(line)
+        try:
+          line = quote.mozillapropertiesdecode(line)
+        except UnicodeError, e:
+          raise UnicodeError("Error with string %r: %s" % (line, e))
         equalspos = line.find('=')
         # if no equals, just ignore it
         if equalspos == -1:
