@@ -50,7 +50,7 @@ def mergepofiles(p1, p2, mergeblanks=1, includep1typecomments=1):
         sys.stderr.write("".join(po2.tolines()) + "\n")
       else:
         # finally set the new definition in po1
-        po1.merge(po2)
+        po1.merge(po2, overwrite=True)
     for entity in entities:
       po1 = None
       if p1.sourceindex.has_key(entity):
@@ -74,7 +74,7 @@ def mergepofiles(p1, p2, mergeblanks=1, includep1typecomments=1):
           unquotedstr = po.getunquotedstr(po2.msgstr)
           if len(unquotedstr.strip()) == 0: continue
         # finally set the new definition in po1
-        po1.merge(po2)
+        po1.merge(po2, overwrite=True)
   return p1
 
 def mergepo(inputfile, outputfile, templatefile):
