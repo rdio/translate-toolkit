@@ -219,22 +219,19 @@ class XpiFile(ZipFileCatcher):
       del localeentries[locale]
     if region:
       del localeentries[region]
+    if locale and not region:
+      region = locale.split("-", 1)[1]
     self.setlangreg(locale, region)
 
   def setlangreg(self, locale, region):
     """set the locale and region of this xpi"""
-    # TODO: if we do this in clone, remove the rename code
-    if self.locale is not None:
-      # do a recursive rename
-      pass
-    if self.region is not None:
-      # do a recursive rename
-      pass
     self.locale = locale
     self.region = region
     self.dirmap = {}
-    self.dirmap[('locale', self.locale)] = ('lang-reg',)
-    self.dirmap[('locale', self.region)] = ('reg',)
+    if self.locale is not None:
+      self.dirmap[('locale', self.locale)] = ('lang-reg',)
+    if self.region is not None:
+      self.dirmap[('locale', self.region)] = ('reg',)
 
   def findjarprefixes(self):
     """checks the uniqueness of the jar files contents"""
@@ -473,6 +470,33 @@ class XpiFile(ZipFileCatcher):
           if not includedirs: continue
         if not self.islocfile(filename) and not self.includenonloc: continue
         yield self.jartoospath(jarfilename, filename)
+
+  # the following methods are required by translate.convert.ArchiveConvertOptionParser #
+  def __iter__(self):
+    """iterates through all the files. this is the method use by the converters"""
+    for inputpath in self.iterextractnames(includenonjars=True):
+      yield inputpath
+
+  def __contains__(self, fullpath):
+    """returns whether the given pathname exists in the archive"""
+    try:
+     jarfilename, filename = self.ostojarpath(fullpath)
+    except IndexError:
+      return False
+    return self.jarfileexists(jarfilename, filename)
+
+  def openinputfile(self, fullpath):
+    """opens an input file given the full pathname"""
+    jarfilename, filename = self.ostojarpath(fullpath)
+    return self.openinputstream(jarfilename, filename)
+
+  def openoutputfile(self, fullpath):
+    """opens an output file given the full pathname"""
+    try:
+      jarfilename, filename = self.ostojarpath(fullpath)
+    except IndexError:
+      return None
+    return self.openoutputstream(jarfilename, filename)
 
 if __name__ == '__main__':
   try:
