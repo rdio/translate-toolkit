@@ -49,7 +49,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
 
   def isxpi(self, fileoption):
     """returns whether the file option is an xpi file"""
-    return fileoption and fileoption.endswith(os.extsep + "xpi") and os.path.isfile(fileoption)
+    return isinstance(fileoption, (str, unicode)) and fileoption.endswith(os.extsep + "xpi") and os.path.isfile(fileoption)
 
   def recursefiles(self, options):
     """recurse through xpi file / directories and return files to be converted"""
