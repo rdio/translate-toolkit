@@ -102,7 +102,7 @@ class dtdelement:
           self.comments.append(commentpair)
         line = line.replace(comment, "", 1)
 
-      if not self.inentity:
+      if not self.inentity and not self.incomment:
         if line.find('<!ENTITY') <> -1:
           self.inentity = 1
           self.entitypart = "start"
