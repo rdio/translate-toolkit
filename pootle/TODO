@@ -76,9 +76,7 @@ assignment:
     at the end, not sure what to assign...
 
 feedback from Durban translatathon:
-  enable login in English
-  don't require Pootle po files to run
-  regenerate PO files on web
+  regenerate Pootle PO files on web
   autocreate POT files when packaging
   upload SA translations
   word counts, not just string counts
