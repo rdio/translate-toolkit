@@ -155,10 +155,12 @@ class SimpleParser:
       inputlist = self.applytokenizer(inputlist, tokenizer)
     return inputlist
 
-  def tokenize(self, source):
+  def tokenize(self, source, tokenizers=None):
     """tokenize the input string with the standard tokenizers"""
     self.source = source
-    self.tokens = self.applytokenizers([self.source], self.standardtokenizers)
+    if tokenizers is None:
+      tokenizers = self.standardtokenizers
+    self.tokens = self.applytokenizers([self.source], tokenizers)
     return self.tokens
 
   def findtokenpos(self, tokennum):
