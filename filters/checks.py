@@ -130,11 +130,23 @@ class StandardChecker(TranslationChecker):
     """checks whether variables of various forms are consistent between the two strings"""
     return helpers.funcsmatch(str1, str2, self.varchecks)
 
-  def startandend(self, str1, str2):
-    """checks whether punctuation at the beginning and end of the strings match"""
+  def whitespace(self, str1, str2):
+    """checks whether whitespace at the beginning and end of the strings match"""
     str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
     str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
-    return helpers.funcsmatch(str1, str2, (decoration.puncstart, decoration.puncend))
+    return helpers.funcsmatch(str1, str2, (decoration.spacestart, decoration.spaceend))
+
+  def startpunc(self, str1, str2):
+    """checks whether punctuation at the beginning of the strings match"""
+    str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
+    str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
+    return helpers.funcmatch(str1, str2, decoration.puncstart)
+
+  def endpunc(self, str1, str2):
+    """checks whether punctuation at the end of the strings match"""
+    str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
+    str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
+    return helpers.funcmatch(str1, str2, decoration.puncend)
 
   def purepunctuationunchanged(self, str1, str2):
     """checks that strings that are purely punctuation are not changed"""
