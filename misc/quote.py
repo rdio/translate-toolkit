@@ -158,6 +158,17 @@ def escapeunicode(source):
 def unescapeunicode(source):
   return source.replace('\\\\u','\\u')
 
+def mozillapropertiesencode(source):
+  output = ""
+  for char in source:
+    charnum = ord(char)
+    if 0 <= charnum < 128:
+      output += str(char)
+    else:
+      output += "\\u%04X" % charnum
+  return output
+
+
 def quotestr(source, escapeescapes=0):
   "Returns a doublequote-delimited quoted string, escaping double quotes with backslash"
   return '"' + escapequotes(source, escapeescapes) + '"'
