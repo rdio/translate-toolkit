@@ -6,6 +6,7 @@ from translate.misc import sparse
 import sys
 import operator
 import os
+import copy
 
 class SetupIndex(sparse.SimpleParser):
   def __init__(self, filename=None):
@@ -98,7 +99,7 @@ class SetupIndex(sparse.SimpleParser):
     tokennum = self.getsectionendtokennum(aftersection)
     while self.tokens[tokennum+1] == '\n':
       tokennum += 1
-    self.definitions[sectionname] = section.copy()
+    self.definitions[sectionname] = copy.deepcopy(section)
     self.definitions[sectionname]['tokennums']['start'] = tokennum
     if tokennum in self.insertions:
       self.insertions[tokennum].append((index, tokenrange))
@@ -267,25 +268,17 @@ class SetupIndex(sparse.SimpleParser):
 
   def copyfiles(self, srcdirectory, destdirectory, onlychanged=0):
     for fileentry in self.bytype['File']:
-     try:
       fileentrysection = self.definitions[fileentry]
       if 'PackedName' not in fileentrysection: continue
       packedtokennum = self.getfieldtokennum(fileentry, "PackedName")
-      # FIXME: shouldn't have this problem
-      if self.tokens[packedtokennum] == '=': packedtokennum += 1
       originalpackedname = sparse.stringeval(self.originaltokens[packedtokennum])
       packedname = sparse.stringeval(self.tokens[packedtokennum])
       if not onlychanged or packedname != originalpackedname:
         srcfile = os.path.join(srcdirectory, originalpackedname)
         destfile = os.path.join(destdirectory, packedname)
-        # print '%s -> %s' % (srcfile, destfile)
-        print ".",
+        if packedname != originalpackedname:
+          print '%s -> %s' % (srcfile, destfile)
         os.system('cp -p %s %s' % (srcfile, destfile))
-     except Exception, e:
-      print "error in %r %r" % (self.filename, fileentry)
-      print e
-      continue
-    print "done copying files"
 
 if __name__ == '__main__':
   try:
