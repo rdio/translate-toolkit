@@ -87,7 +87,6 @@ class pootlefile(po.pofile):
   def track(self, item, message):
     """sets the tracker message for the given item"""
     self.tracker[item] = message
-    print message
 
   def readpofile(self):
     """reads and parses the main po file"""
@@ -424,8 +423,13 @@ class pootlefile(po.pofile):
   def deletesuggestion(self, item, suggitem):
     """removes the suggestion from the pending file"""
     self.readpendingfile()
+    thepo = self.transelements[item]
+    sources = thepo.getsources()
     # TODO: remove the suggestion in a less brutal manner
-    del self.pendingfile.poelements[suggitem]
+    pendingitems = [pendingitem for pendingitem, suggestpo in enumerate(self.pendingfile.poelements) if suggestpo.getsources() == sources]
+    pendingitem = pendingitems[suggitem]
+    print "finding %d.%d in %r: %d" % (item, suggitem, pendingitems, pendingitem)
+    del self.pendingfile.poelements[pendingitem]
     self.savependingfile()
     self.reclassifyelement(item)
 
