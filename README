@@ -6,16 +6,16 @@ make the lives of localizers both more productive and less frustrating.
 The Toolkit is part of the translate.sourceforge.net project, 
 hosted at http://translate.sourceforge.net/
 
-The software includes programs to covert localisation formats to the common PO
+The software includes programs to covert localization formats to the common PO
 format and programs to check and manage PO files.  The documentation includes
 guides on using the tools, running a localization project and how to localize
 various projects from OpenOffice.org to Mozilla.
 
 At its core the software contains a set of classes for handling various 
-localisation storage formats: DTD, properties, OpenOffice.org GSI/SDF,
+localization storage formats: DTD, properties, OpenOffice.org GSI/SDF,
 CSV and of course PO.  And scripts to convert between these formats.
 
-Also part of the Toolkit are Python programs to create wordcounts, merge
+Also part of the Toolkit are Python programs to create word counts, merge
 translations and perform various checks on PO files.
 
 
@@ -49,11 +49,11 @@ http://lists.sourceforge.net/lists/listinfo/translate-devel
 
 The vision of the Translate Project is to be a meta project for localizers
 built on the premise that your language deserves to be a project on its own
-right not a poor cousine of the main project.
+right not a poor cousin of the main project.
 
-Most projects are inatentive to the needs and difficulties experienced by
-localizers. to that end the aim is to work towards creating tools and
-documention that allows localizers to focus on what they do best: translating
+Most projects are inattentive to the needs and difficulties experienced by
+localizers. To that end the aim is to work towards creating tools and
+documentation that allows localizers to focus on what they do best: translating
 software.
 
 System Requirements
@@ -87,10 +87,10 @@ translate-devel at lists sourceforge net
 Preferably with a patch or at least a test case.
 
 
-Documenation
+Documentation
 ------------
-Please browse to doc/index.html to read the documenation.  They are being
-continuely updated and the latest version can be viewed at:
+Please browse to doc/index.html to read the documentation.  They are being
+continually updated and the latest version can be viewed at:
 http://translate.sourceforge.net/doc/inde.html
 
 Please feel free to contribute new sections and suggest corrections.
@@ -103,7 +103,7 @@ Use --help to find the syntax and options for all programs.
 
 * Converters
 oo2po, po2oo - convert between OpenOffice.org GSI files and PO
-moz2po, po2moz - convert from a Mozilla XPI file and PO.  Including unpackign
+moz2po, po2moz - convert from a Mozilla XPI file and PO.  Including unpacking
 	and building a translated XPI.
 txt2po, po2txt - convert simple text files to PO
 sxw2po - convert OpenOffice.org Writer files to PO
