@@ -62,11 +62,30 @@ class podebug:
   def convertfile(self, thepofile):
     filename = self.shrinkfilename(thepofile.filename)
     prefix = self.format
-    for formatstr in sre.findall("%[a-zA-Z]", self.format):
+    for formatstr in sre.findall("%[0-9c]*[sfFbBd]", self.format):
       if formatstr.endswith("s"):
-       formatted = self.shrinkfilename(thepofile.filename)
+        formatted = self.shrinkfilename(thepofile.filename)
       elif formatstr.endswith("f"):
-       formatted = thepofile.filename
+        formatted = thepofile.filename
+        formatted = os.path.splitext(formatted)[0]
+      elif formatstr.endswith("F"):
+        formatted = thepofile.filename
+      elif formatstr.endswith("b"):
+        formatted = os.path.basename(thepofile.filename)
+        formatted = os.path.splitext(formatted)[0]
+      elif formatstr.endswith("B"):
+        formatted = os.path.basename(thepofile.filename)
+      elif formatstr.endswith("d"):
+        formatted = os.path.dirname(thepofile.filename)
+      else:
+        continue
+      formatoptions = formatstr[1:-1]
+      if formatoptions:
+        if "c" in formatoptions and formatted:
+          formatted = formatted[0] + filter(lambda x: x.lower() not in "aeiou", formatted[1:])
+        length = filter(str.isdigit, formatoptions)
+        if length:
+          formatted = formatted[:int(length)]
       prefix = prefix.replace(formatstr, formatted)
     for thepo in thepofile.poelements:
       if thepo.isheader() or thepo.isblank():
@@ -106,6 +125,7 @@ def main():
   from translate.convert import convert
   formats = {"po":("po",convertpo)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
+  # TODO: add documentation on format strings...
   parser.add_option("-f", "--format", dest="format", default="[%s] ", help="specify format string")
   parser.passthrough.append("format")
   parser.run()
