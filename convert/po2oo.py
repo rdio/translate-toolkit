@@ -32,21 +32,6 @@ from translate.misc import quote
 import time
 from translate import __version__
 
-def includewhichescapes(escape):
-  if escape == "\\n":
-    return True
-  return False
-
-def extractpoline(line):
-  backslash = '\\'
-  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=includewhichescapes)[0]
-  return extracted # .replace('\\"', '"')
-
-def dounquotepo(thepo):
-  unquotedid = "".join([extractpoline(line) for line in thepo.msgid])
-  unquotedstr = "".join([extractpoline(line) for line in thepo.msgstr])
-  return unquotedid, unquotedstr
-
 class reoo:
   def __init__(self, templatefile, languages=None, timestamp=None, includefuzzy=False):
     """construct a reoo converter for the specified languages (timestamp=0 means leave unchanged)"""
@@ -128,7 +113,8 @@ class reoo:
     if not self.includefuzzy and thepo.isfuzzy():
       return
     # this converts the po-style string to a dtd-style string
-    unquotedid, unquotedstr = dounquotepo(thepo)
+    unquotedid = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False)
+    unquotedstr = po.unquotefrompo(thepo.msgstr, joinwithlinebreak=False)
     # check there aren't missing entities...
     if len(unquotedstr.strip()) == 0:
       return

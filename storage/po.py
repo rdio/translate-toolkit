@@ -26,23 +26,49 @@ from translate.misc import quote
 import sre
 import datetime
 
+# general functions for quoting / unquoting po strings
+
 def getunquotedstr(lines, joinwithlinebreak=True, includeescapes=True):
+  # TODO: try refactor this into unquotefrompo
   """unquotes a string from a po file"""
-  if isinstance(lines, dict):
-    # this might happen if people pass in plural msgstrs ...
-    pluralids = lines.keys()
-    pluralids.sort()
-    return "\n".join([getunquotedstr(lines[pluralid]) for pluralid in pluralids])
-  esc = '\\'
   if joinwithlinebreak:
     joiner = "\n"
   else:
     joiner = ""
+  if isinstance(lines, dict):
+    # this might happen if people pass in plural msgstrs ...
+    pluralids = lines.keys()
+    pluralids.sort()
+    return joiner.join([getunquotedstr(lines[pluralid], joinwithlinebreak, includeescapes) for pluralid in pluralids])
+  esc = '\\'
   extractline = lambda line: quote.extractwithoutquotes(line,'"','"',esc,includeescapes=includeescapes)[0]
   thestr = joiner.join([extractline(line) for line in lines])
   if thestr[:1] == "\n": thestr = thestr[1:]
   if thestr[-1:] == "\n": thestr = thestr[:-1]
   return thestr
+
+def escapeforpo(line):
+  """escapes a line for po format. assumes no \n occurs in the line"""
+  return line.replace("\\n", "\n").replace('\\', '\\\\').replace("\n", "\\n").replace('"', '\\"')
+
+def quoteforpo(text):
+  """quotes the given text for a PO file, returning quoted and escaped lines"""
+  return ['"' + escapeforpo(line) + '"' for line in text.split("\n")]
+
+def isnewlineescape(escape):
+  return escape == "\\n"
+
+def extractpoline(line):
+  backslash = '\\'
+  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=isnewlineescape)[0]
+  return extracted # .replace('\\"', '"')
+
+def unquotefrompo(postr, joinwithlinebreak=True):
+  if joinwithlinebreak:
+    joiner = "\n"
+  else:
+    joiner = ""
+  return joiner.join([extractpoline(line) for line in postr.msgid])
 
 """
 From the GNU gettext manual:
