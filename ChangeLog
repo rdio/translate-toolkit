@@ -1,3 +1,185 @@
+2004-04-23 22:57  davidfraser
+
+	* storage/po.py: in merge, merge comments rather than adding them
+	  to avoid duplicates tried to improve fuzziness algorithm in merge
+
+2004-04-23 22:54  davidfraser
+
+	* tools/pomerge: used po merge method instead of doing it
+	  ourselves...
+
+2004-04-23 22:52  davidfraser
+
+	* ChangeLog: added ChangeLog from 2004-03-31
+
+2004-04-23 22:50  davidfraser
+
+	* __version__.py: version 0.7
+
+2004-04-23 16:57  davidfraser
+
+	* tools/pomerge: added support for using .pot files as templates
+	  took out obsolete runconversion argument
+
+2004-04-23 16:38  davidfraser
+
+	* convert/Makefile: only clean after all tests (csvtests need stuff
+	  from openofficetests)
+
+2004-04-23 16:28  davidfraser
+
+	* convert/convert.py: added method to pass certain command-line
+	  options through to convertmethod as parameters
+
+2004-04-23 15:26  davidfraser
+
+	* convert/Makefile: made test-csv2po use standard oo templates
+	  rather than af (which were .po not .pot)
+
+2004-04-23 15:24  davidfraser
+
+	* convert/: convert.py, dtd2po.py, moz2po, po2dtd.py, po2moz,
+	  po2prop.py, prop2po.py: removed convertmethod option from
+	  runconversion (since this was a special case for single input and
+	  output,  and we can determine it from the filenames or guess)
+	  added removeduplicates call to oo2po
+
+2004-04-22 12:50  davidfraser
+
+	* convert/TODO: added TODO to handle originals in xpis
+
+2004-04-20 11:51  davidfraser
+
+	* convert/moz2po: added switches to only include localization files
+	  from xpi - thus avoiding unneccessary commonprefix
+
+2004-04-20 11:36  davidfraser
+
+	* convert/moz2po: only check if template is a file if it is filled
+	  in (could be None)
+
+2004-04-16 18:25  davidfraser
+
+	* convert/TODO: have done unpacking xpi added TODO to remove need
+	  for -R switch
+
+2004-04-16 15:25  davidfraser
+
+	* convert/convert.py: added check for self.usetemplates...
+
+2004-04-16 15:13  davidfraser
+
+	* convert/convert.py: replaced calls to get functions with calls to
+	  open functions added TODO
+
+2004-04-15 18:07  davidfraser
+
+	* convert/convert.py: tried to replace old
+	  getinput/output/templatefile methods with
+	  openinput/output/templatefile (not tested!)
+
+2004-04-15 18:02  davidfraser
+
+	* convert/: Makefile, moz2po: added initial support for xpi
+	  templates still need to support different filename structure
+	  moved initialization of options.inputxpi
+
+2004-04-15 17:40  davidfraser
+
+	* convert/: Makefile, moz2po: removed -x switch from moz2po -
+	  automatically detect xpi file / dir
+
+2004-04-15 17:29  davidfraser
+
+	* convert/: convert.py, moz2po: added code to convert to handle
+	  temporary output files using StringIO now moz2po.convertfile is
+	  not neccessary...
+
+2004-04-15 17:14  davidfraser
+
+	* convert/: moz2po, convert.py: changed recursefiles to just yield
+	  list of inputpaths instead of output, templates, ext etc moved
+	  generation of output names, template names, etc to
+	  recurseconversion added methods openinputfile, openoutputfile,
+	  opentemplatefile to open the files...  changed getconvertmethod
+	  to take inputpath, outputpath instead of extensions improved
+	  logic of gettemplatename (detect if not using templates here, not
+	  outside) made moz2po simpler by overriding openinputfile also
+	  don't need to checksubdir for every subdir in moz2po, just let
+	  convert handle it
+
+2004-04-15 16:22  davidfraser
+
+	* convert/Makefile: added test for moz2po from xpi
+
+2004-04-15 16:20  davidfraser
+
+	* convert/: convert.py, moz2po: added methods
+	  getfullinput/output/templatepath so they can be overridden in
+	  derived classes (and overrode getinputpath in moz2po for xpi
+	  files) this makes recurseconversion much simpler, so it doesn't
+	  need to be overridden in moz2po improved directory creation
+	  scheme (create a directory if we're going to create a file that
+	  needs it)
+
+2004-04-15 09:32  davidfraser
+
+	* convert/moz2po: made non-xpi recursion return (otherwise it does
+	  the standard thing, then tries the xpi thing too)
+
+2004-04-15 09:15  davidfraser
+
+	* convert/Makefile: added help to Makefile
+
+2004-04-10 09:47  davidfraser
+
+	* convert/moz2po: fixed wrong reference to base class added sys
+	  import for warning output
+
+2004-04-08 15:36  davidfraser
+
+	* convert/moz2po: added initial code to handle reading files
+	  straight out of an xpi
+
+2004-04-08 15:32  davidfraser
+
+	* convert/convert.py: initprogressbar needs to return allfiles as
+	  sometimes it converts it from a generator to a list...
+
+2004-04-08 13:56  davidfraser
+
+	* convert/convert.py: refactored recurseconversion - was too
+	  complex and difficult to override added methods initprogressbar
+	  and convertfile
+
+2004-04-04 08:05  davidfraser
+
+	* portal/portaldb.py: fixed syntax error, name shadowing
+
+2004-04-03 18:11  davidfraser
+
+	* storage/po.py: fixed wrong variable names
+
+2004-03-31 09:13  davidfraser
+
+	* filters/: checks.py, decoration.py: added checks for numbers
+
+2004-03-31 09:00  davidfraser
+
+	* filters/checks.py: separated quoting into singlequoting and
+	  doublequoting removed unneccessary calls to
+	  filterwordswithpunctuation prefilter
+
+2004-03-31 08:56  davidfraser
+
+	* filters/prefilters.py: added code to detect any apostrophe in the
+	  middle of a word as not being punctuation
+
+2004-03-31 08:29  davidfraser
+
+	* ChangeLog: added proper changelog for 0.6 (try keep this up to
+	  date :-))
+
 2004-03-31: David Fraser <david@translate.org.za>
 	* translate/convert/po2csv.py
 	- added ' to list of values to be escaped at start of string (spreadsheet cell)...
