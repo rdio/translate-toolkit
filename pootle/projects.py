@@ -45,18 +45,18 @@ class TranslationSession:
 
   def receivetranslation(self, pofilename, item, trans, issuggestion):
     """submits a new/changed translation from the user"""
+    if self.session.isopen:
+      username = self.session.username
+    else:
+      username = None
     if issuggestion:
       if "suggest" not in self.rights:
         raise RightsError(self.session.localize("you do not have rights to suggest changes here"))
-      if self.session.isopen:
-        username = self.session.username
-      else:
-        username = None
       self.project.suggesttranslation(pofilename, item, trans, username)
     else:
       if "translate" not in self.rights:
         raise RightsError(self.session.localize("you do not have rights to change translations here"))
-      self.project.updatetranslation(pofilename, item, trans)
+      self.project.updatetranslation(pofilename, item, trans, username)
 
   def skiptranslation(self, pofilename, item):
     """skips a declined translation from the user"""
@@ -78,6 +78,12 @@ class pootlefile(po.pofile):
     self.pomtime = None
     self.getstats()
     self.getassigns()
+    self.tracker = timecache.timecache(20*60)
+
+  def track(self, item, message):
+    """sets the tracker message for the given item"""
+    self.tracker[item] = message
+    print message
 
   def readpofile(self):
     """reads and parses the main po file"""
@@ -748,6 +754,25 @@ class TranslationProject:
         totalstats["assign-"+name] = totalstats.get("assign-"+name, 0) + count
     return totalstats
 
+  def track(self, pofilename, item, message):
+    """sends a track message to the pofile"""
+    self.pofiles[pofilename].track(item, message)
+
+  def gettracks(self, pofilenames=None):
+    """calculates translation statistics for the given po files (or all if None given)"""
+    alltracks = []
+    if pofilenames is None:
+      pofilenames = self.pofilenames
+    for pofilename in pofilenames:
+      if not pofilename or os.path.isdir(pofilename):
+        continue
+      tracker = self.pofiles[pofilename].tracker
+      items = tracker.keys()
+      items.sort()
+      for item in items:
+        alltracks.append("%s item %d: %s" % (pofilename, item, tracker[item]))
+    return alltracks
+
   def getpostats(self, pofilename):
     """calculates translation statistics for the given po file"""
     return self.pofiles[pofilename].getstats()
@@ -808,16 +833,18 @@ class TranslationProject:
     elements = pofile.transelements[max(itemstart,0):itemstop]
     return [(self.unquotefrompo(poel.msgid), self.unquotefrompo(poel.msgstr)) for poel in elements]
 
-  def updatetranslation(self, pofilename, item, trans):
+  def updatetranslation(self, pofilename, item, trans, username):
     """updates a translation with a new value..."""
     newmsgstr = self.quoteforpo(trans)
     pofile = self.pofiles[pofilename]
+    pofile.track(item, "edited by %s" % username)
     pofile.setmsgstr(item, newmsgstr)
 
   def suggesttranslation(self, pofilename, item, trans, username):
     """stores a new suggestion for a translation..."""
     suggmsgstr = self.quoteforpo(trans)
     pofile = self.getpofile(pofilename)
+    pofile.track(item, "suggestion made by %s" % username)
     pofile.addsuggestion(item, suggmsgstr, username)
 
   def getsuggestions(self, pofile, item):
@@ -829,13 +856,14 @@ class TranslationProject:
     suggestions = [self.unquotefrompo(suggestpo.msgstr) for suggestpo in suggestpos]
     return suggestions
 
-  def acceptsuggestion(self, pofile, item, suggitem, newtrans):
+  def acceptsuggestion(self, pofile, item, suggitem, newtrans, username):
     """accepts the suggestion into the main pofile"""
     if isinstance(pofile, (str, unicode)):
       pofilename = pofile
       pofile = self.getpofile(pofilename)
+    pofile.track(item, "suggestion by %s accepted by %s" % (self.getsuggester(pofile, item, suggitem), username))
     pofile.deletesuggestion(item, suggitem)
-    self.updatetranslation(pofilename, item, newtrans)
+    self.updatetranslation(pofilename, item, newtrans, username)
 
   def getsuggester(self, pofile, item, suggitem):
     """returns who suggested the given item's suggitem if recorded, else None"""
@@ -849,11 +877,12 @@ class TranslationProject:
         return suggestedby
     return None
 
-  def rejectsuggestion(self, pofile, item, suggitem, newtrans):
+  def rejectsuggestion(self, pofile, item, suggitem, newtrans, username):
     """rejects the suggestion and removes it from the pending file"""
     if isinstance(pofile, (str, unicode)):
       pofilename = pofile
       pofile = self.getpofile(pofilename)
+    pofile.track(item, "suggestion by %s rejected by %s" % (self.getsuggester(pofile, item, suggitem), username))
     pofile.deletesuggestion(item, suggitem)
 
   def savepofile(self, pofilename):

@@ -364,6 +364,9 @@ class ProjectIndex(pagelayout.PootlePage):
     self.session = self.project.gettranslationsession(session)
     self.localize = session.localize
     self.rights = self.session.getrights()
+    self.showtracks = argdict.get("showtracks", 0)
+    if isinstance(self.showtracks, (str, unicode)) and self.showtracks.isdigit():
+      self.showtracks = int(self.showtracks)
     self.showchecks = argdict.get("showchecks", 0)
     if isinstance(self.showchecks, (str, unicode)) and self.showchecks.isdigit():
       self.showchecks = int(self.showchecks)
@@ -526,6 +529,12 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       baseactionlink = "%s?translate=1" % basename
       baseindexlink = "%s?index=1" % basename
+    if "track" in linksrequired:
+      if self.showtracks:
+        trackslink = widgets.Link(baseindexlink + "&showtracks=0", self.localize("Hide Tracks"))
+      else:
+        trackslink = widgets.Link(baseindexlink + "&showtracks=1", self.localize("Show Tracks"))
+      actionlinks.append(trackslink)
     if "check" in linksrequired and "translate" in self.rights:
       if self.showchecks:
         checkslink = widgets.Link(baseindexlink + "&showchecks=0", self.localize("Hide Checks"))
@@ -572,6 +581,16 @@ class ProjectIndex(pagelayout.PootlePage):
         checklinkbase = basename + "?translate=1"
       statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, checklinkbase))
       statssummary += "<br/>" + statsdetails
+    if total and self.showtracks:
+      if not basename or basename.endswith("/"):
+        tracklinkbase = basename + "translate.html?"
+      else:
+        tracklinkbase = basename + "?translate=1"
+      trackfilter = (self.dirfilter or "") + basename
+      trackpofilenames = self.project.browsefiles(trackfilter)
+      projecttracks = self.project.gettracks(trackpofilenames)
+      statsdetails = "<br/>\n".join(self.gettrackdetails(projecttracks, tracklinkbase))
+      statssummary += "<br/><span class='trackerdetails'>" + statsdetails + "</span>"
     if total and self.showassigns:
       if not basename or basename.endswith("/"):
         assignlinkbase = basename + "translate.html?"
@@ -584,6 +603,11 @@ class ProjectIndex(pagelayout.PootlePage):
       statsdetails = "<br/>\n".join(self.getassigndetails(projectstats, assignlinkbase, removelinkbase))
       statssummary += "<br/>" + statsdetails
     return pagelayout.ItemStatistics(statssummary)
+
+  def gettrackdetails(self, projecttracks, tracklinkbase):
+    """return a list of strings describing the results of tracks"""
+    for trackmessage in projecttracks:
+      yield trackmessage + "<br/>"
 
   def getcheckdetails(self, projectstats, checklinkbase):
     """return a list of strings describing the results of checks"""

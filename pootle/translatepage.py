@@ -164,13 +164,13 @@ class TranslatePage(pagelayout.PootlePage):
       self.lastitem = item
     for item, suggid in rejects:
       value = suggestions[item, suggid]
-      self.project.rejectsuggestion(self.pofilename, item, suggid, value)
+      self.project.rejectsuggestion(self.pofilename, item, suggid, value, self.session.session.username)
       self.lastitem = item
     for item, suggid in accepts:
       if (item, suggid) in rejects or (item, suggid) not in suggestions:
         continue
       value = suggestions[item, suggid]
-      self.project.acceptsuggestion(self.pofilename, item, suggid, value)
+      self.project.acceptsuggestion(self.pofilename, item, suggid, value, self.session.session.username)
       self.lastitem = item
 
   def getmatchnames(self, checker): 
@@ -205,6 +205,7 @@ class TranslatePage(pagelayout.PootlePage):
         raise ValueError("Invalid item given")
       self.item = int(item)
       self.pofilename = self.argdict.get("pofilename", self.dirfilter)
+    self.project.track(self.pofilename, self.item, "being edited by %s" % self.session.session.username)
 
   def gettranslations(self):
     """gets the list of translations desired for the view, and sets editable and firstitem parameters"""
