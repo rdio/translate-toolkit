@@ -241,7 +241,7 @@ def mozillapropertiesdecode(source):
         elif c in "abcdef":
           x += ord(c) - ord('a') + 10
         else:
-          raise ValueError("Invalid digit in Unicode escape sequence")
+          raise ValueError("Invalid digit %r in Unicode escape sequence %r" % (c, source[s:s+digits]))
       s += digits
       output += unichr2(x)
     elif c == "N":
