@@ -44,7 +44,7 @@ class txt2po:
     """converts a file to .po format"""
     thepofile = po.pofile()
     if includeheader:
-      headerpo = thepofile.makeheader(charset="UTF8", encoding="8bit")
+      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
       thepofile.poelements.append(headerpo)
     lines = inputfile.readlines()
     block = []
