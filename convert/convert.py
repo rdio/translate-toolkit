@@ -274,6 +274,7 @@ class ConvertOptionParser(optparse.OptionParser):
             templatename = self.gettemplatename(name)
             templatepath = join(top, templatename)
           inputbase, inputext = os.path.splitext(name)
+          inputext = inputext.replace(os.extsep, "", 1)
           yield (inputext, inputpath, outputext, outputpath, templatepath)
       # make sure the directories are processed next time round...
       dirs.reverse()
