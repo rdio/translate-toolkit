@@ -30,7 +30,10 @@ class TranslatePage(pagelayout.PootlePage):
     self.localize = session.localize
     self.rights = self.session.getrights()
     self.instance = session.instance
-    self.pofilename = None
+    if dirfilter and dirfilter.endswith(".po"):
+      self.pofilename = dirfilter
+    else:
+      self.pofilename = None
     self.lastitem = None
     self.receivetranslations()
     # TODO: clean up modes to be one variable
@@ -124,8 +127,8 @@ class TranslatePage(pagelayout.PootlePage):
 
   def receivetranslations(self):
     """receive any translations submitted by the user"""
-    self.pofilename = self.argdict.get("pofilename", None)
-    if self.pofilename is None:
+    pofilename = self.argdict.get("pofilename", None)
+    if pofilename is None:
       return
     skips = []
     submitsuggests = []
@@ -173,29 +176,29 @@ class TranslatePage(pagelayout.PootlePage):
       if item is not None:
         suggestions[item, suggid] = value
     for item in skips:
-      self.session.skiptranslation(self.pofilename, item)
+      self.session.skiptranslation(pofilename, item)
       self.lastitem = item
     for item in submitsuggests:
       if item in skips or item not in translations:
         continue
       value = translations[item]
-      self.session.receivetranslation(self.pofilename, item, value, True)
+      self.session.receivetranslation(pofilename, item, value, True)
       self.lastitem = item
     for item in submits:
       if item in skips or item not in translations:
         continue
       value = translations[item]
-      self.session.receivetranslation(self.pofilename, item, value, False)
+      self.session.receivetranslation(pofilename, item, value, False)
       self.lastitem = item
     for item, suggid in rejects:
       value = suggestions[item, suggid]
-      self.project.rejectsuggestion(self.pofilename, item, suggid, value, self.session.session.username)
+      self.project.rejectsuggestion(pofilename, item, suggid, value, self.session.session.username)
       self.lastitem = item
     for item, suggid in accepts:
       if (item, suggid) in rejects or (item, suggid) not in suggestions:
         continue
       value = suggestions[item, suggid]
-      self.project.acceptsuggestion(self.pofilename, item, suggid, value, self.session.session.username)
+      self.project.acceptsuggestion(pofilename, item, suggid, value, self.session.session.username)
       self.lastitem = item
 
   def getmatchnames(self, checker): 

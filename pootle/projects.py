@@ -112,6 +112,9 @@ class pootlefile(po.pofile):
 
   def pofreshen(self):
     """makes sure we have a freshly parsed pofile"""
+    if not os.path.exists(self.filename):
+      # the file has been removed, update the project index (and fail below)
+      self.project.scanpofiles()
     if self.pomtime != getmodtime(self.filename):
       self.readpofile()
 
@@ -557,6 +560,15 @@ class potimecache(timecache.timecache):
     timecache.timecache.__init__(self, expiryperiod)
     self.project = project
 
+  def __getitem__(self, key):
+    """[] access of items"""
+    if key and not dict.__contains__(self, key):
+      popath = os.path.join(self.project.podir, key)
+      if os.path.exists(popath):
+        # update the index to pofiles...
+        self.project.scanpofiles()
+    return timecache.timecache.__getitem__(self, key)
+
   def expire(self, pofilename):
     """expires the given pofilename by recreating it (holding only stats)"""
     timestamp, currentfile = dict.__getitem__(self, pofilename)
@@ -934,6 +946,9 @@ class TranslationProject:
 
   def searchpofilenames(self, lastpofilename, search, includelast=False):
     """find the next pofilename that has items matching the given search"""
+    if lastpofilename and not lastpofilename in self.pofiles:
+      # accessing will autoload this file...
+      self.pofiles[lastpofilename]
     for pofilename in self.iterpofilenames(lastpofilename, includelast):
       if self.matchessearch(pofilename, search):
         yield pofilename
