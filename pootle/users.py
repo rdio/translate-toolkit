@@ -111,9 +111,9 @@ class OptionalLoginAppServer(server.LoginAppServer):
         if not username:
           continue
         if not (username[:1].isalpha() and username.replace("_","").isalnum()):
-          raise ValueError("Project code must be alphanumeric and start with an alphabetic character (got %r)" % username)
+          raise ValueError("Login must be alphanumeric and start with an alphabetic character (got %r)" % username)
         if hasattr(users, username):
-          raise ValueError("Already have user with the code %s" % username)
+          raise ValueError("Already have user with the login: %s" % username)
         userpassword = argdict.get("newuserpassword", None)
         if userpassword is None:
           raise ValueError("You must specify a password")
