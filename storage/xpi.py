@@ -38,6 +38,9 @@ except ImportError:
   NamedStringInput = StringIO.StringIO
   NamedStringOutput = StringIO.StringIO
 
+# TODO: use jarfile names instead of trying to do intelligent common-prefix-stripping
+# TODO: pick up lang name etc from command-line param and rename en-US to lang-reg
+
 def _commonprefix(itemlist):
   def cp(a, b):
     l = min(len(a), len(b))
