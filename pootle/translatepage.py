@@ -73,6 +73,8 @@ class TranslatePage(pagelayout.PootlePage):
   def gettranscell(self, row, trans, editable):
     transdiv = widgets.Division([], "trans%d" % row)
     if editable:
+      if isinstance(trans, str):
+        trans = trans.decode("utf8")
       textarea = widgets.TextArea({"name":"trans%d" % row, "rows":3, "cols":40}, contents=trans)
       submitbutton = widgets.Input({"type":"submit", "name":"submit", "value":"submit"}, "submit")
       contents = [textarea, submitbutton]
