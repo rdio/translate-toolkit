@@ -206,6 +206,9 @@ class TranslatePage(pagelayout.PootlePage):
       self.transtable.setcell(row, 0, origcell)
       transcell = table.TableCell(transdiv, {"class":"translate-translation"})
       self.transtable.setcell(row, 1, transcell)
+      if item in self.editable:
+        origcell.attribs["class"] += " translate-focus"
+        transcell.attribs["class"] += " translate-focus"
     self.transtable.shrinkrange()
     return self.transtable
 

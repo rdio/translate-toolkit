@@ -79,6 +79,10 @@ td.translate-original
 	width: 50%;
 	background-color: #e0e0e0;
 }
+td.translate-focus
+{
+	background-color: #f0f0f0;
+}
 td.translate-translation
 {
 	width: 50%;
