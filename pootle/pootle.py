@@ -10,6 +10,7 @@ from translate.pootle import adminpages
 from translate.pootle import translatepage
 from translate.pootle import pagelayout
 from translate.pootle import projects
+from translate.pootle import potree
 from translate.pootle import users
 import sys
 import os
@@ -20,7 +21,7 @@ class PootleServer(users.OptionalLoginAppServer):
   def __init__(self, instance, webserver, sessioncache=None, errorhandler=None, loginpageclass=users.LoginPage):
     if sessioncache is None:
       sessioncache = session.SessionCache(sessionclass=users.PootleSession)
-    self.potree = projects.POTree(instance)
+    self.potree = potree.POTree(instance)
     super(PootleServer, self).__init__(instance, webserver, sessioncache, errorhandler, loginpageclass)
     self.setdefaultoptions()
 
