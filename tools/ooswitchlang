@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+"""A GUI for changing OpenOffice.org language selection"""
+
 import wx
 import os
 import ConfigParser
@@ -7,6 +9,7 @@ import urlparse
 import urllib
 import operator
 from translate.misc import xmlwrapper
+from translate import __version__
 
 availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'tn': 'Tswana', 'zu': 'Zulu'}
 
@@ -153,7 +156,8 @@ class ooinstallmanager(ConfigParser.RawConfigParser):
       
 class LanguageSelectionWindow(wx.Frame):
   """Window for selecting language"""
-  def __init__(self, parent, id, title):
+  def __init__(self, parent, id, title, advancedmode):
+    self.advancedmode = advancedmode
     wx.Frame.__init__(self, parent, id, title, size=(420,280))
     self.panel = wx.Panel(self, wx.ID_ANY)
     self.versionlabel = wx.StaticText(self.panel, wx.ID_ANY, "Select version:")
@@ -186,22 +190,25 @@ class LanguageSelectionWindow(wx.Frame):
 
     self.findcurrentversion()
 
+    optionslayout = [(self.versionlabel, self.versionchoice),
+                     (self.dirlabel, self.dirsizer),
+                     (self.languagelabel, self.languagelist),
+                     (self.adminlabel, self.adminchoice),
+                     (self.forcelabel, self.forcechoice)]
+
+    self.advancedcontrols = [self.versionlabel, self.versionchoice, self.dirlabel, self.dirbox, self.dirbrowse,
+                             self.adminlabel, self.adminchoice, self.forcelabel, self.forcechoice]
+    if not self.advancedmode:
+      for control in self.advancedcontrols:
+        control.Hide()
+
     self.optionssizer = wx.FlexGridSizer(0, 2, 0, 0)
-    row = self.optionssizer.GetRows()
-    self.optionssizer.Add(self.versionlabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-    self.optionssizer.Add(self.versionchoice, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-    row = self.optionssizer.GetRows()
-    self.optionssizer.Add(self.dirlabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-    self.optionssizer.Add(self.dirsizer, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-    row = self.optionssizer.GetRows()
-    self.optionssizer.Add(self.languagelabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-    self.optionssizer.Add(self.languagelist, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-    row = self.optionssizer.GetRows()
-    self.optionssizer.Add(self.adminlabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-    self.optionssizer.Add(self.adminchoice, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-    row = self.optionssizer.GetRows()
-    self.optionssizer.Add(self.forcelabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-    self.optionssizer.Add(self.forcechoice, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+    for label, control in optionslayout:
+      row = self.optionssizer.GetRows()
+      if label in self.advancedcontrols and not self.advancedmode:
+        continue
+      self.optionssizer.Add(label, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
+      self.optionssizer.Add(control, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
 
     self.applybutton = wx.Button(self.panel, wx.ID_ANY, "Apply Changes")
     wx.EVT_BUTTON(self, self.applybutton.GetId(), self.OnApply)
@@ -350,7 +357,12 @@ class LanguageSelectionWindow(wx.Frame):
 # this will produce ooswitchlang.exe in the Installer directory
 
 if __name__ == '__main__':
+  import optparse
+  optparser = optparse.OptionParser(version="%prog "+__version__.ver, description=__doc__)
+  optparser.add_option("-a", "--advanced", dest="advanced", action="store_true", default=False,
+      help="Start in advanced mode")
+  options, args = optparser.parse_args()
   app = wx.PySimpleApp()
-  frame = LanguageSelectionWindow(None, -1, "Choose language")
+  frame = LanguageSelectionWindow(None, -1, "Choose language", options.advanced)
   app.MainLoop()
 
