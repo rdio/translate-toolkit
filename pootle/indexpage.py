@@ -2,7 +2,6 @@
 
 from jToolkit.widgets import widgets
 from translate.pootle import pagelayout
-from translate.pootle import projects
 import os
 
 def summarizestats(statslist, totalstats=None):
@@ -182,6 +181,11 @@ class ProjectIndex(pagelayout.PootlePage):
       parentfolder = "/".join(currentfolder.split("/")[:-1])
       if parentfolder:
         self.addfolderlinks(self.localize("parent folder"), parentfolder, "../index.html")
+    if currentfolder:
+      archivename = "%s-%s-%s.zip" % (self.project.projectcode, self.project.languagecode, currentfolder.replace("/", "-"))
+    else:
+      archivename = "%s-%s.zip" % (self.project.projectcode, self.project.languagecode)
+    self.addfolderlinks(self.localize("zip of folder"), archivename, archivename)
 
   def getchilditems(self, dirfilter):
     """get all the items for directories and files viewable at this level"""
