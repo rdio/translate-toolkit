@@ -233,7 +233,8 @@ class SetupIndex(sparse.SimpleParser):
           suffix = "_" + index.isocode
           index.rename(fileentry, fileentry + suffix)
           packedname = sparse.stringeval(index.getfieldvalue(fileentry, "PackedName"))
-          index.setfieldvalue(fileentry, "PackedName", '"%s"' % (packedname + suffix))
+          newpackedname = packedname + suffix
+          index.setfieldvalue(fileentry, "PackedName", '"%s"' % newpackedname)
           if index != self:
             self.addforeignfile(index, fileentry, suffix)
 
