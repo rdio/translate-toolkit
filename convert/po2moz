@@ -52,7 +52,10 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
         options.outputxpi = options.templatexpi.clone(options.output, "a")
       else:
         options.outputxpi = xpi.XpiFile(options.output)
-    return super(MozConvertOptionParser, self).recurseconversion(options)
+    result = super(MozConvertOptionParser, self).recurseconversion(options)
+    if self.isxpi(options.output):
+      options.outputxpi.close()
+    return result
 
   def getfulloutputpath(self, options, outputpath):
     """gets the absolute path to an output file"""
