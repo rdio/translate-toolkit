@@ -203,6 +203,7 @@ class ProjectIndex(pagelayout.PootlePage):
     self.showtracks = self.getboolarg("showtracks")
     self.showchecks = self.getboolarg("showchecks")
     self.showassigns = self.getboolarg("showassigns")
+    self.showgoals = self.getboolarg("showgoals")
     currentfolder = dirfilter
     if currentfolder:
       depth = currentfolder.count("/") + 1
@@ -231,18 +232,23 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       pofilenames = self.project.browsefiles(dirfilter)
       projectstats = self.project.calculatestats(pofilenames)
-      actionlinks = self.getactionlinks("", projectstats, ["review", "check", "assign", "quick", "all", "zip"], dirfilter)
+      actionlinks = self.getactionlinks("", projectstats, ["review", "check", "assign", "goal", "quick", "all", "zip"], dirfilter)
       actionlinks = pagelayout.ActionLinks(actionlinks)
       mainstats = self.getitemstats("", projectstats, len(pofilenames))
       mainicon = pagelayout.Icon("folder.png")
     mainitem = pagelayout.MainItem([mainicon, navbarpath, actionlinks, mainstats])
-    childitems = self.getchilditems(dirfilter)
+    if self.showgoals:
+      childitems = self.getgoalitems(dirfilter)
+    else:
+      childitems = self.getchilditems(dirfilter)
     pagetitle = self.localize("Pootle: Project %s, Language %s") % (self.project.projectname, self.project.languagename)
     pagelayout.PootlePage.__init__(self, pagetitle, [message, mainitem, childitems], session, bannerheight=81, returnurl="%s/%s/%s" % (self.project.languagecode, self.project.projectcode, self.dirname))
     self.addsearchbox(searchtext="", action="translate.html")
     if self.showassigns and "assign" in self.rights:
       self.addassignbox()
     if "admin" in self.rights:
+      if self.showgoals:
+        self.addgoalbox()
       self.adduploadbox()
 
   def handleactions(self):
@@ -289,6 +295,23 @@ class ProjectIndex(pagelayout.PootlePage):
       else:
         raise ValueError("can only update PO files")
       del self.argdict["doupdate"]
+    if "doaddgoal" in self.argdict:
+      goalname = self.argdict.pop("newgoal", None)
+      if not goalname:
+        raise ValueError("cannot add goal, no name given")
+      # TODO: check that its a valid goalname (alphanumeric etc)
+      self.project.setgoal(goalname.strip(), "")
+      del self.argdict["doaddgoal"]
+    if "dosetgoal" in self.argdict:
+      goalname = self.argdict.pop("setgoal", None)
+      goalfile = self.argdict.pop("setgoalfile", None)
+      if not goalname:
+        raise ValueError("cannot add goal, no name given")
+      if not goalfile:
+        raise ValueError("cannot add goal, no filename given")
+      # TODO: check that its a valid goalname (alphanumeric etc)
+      self.project.addfiletogoal(goalname.strip(), goalfile)
+      del self.argdict["dosetgoal"]
 
   def getboolarg(self, argname, default=False):
     """gets a boolean argument from self.argdict"""
@@ -335,6 +358,14 @@ class ProjectIndex(pagelayout.PootlePage):
     assignform = widgets.Form([assigntobox, actionbox, submitbutton], {"action": "", "name":"assignform"})
     self.links.addcontents(assignform)
 
+  def addgoalbox(self):
+    """adds a box that lets the user add a new goal"""
+    self.links.addcontents(pagelayout.SidebarTitle(self.localize("Goals")))
+    namebox = widgets.Input({"type": "text", "name": "newgoal", "title": self.localize("Enter goal name")})
+    submitbutton = widgets.Input({"type": "submit", "name": "doaddgoal", "value": self.localize("Add Goal")})
+    goalform = widgets.Form([namebox, submitbutton], {"action": "", "name":"goalform"})
+    self.links.addcontents(goalform)
+
   def adduploadbox(self):
     """adds a box that lets the user assign strings"""
     self.links.addcontents(pagelayout.SidebarTitle(self.localize("Upload File")))
@@ -368,7 +399,75 @@ class ProjectIndex(pagelayout.PootlePage):
       polarity = not polarity
     return childitems
 
-  def getdiritem(self, direntry):
+  def getitems(self, itempaths, linksrequired=None):
+    """gets the listed dir and fileitems"""
+    diritems, fileitems = [], []
+    for item in itempaths:
+      if item.endswith(os.path.extsep + "po"):
+        fileitem = self.getfileitem(item, linksrequired=linksrequired)
+        fileitems.append((item, fileitem))
+      else:
+        diritem = self.getdiritem(item, linksrequired=linksrequired)
+        diritems.append((item, diritem))
+      diritems.sort()
+      fileitems.sort()
+    childitems = [diritem for childdir, diritem in diritems] + [fileitem for childfile, fileitem in fileitems]
+    polarity = False
+    for childitem in childitems:
+      childitem.setpolarity(polarity)
+      polarity = not polarity
+    return childitems
+
+  def getgoalitems(self, dirfilter):
+    """get all the items for directories and files viewable at this level"""
+    if dirfilter is None:
+      depth = 0
+    else:
+      depth = dirfilter.count(os.path.sep)
+      if not dirfilter.endswith(os.path.extsep + "po"):
+        depth += 1
+    allitems = []
+    goalchildren = {}
+    allchildren = []
+    for childname in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=True):
+      allchildren.append(childname)
+    for goalname, goalfiles in self.project.getgoals(dirfilter):
+      goalitem = self.getgoalitem(goalname, goalfiles)
+      allitems.append(goalitem)
+      for goalfile in goalfiles:
+        goalchildren[goalfile] = True
+    goalless = []
+    for item in allchildren:
+      if item not in goalchildren:
+        goalless.append(item)
+    goallessitems = self.getitems(goalless, linksrequired=["setgoal"])
+    if goallessitems:
+      goalicon = pagelayout.Icon("goal.png")
+      goaltitle = pagelayout.Title(self.localize("No goal"))
+      goalstats = []
+      goalitem = pagelayout.GoalItem([goalicon, goaltitle, goalstats])
+      allitems.append(goalitem)
+      allitems.extend(goallessitems)
+    return allitems
+
+  def getgoalitem(self, goalname, goalfiles):
+    """returns an item showing a goal entry"""
+    pofilenames = []
+    for goalfile in goalfiles:
+      recursefiles = self.project.browsefiles(goalfile)
+      pofilenames.extend(recursefiles)
+    projectstats = self.project.calculatestats(pofilenames)
+    bodytitle = pagelayout.Title(goalname)
+    folderimage = pagelayout.Icon("goal.png")
+    browseurl = self.makelink("index.html", goal=goalname)
+    bodytitle = widgets.Link(browseurl, bodytitle)
+    actionlinks = self.getactionlinks("?goal=%s" % goalname, projectstats)
+    bodydescription = pagelayout.ActionLinks(actionlinks)
+    body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
+    stats = self.getitemstats(goalname, projectstats, len(pofilenames))
+    return pagelayout.GoalItem([body, stats])
+
+  def getdiritem(self, direntry, linksrequired=None):
     """returns an item showing a directory entry"""
     pofilenames = self.project.browsefiles(direntry)
     projectstats = self.project.calculatestats(pofilenames)
@@ -378,29 +477,35 @@ class ProjectIndex(pagelayout.PootlePage):
     folderimage = pagelayout.Icon("folder.png")
     browseurl = self.getbrowseurl(basename)
     bodytitle = widgets.Link(browseurl, bodytitle)
-    actionlinks = self.getactionlinks(basename, projectstats)
+    actionlinks = self.getactionlinks(basename, projectstats, linksrequired=linksrequired)
     bodydescription = pagelayout.ActionLinks(actionlinks)
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(basename, projectstats, len(pofilenames))
     return pagelayout.Item([body, stats])
 
-  def getfileitem(self, fileentry):
+  def getfileitem(self, fileentry, linksrequired=None):
     """returns an item showing a file entry"""
+    if linksrequired is None:
+      linksrequired = ["review", "quick", "all", "po", "csv", "mo", "update"]
     basename = os.path.basename(fileentry)
     projectstats = self.project.calculatestats([fileentry])
     folderimage = pagelayout.Icon("file.png")
     browseurl = self.getbrowseurl(basename)
     bodytitle = pagelayout.Title(widgets.Link(browseurl, basename))
-    actionlinks = self.getactionlinks(basename, projectstats)
-    downloadlink = widgets.Link(basename, self.localize('PO file'))
-    csvname = basename.replace(".po", ".csv")
-    csvlink = widgets.Link(csvname, self.localize('CSV file'))
-    actionlinks += [downloadlink, csvlink]
-    if self.project.hascreatemofiles(self.project.projectcode) and "pocompile" in self.rights:
-      moname = basename.replace(".po", ".mo")
-      molink = widgets.Link(moname, self.localize('MO file'))
-      actionlinks.append(molink)
-    if "admin" in self.rights:
+    actionlinks = self.getactionlinks(basename, projectstats, linksrequired=linksrequired)
+    if "po" in linksrequired:
+      downloadlink = widgets.Link(basename, self.localize('PO file'))
+      actionlinks.append(downloadlink)
+    if "csv" in linksrequired:
+      csvname = basename.replace(".po", ".csv")
+      csvlink = widgets.Link(csvname, self.localize('CSV file'))
+      actionlinks.append(csvlink)
+    if "mo" in linksrequired:
+      if self.project.hascreatemofiles(self.project.projectcode) and "pocompile" in self.rights:
+        moname = basename.replace(".po", ".mo")
+        molink = widgets.Link(moname, self.localize('MO file'))
+        actionlinks.append(molink)
+    if "update" in linksrequired and "admin" in self.rights:
       if versioncontrol.hasversioning(os.path.join(self.project.podir, self.dirname)):
         updatelink = widgets.Link("index.html?doupdate=1&updatefile=%s" % basename, self.localize('Update'))
         actionlinks.append(updatelink)
@@ -424,27 +529,32 @@ class ProjectIndex(pagelayout.PootlePage):
     if not basename or basename.endswith("/"):
       baseactionlink = basename + "translate.html?"
       baseindexlink = basename + "index.html?"
+    elif "?" in basename:
+      baseactionlink = "%s&translate=1" % basename
+      baseindexlink = "%s&index=1" % basename
     else:
       baseactionlink = "%s?translate=1" % basename
       baseindexlink = "%s?index=1" % basename
-    if "track" in linksrequired:
-      if self.showtracks:
-        trackslink = widgets.Link(self.makelink(baseindexlink, showtracks=0), self.localize("Hide Tracks"))
-      else:
-        trackslink = widgets.Link(self.makelink(baseindexlink, showtracks=1), self.localize("Show Tracks"))
-      actionlinks.append(trackslink)
-    if "check" in linksrequired and "translate" in self.rights:
-      if self.showchecks:
-        checkslink = widgets.Link(self.makelink(baseindexlink, showchecks=0), self.localize("Hide Checks"))
-      else:
-        checkslink = widgets.Link(self.makelink(baseindexlink, showchecks=1), self.localize("Show Checks"))
-      actionlinks.append(checkslink)
-    if "assign" in linksrequired and "translate" in self.rights:
-      if self.showassigns:
-        assignslink = widgets.Link(self.makelink(baseindexlink, showassigns=0), self.localize("Hide Assigns"))
-      else:
-        assignslink = widgets.Link(self.makelink(baseindexlink, showassigns=1), self.localize("Show Assigns"))
-      actionlinks.append(assignslink)
+    def addoptionlink(linkname, rightrequired, attrname, showtext, hidetext):
+      if linkname in linksrequired:
+        if rightrequired and not rightrequired in self.rights:
+          return
+        if getattr(self, attrname, False):
+          link = widgets.Link(self.makelink(baseindexlink, **{attrname:0}), hidetext)
+        else:
+          link = widgets.Link(self.makelink(baseindexlink, **{attrname:1}), showtext)
+        actionlinks.append(link)
+    addoptionlink("track", None, "showtracks", self.localize("Show Tracks"), self.localize("Hide Tracks"))
+    addoptionlink("check", "translate", "showchecks", self.localize("Show Checks"), self.localize("Hide Checks"))
+    addoptionlink("goal", "admin", "showgoals", self.localize("Show Goals"), self.localize("Hide Goals"))
+    addoptionlink("assign", "translate", "showassigns", self.localize("Show Assigns"), self.localize("Hide Assigns"))
+    if "setgoal" in linksrequired and "admin" in self.rights:
+      goaloptions = [(goalname, goalname) for goalname, goalfiles in self.project.getgoals()]
+      goalselect = widgets.Select({"name": "setgoal"}, goaloptions)
+      goalfile = widgets.HiddenFieldList({"setgoalfile": basename})
+      submitbutton = widgets.Input({"type": "submit", "name": "dosetgoal", "value": self.localize("Set Goal")})
+      goalform = widgets.Form([goalfile, goalselect, submitbutton], {"action": "", "name":"goalform-%s" % basename})
+      actionlinks.append(goalform)
     if "review" in linksrequired and projectstats.get("has-suggestion", 0):
       if "review" in self.rights:
         reviewlink = self.localize("Review Suggestions")
