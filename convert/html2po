@@ -23,70 +23,15 @@
 You can convert them back using po2html"""
 
 from translate.storage import po
+from translate.storage import html
 from translate.misc import quote
 from translate.convert import convert
-from HTMLParser import HTMLParser
-import os
-
-
-class POHTMLParser(HTMLParser):
-  markingtags = ["p", "title", "h1", "h2", "h3", "td"]
-  markingattrs = ["lang"]
-  includeattrs = ["alt"]
-  def __init__(self):
-    self.blocks = []
-    self.currentblock = ""
-    self.currenttag = None
-    HTMLParser.__init__(self)
-
-  def startblock(self, tag):
-    if self.currentblock:
-      self.blocks.append(self.currentblock)
-    self.currentblock = ""
-    self.currenttag = tag
-
-  def endblock(self):
-    if self.currentblock:
-      self.blocks.append(self.currentblock)
-    self.currentblock = ""
-    self.currenttag = None
-
-  def handle_starttag(self, tag, attrs):
-    newblock = 0
-    if tag in self.markingtags:
-      newblock = 1
-    for attrname, attrvalue in attrs:
-      if attrname in self.markingattrs:
-        newblock = 1
-      if attrname in self.includeattrs:
-        self.blocks.append(attrvalue)
-    if newblock:
-      self.startblock(tag)
-    elif self.currenttag is not None:
-      self.currentblock += self.get_starttag_text()
-
-  def handle_startendtag(self, tag, attrs):
-    for attrname, attrvalue in attrs:
-      if attrname in self.includeattrs:
-        self.blocks.append(attrvalue)
-    if self.currenttag is not None:
-      self.currentblock += self.get_starttag_text()
-
-  def handle_endtag(self, tag):
-    if tag == self.currenttag:
-      self.endblock()
-    elif self.currenttag is not None: 
-      self.currentblock += '</%s>' % tag
-
-  def handle_data(self, data):
-    if self.currenttag is not None:
-      self.currentblock += data
 
 class html2po:
   def convertfile(self, inputfile, filename, includeheader):
     """converts a file to .po format"""
     thepofile = po.pofile()
-    htmlparser = POHTMLParser()
+    htmlparser = html.POHTMLParser()
     if includeheader:
       headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
       thepofile.poelements.append(headerpo)
