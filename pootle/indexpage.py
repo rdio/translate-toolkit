@@ -112,19 +112,25 @@ class ProjectIndex(pagelayout.PootlePage):
       self.addfolderlinks("project root", "/", "/".join([".."] * depth) + "/index.html")
 
   def getdiritem(self, direntry):
-    basename = os.path.basename(direntry)
-    bodytitle = '<h3 class="title">%s</h3>' % basename
-    browselink = widgets.Link(basename+"/", 'Browse')
-    checkslink = widgets.Link("%s/index.html?showchecks=1" % basename, "Checks")
-    quicklink = widgets.Link("%s/translate.html?fuzzy=1&blank=1" % basename, "Quick Translate")
-    bodydescription = pagelayout.ActionLinks([browselink, checkslink, quicklink])
-    body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    # calculate stats
     pofilenames = self.project.browsefiles(direntry)
     numfiles = len(pofilenames)
     projectstats = self.project.calculatestats(pofilenames)
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
+    # title and action links
+    basename = os.path.basename(direntry)
+    bodytitle = '<h3 class="title">%s</h3>' % basename
+    browselink = widgets.Link(basename+"/", 'Browse')
+    checkslink = widgets.Link("%s/index.html?showchecks=1" % basename, "Checks")
+    actionlinks = [browselink, checkslink]
+    if translated < total:
+      quicklink = widgets.Link("%s/translate.html?fuzzy=1&blank=1" % basename, "Quick Translate")
+      actionlinks.append(quicklink)
+    bodydescription = pagelayout.ActionLinks(actionlinks)
+    body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    # statistics
     statssummary = "%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished)
     if total and self.showchecks:
       statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, "%s/translate.html?" % basename))
@@ -145,22 +151,28 @@ class ProjectIndex(pagelayout.PootlePage):
         yield "%s: %s" % (checklink, stats)
 
   def getfileitem(self, fileentry):
-    basename = os.path.basename(fileentry)
-    bodytitle = '<h3 class="title">%s</h3>' % basename
-    viewlink = widgets.Link('%s?translate=1&view=1' % basename, 'View')
-    checkslink = widgets.Link("%s?index=1&showchecks=1" % basename, "Checks")
-    quicklink = widgets.Link('%s?translate=1&fuzzy=1&blank=1' % basename, 'Quick Translate')
-    translatelink = widgets.Link('%s?translate=1' % basename, 'Translate All')
-    downloadlink = widgets.Link(basename, 'PO file')
-    csvname = basename.replace(".po", ".csv")
-    csvlink = widgets.Link(csvname, 'CSV file')
-    bodydescription = pagelayout.ActionLinks([viewlink, checkslink, quicklink, translatelink, downloadlink, csvlink])
+    # calculate statistics
     pofilenames = [fileentry]
     projectstats = self.project.calculatestats(pofilenames)
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
+    # title and action links
+    basename = os.path.basename(fileentry)
+    bodytitle = '<h3 class="title">%s</h3>' % basename
+    viewlink = widgets.Link('%s?translate=1&view=1' % basename, 'View')
+    checkslink = widgets.Link("%s?index=1&showchecks=1" % basename, "Checks")
+    translatelink = widgets.Link('%s?translate=1' % basename, 'Translate All')
+    actionlinks = [viewlink, checkslink, translatelink]
+    if translated < total:
+      quicklink = widgets.Link('%s?translate=1&fuzzy=1&blank=1' % basename, 'Quick Translate')
+      actionlinks.append(quicklink)
+    downloadlink = widgets.Link(basename, 'PO file')
+    csvname = basename.replace(".po", ".csv")
+    csvlink = widgets.Link(csvname, 'CSV file')
+    bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink])
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    # statistics
     statssummary = "%d/%d strings (%d%%) translated" % (translated, total, percentfinished)
     if total and self.showchecks:
       statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, '%s?translate=1&' % basename))
