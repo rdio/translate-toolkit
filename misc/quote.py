@@ -153,6 +153,7 @@ def escapesinglequotes(source):
   return source.replace("'","''")
 
 def mozillapropertiesencode(source):
+  """encodes source in the escaped-unicode encoding used by mozilla .properties files"""
   output = ""
   for char in source:
     charnum = ord(char)
@@ -162,6 +163,10 @@ def mozillapropertiesencode(source):
       output += "\\u%04X" % charnum
   return output
 
+def mozillapropertiesdecode(source):
+  """decodes source from the escaped-unicode encoding used by mozilla .properties files"""
+  # TODO: work out if anything other than \\n needs this special treatment
+  return "\\n".join([line.decode("unicode-escape") for line in source.split("\\n")])
 
 def quotestr(source, escapeescapes=0):
   "Returns a doublequote-delimited quoted string, escaping double quotes with backslash"
