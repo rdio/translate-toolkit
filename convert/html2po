@@ -85,10 +85,6 @@ class POHTMLParser(HTMLParser):
       self.currentblock += data
 
 class html2po:
-  def __init__(self, blankmsgstr=False):
-    """construct a html2po converter"""
-    self.blankmsgstr = blankmsgstr
-
   def convertfile(self, inputfile, filename, includeheader):
     """converts a file to .po format"""
     thepofile = po.pofile()
@@ -110,9 +106,9 @@ class html2po:
       thepofile.poelements.append(thepo)
     return thepofile
 
-def converthtml(inputfile, outputfile, templates, pot=False):
+def converthtml(inputfile, outputfile, templates):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
-  convertor = html2po(blankmsgstr=pot)
+  convertor = html2po()
   outputfilepos = outputfile.tell()
   includeheader = outputfilepos == 0
   outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader)
@@ -123,7 +119,6 @@ def converthtml(inputfile, outputfile, templates, pot=False):
 if __name__ == '__main__':
   # handle command line options
   formats = {"html":("po",converthtml), "htm":("po",converthtml)}
-  parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
-  parser.passthrough.append("pot")
+  parser = convert.ConvertOptionParser(formats, description=__doc__)
   parser.run()
 

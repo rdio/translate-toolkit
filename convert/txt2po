@@ -30,10 +30,6 @@ from translate.convert import convert
 import os
 
 class txt2po:
-  def __init__(self, blankmsgstr=False):
-    """construct a txt2po converter"""
-    self.blankmsgstr = blankmsgstr
-
   def convertblock(self, filename, block, linenum):
     """makes a poelement based on the current block"""
     thepo = po.poelement()
@@ -69,9 +65,9 @@ class txt2po:
       thepofile.poelements.append(thepo)
     return thepofile
 
-def converttxt(inputfile, outputfile, templates, pot=False):
+def converttxt(inputfile, outputfile, templates):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
-  convertor = txt2po(blankmsgstr=pot)
+  convertor = txt2po()
   outputfilepos = outputfile.tell()
   includeheader = outputfilepos == 0
   outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader)
@@ -83,6 +79,5 @@ if __name__ == '__main__':
   # handle command line options
   formats = {"txt":("po",converttxt), "*":("po",converttxt)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
-  parser.passthrough.append("pot")
   parser.run()
 

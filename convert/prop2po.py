@@ -32,7 +32,7 @@ eol = "\n"
 
 class prop2po:
   """convert a .properties file to a .po file for handling the translation..."""
-  def convertfile(self, thepropfile, ispotfile=False):
+  def convertfile(self, thepropfile):
     """converts a .properties file to a .po file..."""
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
@@ -123,7 +123,7 @@ def convertprop(inputfile, outputfile, templatefile, pot=False):
   inputprop = properties.propfile(inputfile)
   convertor = prop2po()
   if templatefile is None:
-    outputpo = convertor.convertfile(inputprop, ispotfile=pot)
+    outputpo = convertor.convertfile(inputprop)
   else:
     templateprop = properties.propfile(templatefile)
     outputpo = convertor.mergefiles(templateprop, inputprop, blankmsgstr=pot)
