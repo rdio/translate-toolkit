@@ -69,6 +69,9 @@ class dtd2po:
     unquoted = self.extractdtdstring(thedtd.definition)
     # escape backslashes...
     unquoted = unquoted.replace("\\", "\\\\")
+    if not unquoted:
+      if not thepo.msgidcomments:
+        thepo.msgidcomments.append(quote.quotestr("_: blank in original %s" % thedtd.entity))
     # now split the string into lines and quote them
     msgid = [quote.quotestr(line) for line in unquoted.split('\n')]
     thepo.msgid = msgid
