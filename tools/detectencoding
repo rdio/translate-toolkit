@@ -1,0 +1,202 @@
+#!/usr/bin/env python
+# 
+# Copyright 2002, 2003 Zuza Software Foundation
+# 
+# This file is part of translate.
+#
+# translate is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# translate is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with translate; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+"""takes a .po translation file and produces statistics to help work out what encoding it is in"""
+
+import sys
+import os
+from translate.storage import po
+from translate import __version__
+import encodings
+import codecs
+import string
+
+def listencodings():
+  modules = encodings.aliases.aliases.values()
+  moduledict = dict([(module, True) for module in modules])
+  modules = moduledict.keys()
+  modules.sort()
+  return modules
+
+class detector:
+  excludechoices={'letters':string.letters, 'digits':string.digits,
+                  'whitespace':string.whitespace, 'punctuation':string.punctuation,
+                  'std':string.letters+string.digits+string.whitespace+string.punctuation}
+
+  def __init__(self, filenames, outputencoding):
+    self.outputencoding = outputencoding
+    self.alloriginals, self.alltranslations = [], []
+    for filename in filenames:
+      if not os.path.exists(filename):
+        print >>sys.stderr, "cannot process %s: does not exist" % filename
+        continue
+      elif os.path.isdir(filename):
+        self.handledir(filename)
+      else:
+        self.handlefile(filename)
+
+  def processoriginal(self, original):
+    self.alloriginals.append(original)
+
+  def processtranslation(self, translation):
+    self.alltranslations.append(translation)
+
+  def processfile(self, infile):
+    pof = po.pofile()
+    pof.fromlines(infile.readlines())
+    originals, translations = [], []
+    for poe in pof.poelements:
+      if poe.isheader() or poe.isblank():
+        continue
+      msgid = po.getunquotedstr(poe.msgid)
+      if isinstance(poe.msgstr, dict):
+        msgstr = po.getunquotedstr(poe.msgstr[0])
+      else:
+        msgstr = po.getunquotedstr(poe.msgstr)
+      self.processoriginal(msgid)
+      self.processtranslation(msgstr)
+
+  def handlefile(self, filename):
+    infile = open(filename)
+    self.processfile(infile)
+    infile.close()
+    print filename
+
+  def handlefiles(self, arg, dirname, filenames):
+    for filename in filenames:
+      pathname = os.path.join(dirname, filename)
+      if not os.path.isdir(pathname):
+        self.handlefile(pathname)
+
+  def handledir(self, dirname):
+    os.path.walk(dirname, self.handlefiles, None)
+
+  def getcountmap(self, charstring, excludestring="", countmap=None):
+    """makes a countmap of the characters in the string, excluding those in excludestring
+    starts with countmap if one is given"""
+    if countmap is None: countmap = {}
+    for char in charstring:
+      if char in excludestring: continue
+      if char in countmap: countmap[char] += 1
+      else: countmap[char] = 1
+    return countmap
+
+  def getcountmapdelta(self, countmap1, countmap2):
+    """returns a delta representing the difference between the two countmaps"""
+    total1 = reduce(int.__add__, countmap1.values())
+    total2 = reduce(int.__add__, countmap2.values())
+    delta = 0
+    for char in countmap1:
+      adjustedcount = (countmap1[char]*total2)/total1
+      if char in countmap2:
+        delta += abs(adjustedcount - countmap2[char])
+      else:
+        delta += adjustedcount
+    for char in countmap2:
+      if char not in countmap1:
+        delta += countmap2[char]
+    return delta
+
+  def countmaptostring(self, countmap):
+    """returns a string with the characters in countmap sorted by count"""
+    countpairs = [(count, char) for char,count in countmap.iteritems()]
+    countpairs.sort()
+    countpairs.reverse()
+    return "".join([char for count,char in countpairs])
+
+  def encodeattempt(self, charstring):
+    """encode what can be encoding in encoding, add the rest on at the end in a repr"""
+    try:
+      return charstring.encode(self.outputencoding)
+    except:
+      encoded = ""
+      failed = ""
+      for char in charstring:
+        try:
+          encoded += char.encode(self.outputencoding)
+        except:
+          failed += char
+      return encoded + " " + repr(failed)
+
+  def testencodings(self, excludelist, dictstring):
+    excludestring = ""
+    if excludelist:
+      for excludecategory in excludelist:
+        if excludecategory in self.excludechoices:
+          excludestring += self.excludechoices[excludecategory]
+    dictcountmap = {}
+    if dictstring:
+      self.getcountmap(dictstring, excludestring, dictcountmap)
+    validencodings = {}
+    encodingdeltas = {}
+    for encoding in listencodings():
+      try:
+        countmap = {}
+        for translation in self.alltranslations:
+          decoded = translation.decode(encoding)
+          self.getcountmap(decoded, excludestring, countmap)
+        validencodings[encoding] = countmap
+      except:
+        continue
+      if dictcountmap:
+        encodingdeltas[encoding] = self.getcountmapdelta(dictcountmap, countmap)
+    if dictstring:
+      sortedstring = self.countmaptostring(dictcountmap)
+      print "dict:", self.encodeattempt(sortedstring)
+      deltas = [(delta, encoding) for encoding, delta in encodingdeltas.iteritems()]
+      deltas.sort()
+      validkeys = [encoding for delta, encoding in deltas]
+    else:
+      # sort alphabetically
+      validkeys = validencodings.keys()
+      validkeys.sort()
+    keylen = max([len("%s (%d):" % (key, encodingdeltas[key])) for key in validencodings])
+    for validencoding in validkeys:
+      sortedstring = self.countmaptostring(validencodings[validencoding])
+      validencoding = "%s (%d):" % (validencoding, encodingdeltas[validencoding])
+      validencoding += " "*(keylen-len(validencoding))
+      print validencoding, self.encodeattempt(sortedstring)
+
+if __name__ == '__main__':
+  try:
+    import optparse
+  except ImportError:
+    from translate.misc import optparse
+  optparser = optparse.OptionParser(version="%prog "+__version__.ver)
+  optparser.add_option("", "--exclude", dest="exclude", type="choice",
+    action="append", choices=detector.excludechoices.keys(),
+    help="exclude certain common characters (%s)" % ", ".join(detector.excludechoices))
+  optparser.add_option("", "--dict", dest="dictfile",
+    action="store", default=None,
+    help="use a dictionary/wordlist to choose the best encoding(s)")
+  optparser.add_option("", "--dictencoding", dest="dictencoding",
+    action="store", default="utf8",
+    help="the encoding of the dictionary/wordlist")
+  optparser.add_option("", "--outputencoding", dest="outputencoding",
+    action="store", default="iso-8859-1",
+    help="the encoding of the output")
+  (options, args) = optparser.parse_args()
+  d = detector(args, options.outputencoding)
+  if options.dictfile:
+    dictstring = codecs.open(options.dictfile, 'r', options.dictencoding).read()
+  else:
+    dictstring = None
+  d.testencodings(options.exclude, dictstring)
+
