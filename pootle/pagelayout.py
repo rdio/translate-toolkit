@@ -72,7 +72,7 @@ class TranslateActionLink(widgets.Span):
 
 class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
-  def __init__(self, session):
+  def __init__(self, session, returnurl=""):
     baseurl = session.instance.baseurl
     title = SidebarTitle(getattr(session.instance, "title", session.localize("Pootle Demo")))
     doclink = widgets.Link(baseurl+"doc/index.html", session.localize("Docs & Help"))
@@ -84,7 +84,7 @@ class PootleSidebar(widgets.Division):
       loginlinks = widgets.Link(baseurl+"?islogout=1", session.localize("Log Out"))
       homelink = [" | ", widgets.Link(baseurl+"home/", session.localize("Home"))]
     else:
-      loginlinks = [widgets.Link(baseurl+"login.html", session.localize("Log In")), " / ", widgets.Link(baseurl+"register.html", session.localize("Register")), " / ", widgets.Link(baseurl+"activate.html", session.localize("Activate"))]
+      loginlinks = [widgets.Link(baseurl+"login.html?returnurl="+returnurl, session.localize("Log In")), " / ", widgets.Link(baseurl+"register.html", session.localize("Register")), " / ", widgets.Link(baseurl+"activate.html", session.localize("Activate"))]
       homelink = []
     loginimage = Icon("person.png")
     loginstatus = SidebarText([loginimage, loginstatus])
@@ -124,7 +124,7 @@ class PootleBanner(widgets.Division):
 
 class PootlePage(widgets.Page):
   """the main page"""
-  def __init__(self, title, contents, session, bannerheight=135):
+  def __init__(self, title, contents, session, bannerheight=135, returnurl=""):
     if not hasattr(session.instance, "baseurl"):
       session.instance.baseurl = "/"
     self.localize = session.localize
@@ -134,7 +134,7 @@ class PootlePage(widgets.Page):
     favicon = widgets.PlainContents('<link rel="shortcut icon" href="favicon.ico" >')
       
     self.banner = PootleBanner(session.instance, bannerheight)
-    self.links = PootleSidebar(session)
+    self.links = PootleSidebar(session, returnurl)
     widgets.Page.__init__(self, title, contents, {"includeheading":False}, stylesheets=stylesheets, headerwidgets=[favicon])
 
   def addsearchbox(self, searchtext, contextinfo="", action=""):

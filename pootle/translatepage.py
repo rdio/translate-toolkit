@@ -52,7 +52,7 @@ class TranslatePage(pagelayout.PootlePage):
     else:
       pagelinks = []
     translatediv = pagelayout.TranslateForm([notice, pagelinks, translateform, pagelinks])
-    pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
+    pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81, returnurl="%s/%s/%s" % (self.project.languagecode, self.project.projectcode, dirfilter))
     self.addfilelinks(self.pofilename, self.matchnames)
     if dirfilter and dirfilter.endswith(".po"):
       currentfolder = "/".join(dirfilter.split("/")[:-1])
