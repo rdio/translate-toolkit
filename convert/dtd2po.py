@@ -30,8 +30,9 @@ from translate.misc import quote
 from translate import __version__
 
 class dtd2po:
-  def __init__(self):
-    self.currentgroup = None 
+  def __init__(self, blankmsgstr=False):
+    self.currentgroup = None
+    self.blankmsgstr = blankmsgstr
 
   def convertcomments(self,thedtd,thepo):
     entity = quote.rstripeol(thedtd.entity)
@@ -252,7 +253,7 @@ class dtd2po:
       else:
         translatedpo = None
       if origpo is not None:
-        if translatedpo is not None:
+        if translatedpo is not None and not self.blankmsgstr:
           origpo.msgstr = translatedpo.msgid
         thepofile.poelements.append(origpo)
       elif translatedpo is not None:
@@ -260,10 +261,10 @@ class dtd2po:
     thepofile.removeduplicates()
     return thepofile
 
-def convertdtd(inputfile, outputfile, templatefile):
+def convertdtd(inputfile, outputfile, templatefile, pot=False):
   """reads in inputfile and templatefile using dtd, converts using dtd2po, writes to outputfile"""
   inputdtd = dtd.dtdfile(inputfile)
-  convertor = dtd2po()
+  convertor = dtd2po(blankmsgstr=pot)
   if templatefile is None:
     outputpo = convertor.convertfile(inputdtd)
   else:
@@ -281,5 +282,6 @@ if __name__ == '__main__':
   inputformats = {"dtd": convertdtd}
   outputformat = "po"
   parser = convert.ConvertOptionParserExt(inputformats, outputformat, usetemplates=True, usepots=True)
+  parser.convertparameters.append("pot")
   parser.runconversion()
 

@@ -106,5 +106,6 @@ if __name__ == '__main__':
   inputformats = {"dtd": dtd2po.convertdtd, "properties": prop2po.convertprop}
   outputformat = "po"
   parser = MozConvertOptionParser(inputformats, outputformat, usetemplates=True, usepots=True)
+  parser.convertparameters.append("pot")
   parser.runconversion()
 

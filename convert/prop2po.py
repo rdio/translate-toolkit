@@ -57,7 +57,7 @@ class prop2po:
     thepofile.removeduplicates()
     return thepofile
 
-  def mergefiles(self, origpropfile, translatedpropfile):
+  def mergefiles(self, origpropfile, translatedpropfile, blankmsgstr=False):
     """converts a .properties file to a .po file..."""
     thepofile = po.pofile()
     headerpo = thepofile.makeheader()
@@ -86,7 +86,7 @@ class prop2po:
         translatedpo = None
       # if we have a valid po element, get the translation and add it...
       if origpo is not None:
-        if translatedpo is not None:
+        if translatedpo is not None and not blankmsgstr:
           origpo.msgstr = translatedpo.msgid
         origpo.othercomments = waitingcomments + origpo.othercomments
         waitingcomments = []
@@ -110,7 +110,7 @@ class prop2po:
     thepo.msgstr = ['""']
     return thepo
 
-def convertprop(inputfile, outputfile, templatefile):
+def convertprop(inputfile, outputfile, templatefile, pot=False):
   """reads in inputfile using properties, converts using prop2po, writes to outputfile"""
   inputprop = properties.propfile(inputfile)
   convertor = prop2po()
@@ -118,7 +118,7 @@ def convertprop(inputfile, outputfile, templatefile):
     outputpo = convertor.convertfile(inputprop)
   else:
     templateprop = properties.propfile(templatefile)
-    outputpo = convertor.mergefiles(templateprop, inputprop)
+    outputpo = convertor.mergefiles(templateprop, inputprop, blankmsgstr=pot)
   if outputpo.isempty():
     return 0
   outputpolines = outputpo.tolines()
@@ -131,6 +131,7 @@ if __name__ == '__main__':
   inputformats = {"properties": convertprop}
   outputformat = "po"
   parser = convert.ConvertOptionParserExt(inputformats, outputformat, usetemplates=True, usepots=True)
+  parser.convertparameters.append("pot")
   parser.runconversion()
 
 
