@@ -191,8 +191,12 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       convertmethod(self.getinputfile(options), self.getoutputfile(options), self.gettemplatefile(options))
 
-  def getconvertmethod(self, inputext, outputext):
+  def getconvertmethod(self, inputpath, outputpath):
     """works out which conversion method to use..."""
+    inputbase, inputext = os.path.splitext(inputpath)
+    inputext = inputext.replace(os.extsep, "", 1)
+    outputbase, outputext = os.path.splitext(outputpath)
+    outputext = outputext.replace(os.extsep, "", 1)
     if isinstance(self.inputformats, dict):
       return self.inputformats[inputext]
     elif isinstance(self.outputformats, dict):
@@ -230,8 +234,10 @@ class ConvertOptionParser(optparse.OptionParser, object):
     """recurse through directories and convert files"""
     allfiles = self.recursefiles(options)
     allfiles = self.initprogressbar(allfiles, options)
-    for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
-      convertmethod = self.getconvertmethod(inputext, outputext)
+    for inputpath in allfiles:
+      outputpath = self.getoutputname(options, inputpath)
+      templatepath = self.gettemplatename(options, inputpath)
+      convertmethod = self.getconvertmethod(inputpath, outputpath)
       fullinputpath = self.getfullinputpath(options, inputpath)
       fulloutputpath = self.getfulloutputpath(options, outputpath)
       self.checksubdir(options.output, os.path.dirname(outputpath))
@@ -239,6 +245,23 @@ class ConvertOptionParser(optparse.OptionParser, object):
       success = self.convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
       self.reportprogress(inputpath, success)
     del self.progressbar
+
+  def openinputfile(self, options, fullinputpath):
+    """opens the input file"""
+    return open(fullinputpath, 'r')
+
+  def openoutputfile(self, options, fulloutputpath):
+    """opens the output file"""
+    return open(fulloutputpath, 'w')
+
+  def opentemplatefile(self, options, fulltemplatepath):
+    """opens the template file (if required)"""
+    if fulltemplatepath is not None:
+      if os.path.isfile(fulltemplatepath):
+        return open(fulltemplatepath, 'r')
+      else:
+        print >>sys.stderr, "warning: missing template file %s" % fulltemplatepath
+    return None
 
   def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
     """run an invidividual conversion"""
@@ -251,14 +274,12 @@ class ConvertOptionParser(optparse.OptionParser, object):
       tempoutput = True
       origoutputpath = fulloutputpath
       fulloutputpath += os.extsep + "tmp"
-    inputfile = open(fullinputpath, 'r')
-    outputfile = open(fulloutputpath, 'w')
-    templatefile = None
-    if fulltemplatepath is not None:
-      if os.path.isfile(fulltemplatepath):
-        templatefile = open(fulltemplatepath, 'r')
-      else:
-        print >>sys.stderr, "warning: missing template file %s" % fulltemplatepath
+    inputfile = self.openinputfile(options, fullinputpath)
+    outputfile = self.openoutputfile(options, fulloutputpath)
+    if (fulloutputpath == fullinputpath) or (fulloutputpath == fulltemplatepath):
+      outputfile = self.opentempoutputfile(options, fulloutputpath)
+    outputfile = self.openoutputfile(options, fulloutputpath)
+    templatefile = self.opentemplatefile(options, fulltemplatepath)
     if convertmethod(inputfile, outputfile, templatefile):
       if tempoutput:
         outputfile.close()
@@ -314,34 +335,26 @@ class ConvertOptionParser(optparse.OptionParser, object):
           if not self.isvalidinputname(options, name):
             # only handle names that match recognized input file extensions
             continue
-          # now we have split off .po, we split off the original extension
-          outputname = self.getoutputname(options, name)
-          outputbase, outputext = os.path.splitext(outputname)
-          outputext = outputext.replace(os.extsep, "", 1)
-          outputpath = join(top, outputname)
-          templatepath = None
-          if self.usetemplates and options.template:
-            templatename = self.gettemplatename(options, name)
-            templatepath = join(top, templatename)
-          inputbase, inputext = os.path.splitext(name)
-          inputext = inputext.replace(os.extsep, "", 1)
-          yield (inputext, inputpath, outputext, outputpath, templatepath)
+          yield inputpath
       # make sure the directories are processed next time round...
       dirs.reverse()
       dirstack.extend(dirs)
 
   def gettemplatename(self, options, inputname):
     """gets an output filename based on the input filename"""
-    if self.templateslikeinput:
-      return inputname
+    if self.usetemplates and options.template:
+      if self.templateslikeinput:
+        return inputname
+      else:
+        outputname = self.getoutputname(options, inputname)
+        # TODO: clean this up
+        # templates should be pot files sometimes...
+        outputbase, outputext = os.path.splitext(outputname)
+        if outputext == os.extsep + "po":
+          return outputbase + os.extsep + "pot"
+        return outputname
     else:
-      outputname = self.getoutputname(options, inputname)
-      # TODO: clean this up
-      # templates should be pot files sometimes...
-      outputbase, outputext = os.path.splitext(outputname)
-      if outputext == os.extsep + "po":
-        return outputbase + os.extsep + "pot"
-      return outputname
+      return None
 
   def getoutputname(self, options, inputname):
     """gets an output filename based on the input filename"""

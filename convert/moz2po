@@ -84,39 +84,28 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
   def recursexpifiles(self, options):
     """recurse through xpi files and convert files"""
     options.inputxpi = xpi.XpiFile(options.input)
-    for inputpath in options.inputxpi.iterextractnames(includedirs=True):
-      if inputpath.endswith(os.path.sep):
-        self.checksubdir(options.output, inputpath)
-        continue
+    for inputpath in options.inputxpi.iterextractnames():
       top, name = os.path.split(inputpath)
       if not self.isvalidinputname(options, name):
         continue
-      outputname = self.getoutputname(options, name)
-      outputbase, outputext = os.path.splitext(outputname)
-      outputext = outputext.replace(os.extsep, "", 1)
-      outputpath = os.path.join(top, outputname)
-      templatepath = None
-      if self.usetemplates and options.template:
-        templatename = self.gettemplatename(options, name)
-        templatepath = os.path.join(top, templatename)
-      inputbase, inputext = os.path.splitext(name)
-      inputext = inputext.replace(os.extsep, "", 1)
-      yield (inputext, inputpath, outputext, outputpath, templatepath)
+      yield inputpath
+
+  def openinputfile(self, options, fullinputpath):
+    """opens the input file"""
+    if options.recursive == 'xpi':
+      jarfilename, filename = options.inputxpi.ostojarpath(fullinputpath)
+      return options.inputxpi.openinputstream(jarfilename, filename)
+    else:
+      return super(MozConvertOptionParser, self).openinputfile(options, fullinputpath)
 
   def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
     """run an invidividual conversion"""
     if options.recursive != 'xpi':
       return super(MozConvertOptionParser, self).convertfile \
         (convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
-    jarfilename, filename = options.inputxpi.ostojarpath(fullinputpath)
-    inputfile = options.inputxpi.openinputstream(jarfilename, filename)
-    outputfile = open(fulloutputpath, 'w')
-    templatefile = None
-    if fulltemplatepath is not None:
-      if os.path.isfile(fulltemplatepath):
-        templatefile = open(fulltemplatepath, 'r')
-      else:
-        print >>sys.stderr, "warning: missing template file %s" % fulltemplatepath
+    inputfile = self.openinputfile(options, fullinputpath)
+    outputfile = self.openoutputfile(options, fulloutputpath)
+    templatefile = self.opentemplatefile(options, fulltemplatepath)
     if convertmethod(inputfile, outputfile, templatefile):
       return True
     else:
