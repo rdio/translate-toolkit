@@ -41,7 +41,7 @@ class PootleIndex(pagelayout.PootlePage):
 
   def getlanguagelinks(self):
     """gets the links to the languages"""
-    languagestitle = self.localize('<h3 class="title">Languages</h3>')
+    languagestitle = pagelayout.Title(self.localize('Languages'))
     languagelinks = []
     for languagecode in self.potree.getlanguagecodes():
       languagename = self.potree.getlanguagename(languagecode)
@@ -74,6 +74,11 @@ class UserIndex(pagelayout.PootlePage):
     formmembers = [self.getprojectoptions(), self.getlanguageoptions(), hiddenfields, submitbutton]
     useroptions = widgets.Form(formmembers, {"name": "useroptions", "action":""})
     contents = [self.getquicklinks(), useroptions]
+    if session.issiteadmin():
+      admintitle = pagelayout.Title(self.localize('Pootle Administration'))
+      admintext = pagelayout.IntroText(self.localize("You have the rights to administer this Pootle installation."))
+      adminlink = pagelayout.IntroText(widgets.Link("admin.html", self.localize("Admin page")))
+      contents.append(pagelayout.Contents([admintitle, admintext, adminlink]))
     pagelayout.PootlePage.__init__(self, self.localize("User Page for: %s") % session.username, contents, session)
 
   def getquicklinks(self):

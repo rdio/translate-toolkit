@@ -40,6 +40,10 @@ class ItemStatistics(widgets.Division):
   def __init__(self, contents):
     widgets.Division.__init__(self, contents, cls="item-statistics")
 
+class Title(widgets.ContentWidget):
+  def __init__(self, contents):
+    widgets.ContentWidget.__init__(self, "h3", contents, {"class": "title"})
+
 class SidebarTitle(widgets.Division):
   def __init__(self, contents):
     widgets.Division.__init__(self, contents, cls="sidetitle")
