@@ -737,6 +737,14 @@ class POTree:
           languagename = self.getlanguagename(languagecode)
           if languagename != value:
             self.setlanguagename(languagecode, value)
+      elif key == "newlanguagecode":
+        languagecode = value.lower()
+        if not languagecode.isalpha():
+          raise ValueError("Language code must be alphabetic")
+        if self.haslanguage(languagecode):
+          raise ValueError("Already have language with the code %s" % languagecode)
+        languagename = argdict.get("newlanguagename", languagecode)
+        setattr(self.languages, languagecode + ".fullname", languagename)
     self.saveprefs()
 
   def changeprojects(self, argdict):
@@ -758,6 +766,16 @@ class POTree:
           projectdescription = self.getprojectdescription(projectcode)
           if projectdescription != value:
             self.setprojectdescription(projectcode, value)
+      elif key == "newprojectcode":
+        projectcode = value.lower()
+        if not projectcode.isalpha():
+          raise ValueError("Project code must be alphabetic")
+        if hasattr(self.projects, projectcode):
+          raise ValueError("Already have project with the code %s" % projectcode)
+        projectname = argdict.get("newprojectname", projectcode)
+        projectdescription = argdict.get("newprojectdescription", "")
+        setattr(self.projects, projectcode + ".fullname", projectname)
+        setattr(self.projects, projectcode + ".description", projectdescription)
     self.saveprefs()
 
   def haslanguage(self, languagecode):
