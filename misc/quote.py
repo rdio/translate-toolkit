@@ -152,12 +152,6 @@ def escapesinglequotes(source):
   "Returns the same string, with single quotes doubled"
   return source.replace("'","''")
 
-def escapeunicode(source):
-  return source.replace('\\u','\\\\u')
-
-def unescapeunicode(source):
-  return source.replace('\\\\u','\\u')
-
 def mozillapropertiesencode(source):
   output = ""
   for char in source:
