@@ -234,6 +234,7 @@ class dtd2po:
         thepo = self.convertelement(thedtd)
       if thepo is not None:
         thepofile.poelements.append(thepo)
+    thepofile.removeduplicates()
     return thepofile
 
 def main(inputfile, outputfile):
