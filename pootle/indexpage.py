@@ -72,12 +72,15 @@ class LanguageIndex(pagelayout.PootlePage):
 
 class ProjectIndex(pagelayout.PootlePage):
   """the main page"""
-  def __init__(self, project, session, dirfilter=None):
+  def __init__(self, project, session, dirfilter=None, showchecks=0):
     self.project = project
     self.instance = session.instance
     self.translationproject = projects.getproject(self.project)
-    startlink = pagelayout.IntroText(widgets.Link("translate.html", "Start Translating"))
-    processlinks = [startlink]
+    self.showchecks = showchecks
+    browselink = widgets.Link("index.html", "Browse")
+    checkslink = widgets.Link("checks.html", "Checks")
+    startlink = widgets.Link("translate.html", "Start Translating")
+    processlinks = pagelayout.IntroText([browselink, checkslink, startlink])
     if dirfilter is None:
       depth = 0
     else:
@@ -95,17 +98,24 @@ class ProjectIndex(pagelayout.PootlePage):
   def getdiritem(self, direntry):
     basename = os.path.basename(direntry)
     bodytitle = '<h3 class="title">%s</h3>' % basename
-    browselink = widgets.Link(basename+"/", 'Browse %s' % basename)
-    startlink = widgets.Link("%s/translate.html" % basename, "Start Translating %s" % basename)
-    bodydescription = pagelayout.ItemDescription([browselink, startlink])
+    browselink = widgets.Link(basename+"/", 'Browse')
+    checkslink = widgets.Link("%s/checks.html" % basename, "Checks")
+    startlink = widgets.Link("%s/translate.html" % basename, "Start Translating")
+    bodydescription = pagelayout.ItemDescription([browselink, checkslink, startlink])
+    body = pagelayout.ContentsItem([bodytitle, bodydescription])
     pofilenames = self.translationproject.browsefiles(direntry)
     numfiles = len(pofilenames)
     projectstats = self.translationproject.calculatestats(pofilenames)
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
-    body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    stats = pagelayout.ItemStatistics("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
+    statssummary = "%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished)
+    if self.showchecks:
+      for checkname, checkcount in projectstats.iteritems():
+        if checkname.startswith("check-") and total and checkcount:
+          checksdetails = "%s: %d strings (%d%%) failed" % (checkname, checkcount, (checkcount * 100 / total))
+          statssummary += "<br/>\n" + checksdetails
+    stats = pagelayout.ItemStatistics(statssummary)
     return pagelayout.Item([body, stats])
 
   def getfileitem(self, fileentry):

@@ -149,7 +149,17 @@ class PootleServer(OptionalLoginAppServer):
 	  page.content_type = "text/plain"
 	  return page
 	elif bottom == "index.html":
-	  return indexpage.ProjectIndex(project, session, os.path.join(*pathwords[:-1]))
+          if len(pathwords) > 1:
+            dirfilter = os.path.join(*pathwords[:-1])
+          else:
+            dirfilter = None
+	  return indexpage.ProjectIndex(project, session, dirfilter)
+	elif bottom == "checks.html":
+          if len(pathwords) > 1:
+            dirfilter = os.path.join(*pathwords[:-1])
+          else:
+            dirfilter = None
+	  return indexpage.ProjectIndex(project, session, dirfilter, showchecks=1)
 	else:
 	  return indexpage.ProjectIndex(project, session, os.path.join(*pathwords))
     return None

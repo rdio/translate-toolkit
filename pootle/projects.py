@@ -4,6 +4,7 @@
 
 from translate.storage import po
 from translate.misc import quote
+from translate.filters import checks
 # TODO: po2csv needs to be made an importable module
 # from translate.convert import po2csv
 import os
@@ -41,6 +42,7 @@ class TranslationProject:
   """Manages iterating through the translations in a particular project"""
   def __init__(self, project):
     self.project = project
+    self.checker = checks.StandardChecker()
     self.pofilenames = []
     self.pofiles = {}
     self.stats = {}
@@ -219,6 +221,15 @@ class TranslationProject:
     pofile.classify["blank"] = [item for item, poel in enumerate(pofile.transelements) if poel.isblankmsgstr()]
     pofile.classify["translated"] = [item for item, poel in enumerate(pofile.transelements) if item not in pofile.classify["fuzzy"] and item not in pofile.classify["blank"]]
     pofile.classify["total"] = range(len(pofile.transelements))
+    for checkname in self.checker.getfilters().keys():
+      pofile.classify[checkname] = []
+    for item, poel in enumerate(pofile.transelements):
+      unquotedid = po.getunquotedstr(poel.msgid, joinwithlinebreak=False)
+      unquotedstr = po.getunquotedstr(poel.msgstr, joinwithlinebreak=False)
+      failures = self.checker.run_filters(unquotedid, unquotedstr)
+      for failure in failures:
+        functionname = failure.split(":",2)[0]
+        pofile.classify["check-" + functionname].append(item)
     self.pofiles[pofilename] = pofile
     return pofile
 

@@ -126,7 +126,7 @@ div.intro {
 {
 	font-family:verdana, arial, sans-serif;
 	color:#694288;
-	font-size:small;
+	font-size: small;
 	font-weight:bold;
 	padding:2px;
 	margin-top:10px;
@@ -139,7 +139,7 @@ div.intro {
 {
 	font-family:verdana, arial, sans-serif;
 	color:#333;
-	font-size:small;
+	font-size: 0.7em;
 	font-weight:normal;
 	line-height:150%;
 	padding:2px;
