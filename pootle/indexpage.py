@@ -129,12 +129,13 @@ class ProjectIndex(pagelayout.PootlePage):
   def __init__(self, project, session, argdict, dirfilter=None):
     self.project = project
     self.showchecks = argdict.get("showchecks", 0)
-    if isinstance(self.showchecks, str) and self.showchecks.isdigit():
+    if isinstance(self.showchecks, (str, unicode)) and self.showchecks.isdigit():
       self.showchecks = int(self.showchecks)
     message = argdict.get("message", "")
     if message:
       message = pagelayout.IntroText(message)
     bodytitle = '<h2 class="title">%s</h3>' % (dirfilter or self.project.projectname)
+    bodytitle = widgets.Link(self.getbrowseurl(dirfilter), bodytitle)
     if dirfilter == "":
       dirfilter = None
     if dirfilter and dirfilter.endswith(".po"):
@@ -144,7 +145,7 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       pofilenames = self.project.browsefiles(dirfilter)
       projectstats = self.project.calculatestats(pofilenames)
-      actionlinks = self.getactionlinks("", projectstats)
+      actionlinks = self.getactionlinks("", projectstats, ["review", "check", "quick", "all"])
       actionlinks = pagelayout.ActionLinks(actionlinks)
       mainstats = self.getitemstats("", projectstats, len(pofilenames))
       mainicon = pagelayout.Icon("folder.png")
@@ -193,12 +194,15 @@ class ProjectIndex(pagelayout.PootlePage):
     pofilenames = self.project.browsefiles(direntry)
     projectstats = self.project.calculatestats(pofilenames)
     basename = os.path.basename(direntry)
+    bodytitle = '<h3 class="title">%s</h3>' % basename
+    basename += "/"
     folderimage = pagelayout.Icon("folder.png")
-    bodytitle = widgets.Link(basename + "/", '<h3 class="title">%s</h3>' % basename)
-    actionlinks = self.getactionlinks(basename + "/", projectstats)
+    browseurl = self.getbrowseurl(basename)
+    bodytitle = widgets.Link(browseurl, bodytitle)
+    actionlinks = self.getactionlinks(basename, projectstats)
     bodydescription = pagelayout.ActionLinks(actionlinks)
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
-    stats = self.getitemstats(basename + "/", projectstats, len(pofilenames))
+    stats = self.getitemstats(basename, projectstats, len(pofilenames))
     return pagelayout.Item([body, stats])
 
   def getfileitem(self, fileentry):
@@ -206,7 +210,8 @@ class ProjectIndex(pagelayout.PootlePage):
     basename = os.path.basename(fileentry)
     projectstats = self.project.calculatestats([fileentry])
     folderimage = pagelayout.Icon("file.png")
-    bodytitle = '<h3 class="title">%s</h3>' % basename
+    browseurl = self.getbrowseurl(basename)
+    bodytitle = widgets.Link(browseurl, '<h3 class="title">%s</h3>' % basename)
     actionlinks = self.getactionlinks(basename, projectstats)
     downloadlink = widgets.Link(basename, 'PO file')
     csvname = basename.replace(".po", ".csv")
@@ -216,29 +221,40 @@ class ProjectIndex(pagelayout.PootlePage):
     stats = self.getitemstats(basename, projectstats, None)
     return pagelayout.Item([body, stats])
 
-  def getactionlinks(self, basename, projectstats):
+  def getbrowseurl(self, basename):
+    """gets the link to browse the item"""
+    if not basename or basename.endswith("/"):
+      return basename or "index.html"
+    else:
+      baseactionlink = "%s?translate=1" % basename
+      return '%s&view=1' % baseactionlink
+
+  def getactionlinks(self, basename, projectstats, linksrequired=None):
     """get links to the actions that can be taken on an item (directory / file)"""
+    if linksrequired is None:
+      linksrequired = ["review", "quick", "all"]
     actionlinks = []
     if not basename or basename.endswith("/"):
       baseactionlink = basename + "translate.html?"
       baseindexlink = basename + "index.html?"
-      browselink = widgets.Link(basename or "index.html", 'Browse')
-      actionlinks.append(browselink)
     else:
       baseactionlink = "%s?translate=1" % basename
       baseindexlink = "%s?index=1" % basename
-      viewlink = widgets.Link('%s&view=1' % baseactionlink, 'View')
-      actionlinks.append(viewlink)
-    checkslink = widgets.Link(baseindexlink + "&showchecks=1", "Checks")
-    actionlinks.append(checkslink)
-    if projectstats.get("has-suggestion", 0):
+    if "check" in linksrequired:
+      if self.showchecks:
+        checkslink = widgets.Link(baseindexlink + "&showchecks=0", "Hide Checks")
+      else:
+        checkslink = widgets.Link(baseindexlink + "&showchecks=1", "Show Checks")
+      actionlinks.append(checkslink)
+    if "review" in linksrequired and projectstats.get("has-suggestion", 0):
       reviewlink = widgets.Link(baseactionlink + "&review=1&has-suggestion=1", "Review Suggestions")
       actionlinks.append(reviewlink)
-    if projectstats.get("translated", 0) < projectstats.get("total", 0):
+    if "quick" in linksrequired and projectstats.get("translated", 0) < projectstats.get("total", 0):
       quicklink = widgets.Link(baseactionlink + "&fuzzy=1&blank=1", "Quick Translate")
       actionlinks.append(quicklink)
-    translatelink = widgets.Link(baseactionlink, 'Translate All')
-    actionlinks.append(translatelink)
+    if "all" in linksrequired:
+      translatelink = widgets.Link(baseactionlink, 'Translate All')
+      actionlinks.append(translatelink)
     return actionlinks
 
   def getitemstats(self, basename, projectstats, numfiles):
