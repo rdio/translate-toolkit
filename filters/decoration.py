@@ -140,10 +140,12 @@ def getvariables(startmarker, endmarker):
 
 def getnumbers(str1):
   """returns any numbers that are in the string"""
+  # TODO: handle locale-based periods e.g. 2,5 for Afrikaans
   numbers = []
   innumber = False
   possibleprefix = ""
   lastnumber = ""
+  carryperiod = ""
   for chr1 in str1:
     if chr1.isdigit():
       innumber = True
@@ -155,7 +157,12 @@ def getnumbers(str1):
         numbers.append(lastnumber)
       lastnumber = ""
     if innumber:
-      lastnumber += chr1
+      if chr1 == '.':
+        carryperiod += chr1
+      else:
+        lastnumber += carryperiod + chr1
+    else:
+      carryperiod = ""
   if innumber:
     if lastnumber:
       numbers.append(lastnumber)
