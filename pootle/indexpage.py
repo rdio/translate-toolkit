@@ -140,13 +140,15 @@ class ProjectIndex(pagelayout.PootlePage):
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []
+      mainicon = pagelayout.Icon("file.png")
     else:
       pofilenames = self.project.browsefiles(dirfilter)
       projectstats = self.project.calculatestats(pofilenames)
       actionlinks = self.getactionlinks("", projectstats)
       actionlinks = pagelayout.ActionLinks(actionlinks)
       mainstats = self.getitemstats("", projectstats, len(pofilenames))
-    mainitem = pagelayout.MainItem([bodytitle, actionlinks, mainstats])
+      mainicon = pagelayout.Icon("folder.png")
+    mainitem = pagelayout.MainItem([mainicon, bodytitle, actionlinks, mainstats])
     childitems = self.getchilditems(dirfilter)
     pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, mainitem, childitems], session, bannerheight=81)
     self.addsearchbox(searchtext="", action="translate.html")
@@ -174,24 +176,28 @@ class ProjectIndex(pagelayout.PootlePage):
       depth = dirfilter.count(os.path.sep)
       if not dirfilter.endswith(os.path.extsep + "po"):
         depth += 1
-    childitems = []
+    diritems = []
     for childdir in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=False):
       diritem = self.getdiritem(childdir)
-      childitems.append(diritem)
+      diritems.append((childdir, diritem))
+    diritems.sort()
+    fileitems = []
     for childfile in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
       fileitem = self.getfileitem(childfile)
-      childitems.append(fileitem)
-    return childitems
+      fileitems.append((childfile, fileitem))
+    fileitems.sort()
+    return [diritem for childdir, diritem in diritems] + [fileitem for childfile, fileitem in fileitems]
 
   def getdiritem(self, direntry):
     """returns an item showing a directory entry"""
     pofilenames = self.project.browsefiles(direntry)
     projectstats = self.project.calculatestats(pofilenames)
     basename = os.path.basename(direntry)
+    folderimage = pagelayout.Icon("folder.png")
     bodytitle = widgets.Link(basename + "/", '<h3 class="title">%s</h3>' % basename)
     actionlinks = self.getactionlinks(basename + "/", projectstats)
     bodydescription = pagelayout.ActionLinks(actionlinks)
-    body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(basename + "/", projectstats, len(pofilenames))
     return pagelayout.Item([body, stats])
 
@@ -199,13 +205,14 @@ class ProjectIndex(pagelayout.PootlePage):
     """returns an item showing a file entry"""
     basename = os.path.basename(fileentry)
     projectstats = self.project.calculatestats([fileentry])
+    folderimage = pagelayout.Icon("file.png")
     bodytitle = '<h3 class="title">%s</h3>' % basename
     actionlinks = self.getactionlinks(basename, projectstats)
     downloadlink = widgets.Link(basename, 'PO file')
     csvname = basename.replace(".po", ".csv")
     csvlink = widgets.Link(csvname, 'CSV file')
     bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink])
-    body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(basename, projectstats, None)
     return pagelayout.Item([body, stats])
 

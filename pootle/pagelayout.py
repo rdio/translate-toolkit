@@ -72,9 +72,17 @@ class PootleSidebar(widgets.Division):
       loginlink = widgets.Link(baseurl+"?islogout=1", "Log Out")
     else:
       loginlink = [widgets.Link(baseurl+"login.html", "Log In"), " / ", widgets.Link(baseurl+"register.html", "Register")]
-    loginstatus = SidebarText(loginstatus)
+    loginimage = Icon("person.png")
+    loginstatus = SidebarText([loginimage, loginstatus])
     loginlink = SidebarText(loginlink)
     widgets.Division.__init__(self, [title, description, logintitle, loginstatus, loginlink], "links")
+
+class Icon(widgets.Image):
+  """an icon image"""
+  def __init__(self, imagename, newattribs={}):
+    # TODO: work out the baseurl properly
+    widgets.Image.__init__(self, "/images/" + imagename, {"class": "icon"})
+    self.overrideattribs(newattribs)
 
 class PootleBanner(widgets.Division):
   """the banner at the top"""
