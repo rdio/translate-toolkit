@@ -82,12 +82,6 @@ class csv2po:
 
   def handlecsvelement(self, thecsv):
     """handles reintegrating a csv element into the .po file"""
-    if self.mightbeheader:
-      # ignore typical header strings...
-      if [item.strip().lower() for item in thecsv.source, thecsv.msgid, thecsv.msgstr] == ["source", "original", "translation"]:
-        return
-      if len(thecsv.source.strip()) == 0 and thecsv.msgid.find("Content-Type:") != -1:
-        return
     if len(thecsv.source.strip()) > 0 and thecsv.source in self.sourceindex:
       thepo = self.sourceindex[thecsv.source]
     elif thecsv.msgid in self.msgidindex:
@@ -113,14 +107,21 @@ class csv2po:
       mergemode = False
     else:
       mergemode = True
-    self.mightbeheader = 1
+    mightbeheader = True
     for thecsv in thecsvfile.csvelements:
+      if mightbeheader:
+        # ignore typical header strings...
+        mightbeheader = False
+        if [item.strip().lower() for item in thecsv.source, thecsv.msgid, thecsv.msgstr] == \
+           ["source", "original", "translation"]:
+          continue
+        if len(thecsv.source.strip()) == 0 and thecsv.msgid.find("Content-Type:") != -1:
+          continue
       if mergemode:
         self.handlecsvelement(thecsv)
       else:
         thepo = self.convertelement(thecsv)
         self.pofile.poelements.append(thepo)
-      self.mightbeheader = 0
     return self.pofile
 
   def getmissing(self):
