@@ -63,27 +63,28 @@ for elementclassname in dir(minidom):
     continue
   elementclass.writexml = writexml
 
-def _get_elements_by_tagName_faster_helper(parent, name, rc):
+def getElementsByTagName(parent, name):
     for node in parent.childNodes:
         if node.nodeType == minidom.Node.ELEMENT_NODE and \
             (name == "*" or node.tagName == name):
             yield node
-        for node in _get_elements_by_tagName_faster_helper(node, name, rc):
+        for node in node.getElementsByTagName(name):
             yield node
 
-def _get_elements_by_tagName_clever_helper(parent, name, onlysearch):
+def searchElementsByTagName(parent, name, onlysearch):
     """limits the search to within tags occuring in onlysearch"""
     for node in parent.childNodes:
         if node.nodeType == minidom.Node.ELEMENT_NODE and \
             (name == "*" or node.tagName == name):
             yield node
         if node.nodeType == minidom.Node.ELEMENT_NODE and node.tagName in onlysearch:
-            for node in _get_elements_by_tagName_clever_helper(node, name, onlysearch):
+            for node in node.searchElementsByTagName(name, onlysearch):
                 yield node
 
-minidom._get_elements_by_tagName_helper = _get_elements_by_tagName_faster_helper
-minidom.Document.searchElementsByTagName = _get_elements_by_tagName_clever_helper
-minidom.Element.searchElementsByTagName = _get_elements_by_tagName_clever_helper
+minidom.Document.getElementsByTagName = getElementsByTagName
+minidom.Node.getElementsByTagName = getElementsByTagName
+minidom.Document.searchElementsByTagName = searchElementsByTagName
+minidom.Element.searchElementsByTagName = searchElementsByTagName
 
 def getFirstElementByTagName(node, name):
   results = node.getElementsByTagName(name)
@@ -106,6 +107,7 @@ class QtTsParser:
     """make a new QtTsParser, reading from the given inputfile if required"""
     self.filename = getattr(inputfile, "filename", None)
     self.knowncontextnodes = {}
+    self.indexcontextnodes = {}
     if inputfile is None:
       self.document = minidom.parseString("<!DOCTYPE TS><TS></TS>")
     else:
@@ -125,14 +127,22 @@ class QtTsParser:
       namenode.appendChild(nametext)
       contextnode.appendChild(namenode)
       self.document.documentElement.appendChild(contextnode)
-    for message in self.getmessagenodes(contextnode):
-      if self.getmessagesource(message).strip() == source.strip():
-        translationnode = getFirstElementByTagName(message, "translation")
-        newtranslationnode = self.document.createElement("translation")
-        translationtext = self.document.createTextNode(translation)
-        newtranslationnode.appendChild(translationtext)
-        message.replaceChild(newtranslationnode, translationnode)
-        return True
+    if contextname in self.indexcontextnodes:
+      messagesourceindex = self.indexcontextnodes[contextname]
+    else:
+      messagesourceindex = {}
+      for message in self.getmessagenodes(contextnode):
+        messagesource = self.getmessagesource(message).strip()
+        messagesourceindex[messagesource] = message
+      self.indexcontextnodes[contextname] = messagesourceindex
+    message = messagesourceindex.get(source.strip(), None)
+    if message is not None:
+      translationnode = getFirstElementByTagName(message, "translation")
+      newtranslationnode = self.document.createElement("translation")
+      translationtext = self.document.createTextNode(translation)
+      newtranslationnode.appendChild(translationtext)
+      message.replaceChild(newtranslationnode, translationnode)
+      return True
     if not createifmissing:
       return False
     messagenode = self.document.createElement("message")
@@ -152,6 +162,7 @@ class QtTsParser:
       translationnode.setAttribute("type",transtype)
     messagenode.appendChild(translationnode)
     contextnode.appendChild(messagenode)
+    messagesourceindex[source.strip()] = messagenode
     return True
 
   def getxml(self):
