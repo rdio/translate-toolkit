@@ -116,15 +116,14 @@ class po2xliff:
     sourcefilenode = minidom.Element("context")
     sourcefilenode.setAttribute("context-type", "sourcefile")
     sourcefilenode.appendChild(self.maketextnode(sourcefile))
-    if linenumber is not None:
-      linenumbernode = minidom.Element("context")
-      linenumbernode.setAttribute("context-type", "linenumber")
-      linenumbernode.appendChild(self.maketextnode(linenumber))
     contextgroupnode = minidom.Element("context-group")
     contextgroupnode.setAttribute("name", "x-po-reference")
     contextgroupnode.setAttribute("purpose", "location")
     contextgroupnode.appendChild(sourcefilenode)
-    if linenumbernode is not None:
+    if linenumber is not None:
+      linenumbernode = minidom.Element("context")
+      linenumbernode.setAttribute("context-type", "linenumber")
+      linenumbernode.appendChild(self.maketextnode(linenumber))
       contextgroupnode.appendChild(linenumbernode)
     return contextgroupnode
 
