@@ -69,10 +69,10 @@ test-moz2po: test-moz2po-notemplate test-moz2po-xpinotemplate test-moz2po-withte
 # set the progress option...
 progress ?= none
 # TODO: download xpi for tests if neccessary...
-xpidir=/share/translate.org.za/translate.sourceforge.net/xpi-import
-dtddir=/share/translate.org.za/dev/mozilla/dtd
-oodir=/share/translate.org.za/dev/openoffice/oo
-oopodir=/share/translate.org.za/translate.sourceforge.net/po/openoffice
+xpidir ?= /share/translate.org.za/translate.sourceforge.net/xpi-import
+dtddir ?= /share/translate.org.za/dev/mozilla/dtd
+oodir ?= /share/translate.org.za/dev/openoffice/oo
+oopodir ?= /share/translate.org.za/translate.sourceforge.net/po/openoffice
 
 test-moz2po-notemplate: input=$(dtddir)/en-US-1.6
 test-moz2po-notemplate: output=test-moz2po-notemplate
