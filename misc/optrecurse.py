@@ -258,7 +258,7 @@ class RecursiveOptionParser(optparse.OptionParser, object):
 
   def initprogressbar(self, allfiles, options):
     """sets up a progress bar appropriate to the options and files"""
-    if options.progress in ('console', 'verbose'):
+    if options.progress in ('bar', 'verbose'):
       self.progressbar = self.progresstypes[options.progress](0, len(allfiles))
       print "processing %d files..." % len(allfiles)
     else:
