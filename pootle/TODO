@@ -37,4 +37,6 @@ other:
   integrate with KBabel/POEdit
   allow XLIFF version of files to be downloaded/uploaded
   show KDE and other PO comments in some uncluttered but accesible way
-
+  create Gettext .mo/.gmo (compiled .po) files that can be downloaded and run.  Similarly
+    allow creation of compiled Qt .ts files.
+  create XPI files automatically when updates are made
