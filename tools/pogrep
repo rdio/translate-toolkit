@@ -20,7 +20,7 @@
 
 """grep for gettext .po localization files"""
 
-from translate.filters import pogrep
+from translate.tools import pogrep
 
 if __name__ == '__main__':
   pogrep.main()
