@@ -43,16 +43,16 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
 
   def recursefiles(self, options):
     """recurse through xpi file / directories and return files to be converted"""
+    if options.template and self.isxpi(options.template):
+      options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
     if self.isxpi(options.input):
+      options.inputxpi = xpi.XpiFile(options.input, includenonloc=False)
       return self.recursexpifiles(options)
     else:
       return super(MozConvertOptionParser, self).recursefiles(options)
 
   def recursexpifiles(self, options):
     """recurse through xpi files and convert files"""
-    options.inputxpi = xpi.XpiFile(options.input, includenonloc=False)
-    if options.template and self.isxpi(options.template):
-      options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
     for inputpath in options.inputxpi.iterextractnames():
       top, name = os.path.split(inputpath)
       if not self.isvalidinputname(options, name):
@@ -106,8 +106,10 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
     return super(MozConvertOptionParser, self).templateexists(options, templatepath)
 
 if __name__ == '__main__':
-  formats = {("dtd", "dtd"): ("po", dtd2po.convertdtd), ("properties", "properties"): ("po", prop2po.convertprop),
-             "dtd": ("po", dtd2po.convertdtd), "properties": ("po", prop2po.convertprop)}
+  formats = {("dtd", "dtd"): ("dtd.po", dtd2po.convertdtd),
+             ("properties", "properties"): ("properties.po", prop2po.convertprop),
+             "dtd": ("dtd.po", dtd2po.convertdtd),
+             "properties": ("properties.po", prop2po.convertprop)}
   parser = MozConvertOptionParser(formats, usetemplates=True, usepots=True)
   parser.convertparameters.append("pot")
   parser.runconversion()
