@@ -113,7 +113,7 @@ if __name__ == '__main__':
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")
   parser.add_option("-o", "--output-file", dest="outputfile", default=None,
-                    help="read from outputfile in "+outputformat+" format", metavar="outputfile")
+                    help="write to outputfile in "+outputformat+" format", metavar="outputfile")
   (options, args) = parser.parse_args()
   # open the appropriate files
   if options.inputfile is None:

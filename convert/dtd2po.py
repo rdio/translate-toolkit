@@ -37,16 +37,16 @@ class dtd2po:
     entity = quote.rstripeol(thedtd.entity)
     if len(entity) > 0:
       thepo.sourcecomments.append("#: " + thedtd.entity + "\n")
-    for type,comment in thedtd.comments:
+    for commenttype,comment in thedtd.comments:
       # handle groups
-      if (type == "locgroupstart"):
+      if (commenttype == "locgroupstart"):
         groupcomment = comment.replace('BEGIN','GROUP')
         self.currentgroup = groupcomment
-      elif (type == "locgroupend"):
+      elif (commenttype == "locgroupend"):
         groupcomment = comment.replace('END','GROUP')
         self.currentgroup = None
       # handle msgidcomments
-      if type == "msgidcomment":
+      if commenttype == "msgidcomment":
         thepo.msgidcomments.append(comment + "\n")
       # handle normal comments
       else:
@@ -137,7 +137,7 @@ class dtd2po:
       commenttype,locnote = thedtd.comments[commentnum]
       # if this is a localization note
       if commenttype == 'locnote':
-        # parse the locnote into the id and the actual note
+        # parse the locnote into the entity and the actual note
         typeend = quote.findend(locnote,'LOCALIZATION NOTE')
 
         # parse the id
@@ -145,7 +145,7 @@ class dtd2po:
         if idstart == -1: continue
         idend = locnote.find(')',idstart+1)
 
-        id = locnote[idstart+1:idend].strip()
+        entity = locnote[idstart+1:idend].strip()
 
         # parse the actual note
         actualnotestart = locnote.find(':',idend+1)
@@ -154,7 +154,7 @@ class dtd2po:
         actualnote = locnote[actualnotestart+1:actualnoteend].strip()
 
         # if it's for this entity, process it
-        if thedtd.entity == id:
+        if thedtd.entity == entity:
           # if it says don't translate (and nothing more),
           if actualnote == "DONT_TRANSLATE":
             # take out the entity,definition and the DONT_TRANSLATE comment
@@ -194,7 +194,7 @@ class dtd2po:
     headeritems.append("MIME-Version: 1.0\\n")
     headeritems.append("Content-Type: text/plain; charset=ISO-8859-1\\n")
     headeritems.append("Content-Transfer-Encoding: ENCODING\\n")
-    headerpo.msgstr = [quote.quotestr(str) for str in headeritems]
+    headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
     thepofile.poelements.append(headerpo)
     # remember the current groups we're in
     self.currentgroups = []
@@ -256,7 +256,7 @@ if __name__ == '__main__':
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")
   parser.add_option("-o", "--output-file", dest="outputfile", default=None,
-                    help="read from outputfile in "+outputformat+" format", metavar="outputfile")
+                    help="write to outputfile in "+outputformat+" format", metavar="outputfile")
   (options, args) = parser.parse_args()
   # open the appropriate files
   if options.inputfile is None:

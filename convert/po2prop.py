@@ -40,7 +40,7 @@ class reprop:
     self.inecho = 0
     self.makepodict(pofile)
     outputlines = []
-    for line in templatefile.xreadlines():
+    for line in self.templatefile.xreadlines():
       outputstr = self.convertline(line)
       outputlines.append(outputstr)
     return outputlines
@@ -123,7 +123,7 @@ if __name__ == '__main__':
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")
   parser.add_option("-o", "--output-file", dest="outputfile", default=None,
-                    help="read from outputfile in "+outputformat+" format", metavar="outputfile")
+                    help="write to outputfile in "+outputformat+" format", metavar="outputfile")
   parser.add_option("-t", "--template", dest="templatefile", default=None,
                     help="read from template in "+templateformat+" format", metavar="template")
   (options, args) = parser.parse_args()
