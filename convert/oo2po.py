@@ -95,9 +95,11 @@ class oo2po:
     thepofile.removeblanks()
     return thepofile
 
-# TODO: work out how to get the convertor's --pot switch into blankmsgstr
-def convertoo(inputfile, outputfile, blankmsgstr=0):
+# TODO: work out nicer way to get the convertor's --pot switch into blankmsgstr
+blankmsgstr = 0
+def convertoo(inputfile, outputfile, templates):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
+  global blankmsgstr
   fromfile = oo.oofile()
   filelines = inputfile.readlines()
   fromfile.fromlines(filelines)
@@ -118,6 +120,7 @@ if __name__ == '__main__':
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:
+    blankmsgstr = options.pot
     parser.runconversion(options, convertoo)
   except convert.optparse.OptParseError, message:
     parser.error(message)
