@@ -24,7 +24,6 @@ dtd2po convertor class which is in this module
 You can convert back to .dtd using po2dtd.py"""
 
 import sys
-import translatepath
 from translate.storage import po
 from translate.storage import dtd
 from translate.misc import quote

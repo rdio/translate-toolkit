@@ -22,7 +22,6 @@
 """Converts HTML files to Gettext .po files
 You can convert them back using po2html"""
 
-import translatepath
 from translate.storage import po
 from translate.storage import html
 from translate.misc import quote

@@ -21,7 +21,6 @@
 
 """Converts nanoblogger HTML part files to Gettext .po files"""
 
-import translatepath
 from translate.storage import po
 from translate.misc import quote
 from translate.convert import convert

@@ -22,7 +22,6 @@
 """translates nanoblogger html part files using gettext .po localization
 You can generate the po files using nb2po"""
 
-import translatepath
 from translate.storage import po
 from translate.misc import quote
 from translate.convert import convert

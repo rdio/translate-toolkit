@@ -21,7 +21,6 @@
 
 """Converts OpenOffice.org exported .oo files to Gettext .po files"""
 
-import translatepath
 from translate.storage import po
 from translate.storage import oo
 from translate.misc import quote
