@@ -475,17 +475,11 @@ class ProjectIndex(pagelayout.PootlePage):
   def __init__(self, project, session, argdict, dirfilter=None):
     self.project = project
     self.session = self.project.gettranslationsession(session)
-    self.argdict = argdict
     self.localize = session.localize
     self.rights = self.session.getrights()
-    self.showtracks = self.getboolarg("showtracks")
-    self.showchecks = self.getboolarg("showchecks")
-    self.showassigns = self.getboolarg("showassigns")
     message = argdict.get("message", "")
     if message:
       message = pagelayout.IntroText(message)
-    bodytitle = pagelayout.Title(dirfilter or self.project.projectname)
-    bodytitle = widgets.Link(self.getbrowseurl(""), bodytitle)
     if dirfilter == "":
       dirfilter = None
     self.dirfilter = dirfilter
@@ -493,36 +487,14 @@ class ProjectIndex(pagelayout.PootlePage):
       self.dirname = "/".join(dirfilter.split("/")[:-1])
     else:
       self.dirname = dirfilter or ""
-    if "doassign" in argdict:
-      assignto = argdict.get("assignto", None)
-      action = argdict.get("action", None)
-      if not assignto and action:
-        raise ValueError("cannot doassign, need assignto and action")
-      search = projects.Search(dirfilter=dirfilter)
-      assigncount = self.project.assignpoitems(search, assignto, action)
-      print "assigned %d strings to %s for %s" % (assigncount, assignto, action)
-    if self.getboolarg("removeassigns"):
-      assignedto = argdict.get("assignedto", None)
-      removefilter = argdict.get("removefilter", "")
-      if removefilter:
-        if dirfilter:
-          removefilter = dirfilter + removefilter
-      else:
-        removefilter = dirfilter
-      search = projects.Search(dirfilter=removefilter)
-      search.assignedto = assignedto
-      assigncount = self.project.unassignpoitems(search, assignedto)
-      print "removed %d assigns from %s" % (assigncount, assignedto)
-    if "doupload" in argdict:
-      uploadfile = argdict.get("uploadfile", None)
-      if not uploadfile:
-        raise ValueError("cannot upload file, no file attached")
-      if uploadfile.filename.endswith(".po"):
-        self.project.addnewpofile(self.dirname, uploadfile.filename, uploadfile.contents)
-      elif uploadfile.filename.endswith(".zip"):
-        self.project.uploadarchive(self.dirname, uploadfile.contents)
-      else:
-        raise ValueError("can only upload PO files and zips of PO files")
+    self.argdict = argdict
+    # handle actions before generating URLs, so we strip unneccessary parameters out of argdict
+    self.handleactions()
+    self.showtracks = self.getboolarg("showtracks")
+    self.showchecks = self.getboolarg("showchecks")
+    self.showassigns = self.getboolarg("showassigns")
+    bodytitle = pagelayout.Title(dirfilter or self.project.projectname)
+    bodytitle = widgets.Link(self.getbrowseurl(""), bodytitle)
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []
@@ -544,6 +516,42 @@ class ProjectIndex(pagelayout.PootlePage):
     if session.issiteadmin():
       self.adduploadbox()
     self.addnavlinks(dirfilter)
+
+  def handleactions(self):
+    """handles the given actions that must be taken (changing operations)"""
+    if "doassign" in self.argdict:
+      assignto = self.argdict.pop("assignto", None)
+      action = self.argdict.pop("action", None)
+      if not assignto and action:
+        raise ValueError("cannot doassign, need assignto and action")
+      search = projects.Search(dirfilter=self.dirfilter)
+      assigncount = self.project.assignpoitems(search, assignto, action)
+      print "assigned %d strings to %s for %s" % (assigncount, assignto, action)
+      del self.argdict["doassign"]
+    if self.getboolarg("removeassigns"):
+      assignedto = self.argdict.pop("assignedto", None)
+      removefilter = self.argdict.pop("removefilter", "")
+      if removefilter:
+        if self.dirfilter:
+          removefilter = self.dirfilter + removefilter
+      else:
+        removefilter = self.dirfilter
+      search = projects.Search(dirfilter=removefilter)
+      search.assignedto = assignedto
+      assigncount = self.project.unassignpoitems(search, assignedto)
+      print "removed %d assigns from %s" % (assigncount, assignedto)
+      del self.argdict["removeassigns"]
+    if "doupload" in self.argdict:
+      uploadfile = self.argdict.pop("uploadfile", None)
+      if not uploadfile:
+        raise ValueError("cannot upload file, no file attached")
+      if uploadfile.filename.endswith(".po"):
+        self.project.addnewpofile(self.dirname, uploadfile.filename, uploadfile.contents)
+      elif uploadfile.filename.endswith(".zip"):
+        self.project.uploadarchive(self.dirname, uploadfile.contents)
+      else:
+        raise ValueError("can only upload PO files and zips of PO files")
+      del self.argdict["doupload"]
 
   def getboolarg(self, argname, default=False):
     """gets a boolean argument from self.argdict"""
