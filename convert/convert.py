@@ -99,15 +99,11 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
 def copyinput(inputfile, outputfile, templatefile, **kwargs):
   """copies the input file to the output file"""
   outputfile.write(inputfile.read())
-  if not outputfile.isatty():
-    outputfile.close()
   return True
 
 def copytemplate(inputfile, outputfile, templatefile, **kwargs):
   """copies the template file to the output file"""
   outputfile.write(templatefile.read())
-  if not outputfile.isatty():
-    outputfile.close()
   return True
 
 # archive files need to know how to:
@@ -265,7 +261,8 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
       outputfile = self.openoutputfile(options, fulloutputpath)
       passthroughoptions = self.getpassthroughoptions(options)
       if fileprocessor(inputfile, outputfile, templatefile, **passthroughoptions):
-        outputfile.close()
+        if not outputfile.isatty():
+          outputfile.close()
         return True
       else:
         if fulloutputpath and os.path.isfile(fulloutputpath):
