@@ -82,9 +82,21 @@ class TranslationChecker:
   def run_filters(self, str1, str2):
     """run all the tests in this suite"""
     failures = []
-    for functionname, filterfunction in self.defaultfilters.iteritems():
+    ignores = []
+    functionnames = self.defaultfilters.keys()
+    priorityfunctionnames = self.preconditions.keys()
+    otherfunctionnames = filter(lambda functionname: functionname not in self.preconditions, functionnames)
+    for functionname in priorityfunctionnames + otherfunctionnames:
+      if functionname in ignores:
+        continue
+      filterfunction = getattr(self, functionname)
       if not filterfunction(str1, str2):
-        failures.append("%s: %s" % (functionname, filterfunction.__doc__))
+        # we test some preconditions that aren't actually a cause for failure...
+        if functionname in self.defaultfilters:
+          failures.append("%s: %s" % (functionname, filterfunction.__doc__))
+        if functionname in self.preconditions:
+          for ignoredfunctionname in self.preconditions[functionname]:
+            ignores.append(ignoredfunctionname)
     return failures
 
 class StandardChecker(TranslationChecker):
@@ -178,6 +190,10 @@ class StandardChecker(TranslationChecker):
       return capitals2 > len(str2) * 6 / 10
     else:
       return abs(capitals1 - capitals2) < (len(str1) + len(str2)) / 6 
+
+  preconditions = {"untranslated": ("escapes", "short", "unchanged", "singlequoting", "doublequoting",
+                                    "accelerators", "variables", "numbers", "whitespace",
+                                    "startpunc", "endpunc", "purepunc", "simplecaps") }
 
 # code to actually run the tests (use unittest?)
 
