@@ -219,7 +219,9 @@ class PootleServer(OptionalLoginAppServer):
       usernode = getattr(self.instance.users, username)
       # use the email address on file
       email = getattr(usernode, "email", email)
-      message = "you (or someone else) requested your password...\n"
+      password = getattr(usernode, "passwdhash", "")
+      # TODO: we can't figure out the password as we only store the md5sum. have a password reset mechanism
+      message = "you (or someone else) requested your password... here is the md5sum of it, happy cracking\n"
       displaymessage = "that username already exists. emailing the password to the username's email address...\n"
       redirecturl = "login.html"
     else:
