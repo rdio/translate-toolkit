@@ -1,5 +1,55 @@
 2004-03-30: David Fraser <david@translate.org.za>
-	* Read the CVS mails
+	* MANIFEST.in
+	- added new scripts
+	* setup.py
+	- added new scripts
+	* translate/__version__.py
+	- version 0.6
+	* translate/convert/convert.py
+	- added ability to use templates in non-recursive case...
+	- made templates pot files if output is po (needs cleanup)
+	- added code to handle outputing to the input or template file without overwriting them (use temp file)
+	* translate/convert/csv2po.py
+	- merged csv2po and repo into one class so we can sort out related issues together...
+	- moved header testing out of template-merging code to make it apply to all conversions
+	- removed doencode (what was it there for?)
+	- added handling for plural forms
+	- added code to handle duplicate source strings so they don't fool us...
+	* translate/convert/po2csv.py
+	- added handling for msgid_plural
+	- refactored so convertstring is used generally
+	* translate/filters/checks.py
+	- added gnome checking option
+	- rearranged checkss -added whitespace (and associated decoration functions) and separated startandend
+	- gave filters shorter names to make them easier on the command line
+	* translate/filters/decoration.py
+	- rearranged checkss -added whitespace (and associated decoration functions) and separated startandend
+	* translate/filters/filtercmd.py
+	- show progress whether successful or not
+	  (not usually just means a blank file, we are still progressing...)
+	* translate/filters/pofilter
+	- add option to list all filters instead of actually running them
+	- added gnome checking option
+	- updated to show filter documentation as well when listing filters
+	- refactored the getfilterdocs approach
+	- updated pofilter to handle plurals in po
+	* translate/filters/prefilters.py
+	- added more common words with punctuation...
+	- added TODO to fix up punctuation check
+	* translate/storage/csvl10n.py
+	- don't need to join lines with a linebreak since they already have one...
+	* translate/storage/po.py
+	- added option to check if msgstr is blank
+	- added ability to handle msgid_plural and msgstr[n]
+	- refactored each part's construction into getmsgpartstr
+	- refactored stuff so we don't calculate lengths all over the place.
+	- This also handles plurals in msgstr
+	- renamed hasplurals to hasplural
+	- improved creation of index (always create entry in msgidindex, makes sourceindex simpler)
+	* translate/filters/pogrep
+	- added grep tool for po files
+	* translate/tools/pomerge
+	- added po merge tool
 
 2003-12-23: David Fraser <david@translate.org.za>
 	* Moved into new package structure from old flat structure
