@@ -22,7 +22,8 @@ class PootleIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % project.fullname
     bodydescription = widgets.Division('<a href="%s/">%s projects</a>' % (projectcode, project.fullname), None, {"class":"item-description"})
     body = widgets.Division([bodytitle, bodydescription], None, {"class":"blogbody"})
-    subprojectcount = 0
+    subprojects = [subproject for (subprojectcode, subproject) in project.subprojects.iteritems()]
+    subprojectcount = len(subprojects)
     percentfinished = 0
     stats = widgets.Division("%d subprojects, %d%% translated" % (subprojectcount, percentfinished), None, {"class":"posted"})
     return widgets.Division([body, stats], None, {"class":"item"})
