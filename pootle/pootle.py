@@ -119,6 +119,8 @@ class PootleServer(OptionalLoginAppServer):
         redirecttext = pagelayout.IntroText("Redirecting to index...")
         redirectpage = pagelayout.PootlePage("Redirecting to index...", redirecttext, session)
         return server.Redirect("index.html", withpage=redirectpage)
+      if 'username' in argdict:
+        session.username = argdict["username"]
       return LoginPage(session)
     elif top == "register.html":
       return self.registerpage(session, argdict)
@@ -224,7 +226,7 @@ class PootleServer(OptionalLoginAppServer):
       # TODO: we can't figure out the password as we only store the md5sum. have a password reset mechanism
       message = "you (or someone else) requested your password... here is the md5sum of it, happy cracking\n"
       displaymessage = "that username already exists. emailing the password to the username's email address...\n"
-      redirecturl = "login.html"
+      redirecturl = "login.html?username=%s" % username
     else:
       setattr(session.loginchecker.users, username + ".email", email)
       setattr(session.loginchecker.users, username + ".passwdhash", session.md5hexdigest(password))
@@ -232,9 +234,16 @@ class PootleServer(OptionalLoginAppServer):
       setattr(session.loginchecker.users, username + ".activated", 0)
       activationcode = self.generateactivationcode()
       setattr(session.loginchecker.users, username + ".activationcode", activationcode)
-      message = "to activate it, enter the following activation code:\n%s\n" % activationcode
+      message += "to activate it, enter the following activation code:\n%s\n" % activationcode
+      if session.instance.baseurl.startswith("http://"):
+        message += "this should happen automatically if you click on the following link:\n"
+        activationlink = session.instance.baseurl
+        if not activationlink.endswith("/"):
+          activationlink += "/"
+        activationlink += "activate.html?username=%s&activationcode=%s" % (username, activationcode)
+        message += "  %s  \n" % activationlink
       displaymessage = "account created. will be emailed login details. enter activation code on the next page"
-      redirecturl = "activate.html"
+      redirecturl = "activate.html?username=%s" % username
     self.saveuserprefs(session.loginchecker.users)
     message += "username: %s\npassword: %s\n" % (username, password)
     smtpserver = self.instance.registration.smtpserver
@@ -242,7 +251,7 @@ class PootleServer(OptionalLoginAppServer):
     message = mailer.makemessage({"from": fromaddress, "to": [email], "subject": "Pootle Registration", "body": message})
     errmsg = mailer.dosendmessage(fromemail=self.instance.registration.fromaddress, recipientemails=[email], message=message, smtpserver=smtpserver)
     if errmsg:
-      raise ValueError(errmsg)
+      raise ValueError("Error sending mail: %s" % errmsg)
     return displaymessage, redirecturl
 
   def registerpage(self, session, argdict):
@@ -275,7 +284,7 @@ class PootleServer(OptionalLoginAppServer):
           redirecttext = pagelayout.IntroText("Your account has been activated! Redirecting to login...")
           redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
           redirectpage.attribs["refresh"] = 10
-          redirectpage.attribs["refreshurl"] = "login.html"
+          redirectpage.attribs["refreshurl"] = "login.html?username=%s" % username
           return redirectpage
       failedtext = pagelayout.IntroText("The activation link you have entered was not valid")
       failedpage = pagelayout.PootlePage("Activation Failed", failedtext, session)
