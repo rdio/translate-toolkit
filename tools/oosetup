@@ -43,6 +43,8 @@ class SetupIndex(sparse.SimpleParser):
     tokennum = 0
     while tokennum < len(self.tokens):
       tokennum = self.parsesection(tokennum)
+    self.languagename = sparse.stringeval(self.getfieldvalue('gid_Dir_Config_Language', 'HostName'))
+    self.isocode = sparse.stringeval(self.getfieldvalue('gid_Dir_Share_Registry_Res_Lang', 'HostName'))
 
   def parsesection(self, tokennum):
     sectiontype = self.tokens[tokennum]
@@ -175,8 +177,11 @@ class SetupIndex(sparse.SimpleParser):
       index.directorychildren = {}
       index.directoryfiles = {}
       for directory in index.bytype["Directory"]:
-        if directory.find('_Language') != -1 or directory.find("_Isolanguage") != -1:
+        hostname = index.getfieldvalue(directory, 'HostName')
+        hostname = sparse.stringeval(hostname)
+        if hostname == self.languagename or hostname == self.isocode:
           directoriestorename[directory] = 1
+          print "renaming ", directory, hostname, self.languagename, self.isocode
         parentid = index.getfieldvalue(directory, 'ParentID')
         if parentid not in index.directorychildren:
           index.directorychildren[parentid] = [directory]
@@ -208,6 +213,8 @@ class SetupIndex(sparse.SimpleParser):
         suffix = "_" + sparse.stringeval(index.getfieldvalue(directory, "HostName"))
         if directory.find('_Language') != -1:
           newname = directory.replace("_Language", suffix)
+        elif directory.find('_Lang') != -1:
+          newname = directory.replace("_Lang", suffix)
         elif directory.find('_Isolanguage') != -1:
           newname = directory.replace("_Isolanguage", suffix)
         else: newname = directory + "_" + suffix
