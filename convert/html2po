@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+#
+# Copyright 2002-2004 Zuza Software Foundation
+# 
+# This file is part of translate.
+#
+# translate is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# translate is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with translate; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+"""script to convert html files to gettext .po localization files using the po module, and the html2po convertor class which is in this module
+You can convert back to .html using po2html, but it doesn't exist yet"""
+
+# TODO: create po2html
+
+from translate.storage import po
+from translate.misc import quote
+from translate.convert import convert
+from HTMLParser import HTMLParser
+import os
+
+
+class POHTMLParser(HTMLParser):
+  markingtags = ["p", "title", "h1", "h2", "h3", "td"]
+  markingattrs = ["lang"]
+  includeattrs = ["alt"]
+  def __init__(self):
+    self.blocks = []
+    self.currentblock = ""
+    self.currenttag = None
+    HTMLParser.__init__(self)
+
+  def startblock(self, tag):
+    if self.currentblock:
+      self.blocks.append(self.currentblock)
+    self.currentblock = ""
+    self.currenttag = tag
+
+  def endblock(self):
+    if self.currentblock:
+      self.blocks.append(self.currentblock)
+    self.currentblock = ""
+    self.currenttag = None
+
+  def handle_starttag(self, tag, attrs):
+    newblock = 0
+    if tag in self.markingtags:
+      newblock = 1
+    for attrname, attrvalue in attrs:
+      if attrname in self.markingattrs:
+        newblock = 1
+      if attrname in self.includeattrs:
+        self.blocks.append(attrvalue)
+    if newblock:
+      self.startblock(tag)
+    elif self.currenttag is not None:
+      self.currentblock += self.get_starttag_text()
+
+  def handle_startendtag(self, tag, attrs):
+    for attrname, attrvalue in attrs:
+      if attrname in self.includeattrs:
+        self.blocks.append(attrvalue)
+    if self.currenttag is not None:
+      self.currentblock += self.get_starttag_text()
+
+  def handle_endtag(self, tag):
+    if tag == self.currenttag:
+      self.endblock()
+    elif self.currenttag is not None: 
+      self.currentblock += '</%s>' % tag
+
+  def handle_data(self, data):
+    if self.currenttag is not None:
+      self.currentblock += data
+
+class html2po:
+  def __init__(self, blankmsgstr=False):
+    """construct a html2po converter"""
+    self.blankmsgstr = blankmsgstr
+
+  def convertfile(self, inputfile, filename, includeheader):
+    """converts a file to .po format"""
+    thepofile = po.pofile()
+    htmlparser = POHTMLParser()
+    if includeheader:
+      headerpo = thepofile.makeheader(charset="UTF8")
+      thepofile.poelements.append(headerpo)
+    contents = inputfile.read()
+    htmlparser.feed(contents)
+    for blocknum in range(len(htmlparser.blocks)):
+      block = htmlparser.blocks[blocknum]
+      if not block.strip(): continue
+      thepo = po.poelement()
+      thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum+1))
+      thepo.msgid = [quote.quotestr(quote.rstripeol(block))]
+      if len(thepo.msgid) > 1:
+        thepo.msgid = [quote.quotestr("")] + thepo.msgid
+      thepo.msgstr = []
+      thepofile.poelements.append(thepo)
+    return thepofile
+
+def converthtml(inputfile, outputfile, templates, pot=False):
+  """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
+  convertor = html2po(blankmsgstr=pot)
+  outputfilepos = outputfile.tell()
+  includeheader = outputfilepos == 0
+  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader)
+  outputpolines = outputpo.tolines()
+  outputfile.writelines(outputpolines)
+  return 1
+
+if __name__ == '__main__':
+  # handle command line options
+  formats = {"html":("po",converthtml), "htm":("po",converthtml)}
+  parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
+  parser.passthrough.append("pot")
+  parser.run()
+
