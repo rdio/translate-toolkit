@@ -114,11 +114,17 @@ class StandardChecker(TranslationChecker):
     """checks whether escaping is consistent between the two strings"""
     return helpers.countsmatch(str1, str2, ("\\", "\\\\"))
 
-  def quoting(self, str1, str2):
-    """checks whether quoting is consistent between the two strings"""
+  def singlequoting(self, str1, str2):
+    """checks whether singlequoting is consistent between the two strings"""
     str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
     str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
-    return helpers.countsmatch(str1, str2, ('"', "'", '""', "''", '\\"', "\\'"))
+    return helpers.countsmatch(str1, str2, ("'", "''", "\\'"))
+
+  def doublequoting(self, str1, str2):
+    """checks whether doublequoting is consistent between the two strings"""
+    str1 = self.filteraccelerators(self.filtervariables(str1))
+    str2 = self.filteraccelerators(self.filtervariables(str2))
+    return helpers.countsmatch(str1, str2, ('"', '""', '\\"'))
 
   def accelerators(self, str1, str2):
     """checks whether accelerators are consistent between the two strings"""
@@ -132,8 +138,8 @@ class StandardChecker(TranslationChecker):
 
   def whitespace(self, str1, str2):
     """checks whether whitespace at the beginning and end of the strings match"""
-    str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
-    str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
+    str1 = self.filteraccelerators(self.filtervariables(str1))
+    str2 = self.filteraccelerators(self.filtervariables(str2))
     return helpers.funcsmatch(str1, str2, (decoration.spacestart, decoration.spaceend))
 
   def startpunc(self, str1, str2):
