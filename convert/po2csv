@@ -88,8 +88,7 @@ def convertcsv(inputfile, outputfile, templatefile):
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  inputformat = {"po":convertcsv}
-  outputformat = "csv"
-  parser = convert.ConvertOptionParser(inputformat, outputformat, usepots=True)
+  formats = {"po":("csv",convertcsv)}
+  parser = convert.ConvertOptionParser(formats, usepots=True)
   parser.runconversion()
 

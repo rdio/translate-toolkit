@@ -128,9 +128,8 @@ def convertprop(inputfile, outputfile, templatefile, pot=False):
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  inputformats = {"properties": convertprop}
-  outputformat = "po"
-  parser = convert.ConvertOptionParserExt(inputformats, outputformat, usetemplates=True, usepots=True)
+  formats = {"properties": ("po", convertprop), ("properties", "properties"): ("po", convertprop)}
+  parser = convert.ConvertOptionParserExt(formats, usetemplates=True, usepots=True)
   parser.convertparameters.append("pot")
   parser.runconversion()
 

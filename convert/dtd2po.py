@@ -279,9 +279,8 @@ def convertdtd(inputfile, outputfile, templatefile, pot=False):
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  inputformats = {"dtd": convertdtd}
-  outputformat = "po"
-  parser = convert.ConvertOptionParserExt(inputformats, outputformat, usetemplates=True, usepots=True)
+  formats = {"dtd": ("po", convertdtd), ("dtd", "dtd"): ("po", convertdtd)}
+  parser = convert.ConvertOptionParserExt(formats, usetemplates=True, usepots=True)
   parser.convertparameters.append("pot")
   parser.runconversion()
 

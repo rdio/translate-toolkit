@@ -178,8 +178,7 @@ def convertcsv(inputfile, outputfile, templatefile):
 if __name__ == '__main__':
  # handle command line options
   from translate.convert import convert
-  inputformats = {"csv": convertcsv}
-  outputformat = "po"
-  parser = convert.ConvertOptionParser(inputformats, outputformat, usetemplates=True, templateslikeinput=False)
+  formats = {("csv", "po"): ("po", convertcsv), ("csv", "pot"): ("po", convertcsv)}
+  parser = convert.ConvertOptionParser(formats, usetemplates=True)
   parser.runconversion()
 

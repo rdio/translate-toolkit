@@ -49,9 +49,9 @@ class poreplace:
 def main(converterclass):
   # handle command line options
   from translate.convert import convert
-  inputformat = {"po":converterclass().convertpo}
-  outputformat = "po"
-  parser = convert.ConvertOptionParser(inputformat, outputformat, usepots=True)
+  replacer = converterclass()
+  formats = {"po":("po",replacer.convertpo), "pot":("pot", replacer.convertpo)}
+  parser = convert.ConvertOptionParser(formats, usepots=True)
   parser.runconversion()
 
 if __name__ == '__main__':

@@ -160,10 +160,8 @@ def convertoo(inputfile, outputfile, templatefile, languagecode=None):
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  inputformats = {"po":convertoo}
-  outputformat = "oo"
-  templateformat = "oo"
-  parser = convert.ConvertOptionParser(inputformats, outputformat, usetemplates=True, templateslikeinput=False)
+  formats = {("po", "oo"):("oo", convertoo)}
+  parser = convert.ConvertOptionParser(formats, usetemplates=True)
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
   parser.runconversion()

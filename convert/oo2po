@@ -112,9 +112,8 @@ def convertoo(inputfile, outputfile, templates, pot=False):
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  inputformat = {"oo":convertoo}
-  outputformat = "po"
-  parser = convert.ConvertOptionParser(inputformat, outputformat, usepots=True)
+  formats = {"oo":("po",convertoo)}
+  parser = convert.ConvertOptionParser(formats, usepots=True)
   parser.convertparameters.append("pot")
   parser.runconversion()
 

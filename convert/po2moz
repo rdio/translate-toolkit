@@ -28,8 +28,7 @@ from translate import __version__
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  inputformat = "po"
-  outputformats = {"dtd": po2dtd.convertdtd, "properties": po2prop.convertprop}
-  parser = convert.ConvertOptionParserExt(inputformat, outputformats, usetemplates=True)
+  formats = {("po", "dtd"): ("dtd", po2dtd.convertdtd), ("po", "properties"): ("properties", po2prop.convertprop)}
+  parser = convert.ConvertOptionParser(formats, usetemplates=True)
   parser.runconversion()
 
