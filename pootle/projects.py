@@ -12,6 +12,7 @@ class TranslationProject:
     self.pofiles = {}
     self.stats = {}
     os.path.walk(subproject.podir, self.addfiles, None)
+    self.initstatscache()
     for pofilename in self.pofiles:
       self.getpofile(pofilename)
     self.currentpofile = None
@@ -20,11 +21,11 @@ class TranslationProject:
     self.translations = []
 
   def initstatscache(self):
-    for pofilename in self.pofiles:
+    for pofilename in self.pofilenames:
       if not pofilename in self.stats:
         pomtime = os.stat(pofilename)[os.path.stat.ST_MTIME]
         statsfilename = pofilename + os.extsep + "stats"
-        if os.path.exists():
+        if os.path.exists(statsfilename):
           try:
             stats = open(statsfilename, "r").read()
             statsmtime, translated, total = [int(n) for n in stats.split()[:3]]
