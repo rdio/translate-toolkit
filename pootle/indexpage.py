@@ -489,7 +489,7 @@ class TranslationProjectAdminPage(pagelayout.PootlePage):
     self.localize = session.localize
     self.rightnames = self.project.getrightnames(session)
     description = self.project.projectdescription
-    if self.session.issiteadmin():
+    if "admin" in self.project.getrights(self.session):
       if "doupdaterights" in argdict:
         for key, value in argdict.iteritems():
           if key.startswith("rights-"):
@@ -517,8 +517,8 @@ class TranslationProjectAdminPage(pagelayout.PootlePage):
     rightstable = table.TableLayout()
     rightstable.setcell(0, 0, table.TableCell(pagelayout.Title(self.localize("Username"))))
     rightstable.setcell(0, 1, table.TableCell(pagelayout.Title(self.localize("Rights"))))
-    self.addrightsrow(rightstable, 1, "nobody", self.project.getrights(None))
-    defaultrights = self.project.getrights("default")
+    self.addrightsrow(rightstable, 1, "nobody", self.project.getrights(username=None))
+    defaultrights = self.project.getrights(username="default")
     self.addrightsrow(rightstable, 2, "default", defaultrights)
     rownum = 3
     for username, rights in getattr(self.project.prefs, "rights", {}).iteritems():
@@ -544,9 +544,9 @@ class ProjectIndex(pagelayout.PootlePage):
   """the main page"""
   def __init__(self, project, session, argdict, dirfilter=None):
     self.project = project
-    self.session = self.project.gettranslationsession(session)
+    self.session = session
     self.localize = session.localize
-    self.rights = self.session.getrights()
+    self.rights = self.project.getrights(self.session)
     message = argdict.get("message", "")
     if message:
       message = pagelayout.IntroText(message)
@@ -602,9 +602,9 @@ class ProjectIndex(pagelayout.PootlePage):
     pagetitle = self.localize("Pootle: Project %s, Language %s") % (self.project.projectname, self.project.languagename)
     pagelayout.PootlePage.__init__(self, pagetitle, [message, mainitem, childitems], session, bannerheight=81, returnurl="%s/%s/%s" % (self.project.languagecode, self.project.projectcode, self.dirname))
     self.addsearchbox(searchtext="", action="translate.html")
-    if session.issiteadmin() and self.showassigns:
+    if self.showassigns and "assign" in self.rights:
       self.addassignbox()
-    if session.issiteadmin():
+    if "admin" in self.rights:
       self.adduploadbox()
 
   def handleactions(self):
@@ -615,7 +615,7 @@ class ProjectIndex(pagelayout.PootlePage):
       if not assignto and action:
         raise ValueError("cannot doassign, need assignto and action")
       search = projects.Search(dirfilter=self.dirfilter)
-      assigncount = self.project.assignpoitems(search, assignto, action)
+      assigncount = self.project.assignpoitems(self.session, search, assignto, action)
       print "assigned %d strings to %s for %s" % (assigncount, assignto, action)
       del self.argdict["doassign"]
     if self.getboolarg("removeassigns"):
@@ -628,7 +628,7 @@ class ProjectIndex(pagelayout.PootlePage):
         removefilter = self.dirfilter
       search = projects.Search(dirfilter=removefilter)
       search.assignedto = assignedto
-      assigncount = self.project.unassignpoitems(search, assignedto)
+      assigncount = self.project.unassignpoitems(self.session, search, assignedto)
       print "removed %d assigns from %s" % (assigncount, assignedto)
       del self.argdict["removeassigns"]
     if "doupload" in self.argdict:
@@ -762,7 +762,7 @@ class ProjectIndex(pagelayout.PootlePage):
       moname = basename.replace(".po", ".mo")
       molink = widgets.Link(moname, self.localize('MO file'))
       actionlinks.append(molink)
-    if self.session.session.issiteadmin():
+    if "admin" in self.rights():
       if versioncontrol.hasversioning(os.path.join(self.project.podir, self.dirname)):
         updatelink = widgets.Link("index.html?doupdate=1&updatefile=%s" % basename, self.localize('Update'))
         actionlinks.append(updatelink)

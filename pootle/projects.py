@@ -35,41 +35,6 @@ class RightsError(ValueError):
 languagere = sre.compile("^[a-z]{2,3}([_-][A-Z]{2,3}|)$")
 regionre = sre.compile("^[_-][A-Z]{2,3}$")
 
-class TranslationSession:
-  """A translation session represents a users work on a particular translation project"""
-  def __init__(self, project, session):
-    self.session = session
-    self.project = project
-    self.rights = self.getrights()
-
-  def getrights(self):
-    """gets the current users rights"""
-    if self.session.isopen:
-      return self.project.getrights(self.session.username)
-    else:
-      return self.project.getrights(None)
-
-  def receivetranslation(self, pofilename, item, trans, issuggestion):
-    """submits a new/changed translation from the user"""
-    if self.session.isopen:
-      userprefs = getattr(self.session.loginchecker.users, self.session.username)
-      username = self.session.username
-    else:
-      userprefs = None
-      username = None
-    if issuggestion:
-      if "suggest" not in self.rights:
-        raise RightsError(self.session.localize("you do not have rights to suggest changes here"))
-      self.project.suggesttranslation(pofilename, item, trans, username)
-    else:
-      if "translate" not in self.rights:
-        raise RightsError(self.session.localize("you do not have rights to change translations here"))
-      self.project.updatetranslation(pofilename, item, trans, username, userprefs)
-
-  def skiptranslation(self, pofilename, item):
-    """skips a declined translation from the user"""
-    pass
-
 class pootlefile(po.pofile):
   """this represents a pootle-managed .po file and its associated files"""
   def __init__(self, project, pofilename):
@@ -270,7 +235,7 @@ class pootlefile(po.pofile):
       userassigns[action] = items
     return poassigns
 
-  def assignto(self, item, username, action):
+  def assignto(self, session, item, username, action):
     """assigns the item to the given username for the given action"""
     userassigns = self.assigns.setdefault(username, {})
     items = userassigns.setdefault(action, [])
@@ -627,10 +592,14 @@ class TranslationProject:
             ("review", localize("Review")),
             ("archive", localize("Archive")),
             ("pocompile", localize("Compile PO files")),
+            ("assign", localize("Assign")),
+            ("admin", localize("Administrate")),
            ]
     
-  def getrights(self, username):
-    """gets the rights for the given username (or not-logged-in if username is None)"""
+  def getrights(self, session=None, username=None):
+    """gets the rights for the given user (name or session, or not-logged-in if username is None)"""
+    if session is not None and session.isopen:
+      return self.getrights(username=session.username)
     if hasattr(self.prefs, "rights"):
       rights = self.prefs.rights
     else:
@@ -1024,8 +993,10 @@ class TranslationProject:
         else:
           yield pofilename, item
 
-  def assignpoitems(self, search, assignto, action):
+  def assignpoitems(self, session, search, assignto, action):
     """assign all the items matching the search to the assignto user with the given action"""
+    if not "assign" in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to alter assignments here"))
     if search.searchtext:
       pogrepfilter = pogrep.pogrepfilter(search.searchtext, None, ignorecase=True)
     assigncount = 0
@@ -1043,8 +1014,10 @@ class TranslationProject:
           assigncount += 1
     return assigncount
 
-  def unassignpoitems(self, search, assignedto, action=None):
+  def unassignpoitems(self, session, search, assignedto, action=None):
     """unassigns all the items matching the search to the assignedto user"""
+    if not "assign" in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to alter assignments here"))
     if search.searchtext:
       pogrepfilter = pogrep.pogrepfilter(search.searchtext, None, ignorecase=True)
     assigncount = 0
@@ -1061,14 +1034,6 @@ class TranslationProject:
           pofile.unassign(item, assignedto, action)
           assigncount += 1
     return assigncount
-
-  def gettranslationsession(self, session):
-    """gets the user's translationsession"""
-    if not hasattr(session, "translationsessions"):
-      session.translationsessions = {}
-    if not (self.languagecode, self.projectcode) in session.translationsessions:
-      session.translationsessions[self.languagecode, self.projectcode] = TranslationSession(self, session)
-    return session.translationsessions[self.languagecode, self.projectcode]
 
   def calculatestats(self, pofilenames=None):
     """calculates translation statistics for the given po files (or all if None given)"""
@@ -1165,19 +1130,23 @@ class TranslationProject:
     elements = pofile.transelements[max(itemstart,0):itemstop]
     return [(self.unquotefrompo(poel.msgid), self.unquotefrompo(poel.msgstr)) for poel in elements]
 
-  def updatetranslation(self, pofilename, item, trans, username, userprefs=None):
+  def updatetranslation(self, pofilename, item, trans, session):
     """updates a translation with a new value..."""
+    if "translate" not in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to change translations here"))
     newmsgstr = self.quoteforpo(trans)
     pofile = self.pofiles[pofilename]
-    pofile.track(item, "edited by %s" % username)
-    pofile.setmsgstr(item, newmsgstr, userprefs)
+    pofile.track(item, "edited by %s" % session.username)
+    pofile.setmsgstr(item, newmsgstr, session.prefs)
 
-  def suggesttranslation(self, pofilename, item, trans, username):
+  def suggesttranslation(self, pofilename, item, trans, session):
     """stores a new suggestion for a translation..."""
+    if "suggest" not in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to suggest changes here"))
     suggmsgstr = self.quoteforpo(trans)
     pofile = self.getpofile(pofilename)
-    pofile.track(item, "suggestion made by %s" % username)
-    pofile.addsuggestion(item, suggmsgstr, username)
+    pofile.track(item, "suggestion made by %s" % session.username)
+    pofile.addsuggestion(item, suggmsgstr, session.username)
 
   def getsuggestions(self, pofile, item):
     """find all the suggestions submitted for the given (pofile or pofilename) and item"""
@@ -1188,12 +1157,14 @@ class TranslationProject:
     suggestions = [self.unquotefrompo(suggestpo.msgstr) for suggestpo in suggestpos]
     return suggestions
 
-  def acceptsuggestion(self, pofile, item, suggitem, newtrans, username):
+  def acceptsuggestion(self, pofile, item, suggitem, newtrans, session):
     """accepts the suggestion into the main pofile"""
+    if not "review" in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to review suggestions here"))
     if isinstance(pofile, (str, unicode)):
       pofilename = pofile
       pofile = self.getpofile(pofilename)
-    pofile.track(item, "suggestion by %s accepted by %s" % (self.getsuggester(pofile, item, suggitem), username))
+    pofile.track(item, "suggestion by %s accepted by %s" % (self.getsuggester(pofile, item, suggitem), session.username))
     pofile.deletesuggestion(item, suggitem)
     self.updatetranslation(pofilename, item, newtrans, username)
 
@@ -1209,12 +1180,14 @@ class TranslationProject:
         return suggestedby
     return None
 
-  def rejectsuggestion(self, pofile, item, suggitem, newtrans, username):
+  def rejectsuggestion(self, pofile, item, suggitem, newtrans, session):
     """rejects the suggestion and removes it from the pending file"""
+    if not "review" in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to review suggestions here"))
     if isinstance(pofile, (str, unicode)):
       pofilename = pofile
       pofile = self.getpofile(pofilename)
-    pofile.track(item, "suggestion by %s rejected by %s" % (self.getsuggester(pofile, item, suggitem), username))
+    pofile.track(item, "suggestion by %s rejected by %s" % (self.getsuggester(pofile, item, suggitem), session.username))
     pofile.deletesuggestion(item, suggitem)
 
   def savepofile(self, pofilename):

@@ -26,9 +26,9 @@ class TranslatePage(pagelayout.PootlePage):
     self.showassigns = self.argdict.get("showassigns", 0)
     if isinstance(self.showassigns, (str, unicode)) and self.showassigns.isdigit():
       self.showassigns = int(self.showassigns)
-    self.session = self.project.gettranslationsession(session)
+    self.session = session
     self.localize = session.localize
-    self.rights = self.session.getrights()
+    self.rights = self.project.getrights(self.session)
     self.instance = session.instance
     if dirfilter and dirfilter.endswith(".po"):
       self.pofilename = dirfilter
@@ -104,7 +104,7 @@ class TranslatePage(pagelayout.PootlePage):
     """adds a section on the current file, including any checks happening"""
     searchcontextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     self.addsearchbox(self.searchtext, searchcontextinfo)
-    if self.session.session.issiteadmin() and self.showassigns:
+    if self.showassigns and "assign" in self.rights:
       self.addassignbox()
     self.links.addcontents(pagelayout.SidebarTitle(self.localize("current file")))
     self.links.addcontents(pagelayout.SidebarText(pofilename))
@@ -176,29 +176,28 @@ class TranslatePage(pagelayout.PootlePage):
       if item is not None:
         suggestions[item, suggid] = value
     for item in skips:
-      self.session.skiptranslation(pofilename, item)
       self.lastitem = item
     for item in submitsuggests:
       if item in skips or item not in translations:
         continue
       value = translations[item]
-      self.session.receivetranslation(pofilename, item, value, True)
+      self.project.suggesttranslation(self.pofilename, item, value, self.session)
       self.lastitem = item
     for item in submits:
       if item in skips or item not in translations:
         continue
       value = translations[item]
-      self.session.receivetranslation(pofilename, item, value, False)
+      self.project.updatetranslation(self.pofilename, item, trans, self.session)
       self.lastitem = item
     for item, suggid in rejects:
       value = suggestions[item, suggid]
-      self.project.rejectsuggestion(pofilename, item, suggid, value, self.session.session.username)
+      self.project.rejectsuggestion(self.pofilename, item, suggid, self.session)
       self.lastitem = item
     for item, suggid in accepts:
       if (item, suggid) in rejects or (item, suggid) not in suggestions:
         continue
       value = suggestions[item, suggid]
-      self.project.acceptsuggestion(pofilename, item, suggid, value, self.session.session.username)
+      self.project.acceptsuggestion(self.pofilename, item, suggid, value, self.session)
       self.lastitem = item
 
   def getmatchnames(self, checker): 
@@ -219,7 +218,7 @@ class TranslatePage(pagelayout.PootlePage):
       try:
         search = projects.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext)
         # TODO: find a nicer way to let people search stuff assigned to them (does it by default now)
-        # search.assignedto = self.argdict.get("assignedto", self.session.session.username)
+        # search.assignedto = self.argdict.get("assignedto", self.session.username)
         search.assignedto = self.argdict.get("assignedto", None)
         search.assignedaction = self.argdict.get("assignedaction", None)
         self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, search).next()
@@ -233,7 +232,7 @@ class TranslatePage(pagelayout.PootlePage):
         raise ValueError("Invalid item given")
       self.item = int(item)
       self.pofilename = self.argdict.get("pofilename", self.dirfilter)
-    self.project.track(self.pofilename, self.item, "being edited by %s" % self.session.session.username)
+    self.project.track(self.pofilename, self.item, "being edited by %s" % self.session.username)
 
   def gettranslations(self):
     """gets the list of translations desired for the view, and sets editable and firstitem parameters"""
@@ -320,7 +319,7 @@ class TranslatePage(pagelayout.PootlePage):
       submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
       buttons.append(submitbutton)
     if "translate" in desiredbuttons or suggest in desiredbuttons:
-      specialchars = getattr(getattr(self.session.session.instance.languages, self.project.languagecode, None), "specialchars", "")
+      specialchars = getattr(getattr(self.session.instance.languages, self.project.languagecode, None), "specialchars", "")
       buttons.append(specialchars)
     return buttons
 

@@ -245,7 +245,7 @@ class PootleServer(users.OptionalLoginAppServer):
 	  page.content_type = "text/plain; charset=UTF-8"
 	  return page
 	elif bottom.endswith(".mo"):
-          if not "pocompile" in translationsession.getrights():
+          if not "pocompile" in project.getrights(session):
             return None
 	  mofilename = os.path.join(*pathwords)
 	  contents = project.getmo(mofilename)
@@ -253,8 +253,7 @@ class PootleServer(users.OptionalLoginAppServer):
 	  page.content_type = "application/octet-stream"
 	  return page
         elif bottom.endswith(".zip"):
-          translationsession = project.gettranslationsession(session)
-          if not "archive" in translationsession.getrights():
+          if not "archive" in project.getrights(session):
             return None
 	  if len(pathwords) > 1:
             dirfilter = os.path.join(*pathwords[:-1])
