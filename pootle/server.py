@@ -5,10 +5,10 @@ from jToolkit.web.session import md5hexdigest
 from jToolkit.widgets import widgets
 from jToolkit.widgets import form
 from jToolkit import mailer
+from jToolkit import passwordgen
 from translate.pootle import indexpage
 from translate.pootle import translatepage
 from translate.pootle import pagelayout
-from translate.pootle import passwordgen
 
 class LoginPage(server.LoginPage, pagelayout.PootlePage):
   """wraps the normal login page in a PootlePage layout"""
