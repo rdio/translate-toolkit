@@ -93,17 +93,18 @@ class pootlefile(po.pofile):
   def getstats(self):
     """reads the stats if neccessary or returns them from the cache"""
     if os.path.exists(self.statsfilename):
-      frompomtime, self.stats = self.readstats()
-    else:
-      frompomtime = None
+      self.readstats()
     pomtime = self.getmodtime()
-    if pomtime != frompomtime:
+    if pomtime != getattr(self, "statspomtime", None):
       self.calcstats()
       self.savestats()
     return self.stats
 
   def readstats(self):
     """reads the stats from the associated stats file, returning the pomtime and stats"""
+    statsmtime = os.stat(self.statsfilename)[os.path.stat.ST_MTIME]
+    if statsmtime == getattr(self, "statsmtime", None):
+      return self.statspomtime, self.statsmtime, self.stats
     stats = open(self.statsfilename, "r").read()
     frompomtime, postatsstring = stats.split("\n", 1)
     frompomtime = int(frompomtime)
@@ -117,7 +118,8 @@ class pootlefile(po.pofile):
       name, count = line.split(":", 1)
       count = int(count.strip())
       postats[name.strip()] = count
-    return frompomtime, postats
+    # save all the read times, data simultaneously
+    self.statspomtime, self.statsmtime, self.stats = frompomtime, statsmtime, postats
 
   def savestats(self):
     """saves the current statistics to file"""
@@ -126,6 +128,7 @@ class pootlefile(po.pofile):
       postatsstring = "\n".join(["%s:%d" % (name, count) for name, count in self.stats.iteritems()])
       open(self.statsfilename, "w").write("%d\n%s" % (self.getmodtime(), postatsstring))
     except IOError:
+      # TODO: log a warning somewhere. we don't want an error as this is an optimization
       pass
 
   def calcstats(self):
