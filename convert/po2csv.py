@@ -25,31 +25,41 @@ from translate.storage import csvl10n
 from translate import __version__
 
 class po2csv:
-  def convertstrings(self,thepo,thecsv):
-    # currently let's just get the source, msgid and msgstr back
+  def convertstring(self, postr):
+    unquotedstr = po.getunquotedstr(postr)
+    if len(unquotedstr) >= 1 and unquotedstr[:1] in "-+": unquotedstr = "\\" + unquotedstr
+    return unquotedstr
+
+  def convertsource(self,thepo):
     sourceparts = []
     for sourcecomment in thepo.sourcecomments:
       sourceparts.append(sourcecomment.replace("#:","",1).strip())
-    source = " ".join(sourceparts)
-    unquotedid = po.getunquotedstr(thepo.msgid)
-    unquotedstr = po.getunquotedstr(thepo.msgstr)
-    if len(unquotedid) >= 1 and unquotedid[:1] in "-+": unquotedid = "\\" + unquotedid
-    if len(unquotedstr) >= 1 and unquotedstr[:1] in "-+": unquotedstr = "\\" + unquotedstr
-    thecsv.source = source
-    thecsv.msgid = unquotedid
-    thecsv.msgstr = unquotedstr
+    return " ".join(sourceparts)
 
   def convertelement(self,thepo):
-     thecsv = csvl10n.csvelement()
-     if thepo.isheader():
-       thecsv.source = "source"
-       thecsv.msgid = "original"
-       thecsv.msgstr = "translation"
-     elif thepo.isblank():
-       return None
-     else:
-       self.convertstrings(thepo,thecsv)
-     return thecsv
+    thecsv = csvl10n.csvelement()
+    if thepo.isheader():
+      thecsv.source = "source"
+      thecsv.msgid = "original"
+      thecsv.msgstr = "translation"
+    elif thepo.isblank():
+      return None
+    else:
+      thecsv.source = self.convertsource(thepo)
+      thecsv.msgid = self.convertstring(thepo.msgid)
+      # avoid plurals
+      msgstr = thepo.msgstr
+      if isinstance(msgstr, dict):
+        msgstr = thepo.msgstr[0]
+      thecsv.msgstr = self.convertstring(msgstr)
+    return thecsv
+
+  def convertplurals(self,thepo):
+    thecsv = csvl10n.csvelement()
+    thecsv.source = self.convertsource(thepo)
+    thecsv.msgid = self.convertstring(thepo.msgid_plural)
+    thecsv.msgstr = self.convertstring(thepo.msgstr[1])
+    return thecsv
 
   def convertfile(self,thepofile):
     thecsvfile = csvl10n.csvfile()
@@ -57,6 +67,10 @@ class po2csv:
       thecsv = self.convertelement(thepo)
       if thecsv is not None:
         thecsvfile.csvelements.append(thecsv)
+      if thepo.hasplural():
+        thecsv = self.convertplurals(thepo)
+        if thecsv is not None:
+          thecsvfile.csvelements.append(thecsv)
     return thecsvfile
 
 def convertcsv(inputfile, outputfile, templatefile):
