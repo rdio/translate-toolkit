@@ -106,7 +106,7 @@ class ConvertOptionParser(optparse.OptionParser):
   def setprogressoptions(self):
     """sets the progress options depending on recursion etc"""
     self.progresstypes = {"simple": progressbar.SimpleProgressBar, "console": progressbar.ConsoleProgressBar,
-                          "curses": progressbar.CursesProgressBar}
+                          "curses": progressbar.CursesProgressBar, "verbose": progressbar.VerboseProgressBar}
     progressoption = optparse.Option(None, "--progress", dest="progress", default="console", metavar="PROGRESS",
                       help="set progress type to one of %s" % (", ".join(self.progresstypes)))
     self.define_option(progressoption)
@@ -162,12 +162,12 @@ class ConvertOptionParser(optparse.OptionParser):
     """recurse through directories and convert files"""
     join = os.path.join
     allfiles = self.recursefiles(options)
-    if options.progress in ('console', 'curses'):
+    if options.progress in ('console', 'curses', 'verbose'):
       allfiles = [file for file in allfiles]
-      progressbar = self.progresstypes[options.progress](0, len(allfiles))
+      self.progressbar = self.progresstypes[options.progress](0, len(allfiles))
       print "processing %d files..." % len(allfiles)
     else:
-      progressbar = self.progresstypes[options.progress]()
+      self.progressbar = self.progresstypes[options.progress]()
     for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
       fullinputpath = join(options.input, inputpath)
       inputfile = open(fullinputpath, 'r')
@@ -184,15 +184,18 @@ class ConvertOptionParser(optparse.OptionParser):
       if convertmethod(inputfile, outputfile, templatefile):
         outputsubdir = os.path.dirname(outputpath)
         self.usesubdir(outputsubdir)
+        self.reportprogress(inputpath, True)
       else:
         outputfile.close()
         os.unlink(fulloutputpath)
-      progressbar.amount += 1
-      progressbar.show()
+        self.reportprogress(inputpath, False)
     self.prunesubdirs()
+    del self.progressbar
 
-  def incrprogress(self):
+  def reportprogress(self, filename, success):
     """shows that we are progressing..."""
+    self.progressbar.amount += 1
+    self.progressbar.show(filename)
     
   def checksubdir(self, parent, subdir):
     """checks to see if subdir under parent needs to be created, creates if neccessary"""
