@@ -21,8 +21,6 @@
 """script that converts a set of .po files to a set of .dtd and .properties files
 either done using a template or just using the .po file"""
 
-import sys
-import os
 from translate.convert import po2dtd
 from translate.convert import po2prop
 from translate.storage import dtd

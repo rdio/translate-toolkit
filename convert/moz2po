@@ -20,8 +20,6 @@
 
 """script that converts a set of .dtd and .properties files to a set of .po files"""
 
-import sys
-import os
 from translate.convert import dtd2po
 from translate.convert import prop2po
 from translate.storage import dtd
