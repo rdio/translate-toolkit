@@ -278,9 +278,8 @@ class TranslatePage(pagelayout.PootlePage):
     diffcodes = [difflib.SequenceMatcher(None, trans, suggestion).get_opcodes() for suggestion in suggestions]
     combineddiffs = reduce(list.__add__, diffcodes)
     transdiff = self.highlightdiffs(trans, combineddiffs, issrc=True)
-    currenttext = pagelayout.TranslationText(widgets.Font(transdiff, {"color":self.textcolors[item % 2]}))
-    editlink = pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit",
-"editlink%d" % item)
+    editlink = pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit", "editlink%d" % item)
+    currenttext = pagelayout.TranslationText([editlink, widgets.Font(transdiff, {"color":self.textcolors[item % 2]})])
     suggdivs = []
     for suggid, suggestion in enumerate(suggestions):
       suggdiffcodes = diffcodes[suggid]
@@ -302,12 +301,12 @@ class TranslatePage(pagelayout.PootlePage):
       suggdivs[-1].addcontents(skipbutton)
     else:
       suggdivs.append(skipbutton)
-    transdiv = widgets.Division([currenttitle, currenttext, editlink] + suggdivs, "trans%d" % item, cls="translate-translation")
+    transdiv = widgets.Division([currenttitle, currenttext] + suggdivs, "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def gettransview(self, item, trans):
-    text = pagelayout.TranslationText(widgets.Font(trans, {"color":self.textcolors[item % 2]}))
     editlink = pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit", "editlink%d" % item)
-    transdiv = widgets.Division([text, editlink], "trans%d" % item, cls="translate-translation autoexpand")
+    text = pagelayout.TranslationText([editlink, widgets.Font(trans, {"color":self.textcolors[item % 2]})])
+    transdiv = widgets.Division(text, "trans%d" % item, cls="translate-translation autoexpand")
     return transdiv
 
