@@ -17,10 +17,10 @@ class AboutPage(pagelayout.PootlePage):
   def __init__(self, session):
     self.localize = session.localize
     pagetitle = getattr(session.instance, "title", self.localize("Pootle Demo"))
-    title = widgets.ContentWidget("h3", pagetitle, {"class":"title"})
+    title = pagelayout.Title(pagetitle)
     defaultdescription = self.localize("This is a demo installation of pootle. The administrator can customize the description in the preferences.")
     description = pagelayout.IntroText(getattr(session.instance, "description", defaultdescription))
-    abouttitle = widgets.ContentWidget("h3", self.localize("About Pootle"), {"class":"title"})
+    abouttitle = pagelayout.Title(self.localize("About Pootle"))
     introtext = pagelayout.IntroText(self.localize("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>! Since Pootle is <strong>Free Software</strong>, you can download it and run your own copy if you like. You can also help participate in the development in many ways (you don't have to be able to program)."))
     hosttext = pagelayout.IntroText(self.localize('The Pootle project itself is hosted at <a href="http://translate.sourceforge.net/">translate.sourceforge.net</a> where you can find the details about source code, mailing lists etc.'))
     nametext = pagelayout.IntroText(self.localize('The name stands for <b>PO</b>-based <b>O</b>nline <b>T</b>ranslation / <b>L</b>ocalization <b>E</b>ngine, but you may need to read <a href="http://www.thechestnut.com/flumps.htm">this</a>.'))
@@ -53,7 +53,7 @@ class PootleIndex(pagelayout.PootlePage):
 
   def getprojectlinks(self):
     """gets the links to the projects"""
-    projectstitle = widgets.ContentWidget('h3', widgets.Link("projects/", self.localize("Projects")), {"class":"title"})
+    projectstitle = pagelayout.Title(widgets.Link("projects/", self.localize("Projects")))
     projectlinks = []
     for projectcode in self.potree.getprojectcodes():
       projectname = self.potree.getprojectname(projectcode)
@@ -83,12 +83,12 @@ class UserIndex(pagelayout.PootlePage):
 
   def getquicklinks(self):
     """gets a set of quick links to user's project-languages"""
-    quicklinkstitle = widgets.ContentWidget('h3', self.localize("Quick Links"), {"class":"title"})
+    quicklinkstitle = pagelayout.Title(self.localize("Quick Links"))
     quicklinks = []
     for languagecode in self.session.getlanguages():
       languagename = self.potree.getlanguagename(languagecode)
       languagelink = widgets.Link("../%s/" % languagecode, languagename)
-      quicklinks.append(widgets.ContentWidget('h3', languagelink, {"class":"title"}))
+      quicklinks.append(pagelayout.Title(languagelink))
       languagelinks = []
       for projectcode in self.session.getprojects():
         if self.potree.hasproject(languagecode, projectcode):
@@ -101,7 +101,7 @@ class UserIndex(pagelayout.PootlePage):
 
   def getprojectoptions(self):
     """gets the options box to change the user's projects"""
-    projectstitle = widgets.ContentWidget('h3', self.localize("My Projects"), {"class":"title"})
+    projectstitle = pagelayout.Title(self.localize("My Projects"))
     projectoptions = []
     userprojects = self.session.getprojects()
     for projectcode in self.potree.getprojectcodes():
@@ -113,7 +113,7 @@ class UserIndex(pagelayout.PootlePage):
 
   def getlanguageoptions(self):
     """gets the options box to change the user's languages"""
-    languagestitle = widgets.ContentWidget('h3', self.localize("My Projects"), {"class":"title"})
+    languagestitle = pagelayout.Title(self.localize("My Projects"))
     languageoptions = []
     userlanguages = self.session.getlanguages()
     for languagecode in self.potree.getlanguagecodes():
@@ -131,7 +131,7 @@ class ProjectsIndex(PootleIndex):
 
   def getprojectlinks(self):
     """gets the links to the projects"""
-    projectstitle = self.localize('<h3 class="title">Projects</h3>')
+    projectstitle = pagelayout.Title(self.localize("Projects"))
     projectlinks = []
     for projectcode in self.potree.getprojectcodes():
       projectname = self.potree.getprojectname(projectcode)
@@ -160,7 +160,7 @@ class LanguageIndex(pagelayout.PootlePage):
 
   def getprojectitem(self, projectcode):
     projectname = self.potree.getprojectname(projectcode)
-    bodytitle = '<h3 class="title">%s</h3>' % projectname
+    bodytitle = pagelayout.Title(projectname)
     projectdescription = self.potree.getprojectdescription(projectcode)
     bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", self.localize('%s project') % projectname, {"title":projectdescription}))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
@@ -191,7 +191,7 @@ class ProjectLanguageIndex(pagelayout.PootlePage):
 
   def getlanguageitem(self, languagecode):
     languagename = self.potree.getlanguagename(languagecode)
-    bodytitle = '<h3 class="title">%s</h3>' % languagename
+    bodytitle = pagelayout.Title(languagename)
     bodydescription = pagelayout.ItemDescription(widgets.Link("../../%s/%s/" % (languagecode, self.projectcode), self.localize('%s language') % languagename))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
     language = self.potree.getproject(languagecode, self.projectcode)
@@ -216,7 +216,7 @@ class ProjectIndex(pagelayout.PootlePage):
     message = argdict.get("message", "")
     if message:
       message = pagelayout.IntroText(message)
-    bodytitle = '<h2 class="title">%s</h3>' % (dirfilter or self.project.projectname)
+    bodytitle = pagelayout.Title(dirfilter or self.project.projectname)
     bodytitle = widgets.Link(self.getbrowseurl(""), bodytitle)
     if dirfilter == "":
       dirfilter = None
@@ -291,7 +291,7 @@ class ProjectIndex(pagelayout.PootlePage):
     pofilenames = self.project.browsefiles(direntry)
     projectstats = self.project.calculatestats(pofilenames)
     basename = os.path.basename(direntry)
-    bodytitle = '<h3 class="title">%s</h3>' % basename
+    bodytitle = pagelayout.Title(basename)
     basename += "/"
     folderimage = pagelayout.Icon("folder.png")
     browseurl = self.getbrowseurl(basename)
@@ -308,7 +308,7 @@ class ProjectIndex(pagelayout.PootlePage):
     projectstats = self.project.calculatestats([fileentry])
     folderimage = pagelayout.Icon("file.png")
     browseurl = self.getbrowseurl(basename)
-    bodytitle = widgets.Link(browseurl, '<h3 class="title">%s</h3>' % basename)
+    bodytitle = pagelayout.Title(widgets.Link(browseurl, basename))
     actionlinks = self.getactionlinks(basename, projectstats)
     downloadlink = widgets.Link(basename, self.localize('PO file'))
     csvname = basename.replace(".po", ".csv")
