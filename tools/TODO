@@ -29,3 +29,5 @@ New tools
 
 pocount
 	- Fix po class so that it handles KDE style plurals there not in pocount
+	- BUG: counts Obsolete messages as untranslated.  Should ignore them and maybe
+	  count them as we do messages marked as review.
