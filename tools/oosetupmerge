@@ -320,16 +320,23 @@ class SetupIndex(SetupParser):
     tokenrange = dummysetup.getsectiontokenrange(shortcutentry)
     self.insertforeignsection(baseentry, shortcutentry, shortcutentrysection, dummysetup, tokenrange)
 
-  def addtozipfile(self, destdirectory, zipfileentry, filename, filecontents):
-    """adds a filename to a zip file"""
+  def addtozipfile(self, destdirectory, zipfileentry, filename, filecontents=None):
+    """adds a filename to a zip file. filecontents=None means read from file, otherwise create with contents and remove after"""
     packedname = sparse.stringeval(self.getfieldvalue(zipfileentry, "PackedName"))
     packedpath = os.path.join(destdirectory, packedname)
-    open(filename, 'w').write(filecontents)
+    if filecontents is not None:
+      open(filename, 'w').write(filecontents)
     print "doing zipfile", packedpath, filename
     os.system('mv %s %s.zip' % (packedpath, packedpath))
     os.system('zip %s.zip %s' % (packedpath, filename))
     os.system('mv %s.zip %s' % (packedpath, packedpath))
-    os.remove(filename)
+    if filecontents is not None:
+      os.remove(filename)
+    fileinfo = os.stat_result(os.stat(packedpath))
+    filedate = datetime.datetime.fromtimestamp(fileinfo.st_mtime)
+    self.setfieldvalue(zipfileentry, "Size", "%d" % fileinfo.st_size)
+    self.setfieldvalue(zipfileentry, "Date", filedate.strftime('"%d%m%Y"'))
+    self.setfieldvalue(zipfileentry, "Time", filedate.strftime('"%H%M"'))
 
   def readfromzipfile(self, zipfileentry, filename):
     """reads contents of a file from a zip file"""
@@ -449,12 +456,10 @@ class SetupIndex(SetupParser):
       os.system("for f in hicolor/{16x16,22x22,32x32,48x48} locolor/{16x16,22x22,32x32} ; do mkdir -p share/icons/$f/apps ; convert icons/ooo_languageselector.png -scale `basename $f` share/icons/$f/apps/ooo_languageselector.xpm ; done")
       for scale in [16,22,32,48]:
         xpmfilename = os.path.join("share", "icons", "hicolor", "%dx%d" % (scale, scale), "apps", "ooo_languageselector.xpm")
-        xpmcontents = open(xpmfilename, "rb").read()
-        self.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename, xpmcontents)
+        self.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename)
       for scale in [16,22,32]:
         xpmfilename = os.path.join("share", "icons", "locolor", "%dx%d" % (scale, scale), "apps", "ooo_languageselector.xpm")
-        xpmcontents = open(xpmfilename, "rb").read()
-        self.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename, xpmcontents)
+        self.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename)
     # add desktop (menu) entries and icons for Gnome and Gnome2
     if "gid_File_Extra_Gnome_Apps" in self.definitions:
       ordercontents = self.readfromzipfile("gid_File_Extra_Gnome_Apps", ".order")
@@ -462,8 +467,7 @@ class SetupIndex(SetupParser):
       self.addtozipfile(outputdir, "gid_File_Extra_Gnome_Apps", "languageselector.desktop", desktopentries["gnome"])
       self.addtozipfile(outputdir, "gid_File_Extra_Gnome_Apps", ".order", ordercontents)
     if "gid_File_Extra_Gnome_Icons" in self.definitions and os.path.exists("icons/ooo_languageselector.png"):
-      pngcontents = open("icons/ooo_languageselector.png", "rb").read()
-      self.addtozipfile(outputdir, "gid_File_Extra_Gnome_Icons", "icons/ooo_languageselector.png", pngcontents)
+      self.addtozipfile(outputdir, "gid_File_Extra_Gnome_Icons", "icons/ooo_languageselector.png")
     if "gid_File_Extra_Gnome2_Apps" in self.definitions:
       self.addtozipfile(outputdir, "gid_File_Extra_Gnome2_Apps", "ooo645_languageselector.desktop", desktopentries["gnome2"])
 
@@ -603,7 +607,7 @@ if __name__ == '__main__':
         print '%s -> %s' % (srcfile, destfile)
         os.system('cp -p %s %s' % (srcfile, destfile))
   # on posix, create setup-lang scripts
-  if os.name == 'posix':
+  if os.path.exists(os.path.join(outputdir, "setup")):
     for setupfile in [mainsetupfile] + othersetupfiles:
       destfile = os.path.join(outputdir, "setup-%s" % setupfile.isocode)
       open(destfile, 'w').write(setuplaunchscript)
