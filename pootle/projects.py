@@ -843,7 +843,7 @@ class POTree:
   def __init__(self, instance):
     self.languages = instance.languages
     self.projects = instance.projects
-    self.directories = instance.directories
+    self.podirectory = instance.podirectory
     self.projectcache = {}
 
   def saveprefs(self):
@@ -956,9 +956,6 @@ class POTree:
       return False
     try:
       podir = self.getpodir(languagecode, projectcode)
-      search = self.getdirpattern(languagecode, projectcode)
-      if getattr(search, "dirstyle", "standard") == "gnu":
-        return len(self.getpofiles(languagecode, projectcode)) > 0
       return True
     except IndexError:
       return False
@@ -999,36 +996,32 @@ class POTree:
     projectprefs = getattr(self.projects, projectcode)
     setattr(projectprefs, "checkerstyle", projectcheckerstyle)
 
+  def hasgnufiles(self, podir, languagecode):
+    """returns whether this directory contains gnu-style PO filenames for the given language"""
+    fnames = os.listdir(podir)
+    poext = os.extsep + "po"
+    ponames = [fn for fn in fnames if fn.endswith(poext) and self.languagematch(languagecode, fn[:-len(poext)])]
+    return bool(ponames)
+
   def getpodir(self, languagecode, projectcode):
     """returns the base directory containing po files for the project"""
-    search = self.getdirpattern(languagecode, projectcode)
-    if isinstance(search, (str, unicode)):
-      return search
-    elif search is not None:
-      directoryname = search.directory.replace("$project", projectcode).replace("$language", languagecode)
-      if os.path.exists(directoryname):
-        return directoryname
-    raise IndexError("directory not found for language %s, project %s" % (languagecode, projectcode))
-
-  def getdirpattern(self, languagecode, projectcode):
-    """returns either a directory name or a prefs node indicating how to construct the directory name"""
-    for searchname, search in self.directories.iteritems():
-      if isinstance(search, (str, unicode)):
-        directoryname = search.replace("$project", projectcode).replace("$language", languagecode)
-        if os.path.exists(directoryname):
-          return directoryname
-      else:
-        if hasattr(search, "projectcode"):
-          if search.projectcode != projectcode:
-            continue
-        if hasattr(search, "languagecode"):
-          if search.languagecode != languagecode:
-            continue
-        directoryname = search.directory.replace("$project", projectcode).replace("$language", languagecode)
-        if not os.path.exists(directoryname):
-          continue
-        return search
-    return None
+    projectdir = os.path.join(self.podirectory, projectcode)
+    if not os.path.exists(projectdir):
+      raise IndexError("directory not found for project %s" % (projectcode))
+      return None
+    languagedir = os.path.join(projectdir, languagecode)
+    if not os.path.exists(languagedir):
+      languagedirs = [languagedir for languagedir in os.listdir(projectdir) if self.languagematch(languagecode, languagedir)]
+      if not languagedirs:
+        # if no matching directories can be found, check if it is a GNU-style project
+        if self.hasgnufiles(projectdir, languagecode):
+          return projectdir
+        raise IndexError("directory not found for language %s, project %s" % (languagecode, projectcode))
+      # TODO: handle multiple regions
+      if len(languagedirs) > 1:
+        raise IndexError("multiple regions defined for language %s, project %s" % (languagecode, projectcode))
+      languagedir = languagedirs[0]
+    return languagedir
 
   def languagematch(self, languagecode, otherlanguagecode):
     """matches a languagecode to another, ignoring regions in the second"""
@@ -1054,15 +1047,10 @@ class POTree:
       pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
     pofilenames = []
     podir = self.getpodir(languagecode, projectcode)
-    search = self.getdirpattern(languagecode, projectcode)
-    if isinstance(search, (str, unicode)):
-      dirstyle = "standard"
-    else:
-      dirstyle = getattr(search, "dirstyle", "standard")
-    if dirstyle == "standard":
-      os.path.walk(podir, addfiles, podir)
-    elif dirstyle == "gnu":
+    if self.hasgnufiles(podir, languagecode):
       os.path.walk(podir, addgnufiles, podir)
+    else:
+      os.path.walk(podir, addfiles, podir)
     return pofilenames
 
   def refreshstats(self):

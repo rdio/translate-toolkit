@@ -35,11 +35,7 @@ Pootle:
       fullname = "xfce 4.2"
       description = "Linux desktop with good looks and speed to thrill"
       checkerstyle = "gnome"
-  directories:
-    mainsearch = "po/$project/$language"
-    xfce:
-      directory = "/share/translate.org.za/xfce/po/$language"
-      projectcode = "xfce42"
+  podirectory = "po"
   languages:
     af:
       fullname = "Afrikaans"
