@@ -10,6 +10,8 @@ pomerge
 	  separate lines.
     - Allow merge without a template and thus us the output as a template.  Or
       at least don't complain when you don't find the templates.
+	BUGS:
+		- pomerge removed fuzzy markers from obsolete messages
 
 New tools
 	Some ideas for tools that would be helpful
