@@ -85,8 +85,9 @@ wordswithpunctuation = dict([(word, filter(str.isalnum, word)) for word in words
 
 def filterwordswithpunctuation(str1):
   """goes through a list of known words that have punctuation and removes the punctuation from them"""
-  tokensep = sparse.separategiventokensfn(sparse.defaulttokenlist + ['\\n', '\\"'])
-  words = sparse.applytokenizers([str1], [sparse.removewhitespace, tokensep])
+  parser = sparse.SimpleParser()
+  parser.defaulttokenlist.extend(['\\n', '\\"'])
+  words = parser.applytokenizers([str1], [parser.removewhitespace, parser.separatetokens])
   replacements = []
   for n in range(len(words)):
     testword = words[n]
@@ -94,11 +95,11 @@ def filterwordswithpunctuation(str1):
       # remove any ' in the middle of a word...
       removeapostrophe = testword[:1] + testword[1:-1].replace("'","") + testword[-1:]
       if removeapostrophe != testword:
-        replacements.append((sparse.findtokenpos(str1, words, n), testword, removeapostrophe))
+        replacements.append((parser.findtokenpos(str1, words, n), testword, removeapostrophe))
         continue
     npword = wordswithpunctuation.get(testword.lower(), None)
     if npword is not None:
-      replacements.append((sparse.findtokenpos(str1, words, n), testword, npword))
+      replacements.append((parser.findtokenpos(str1, words, n), testword, npword))
   newstr1 = ""
   lastpos = 0
   for pos, origword, newword in replacements:

@@ -36,7 +36,7 @@ def quotecsvstr(source):
 
 def simplify(string):
   return filter(str.isalnum, string)
-  tokens = sparse.tokenize(string)
+  tokens = sparse.SimpleParser().tokenize(string)
   return " ".join(tokens)
 
 class csv2po:
