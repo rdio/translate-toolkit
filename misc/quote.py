@@ -94,7 +94,6 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
   lenend = len(enddelim)
   laststartinextracted = None
   extracted = ""
-  if escape is None: escape = "&&&&&&&&&&&&&&&NOESCAPE&&&&&&&&&&&&&&&&&&" 
   for pos in range(len(source)):
     c = source[pos]
     if instring and inescape:
@@ -124,7 +123,7 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
         lastspecial = laststart
         laststartinextracted = len(extracted)
         extracted += c
-    if (source.find(escape,pos) == pos) and (not inescape):
+    if escape is not None and (source.find(escape,pos) == pos) and (not inescape):
       inescape = 1
     else:
       inescape = 0
