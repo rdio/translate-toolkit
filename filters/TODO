@@ -37,3 +37,9 @@ other checks
     various files.  Might need to extend the #_ error comment to highlight what
     words had errors.
     http://www.republika.pl/wmula/prog/prog/aspell-python2.1.tar.gz
+
+file level checks
+  plural defined if needed
+  no duplicate messages
+  header set
+  copyright set
