@@ -156,7 +156,7 @@ class LanguageSelectionWindow(wx.Frame):
   """Window for selecting language"""
   def __init__(self, parent, id, title, advancedmode):
     self.advancedmode = advancedmode
-    wx.Frame.__init__(self, parent, id, title, size=(420,280))
+    wx.Frame.__init__(self, parent, id, title)
     self.panel = wx.Panel(self, wx.ID_ANY)
     versions = ooinstallmanager().versions()
     self.versions = dict(versions)
@@ -185,6 +185,12 @@ class LanguageSelectionWindow(wx.Frame):
 
     self.findcurrentversion()
     self.Show(1)
+    self.AutoSize()
+
+  def AutoSize(self):
+    """automatically guesses the best size"""
+    self.panel.SetClientSize(self.panel.GetBestSize())
+    self.SetClientSize(self.GetBestSize())
 
   def createoptioncontrols(self):
     """creates all the options controls needed..."""
@@ -239,6 +245,7 @@ class LanguageSelectionWindow(wx.Frame):
     else:
       self.advancedbutton.SetLabel("More...")
     self.panel.Layout()
+    self.AutoSize()
 
   def setinstalldir(self, installdir):
     """Sets the current installation we are working on..."""
