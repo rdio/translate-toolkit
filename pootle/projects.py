@@ -18,12 +18,12 @@ class TranslationSession:
     self.pofilename = None
     self.lastitem = None
 
-  def receivetranslation(self, pofilename, item, trans):
+  def receivetranslation(self, pofilename, item, trans, issuggestion):
     """submits a new/changed translation from the user"""
-    if False:
-      self.project.updatetranslation(pofilename, item, trans)
-    else:
+    if issuggestion:
       self.project.suggesttranslation(pofilename, item, trans)
+    else:
+      self.project.updatetranslation(pofilename, item, trans)
     self.pofilename = pofilename
     self.lastitem = item
 

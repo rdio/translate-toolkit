@@ -71,6 +71,7 @@ class TranslatePage(pagelayout.PootlePage):
     if self.pofilename is None:
       return
     skips = []
+    submitsuggests = []
     submits = []
     accepts = []
     rejects = []
@@ -96,6 +97,9 @@ class TranslatePage(pagelayout.PootlePage):
       item = getitem(key, "skip")
       if item is not None:
         skips.append(item)
+      item = getitem(key, "submitsuggest")
+      if item is not None:
+        submitsuggests.append(item)
       item = getitem(key, "submit")
       if item is not None:
         submits.append(item)
@@ -114,11 +118,17 @@ class TranslatePage(pagelayout.PootlePage):
     for item in skips:
       self.session.skiptranslation(self.pofilename, item)
       self.lastitem = item
+    for item in submitsuggests:
+      if item in skips or item not in translations:
+        continue
+      value = translations[item]
+      self.session.receivetranslation(self.pofilename, item, value, True)
+      self.lastitem = item
     for item in submits:
       if item in skips or item not in translations:
         continue
       value = translations[item]
-      self.session.receivetranslation(self.pofilename, item, value)
+      self.session.receivetranslation(self.pofilename, item, value, False)
       self.lastitem = item
     for item, suggid in rejects:
       value = suggestions[item, suggid]
@@ -216,9 +226,9 @@ class TranslatePage(pagelayout.PootlePage):
       trans = trans.decode("utf8")
     textarea = widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
     skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
+    suggestbutton = widgets.Input({"type":"submit", "name":"submitsuggest%d" % item, "value":"suggest"}, "suggest")
     submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
-    contents = [textarea, skipbutton, submitbutton]
-    transdiv = widgets.Division([textarea, skipbutton, submitbutton], "trans%d" % item, cls="translate-translation")
+    transdiv = widgets.Division([textarea, skipbutton, suggestbutton, submitbutton], "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def gettransreview(self, item, trans, suggestions):
@@ -226,6 +236,7 @@ class TranslatePage(pagelayout.PootlePage):
       trans = trans.decode("utf8")
     textarea = widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
     skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
+    suggestbutton = widgets.Input({"type":"submit", "name":"submitsuggest%d" % item, "value":"suggest"}, "suggest")
     submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
     suggdivs = []
     for suggid, suggestion in enumerate(suggestions):
@@ -236,7 +247,7 @@ class TranslatePage(pagelayout.PootlePage):
       rejectbutton = widgets.Input({"type":"submit", "name":"reject%d.%d" % (item, suggid), "value":"reject"}, "reject")
       suggdiv = widgets.Division([suggarea, acceptbutton, rejectbutton], "sugg%d" % item)
       suggdivs.append(suggdiv)
-    transdiv = widgets.Division([textarea, skipbutton, submitbutton] + suggdivs, "trans%d" % item, cls="translate-translation")
+    transdiv = widgets.Division([textarea, skipbutton, suggestbutton, submitbutton] + suggdivs, "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def gettransview(self, item, trans):
