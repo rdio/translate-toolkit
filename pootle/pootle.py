@@ -162,6 +162,10 @@ class PootleServer(users.OptionalLoginAppServer):
         if "changeprojects" in argdict:
           self.potree.changeprojects(argdict)
         return indexpage.AdminPage(self.potree, session, self.instance)
+      elif top == "users.html":
+        if "changeusers" in argdict:
+          self.changeusers(session, argdict)
+        return indexpage.UserAdminPage(self, session.loginchecker.users, session, self.instance)
     elif self.potree.haslanguage(top):
       languagecode = top
       pathwords = pathwords[1:]

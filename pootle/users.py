@@ -72,6 +72,59 @@ class OptionalLoginAppServer(server.LoginAppServer):
       session.remote_ip = self.getremoteip(req)
     return self.getpage(pathwords, session, argdict)
 
+  def adduser(self, users, username, email, password):
+    """adds the user with the given details"""
+    setattr(users, username + ".email", email)
+    setattr(users, username + ".passwdhash", session.md5hexdigest(password))
+
+  def makeactivationcode(self, users, username):
+    """makes a new activation code for the user and returns it"""
+    setattr(users, username + ".activated", 0)
+    activationcode = self.generateactivationcode()
+    setattr(users, username + ".activationcode", activationcode)
+    return activationcode
+
+  def activate(self, users, username):
+    """sets the user as activated"""
+    setattr(users, username + ".activated", 1)
+
+  def changeusers(self, session, argdict):
+    """handles multiple changes from the site admin"""
+    if not session.issiteadmin():
+      raise ValueError(session.localize("You need to be siteadmin to change users"))
+    users = session.loginchecker.users
+    for key, value in argdict.iteritems():
+      if key.startswith("userremove-"):
+        usercode = key.replace("userremove-", "", 1)
+        if hasattr(users, usercode):
+          raise NotImplementedError("Can't remove users")
+      elif key.startswith("username-"):
+        username = key.replace("username-", "", 1)
+        if hasattr(users, username):
+          useremail = getattr(users, username + ".email", None)
+          if useremail != value:
+            setattr(users, username + ".email", value)
+      elif key == "newusername":
+        username = value.lower()
+        if not username:
+          continue
+        if not (username[:1].isalpha() and username.replace("_","").isalnum()):
+          raise ValueError("Project code must be alphanumeric and start with an alphabetic character (got %r)" % username)
+        if hasattr(users, username):
+          raise ValueError("Already have user with the code %s" % username)
+        userpassword = argdict.get("newuserpassword", None)
+        if userpassword is None:
+          raise ValueError("You must specify a password")
+        useremail = argdict.get("newuseremail", None)
+        useractivate = "newuseractivate" in argdict
+        self.adduser(users, username, useremail, userpassword)
+        if useractivate:
+          self.activate(users, username)
+        else:
+          activationcode = self.makeactivationcode(users, username)
+          print "user activation code for %s is %s" % (username, activationcode)
+    session.saveprefs()
+
   def handleregistration(self, session, argdict):
     """handles the actual registration"""
     supportaddress = getattr(self.instance.registration, 'supportaddress', "")
@@ -83,8 +136,9 @@ class OptionalLoginAppServer(server.LoginAppServer):
     if not (email and "@" in email and "." in email):
       raise RegistrationError("You must supply a valid email address")
     userexists = session.loginchecker.userexists(username)
+    users = session.loginchecker.users
     if userexists:
-      usernode = getattr(session.loginchecker.users, username)
+      usernode = getattr(users, username)
       # use the email address on file
       email = getattr(usernode, "email", email)
       password = ""
@@ -102,11 +156,8 @@ class OptionalLoginAppServer(server.LoginAppServer):
       minpasswordlen = 6
       if not password or len(password) < minpasswordlen:
         raise RegistrationError("You must supply a valid password of at least %d characters" % minpasswordlen)
-      setattr(session.loginchecker.users, username + ".email", email)
-      setattr(session.loginchecker.users, username + ".passwdhash", session.md5hexdigest(password))
-      setattr(session.loginchecker.users, username + ".activated", 0)
-      activationcode = self.generateactivationcode()
-      setattr(session.loginchecker.users, username + ".activationcode", activationcode)
+      self.adduser(users, username, emailaddress, password)
+      activationcode = self.makeactivationcode(users, username)
       activationlink = ""
       message = "A Pootle account has been created for you using this email address\n"
       if session.instance.baseurl.startswith("http://"):

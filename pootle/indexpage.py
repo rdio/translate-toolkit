@@ -227,6 +227,55 @@ class AdminPage(pagelayout.PootlePage):
     projectform = widgets.Form([projects, submitbutton], {"name": "projects", "action":""})
     return pagelayout.Contents([projectstitle, projectform])
 
+class UserAdminPage(pagelayout.PootlePage):
+  """page for administering pootle..."""
+  def __init__(self, server, users, session, instance):
+    self.server = server
+    self.users = users
+    self.session = session
+    self.instance = instance
+    self.localize = session.localize
+    if self.session.issiteadmin():
+      homelink = pagelayout.IntroText(widgets.Link("../home/", self.localize("Home page")))
+      adminlink = pagelayout.IntroText(widgets.Link("index.html", self.localize("Admin page")))
+      contents = [homelink, adminlink, self.getusers()]
+    else:
+      contents = pagelayout.IntroText(self.localize("You do not have the rights to administer pootle."))
+    pagelayout.PootlePage.__init__(self, self.localize("Pootle User Admin Page"), contents, session)
+
+  def getusers(self):
+    """user list and adding"""
+    userstitle = pagelayout.Title(self.localize("Users"))
+    users = table.TableLayout()
+    users.setcell(0, 0, table.TableCell(pagelayout.Title(self.localize("User Name"))))
+    users.setcell(0, 1, table.TableCell(pagelayout.Title(self.localize("Email Address"))))
+    # users.setcell(0, 2, table.TableCell(pagelayout.Title(self.localize("Activated"))))
+    # users.setcell(0, 3, table.TableCell(pagelayout.Title(self.localize("Projects"))))
+    # users.setcell(0, 4, table.TableCell(pagelayout.Title(self.localize("Languages"))))
+    for username, usernode in self.users.iteritems():
+      emailtextbox = widgets.Input({"name": "useremail-%s" % username, "value": usernode.email})
+      removecheckbox = widgets.Input({"name": "userremove-%s" % username, "type": "checkbox"})
+      rownum = users.maxrownum()+1
+      users.setcell(rownum, 0, table.TableCell(username))
+      users.setcell(rownum, 1, table.TableCell(emailtextbox))
+      # users.setcell(rownum, 2, table.TableCell(descriptiontextbox))
+      # users.setcell(rownum, 3, table.TableCell(checkerstyletextbox))
+      users.setcell(rownum, 4, table.TableCell([removecheckbox, self.localize("Remove %s") % username]))
+    rownum = users.maxrownum()+1
+    codetextbox = widgets.Input({"name": "newusername", "value": "", "size": 6})
+    nametextbox = widgets.Input({"name": "newuseremail", "value": "", "title": self.localize("(add email here)")})
+    passwordtextbox = widgets.Input({"name": "newuserpassword", "value": "", "title": self.localize("(add password here)")})
+    # sendemailcheckbox = widgets.Input({"name": "newusersendemail", "type": "checkbox", "checked": "true"})
+    activatecheckbox = widgets.Input({"name": "newuseractivate", "type": "checkbox", "checked": "true"})
+    users.setcell(rownum, 0, table.TableCell(codetextbox))
+    users.setcell(rownum, 1, table.TableCell(nametextbox))
+    users.setcell(rownum, 2, table.TableCell(passwordtextbox))
+    # users.setcell(rownum, 3, table.TableCell([sendemailcheckbox, self.localize("Email New User")]))
+    users.setcell(rownum, 4, table.TableCell([activatecheckbox, self.localize("Activate New User")]))
+    submitbutton = widgets.Input({"type":"submit", "name":"changeusers", "value":self.localize("Save changes")})
+    userform = widgets.Form([users, submitbutton], {"name": "users", "action":""})
+    return pagelayout.Contents([userstitle, userform])
+
 class ProjectsIndex(PootleIndex):
   """the list of projects"""
   def getlanguagelinks(self):
