@@ -196,6 +196,24 @@ class pofile:
       inputfile.close()
       self.fromlines(polines)
 
+  def makeheader(self, charset="CHARSET", encoding="ENCODING"):
+    """create a header for the given filename"""
+    # TODO: clean this up, make it handle all the properties...
+    headerpo = po.poelement()
+    headerpo.typecomments.append("#, fuzzy\n")
+    headerpo.msgid = ['""']
+    headeritems = [""]
+    headeritems.append("Project-Id-Version: PACKAGE VERSION\\n")
+    headeritems.append("POT-Creation-Date: 2002-07-15 17:13+0100\\n")
+    headeritems.append("PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n")
+    headeritems.append("Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n")
+    headeritems.append("Language-Team: LANGUAGE <LL@li.org>\\n")
+    headeritems.append("MIME-Version: 1.0\\n")
+    headeritems.append("Content-Type: text/plain; charset=%s\\n" % charset)
+    headeritems.append("Content-Transfer-Encoding: %s\\n" % encoding)
+    headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
+    return headerpo
+
   def isempty(self):
     """returns whether the po file doesn't contain any definitions..."""
     if len(self.poelements) == 0:

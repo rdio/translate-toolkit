@@ -35,7 +35,8 @@ class prop2po:
   def convertfile(self, thepropfile):
     """converts a .properties file to a .po file..."""
     thepofile = po.pofile()
-    headerpo = self.makeheader(thepropfile.filename)
+    headerpo = thepofile.makeheader()
+    headerpo.othercomments.append("# extracted from %s\n" % thepropfile.filename)
     # we try and merge the header po with any comments at the start of the properties file
     appendedheader = 0
     waitingcomments = []
@@ -59,7 +60,8 @@ class prop2po:
   def mergefiles(self, origpropfile, translatedpropfile):
     """converts a .properties file to a .po file..."""
     thepofile = po.pofile()
-    headerpo = self.makeheader("%s, %s" % (origpropfile.filename, translatedpropfile.filename))
+    headerpo = thepofile.makeheader()
+    headerpo.othercomments.append("# extracted from %s, %s\n" % (origpropfile.filename, translatedpropfile.filename))
     translatedpropfile.makeindex()
     # we try and merge the header po with any comments at the start of the properties file
     appendedheader = 0
@@ -93,30 +95,6 @@ class prop2po:
         print >>sys.stderr, "error converting original properties definition %s" % origprop.name
     thepofile.removeduplicates()
     return thepofile
-
-  def makeheader(self, filename):
-    """create a header for the given filename"""
-    # TODO: handle this in the po class
-    headerpo = po.poelement()
-    headerpo.othercomments.append("# extracted from %s\n" % filename)
-    headerpo.typecomments.append("#, fuzzy\n")
-    headerpo.msgid = ['""']
-    headeritems = [""]
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Free Software Foundation, Inc.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
-    headeritems.append("Project-Id-Version: PACKAGE VERSION\\n")
-    headeritems.append("POT-Creation-Date: 2002-07-15 17:13+0100\\n")
-    headeritems.append("PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n")
-    headeritems.append("Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n")
-    headeritems.append("Language-Team: LANGUAGE <LL@li.org>\\n")
-    headeritems.append("MIME-Version: 1.0\\n")
-    headeritems.append("Content-Type: text/plain; charset=CHARSET\\n")
-    headeritems.append("Content-Transfer-Encoding: ENCODING\\n")
-    headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
-    return headerpo
 
   def convertelement(self, theprop):
     """converts a .properties element to a .po element..."""

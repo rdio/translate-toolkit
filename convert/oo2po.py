@@ -84,24 +84,8 @@ class oo2po:
     """converts an entire oo file to .po format"""
     thepofile = po.pofile()
     # create a header for the file
-    headerpo = po.poelement()
+    headerpo = thepofile.makeheader(charset="ISO-8859-1")
     headerpo.othercomments.append("# extracted from %s\n" % filename)
-    headerpo.msgid = ['""']
-    headeritems = [""]
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Free Software Foundation, Inc.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
-    headeritems.append("Project-Id-Version: PACKAGE VERSION\\n")
-    headeritems.append("POT-Creation-Date: 2002-07-15 17:13+0100\\n")
-    headeritems.append("PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n")
-    headeritems.append("Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n")
-    headeritems.append("Language-Team: LANGUAGE <LL@li.org>\\n")
-    headeritems.append("MIME-Version: 1.0\\n")
-    headeritems.append("Content-Type: text/plain; charset=ISO-8859-1\\n")
-    headeritems.append("Content-Transfer-Encoding: ENCODING\\n")
-    headerpo.msgstr = [quote.quotestr(headerline) for headerline in headeritems]
     thepofile.poelements.append(headerpo)
     # go through the oo and convert each element
     for theoo in theoofile.ooelements:
