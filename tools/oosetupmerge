@@ -237,9 +237,8 @@ class SetupIndex(SetupParser):
     languages = reduce(operator.add, languages)
     languages.sort()
     languages = ",".join(languages)
-    # TODO: reset the Languages list when supported by setup.ins
     # support for Languages is needed in setup2/source/ui/pages/plang.*
-    # self.setfieldvalue('gid_Installation', 'Languages', '"%s"' % languages)
+    self.setfieldvalue('gid_Installation', 'Languages', '"%s"' % languages)
     directoriestorename = {}
     for index in indexes:
       for directory in index.bytype["Directory"]:
@@ -309,12 +308,12 @@ class SetupIndex(SetupParser):
             self.addforeignfile(index, fileentry, suffix)
       for configitem in index.bytype["ConfigurationItem"]:
         key = sparse.stringeval(index.getfieldvalue(configitem, 'Key'))
-        if configitem == "gid_Configurationitem_Setup_Office_Locales":
+        # TODO: when <sequence_languages> is working correctly, remove this code - i#33113
+        # if configitem == "gid_Configurationitem_Setup_Office_Locales":
           # wierdness. the setup program will put in a comma-separated attribute if its all alpha
           # but if there's a - it won't, so we need to check for this...
-          # TODO: work out a better fix
-          isocodes = ",".join([eachindex.isocode for eachindex in indexes if eachindex.isocode.isalpha()])
-          index.setfieldvalue(configitem, "Value", '"%s"' % isocodes)
+          # isocodes = ",".join([eachindex.isocode for eachindex in indexes if eachindex.isocode.isalpha()])
+          # index.setfieldvalue(configitem, "Value", '"%s"' % isocodes)
         if key == index.isocode:
           index.rename(configitem, configitem + suffix)
           if index != self:
