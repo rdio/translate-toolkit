@@ -63,6 +63,9 @@ for elementclassname in dir(minidom):
     continue
   elementclass.writexml = writexml
 
+# TODO: handle comments
+# TODO: handle translation types
+
 class QtTsParser:
   def __init__(self, inputfile=None):
     """make a new QtTsParser, reading from the given inputfile if required"""
@@ -89,8 +92,10 @@ class QtTsParser:
     for message in self.getmessagenodes(contextnode):
       if self.getmessagesource(message).strip() == source.strip():
         translationnode = message.getElementsByTagName("translation")[0]
-        # TODO: make this more robust
-        translationnode.replaceChild(self.document.createTextNode(translation), translationnode.firstChild)
+        newtranslationnode = self.document.createElement("translation")
+        translationtext = self.document.createTextNode(translation)
+        newtranslationnode.appendChild(translationtext)
+        message.replaceChild(newtranslationnode, translationnode)
         return True
     if not createifmissing:
       return False
