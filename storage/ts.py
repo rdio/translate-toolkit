@@ -36,7 +36,7 @@ def writexml(self, writer, indent="", addindent="", newl=""):
 
     for a_name in a_names:
         writer.write(" %s=\"" % a_name)
-        _write_data(writer, attrs[a_name].value)
+        minidom._write_data(writer, attrs[a_name].value)
         writer.write("\"")
     if self.childNodes:
         if len(self.childNodes) == 1 and self.childNodes[0].nodeType == self.TEXT_NODE:
