@@ -154,9 +154,13 @@ class LanguageSelectionWindow(wx.Frame):
     self.versionlabel = wx.StaticText(self.panel, wx.ID_ANY, "Select version:")
     versions = ooinstallmanager().versions()
     versionnames = [versionname for versionname, versiondir in versions]
+    versionnames.append("(other)")
     self.versions = dict(versions)
     self.versionchoice = wx.Choice(self.panel, wx.ID_ANY, choices = versionnames)
     wx.EVT_CHOICE(self, self.versionchoice.GetId(), self.OnSetVersion)
+    self.dirlabel = wx.StaticText(self.panel, wx.ID_ANY, "Installation directory:")
+    self.dirbox = wx.TextCtrl(self.panel, wx.ID_ANY, style=wx.TE_PROCESS_ENTER)
+    wx.EVT_TEXT_ENTER(self, self.dirbox.GetId(), self.OnSetInstallDir)
 
     self.languagelabel = wx.StaticText(self.panel, wx.ID_ANY, "Select language:")
     self.languages = availablelanguages
@@ -173,17 +177,23 @@ class LanguageSelectionWindow(wx.Frame):
     self.findcurrentversion()
 
     self.optionssizer = wx.FlexGridSizer(0, 2, 0, 0)
-    self.optionssizer.Add(self.versionlabel, 0, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-    self.optionssizer.Add(self.versionchoice, 0, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-    self.optionssizer.Add(self.languagelabel, 1, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-    self.optionssizer.Add(self.languagelist, 1, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-    self.optionssizer.Add(self.adminlabel, 2, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-    self.optionssizer.Add(self.adminchoice, 2, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-    self.optionssizer.Add(self.forcelabel, 3, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-    self.optionssizer.Add(self.forcechoice, 3, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+    row = self.optionssizer.GetRows()
+    self.optionssizer.Add(self.versionlabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
+    self.optionssizer.Add(self.versionchoice, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+    row = self.optionssizer.GetRows()
+    self.optionssizer.Add(self.dirlabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
+    self.optionssizer.Add(self.dirbox, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+    row = self.optionssizer.GetRows()
+    self.optionssizer.Add(self.languagelabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
+    self.optionssizer.Add(self.languagelist, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+    row = self.optionssizer.GetRows()
+    self.optionssizer.Add(self.adminlabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
+    self.optionssizer.Add(self.adminchoice, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+    row = self.optionssizer.GetRows()
+    self.optionssizer.Add(self.forcelabel, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
+    self.optionssizer.Add(self.forcechoice, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
 
     self.applybutton = wx.Button(self.panel, wx.ID_ANY, "Apply Changes")
-    self.applybutton.SetDefault()
     wx.EVT_BUTTON(self, self.applybutton.GetId(), self.OnApply)
     self.cancelbutton = wx.Button(self.panel, wx.ID_ANY, "Cancel")
     wx.EVT_BUTTON(self, self.cancelbutton.GetId(), self.OnCancel)
@@ -214,27 +224,28 @@ class LanguageSelectionWindow(wx.Frame):
     for versionname, versiondir in self.versions.iteritems():
       if samefile(versiondir, currentdir):
         self.versionchoice.SetStringSelection(versionname)
+        self.dirbox.SetValue(versiondir)
         self.setinstalldir(versiondir)
         return
       else:
         normversiondir = os.path.normcase(os.path.normpath(versiondir))
         if currentdir.startswith(normversiondir):
           self.versionchoice.SetStringSelection(versionname)
+          self.dirbox.SetValue(versiondir)
           self.setinstalldir(versiondir)
           return
     # see if the current directory is an openoffice.org directory anyway...
     for versiondir in (currentdir, os.path.dirname(currentdir)):
       if os.path.isdir(os.path.join(versiondir, 'share', 'registry', 'data', 'org', 'openoffice')):
-        versionname = "(current directory)"
-        self.versions[versionname] = versiondir
-        self.versionchoice.Append(versionname)
-        self.versionchoice.SetStringSelection(versionname)
+        self.versionchoice.SetStringSelection("(other)")
+        self.dirbox.SetValue(versiondir)
         self.setinstalldir(versiondir)
-        versionfound = True
         return
     # otherwise use the first valid version...
     self.versionchoice.SetSelection(0)
-    self.setinstalldir(self.versions[self.versionchoice.GetStringSelection()])
+    versiondir = self.versions[self.versionchoice.GetStringSelection()]
+    self.dirbox.SetValue(versiondir)
+    self.setinstalldir(versiondir)
 
   def getlanguage(self):
     if self.adminchoice.GetValue():
@@ -257,7 +268,17 @@ class LanguageSelectionWindow(wx.Frame):
   def OnSetVersion(self, event):
     """Triggered when the current version is set..."""
     versionname = self.versionchoice.GetStringSelection()
-    installdir = self.versions[versionname]
+    if versionname in self.versions:
+      installdir = self.versions[versionname]
+      self.dirbox.SetValue(installdir)
+      self.setinstalldir(installdir)
+    elif versionname == "(other)":
+      self.dirbox.SetFocus()
+    event.Skip()
+
+  def OnSetInstallDir(self, event):
+    """Triggered when the install directory is set..."""
+    installdir = self.dirbox.GetValue()
     self.setinstalldir(installdir)
     event.Skip()
 
