@@ -29,7 +29,8 @@ from translate import __version__
 
 def getlabel(unquotedstr):
   """retrieve the label from a mixed label+accesskey entity"""
-  unquotedstr = unquotedstr.decode("UTF-8")
+  if isinstance(unquotedstr, str):
+    unquotedstr = unquotedstr.decode("UTF-8")
   # mixed labels just need the & taken out
   # except that &entity; needs to be avoided...
   amppos = 0
@@ -49,7 +50,8 @@ def getlabel(unquotedstr):
 
 def getaccesskey(unquotedstr):
   """retrieve the access key from a mixed label+accesskey entity"""
-  unquotedstr = unquotedstr.decode("UTF-8")
+  if isinstance(unquotedstr, str):
+    unquotedstr = unquotedstr.decode("UTF-8")
   # mixed access keys need the key extracted from after the &
   # but we must avoid proper entities i.e. &gt; etc...
   amppos = 0

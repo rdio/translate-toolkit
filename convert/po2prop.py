@@ -98,7 +98,9 @@ class reprop:
         name = line[:equalspos].strip()
         if self.podict.has_key(name):
           self.inecho = 0
-          postr = self.podict[name].decode('utf8')
+          postr = self.podict[name]
+          if isinstance(postr, str):
+            postr = postr.decode('utf8')
           return name+"="+quote.mozillapropertiesencode(postr)+eol
         else:
           self.inecho = 1
