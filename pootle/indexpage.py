@@ -2,6 +2,7 @@
 
 from jToolkit.widgets import widgets
 from translate.pootle import pagelayout
+from translate.pootle import projects
 
 class PootleIndex(pagelayout.PootlePage):
   """the main page"""
@@ -22,9 +23,14 @@ class PootleIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % project.fullname
     bodydescription = widgets.Division('<a href="%s/">%s projects</a>' % (projectcode, project.fullname), None, {"class":"item-description"})
     body = widgets.Division([bodytitle, bodydescription], None, {"class":"blogbody"})
-    subprojects = [subproject for (subprojectcode, subproject) in project.subprojects.iteritems()]
+    subprojects = [projects.getproject(project, subproject) for (subprojectcode, subproject) in project.subprojects.iteritems()]
     subprojectcount = len(subprojects)
-    percentfinished = 0
+    translated, total = 0, 0
+    for subproject in subprojects:
+      projecttranslated, projecttotal = subproject.calculatestats()
+      translated += projecttranslated
+      total += projecttotal
+    percentfinished = (translated*100/total)
     stats = widgets.Division("%d subprojects, %d%% translated" % (subprojectcount, percentfinished), None, {"class":"posted"})
     return widgets.Division([body, stats], None, {"class":"item"})
 
@@ -46,7 +52,10 @@ class ProjectIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % subproject.fullname
     bodydescription = widgets.Division('<a href="%s/">%s subproject</a>' % (subprojectcode, subproject.fullname), None, {"class":"item-description"})
     body = widgets.Division([bodytitle, bodydescription], None, {"class":"blogbody"})
-    percentfinished = 0
-    stats = widgets.Division("%d%% translated" % (percentfinished), None, {"class":"posted"})
+    translationproject = projects.getproject(self.project, subproject)
+    numfiles = len(translationproject.pofilenames)
+    translated, total = translationproject.calculatestats()
+    percentfinished = (translated*100/total)
+    stats = widgets.Division("%d files, %d strings, %d%% translated" % (numfiles, total, percentfinished), None, {"class":"posted"})
     return widgets.Division([body, stats], None, {"class":"item"})
 

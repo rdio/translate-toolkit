@@ -10,14 +10,14 @@ class TranslatePage(pagelayout.PootlePage):
   def __init__(self, project, subproject, session, argdict):
     self.project = project
     self.subproject = subproject
-    self.translationiterator = projects.getiterator(self.project, self.subproject)
+    self.translationproject = projects.getproject(self.project, self.subproject)
     for key, value in argdict.iteritems():
       if key.startswith("trans"):
         try:
           item = int(key.replace("trans",""))
         except:
           continue
-        self.translationiterator.receivetranslation(item, value)
+        self.translationproject.receivetranslation(item, value)
     self.instance = session.instance
     title = "Pootle: translating %s into %s" % (self.subproject.fullname, self.project.fullname)
     translateform = widgets.Form(self.gettranslations(), {"name": "translate", "action":""})
@@ -37,9 +37,9 @@ class TranslatePage(pagelayout.PootlePage):
     origtitle = table.TableCell("<b>original</b>")
     transtitle = table.TableCell("<b>translation</b>")
     self.addtransrow(-1, origtitle, transtitle)
-    translationsbefore, currenttranslation, translationsafter = self.translationiterator.gettranslations()
+    translationsbefore, currenttranslation, translationsafter = self.translationproject.gettranslations()
     self.textcolors = ["#000000", "#000060"]
-    rowoffset = self.translationiterator.item
+    rowoffset = self.translationproject.item
     for row, (orig, trans) in enumerate(translationsbefore):
       self.addtranslationrow(rowoffset - len(translationsbefore) + row, orig, trans)
     orig, trans = currenttranslation
