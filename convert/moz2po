@@ -20,6 +20,7 @@
 
 """script that converts a set of .dtd and .properties files to a set of .po files"""
 
+from __future__ import generators
 import os.path
 import sys
 try:
