@@ -23,6 +23,7 @@ gettext-style .po (or .pot) files are used in translations for KDE et al (see kb
 
 from __future__ import generators
 from translate.misc import quote
+import sre
 
 def getunquotedstr(lines, joinwithlinebreak=True, includeescapes=True):
   esc = '\\'
@@ -114,18 +115,25 @@ class poelement:
     return self.msgstrlen() == 0
 
   def hastypecomment(self, typecomment):
-    return ("".join(self.typecomments)).find(typecomment) != -1
+    """check whether the given type comment is present"""
+    # check for word boundaries properly by using a regular expression...
+    return sum(map(lambda tcline: len(sre.findall("\\b%s\\b" % typecomment, tcline)), self.typecomments)) != 0
 
-  def settypecomment(self, typecomment):
-    """adds a given typecomment if it isn't already present"""
-    if not self.hastypecomment(typecomment):
-      self.typecomments.append("#, %s\n" % typecomment)
+  def settypecomment(self, typecomment, present=True):
+    """alters whether a given typecomment is present"""
+    if self.hastypecomment(typecomment) != present:
+      if present:
+        self.typecomments.append("#, %s\n" % typecomment)
+      else:
+        # this should handle word boundaries properly ...
+        typecomments = map(lambda tcline: sre.sub("\\b%s\\b[ \t]*" % typecomment, "", tcline), self.typecomments)
+        self.typecomments = filter(lambda tcline: tcline.strip() != "#,", typecomments)
 
   def isfuzzy(self):
     return self.hastypecomment("fuzzy")
 
-  def markfuzzy(self):
-    self.settypecomment("fuzzy")
+  def markfuzzy(self, present=True):
+    self.settypecomment("fuzzy", present)
 
   def isnotblank(self):
     return not self.isblank()
