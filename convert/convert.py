@@ -160,8 +160,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       return "%s formats" % (", ".join(formats))
 
-  # TODO: remove convertmethod option
-  def runconversion(self, options, convertmethod):
+  def runconversion(self, options):
     """runs the conversion method using the given commandline options..."""
     if (self.recursion == optionalrecursion and options.recursive) or (self.recursion == defaultrecursion):
       if options.input is None:
@@ -174,6 +173,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
         self.error(optparse.OptionValueError("output must be existing directory for recursive run."))
       self.recurseconversion(options)
     else:
+      convertmethod = self.getconvertmethod(options.input, options.output)
       inputfile = self.openinputfile(options, options.input)
       outputfile = self.openoutputfile(options, options.output)
       if self.usetemplates:
@@ -184,14 +184,26 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def getconvertmethod(self, inputpath, outputpath):
     """works out which conversion method to use..."""
-    inputbase, inputext = os.path.splitext(inputpath)
-    inputext = inputext.replace(os.extsep, "", 1)
-    outputbase, outputext = os.path.splitext(outputpath)
-    outputext = outputext.replace(os.extsep, "", 1)
+    if inputpath:
+      inputbase, inputext = os.path.splitext(inputpath)
+      inputext = inputext.replace(os.extsep, "", 1)
+    else:
+      inputext = None
+    if outputpath:
+      outputbase, outputext = os.path.splitext(outputpath)
+      outputext = outputext.replace(os.extsep, "", 1)
+    else:
+      outputext = None
     if isinstance(self.inputformats, dict):
-      return self.inputformats[inputext]
+      if not inputext:
+        return self.inputformats.itervalues().next()
+      else:
+        return self.inputformats[inputext]
     elif isinstance(self.outputformats, dict):
-      return self.outputformats[outputext]
+      if not outputext:
+        return self.outputformats.itervalues().next()
+      else:
+        return self.outputformats[outputext]
     else:
       raise ValueError("one of input/output formats must be a dict: %r, %r" % (self.inputformats, self.outputformats))
 

@@ -56,7 +56,7 @@ def main(converterclass):
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:
-    parser.runconversion(options, converterclass().convertpo)
+    parser.runconversion(options)
   except convert.optparse.OptParseError, message:
     parser.error(message)
 

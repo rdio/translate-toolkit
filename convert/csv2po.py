@@ -183,7 +183,7 @@ if __name__ == '__main__':
   parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformats, outputformat, usetemplates=True, templateslikeinput=False)
   (options, args) = parser.parse_args()
   try:
-    parser.runconversion(options, convertcsv)
+    parser.runconversion(options)
   except convert.optparse.OptParseError, message:
     parser.error(message)
 

@@ -93,6 +93,7 @@ class oo2po:
       for thepo in polist:
         thepofile.poelements.append(thepo)
     thepofile.removeblanks()
+    thepofile.removeduplicates()
     return thepofile
 
 # TODO: work out nicer way to get the convertor's --pot switch into blankmsgstr
@@ -121,7 +122,7 @@ if __name__ == '__main__':
   # open the appropriate files
   try:
     blankmsgstr = options.pot
-    parser.runconversion(options, convertoo)
+    parser.runconversion(options)
   except convert.optparse.OptParseError, message:
     parser.error(message)
 

@@ -168,7 +168,7 @@ if __name__ == '__main__':
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
   (options, args) = parser.parse_args()
   try:
-    parser.runconversion(options, convertoo)
+    parser.runconversion(options)
   except convert.optparse.OptParseError, message:
     parser.error(message)
 

@@ -133,7 +133,7 @@ if __name__ == '__main__':
   parser = convert.ConvertOptionParserExt(convert.defaultrecursion, inputformats, outputformat, usetemplates=True, usepots=True)
   (options, args) = parser.parse_args()
   try:
-    parser.runconversion(options, None)
+    parser.runconversion(options)
   except convert.optparse.OptParseError, message:
     parser.error(message)
 
