@@ -174,30 +174,6 @@ class dtd2po:
 
     return thepo
 
-  def makeheader(self, filename):
-    """create a header for the given filename"""
-    # TODO: handle this in the po class
-    headerpo = po.poelement()
-    headerpo.othercomments.append("# extracted from %s\n" % filename)
-    headerpo.typecomments.append("#, fuzzy\n")
-    headerpo.msgid = ['""']
-    headeritems = [""]
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Free Software Foundation, Inc.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
-    headeritems.append("Project-Id-Version: PACKAGE VERSION\\n")
-    headeritems.append("POT-Creation-Date: 2002-07-15 17:13+0100\\n")
-    headeritems.append("PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n")
-    headeritems.append("Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n")
-    headeritems.append("Language-Team: LANGUAGE <LL@li.org>\\n")
-    headeritems.append("MIME-Version: 1.0\\n")
-    headeritems.append("Content-Type: text/plain; charset=CHARSET\\n")
-    headeritems.append("Content-Transfer-Encoding: ENCODING\\n")
-    headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
-    return headerpo
-
   def findmixedentities(self, thedtdfile):
     """creates self.mixedentities from the dtd file..."""
     self.mixedentities = {} # those entities which have a .label and .accesskey combined
@@ -242,7 +218,8 @@ class dtd2po:
 
   def convertfile(self, thedtdfile):
     thepofile = po.pofile()
-    headerpo = self.makeheader(thedtdfile.filename)
+    headerpo = thepofile.makeheader()
+    headerpo.othercomments.append("# extracted from %s\n" % thedtdfile.filename)
     thepofile.poelements.append(headerpo)
     thedtdfile.makeindex()
     self.findmixedentities(thedtdfile)
@@ -256,7 +233,8 @@ class dtd2po:
 
   def mergefiles(self, origdtdfile, translateddtdfile):
     thepofile = po.pofile()
-    headerpo = self.makeheader("%s, %s" % (origdtdfile.filename, translateddtdfile.filename))
+    headerpo = thepofile.makeheader()
+    headerpo.othercomments.append("# extracted from %s, %s\n" % (origdtdfile.filename, translateddtdfile.filename))
     thepofile.poelements.append(headerpo)
     origdtdfile.makeindex()
     self.findmixedentities(origdtdfile)
