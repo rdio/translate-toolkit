@@ -2,13 +2,14 @@
 
 """A GUI for changing OpenOffice.org language selection"""
 
+# this must be before wx to prevent expat-version conflicts with wx
+from translate.misc import xmlwrapper
 import wx
 import os
 import ConfigParser
 import urlparse
 import urllib
 import operator
-from translate.misc import xmlwrapper
 from translate import __version__
 
 # TODO: find a way to list the available languages outside the code
