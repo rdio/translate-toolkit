@@ -220,8 +220,7 @@ class poelement:
         if len(partlines) > 1:
           partstartline += 1
       # comments first, no blank leader line needed
-      for partcomment in partcomments:
-        partstr += partcomment # + '\n'
+      partstr += "\n".join(partcomments)
       partstr = quote.rstripeol(partstr)
     else:
       partstr += '""'
