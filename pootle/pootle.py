@@ -211,10 +211,6 @@ class PootleServer(OptionalLoginAppServer):
   def handleregistration(self, session, argdict):
     """handles the actual registration"""
     supportaddress = getattr(self.instance.registration, 'supportaddress', "")
-    if supportaddress:
-      message = "Reply-To: %s\n" % supportaddress
-    else:
-      message = ""
     username = argdict.get("username", "")
     if not username or not username.isalnum() or not username[0].isalpha():
       raise RegistrationError("Username must be alphanumeric, and must start with an alphabetic character")
@@ -229,12 +225,12 @@ class PootleServer(OptionalLoginAppServer):
       email = getattr(usernode, "email", email)
       password = ""
       # TODO: we can't figure out the password as we only store the md5sum. have a password reset mechanism
-      message += "You (or someone else) attempted to register an account with your username.\n"
+      message = "You (or someone else) attempted to register an account with your username.\n"
       message += "We don't store your actual password but only a hash of it\n"
       if supportaddress:
-       message += "If you have a problem with registration, please contact %s\n" % supportaddress
+        message += "If you have a problem with registration, please contact %s\n" % supportaddress
       else:
-       message += "If you have a problem with registration, please contact the site administrator\n"
+        message += "If you have a problem with registration, please contact the site administrator\n"
       displaymessage = "That username already exists. Emailing the registered email address...\n"
       redirecturl = "login.html?username=%s" % username
     else:
@@ -247,7 +243,7 @@ class PootleServer(OptionalLoginAppServer):
       activationcode = self.generateactivationcode()
       setattr(session.loginchecker.users, username + ".activationcode", activationcode)
       activationlink = ""
-      message += "A Pootle account has been created for you using this email address\n"
+      message = "A Pootle account has been created for you using this email address\n"
       if session.instance.baseurl.startswith("http://"):
         message += "To activate your account, follow this link:\n"
         activationlink = session.instance.baseurl
@@ -270,8 +266,11 @@ class PootleServer(OptionalLoginAppServer):
     message += "Your registered email address is: %s\n" % email
     smtpserver = self.instance.registration.smtpserver
     fromaddress = self.instance.registration.fromaddress
-    message = mailer.makemessage({"from": fromaddress, "to": [email], "subject": "Pootle Registration", "body": message})
-    errmsg = mailer.dosendmessage(fromemail=self.instance.registration.fromaddress, recipientemails=[email], message=message, smtpserver=smtpserver)
+    messagedict = {"from": fromaddress, "to": [email], "subject": "Pootle Registration", "body": message}
+    if supportaddress:
+      messagedict["reply-to"] = supportaddress
+    fullmessage = mailer.makemessage(messagedict)
+    errmsg = mailer.dosendmessage(fromemail=self.instance.registration.fromaddress, recipientemails=[email], message=fullmessage, smtpserver=smtpserver)
     if errmsg:
       raise RegistrationError("Error sending mail: %s" % errmsg)
     return displaymessage, redirecturl
