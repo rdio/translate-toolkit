@@ -62,7 +62,7 @@ def converthtml(inputfile, outputfile, templates, includeuntagged=False):
 if __name__ == '__main__':
   # handle command line options
   formats = {"html":("po",converthtml), "htm":("po",converthtml)}
-  parser = convert.ConvertOptionParser(formats, description=__doc__)
+  parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.add_option("-u", "--untagged", dest="includeuntagged", default=False, action="store_true",
                     help="include untagged sections")
   parser.passthrough.append("includeuntagged")
