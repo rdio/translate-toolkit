@@ -115,8 +115,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
   def setprogressoptions(self):
     """sets the progress options"""
     self.progresstypes = {"none": progressbar.NoProgressBar, "simple": progressbar.SimpleProgressBar,
-                          "console": progressbar.ConsoleProgressBar, "curses": progressbar.CursesProgressBar,
-                          "verbose": progressbar.VerboseProgressBar}
+                          "console": progressbar.ConsoleProgressBar, "verbose": progressbar.VerboseProgressBar}
     progressoption = optparse.Option(None, "--progress", dest="progress", default="console",
                       choices = self.progresstypes.keys(), metavar="PROGRESS",
                       help="set progress type to one of %s" % (", ".join(self.progresstypes)))
@@ -210,7 +209,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def initprogressbar(self, allfiles, options):
     """sets up a progress bar appropriate to the options and files"""
-    if options.progress in ('console', 'curses', 'verbose'):
+    if options.progress in ('console', 'verbose'):
       # iterate through the files and produce a list so we can show progress...
       allfiles = [inputfile for inputfile in allfiles]
       self.progressbar = self.progresstypes[options.progress](0, len(allfiles))

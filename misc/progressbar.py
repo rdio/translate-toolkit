@@ -116,29 +116,6 @@ class VerboseProgressBar(ConsoleProgressBar):
     self.sys.stdout.write('\r' + output)
     self.sys.stdout.flush()
 
-class CursesProgressBar(ProgressBar):
-  """a ProgressBar that uses curses..."""
-  def __init__(self, *args, **kwargs):
-    import curses
-    self.curses = curses
-    self.curses.initscr()
-    y, x = self.curses.getsyx()
-    self.curseswin = self.curses.newwin(y, x)
-    self.cursesyx = self.curseswin.getyx()
-    ProgressBar.__init__(self, *args, **kwargs)
-
-  def close(self):
-    self.curses.echo()
-    self.curses.endwin()
-
-  def __del__(self):
-    self.close()
-
-  def show(self, verbosemessage):
-    y, x = self.cursesyx
-    self.curseswin.addnstr(y, x, self.__str__(), self.width)
-    self.curseswin.refresh()
-
 def test(progressbar):
   import time
   for n in range(progressbar.min, progressbar.max+1, 5):
