@@ -33,7 +33,7 @@ class TranslatePage(pagelayout.PootlePage):
       if self.firstitem > 0:
         linkitem = max(self.firstitem - 10, 0)
         pagelinks.append(widgets.Link("?translate=1&view=1&item=%d" % linkitem, "Previous %d" % (self.firstitem - linkitem)))
-      if self.firstitem + len(translations) < self.project.getpofilelen(self.pofilename):
+      if self.firstitem + len(self.translations) < self.project.getpofilelen(self.pofilename):
         linkitem = self.firstitem + 10
         itemcount = min(self.project.getpofilelen(self.pofilename) - linkitem, 10)
         pagelinks.append(widgets.Link("?translate=1&view=1&item=%d" % linkitem, "Next %d" % itemcount))
@@ -181,7 +181,7 @@ class TranslatePage(pagelayout.PootlePage):
       return self.project.getitems(self.pofilename, self.item-3, self.item+4)
 
   def maketable(self):
-    translations = self.gettranslations()
+    self.translations = self.gettranslations()
     if self.reviewmode:
       suggestions = {self.item: self.project.getsuggestions(self.pofilename, self.item)}
     self.transtable = table.TableLayout({"class":"translate-table", "cellpadding":10})
@@ -190,7 +190,7 @@ class TranslatePage(pagelayout.PootlePage):
     self.transtable.setcell(-1, 0, origtitle)
     self.transtable.setcell(-1, 1, transtitle)
     self.textcolors = ["#000000", "#000060"]
-    for row, (orig, trans) in enumerate(translations):
+    for row, (orig, trans) in enumerate(self.translations):
       item = self.firstitem + row
       itemclasses = self.project.getitemclasses(self.pofilename, item)
       origdiv = self.getorigdiv(item, orig, item in self.editable, itemclasses)
