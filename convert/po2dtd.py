@@ -138,7 +138,7 @@ def applytranslation(entity, thedtd, thepo, mixedentities):
   unquotedstr = removeinvalidamps(entity, unquotedstr)
   # finally set the new definition in the dtd, but not if its empty
   if len(unquotedstr) > 0:
-    thedtd.definition = quote.doencode(quote.eitherquotestr(unquotedstr))
+    thedtd.definition = quote.eitherquotestr(unquotedstr)
 
 class redtd:
   """this is a convertor class that creates a new dtd based on a template using translations in a po"""
@@ -185,14 +185,14 @@ class po2dtd:
       # typestr, instring = quote.extract(typecomment, "#,","\n",None)
       types.append(quote.unstripcomment(typecomment[2:]))
     for typedescr in types:
-      thedtd.comments.append(("potype",quote.doencode(typedescr+'\n')))
+      thedtd.comments.append(("potype", typedescr+'\n'))
     # visiblecomments are for example #_ note to translator
     visibles = []
     for visiblecomment in thepo.visiblecomments:
       # visiblestr, instring = quote.extract(visiblecomment,"#_","\n",None)
       visibles.append(quote.unstripcomment(visiblecomment[2:]))
     for visible in visibles:
-      thedtd.comments.append(("visible",quote.doencode(visible+'\n')))
+      thedtd.comments.append(("visible", visible+'\n'))
     # othercomments are normal e.g. # another comment
     others = []
     for othercomment in thepo.othercomments:
@@ -201,7 +201,7 @@ class po2dtd:
     for other in others:
       # don't put in localization note group comments as they are artificially added
       if (other.find('LOCALIZATION NOTE') == -1) or (other.find('GROUP') == -1):
-        thedtd.comments.append(("comment",quote.doencode(other)))
+        thedtd.comments.append(("comment", other))
     # msgidcomments are special - they're actually localization notes
     for msgidcomment in thepo.msgidcomments:
       unquotedmsgidcomment = quote.extractwithoutquotes(msgidcomment,'"','"','\\',includeescapes=0)[0]
@@ -209,7 +209,7 @@ class po2dtd:
       if actualnote[-2:] == '\\n':
         actualnote = actualnote[:-2]
       locnote = quote.unstripcomment("LOCALIZATION NOTE ("+thedtd.entity+"): "+actualnote)
-      thedtd.comments.append(("locnote",quote.doencode(locnote)))
+      thedtd.comments.append(("locnote", locnote))
 
   def convertstrings(self,thepo,thedtd):
     # currently let's just get the msgid back
@@ -223,7 +223,7 @@ class po2dtd:
       unquoted = unquotedid
     else:
       unquoted = unquotedstr
-    thedtd.definition = quote.doencode(quote.eitherquotestr(unquoted))
+    thedtd.definition = quote.eitherquotestr(unquoted)
 
   def convertelement(self,thepo):
     thedtd = dtd.dtdelement()

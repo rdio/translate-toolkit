@@ -295,33 +295,6 @@ def makeutf8(d):
       d[key] = unichr(value).encode('utf8')
   return d
 
-# TODO: replace this with ability to choose locales/encodings, etc...
-funnycharacters = {chr(133): "...",  # horizontal ellipsis
-                   chr(228): 0xE4,   # a with a :
-                   chr(235): 0xEB,   # e with a :
-                   chr(239): 0xEF,   # i with a :
-                 # chr(2??): 0xF6,   # o with a :
-                   chr(252): 0xFC,   # u with a :
-                 # chr(2??): 0xE0,   # a with a `
-                 # chr(2??): 0xE8,   # e with a `
-                 # chr(2??): 0xEC,   # i with a `
-                   chr(243): 0xF2,   # o with a `
-                 # chr(2??): 0xF9,   # u with a `
-                 # chr(2??): 0xE2,   # a with a ^
-                   chr(234): 0xEA,   # e with a ^
-                 # chr(2??): 0xEE,   # i with a ^
-                 # chr(2??): 0xF4,   # o with a ^
-                 # chr(2??): 0xFB,   # u with a ^
-                   chr(202): 0xCA,   # E with a ^
-                   chr(154): 0x161,  # s with an upside down ^
-                   chr(138): 0x160}  # S with an upside down ^
-
-# FIXME: we shouldn't be doing wierd things like this
-def doencode(unencoded):
-  # return encodewithdict(unencoded, funnycharacters)
-  # TODO: change this from utf8 to unicode_escaped for .properties files
-  return unencoded.decode('iso-8859-1').encode('utf8')
-
 def testcase():
   x = ' "this" " is " "a" " test!" '
   print extract(x,'"','"',None)
