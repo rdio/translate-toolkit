@@ -27,6 +27,12 @@ import sre
 import datetime
 
 def getunquotedstr(lines, joinwithlinebreak=True, includeescapes=True):
+  """unquotes a string from a po file"""
+  if isinstance(lines, dict):
+    # this might happen if people pass in plural msgstrs ...
+    pluralids = lines.keys()
+    pluralids.sort()
+    return "\n".join([getunquotedstr(lines[pluralid]) for pluralid in pluralids])
   esc = '\\'
   if joinwithlinebreak:
     joiner = "\n"

@@ -17,11 +17,8 @@ def untranslatedwords(pair):
   return original.words
 
 def wordcount(postr):
-  if isinstance(postr, dict):
-    unquotedstr = " ".join([po.getunquotedstr(msgstr).strip() for msgstr in postr.itervalues()])
-  else:
-    # TODO: po class should understand KDE style plurals
-    unquotedstr = sre.sub("^_n: ", "", po.getunquotedstr(postr))
+  # TODO: po class should understand KDE style plurals
+  unquotedstr = sre.sub("^_n: ", "", po.getunquotedstr(postr))
   return len(unquotedstr.split())
 
 def wordsinpoel(poel):
