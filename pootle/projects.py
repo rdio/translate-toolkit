@@ -11,6 +11,7 @@ from translate.tools import pogrep
 from jToolkit import timecache
 import time
 import os
+import sre
 try:
   import PyLucene
 except:
@@ -25,6 +26,8 @@ def getmodtime(filename, default=None):
 
 class RightsError(ValueError):
   pass
+
+regionre = sre.compile("^_[A-Z]{2,3}$")
 
 class TranslationSession:
   """A translation session represents a users work on a particular translation project"""
@@ -986,6 +989,11 @@ class POTree:
         return search
     return None
 
+  def languagematch(self, languagecode, otherlanguagecode):
+    """matches a languagecode to another, ignoring regions in the second"""
+    return languagecode == otherlanguagecode or \
+      (otherlanguagecode.startswith(languagecode) and regionre.match(otherlanguagecode[len(languagecode):]))
+
   def getpofiles(self, languagecode, projectcode):
     """returns a list of po files for the project and language"""
     def addfiles(podir, dirname, fnames):
@@ -995,20 +1003,13 @@ class POTree:
         basedirname = basedirname.replace(os.sep, "", 1)
       ponames = [fname for fname in fnames if fname.endswith(os.extsep+"po")]
       pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
-    def gnumatch(languagecode, fname):
-      """matches filename to languagecode (handling region codes too)"""
-      if fname == languagecode + os.extsep + "po":
-        return True
-      if not (fname.startswith(languagecode) and fname.endswith(os.extsep + "po")):
-        return False
-      cutname = fname.replace(languagecode, "", 1)[:-len(os.extsep+"po")]
-      return cutname.startswith("_") and cutname[1:].isalpha() and 3 <= len(cutname) <= 4
     def addgnufiles(podir, dirname, fnames):
       """adds the files to the set of files for this project"""
       basedirname = dirname.replace(podir, "", 1)
       while basedirname.startswith(os.sep):
         basedirname = basedirname.replace(os.sep, "", 1)
-      ponames = [fname for fname in fnames if gnumatch(languagecode, fname)]
+      poext = os.extsep + "po"
+      ponames = [fn for fn in fnames if fn.endswith(poext) and self.languagematch(languagecode, fn[:-len(poext)])]
       pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
     pofilenames = []
     podir = self.getpodir(languagecode, projectcode)
