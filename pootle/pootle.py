@@ -71,11 +71,12 @@ class OptionalLoginAppServer(server.LoginAppServer):
     return self.getpage(pathwords, session, argdict)
 
 class ActivateSession(session.LoginSession):
+  # TODO: refactor this into a LoginChecker somehow...
   def validate(self):
     """checks if this session is valid"""
     if not super(ActivateSession, self).validate():
       return False
-    if not getattr(getattr(self.instance.users, self.username, None), "activated", 0):
+    if not getattr(getattr(self.loginchecker.users, self.username, None), "activated", 0):
       self.isvalid = False
       self.status = "username has not yet been activated"
     return self.isvalid
@@ -88,10 +89,10 @@ class PootleServer(OptionalLoginAppServer):
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.potree = projects.POTree(self.instance)
 
-  def saveprefs(self):
+  def saveuserprefs(self, users):
     """saves changed preferences back to disk"""
     # TODO: this is a hack, fix it up nicely :-)
-    prefsfile = self.instance.__root__.__dict__["_setvalue"].im_self
+    prefsfile = users.__root__.__dict__["_setvalue"].im_self
     prefsfile.savefile()
 
   def refreshstats(self):
@@ -214,9 +215,9 @@ class PootleServer(OptionalLoginAppServer):
     minpasswordlen = 6
     if not password or len(password) < minpasswordlen:
       raise ValueError("must supply a valid password of at least %d characters" % minpasswordlen)
-    userexists = session.userexists(username)
+    userexists = session.loginchecker.userexists(username)
     if userexists:
-      usernode = getattr(self.instance.users, username)
+      usernode = getattr(session.loginchecker.users, username)
       # use the email address on file
       email = getattr(usernode, "email", email)
       password = getattr(usernode, "passwdhash", "")
@@ -225,16 +226,16 @@ class PootleServer(OptionalLoginAppServer):
       displaymessage = "that username already exists. emailing the password to the username's email address...\n"
       redirecturl = "login.html"
     else:
-      setattr(self.instance.users, username + ".email", email)
-      setattr(self.instance.users, username + ".passwdhash", session.md5hexdigest(password))
+      setattr(session.loginchecker.users, username + ".email", email)
+      setattr(session.loginchecker.users, username + ".passwdhash", session.md5hexdigest(password))
       message = "an account has been created for you\n"
-      setattr(self.instance.users, username + ".activated", 0)
+      setattr(session.loginchecker.users, username + ".activated", 0)
       activationcode = self.generateactivationcode()
-      setattr(self.instance.users, username + ".activationcode", activationcode)
+      setattr(session.loginchecker.users, username + ".activationcode", activationcode)
       message = "to activate it, enter the following activation code:\n%s\n" % activationcode
       displaymessage = "account created. will be emailed login details. enter activation code on the next page"
       redirecturl = "activate.html"
-    self.saveprefs()
+    self.saveuserprefs(session.loginchecker.users)
     message += "username: %s\npassword: %s\n" % (username, password)
     smtpserver = self.instance.registration.smtpserver
     fromaddress = self.instance.registration.fromaddress
@@ -265,12 +266,12 @@ class PootleServer(OptionalLoginAppServer):
     if "username" in argdict and "activationcode" in argdict:
       username = argdict["username"]
       activationcode = argdict["activationcode"]
-      usernode = getattr(self.instance.users, username, None)
+      usernode = getattr(session.loginchecker.users, username, None)
       if usernode is not None:
         correctcode = getattr(usernode, "activationcode", "")
         if correctcode and correctcode.strip().lower() == activationcode.strip().lower():
           setattr(usernode, "activated", 1)
-          self.saveprefs()
+          self.saveuserprefs(session.loginchecker.users)
           redirecttext = pagelayout.IntroText("Your account has been activated! Redirecting to login...")
           redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
           redirectpage.attribs["refresh"] = 10
