@@ -112,7 +112,8 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
         # if we're in the string and we find we've just passed the end, mark that we're out
         instring = not instring
         # remove the last start bit in the result string and forget it
-        extracted = extracted[:laststartinextracted] + extracted[laststartinextracted+lenstart:]
+        if laststartinextracted is not None:
+          extracted = extracted[:laststartinextracted] + extracted[laststartinextracted+lenstart:]
         laststartinextracted = None
         # remove the end bit of the string
         extracted = extracted[:-lenend]
@@ -287,7 +288,11 @@ def rstripeol(string):
   return string[:e]
 
 def stripcomment(comment,startstring="<!--",endstring="-->"):
-  cstart = comment.find(startstring)+len(startstring)
+  cstart = comment.find(startstring)
+  if cstart == -1:
+    cstart = 0
+  else:
+    cstart += len(startstring)
   cend = comment.find(endstring,cstart)
   return comment[cstart:cend].strip()
 
