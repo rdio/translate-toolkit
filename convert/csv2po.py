@@ -26,6 +26,8 @@ from translate.misc import sparse
 from translate.storage import po
 from translate.storage import csvl10n
 
+# TODO: merge csv2po and repo into one class, merge the escaping logic etc
+
 class csv2po:
   def convertstrings(self,thecsv,thepo):
     # currently let's just get the source, msgid and msgstr back
@@ -135,6 +137,7 @@ class repo:
       if len(po.getunquotedstr(thepo.msgstr).strip()) == 0:
         missing += 1
     # print >>sys.stderr, "%d still missing out of %d strings" % (missing, len(self.p.poelements))
+    return self.p
 
 def convertcsv(inputfile, outputfile, templatefile):
   """reads in inputfile using csvl10n, converts using csv2po, writes to outputfile"""
