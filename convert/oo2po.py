@@ -28,6 +28,10 @@ from translate import __version__
 
 # TODO: support using one GSI file as template, another as input (for when English is in one and translation in another)
 
+def quoteforpo(line):
+  """quotes the given oo line for a PO file"""
+  return quote.quotestr(line, escapeescapes=1)
+
 class oo2po:
   def __init__(self, languages=None, blankmsgstr=False):
     """construct an oo2po converter for the specified languages"""
@@ -41,8 +45,8 @@ class oo2po:
     thepo.sourcecomments.append("#: " + key + "." + subkey + "\n")
     text1 = getattr(part1, subkey)
     text2 = getattr(part2, subkey)
-    thepo.msgid = [quote.quotestr(line, escapeescapes=1) for line in text1.split('\n')]
-    thepo.msgstr = [quote.quotestr(line, escapeescapes=1) for line in text2.split('\n')]
+    thepo.msgid = [quoteforpo(line) for line in text1.split('\n')]
+    thepo.msgstr = [quoteforpo(line) for line in text2.split('\n')]
     return thepo
 
   def makekey(self, ookey):
