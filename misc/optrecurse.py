@@ -40,7 +40,26 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     optparse.OptionParser.__init__(self, version="%prog "+__version__.ver, description=description)
     self.setprogressoptions()
     self.setformats(formats, usetemplates)
+    self.setpsycooption()
     self.passthrough = []
+
+  def setpsycooption(self):
+    psycooption = optparse.Option(None, "--psyco", dest="psyco", default="full",
+                    choices=("none", "full", "profile"), metavar="PSYCO",
+                    help="use psyco to speed up the operation (set mode)")
+    self.define_option(psycooption)
+
+  def usepsyco(self, options):
+    if options.psyco != "none":
+      try:
+        import psyco
+      except Exception, e:
+        self.warning("psyco unavailable: %s" % e)
+        return
+    if options.psyco == "full":
+      psyco.full()
+    elif options.psyco == "profile":
+      psyco.profile()
 
   def set_usage(self, usage=None):
     """sets the usage string - if usage not given, uses getusagestring for each option"""
@@ -265,6 +284,7 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     # this is so derived classes can modify the inputformats etc based on the options
     options.inputformats = self.inputformats
     options.outputoptions = self.outputoptions
+    self.usepsyco(options)
     self.recursiveprocess(options)
 
   def recursiveprocess(self, options):
