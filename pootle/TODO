@@ -45,7 +45,8 @@ other:
   allow XLIFF version of files to be downloaded/uploaded
   show KDE and other PO comments in some uncluttered but accesible way
   create Gettext .mo/.gmo (compiled .po) files that can be downloaded and run.  Similarly
-    allow creation of compiled Qt .ts files.
+    allow creation of .qm (compiled Qt .ts files).
+    See pygettext for .mo files and lrelease which is GPL'd for Qt .qm files
   create XPI files automatically when updates are made
   Add X-Poedit style tags in the header when you download so that people using
     this PO editor don't have to configure everything
