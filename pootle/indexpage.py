@@ -135,6 +135,8 @@ class ProjectIndex(pagelayout.PootlePage):
     if message:
       message = pagelayout.IntroText(message)
     bodytitle = '<h2 class="title">%s</h3>' % (dirfilter or self.project.projectname)
+    if dirfilter == "":
+      dirfilter = None
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []
