@@ -64,6 +64,7 @@ class SimpleParser:
     self.includewhitespacetokens = includewhitespacetokens
     self.standardtokenizers = [self.stringtokenize, self.removewhitespace, self.separatetokens]
     self.quotechars = ('"', "'")
+    self.endquotechars = {'"':'"',"'":"'"}
     self.stringescaping = 1
 
   def stringtokenize(self, input):
@@ -71,22 +72,22 @@ class SimpleParser:
     tokens = []
     laststart = 0
     instring = 0
-    stringchar, escapechar = '', '\\'
+    endstringchar, escapechar = '', '\\'
     gotclose, gotescape = 0, 0
     for pos in range(len(input)):
       char = input[pos]
       if instring:
         if self.stringescaping and (gotescape or char == escapechar) and not gotclose:
           gotescape = not gotescape
-        elif char == stringchar:
+        elif char == endstringchar:
           gotclose = not gotclose
         elif gotclose:
           tokens.append(input[laststart:pos])
-          instring, laststart, stringchar = 0, pos, ''
+          instring, laststart, endstringchar = 0, pos, ''
       if not instring:
         if char in self.quotechars:
           if pos > laststart: tokens.append(input[laststart:pos])
-          instring, laststart, stringchar, gotclose = 1, pos, char, 0
+          instring, laststart, endstringchar, gotclose = 1, pos, self.endquotechars[char], 0
     if laststart < len(input): tokens.append(input[laststart:])
     return tokens
 
@@ -96,7 +97,7 @@ class SimpleParser:
 
   def isstringtoken(self, input):
     """checks whether a token is a string token"""
-    return input[:1] in ("'",'"')
+    return input[:1] in self.quotechars
 
   def separatetokens(self, input, tokenlist = None):
     """this separates out tokens in tokenlist from whitespace etc"""
