@@ -242,8 +242,8 @@ class TranslatePage(pagelayout.PootlePage):
     if self.reviewmode and self.item is not None:
       suggestions = {self.item: self.project.getsuggestions(self.pofilename, self.item)}
     self.transtable = table.TableLayout({"class":"translate-table", "cellpadding":10})
-    origtitle = table.TableCell("original", {"class":"translate-table-title"})
-    transtitle = table.TableCell("translation", {"class":"translate-table-title"})
+    origtitle = table.TableCell(self.localize("original"), {"class":"translate-table-title"})
+    transtitle = table.TableCell(self.localize("translation"), {"class":"translate-table-title"})
     self.transtable.setcell(-1, 0, origtitle)
     self.transtable.setcell(-1, 1, transtitle)
     for row, (orig, trans) in enumerate(self.translations):
