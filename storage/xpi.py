@@ -167,6 +167,7 @@ class XpiFile(zipfile.ZipFile):
 
   def ospathexists(self, ospath):
     """checks whether the given file exists inside the xpi"""
+    jarfilename, filename = self.ostojarpath(ospath)
     if jarfilename is None:
       return filename in self.namelist()
     else:
