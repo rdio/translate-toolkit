@@ -22,6 +22,7 @@
 either done using a template or just using the .po file"""
 
 import sys
+import os
 from translate.storage import dtd
 from translate.storage import po
 from translate.misc import quote
@@ -270,7 +271,7 @@ class po2dtd:
         thedtdfile.dtdelements.append(thedtd)
     return thedtdfile
 
-def main(inputfile, outputfile, templatefile):
+def convertfile(inputfile, outputfile, templatefile):
   inputpo = po.pofile(inputfile)
   if templatefile is None:
     convertor = po2dtd()
@@ -281,16 +282,87 @@ def main(inputfile, outputfile, templatefile):
   outputdtdlines = outputdtd.tolines()
   outputfile.writelines(outputdtdlines)
 
+inputformat = "po"
+outputformat = "dtd"
+templateformat = "dtd"
+
+def recurse(inputdir, outputdir, templatedir):
+  dirstack = ['']
+  while dirstack:
+    top = dirstack.pop(-1)
+    names = os.listdir(os.path.join(inputdir, top))
+    dirs = []
+    for name in names:
+      inputname = os.path.join(inputdir, top, name)
+      # handle directories...
+      if os.path.isdir(inputname):
+        dirs.append(os.path.join(top, name))
+        outputname = os.path.join(outputdir, top, name)
+        if not os.path.isdir(outputname):
+          os.mkdir(outputname)
+        if templatedir is not None:
+          templatename = os.path.join(templatedir, top, name)
+          if not os.path.isdir(templatename):
+            print >>sys.stderr, "warning: missing template directory %s" % templatename
+      elif os.path.isfile(inputname):
+        # only handle names that match the correct extension...
+        base, inputext = os.path.splitext(name)
+        if inputext != os.extsep + inputformat:
+          print >>sys.stderr, "not processing %s: wrong extension (%r != %r)" % (name, inputext, inputformat)
+          continue
+        outputname = os.path.join(outputdir, top, base) + os.extsep + outputformat
+        inputfile = open(inputname, 'r')
+        outputfile = open(outputname, 'w')
+        templatefile = None
+        if templatedir is not None:
+          templatename = os.path.join(templatedir, top, base) + os.extsep + templateformat
+          if os.path.isfile(templatename):
+            templatefile = open(templatename, 'r')
+          else:
+            print >>sys.stderr, "warning: missing template file %s" % templatename
+        convertfile(inputfile, outputfile, templatefile)
+    # make sure the directories are processed next time round...
+    dirs.reverse()
+    dirstack.extend(dirs)
+
+def handleoptions(options):
+  """handles the options, allocates files, and runs the neccessary functions..."""
+  if options.recursive:
+    if options.inputfile is None:
+      raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile")
+    if not os.path.isdir(options.inputfile):
+      raise optparse.OptionValueError("inputfile must be directory for recursive run.")
+    if options.outputfile is None:
+      raise optparse.OptionValueError("must specify output directory for recursive run.")
+    if not os.path.isdir(options.outputfile):
+      raise optparse.OptionValueError("output must be existing directory for recursive run.")
+    if options.templatefile is not None:
+      if not os.path.isdir(options.templatefile):
+        raise optparse.OptionValueError("template must be existing directory for recursive run.")
+    recurse(options.inputfile, options.outputfile, options.templatefile)
+  else:
+    if options.inputfile is None:
+      inputfile = sys.stdin
+    else:
+      inputfile = open(options.inputfile, 'r')
+    if options.outputfile is None:
+      outputfile = sys.stdout
+    else:
+      outputfile = open(options.outputfile, 'w')
+    if options.templatefile is None:
+      templatefile = None
+    else:
+      templatefile = open(options.templatefile, 'r')
+    convertfile(inputfile, outputfile, templatefile)
+
 if __name__ == '__main__':
   # handle command line options
   try:
     import optparse
   except ImportError:
     from translate.misc import optparse
-  inputformat = "po"
-  outputformat = "dtd"
-  templateformat = "dtd"
-  parser = optparse.OptionParser(usage="%prog [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]")
+  parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]")
+  parser.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False, help="recurse subdirectories")
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")
   parser.add_option("-o", "--output-file", dest="outputfile", default=None,
@@ -299,17 +371,8 @@ if __name__ == '__main__':
                     help="read from template in "+templateformat+" format", metavar="template")
   (options, args) = parser.parse_args()
   # open the appropriate files
-  if options.inputfile is None:
-    inputfile = sys.stdin
-  else:
-    inputfile = open(options.inputfile, 'r')
-  if options.outputfile is None:
-    outputfile = sys.stdout
-  else:
-    outputfile = open(options.outputfile, 'w')
-  if options.templatefile is None:
-    templatefile = None
-  else:
-    templatefile = open(options.templatefile, 'r')
-  main(inputfile, outputfile, templatefile)
+  try:
+    handleoptions(options)
+  except optparse.OptParseError, message:
+    parser.error(message)
 
