@@ -330,7 +330,14 @@ class StandardChecker(TranslationChecker):
                                     "accelerators", "variables", "numbers",
                                     "doublespacing", "puncspacing", "startwhitespace", "endwhitespace",
                                     "sentencecount", "startcaps", "startpunc", "endpunc", "purepunc", 
-                                    "simplecaps", "acronyms", "brackets", "xmltags") }
+                                    "simplecaps", "acronyms", "brackets", "xmltags"),
+                   "compendiumconflicts": ("accelerators", "brackets", "escapes", 
+                                    "numbers", "startpunc", "long", "variables", 
+                                    "startcaps", "sentencecount", "simplecaps",
+                                    "doublespacing", "endpunc", "xmltags",
+                                    "startwhitespace", "endwhitespace",
+                                    "singlequoting", "doublequoting",
+                                    "filepaths", "purepunc") }
 
 # code to actually run the tests (use unittest?)
 
