@@ -38,7 +38,7 @@ class pocheckfilter:
     filterdocs.sort()
     return "\n".join(filterdocs)
 
-  def filterelement(self, thepo, includereview=1, excludefilters={}, limitfilters=None):
+  def filterelement(self, thepo, includereview=1, includefuzzy=0, excludefilters={}, limitfilters=None):
     """runs filters on an element"""
     if thepo.isheader() or thepo.isfuzzy(): return []
     if thepo.hasplural():
@@ -52,15 +52,18 @@ class pocheckfilter:
       unquotedid = po.getunquotedstr(thepo.msgid)
       unquotedstr = po.getunquotedstr(thepo.msgstr)
       failures = self.checker.run_filters(unquotedid, unquotedstr, excludefilters, limitfilters)
-    if includereview and not failures and thepo.hastypecomment("review"):
-      failures.append("marked for review")
+    if not failures:
+      if includereview and thepo.hastypecomment("review"):
+        failures.append("marked for review")
+      if includefuzzy and thepo.isfuzzy():
+        failures.append("fuzzy")
     return failures
 
-  def filterfile(self, thepofile, includereview=1, excludefilters={}, limitfilters=None):
+  def filterfile(self, thepofile, includereview=1, includefuzzy=0, excludefilters={}, limitfilters=None):
     """runs filters on a file"""
     thenewpofile = po.pofile()
     for thepo in thepofile.poelements:
-      failures = self.filterelement(thepo, includereview, excludefilters, limitfilters)
+      failures = self.filterelement(thepo, includereview, includefuzzy, excludefilters, limitfilters)
       if failures:
         thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in failures])
         if ("".join(thepo.typecomments)).find("fuzzy") == -1:
@@ -89,10 +92,13 @@ if __name__ == '__main__':
   parser = filtercmd.FilterOptionParser(filtercmd.optionalrecursion, inputformats)
   parser.add_option("", "--review", dest="includereview",
     action="store_true", default=False,
-    help="include elements marked for review...")
+    help="include elements marked for review")
   parser.add_option("", "--ignorereview", dest="includereview",
     action="store_false", default=False,
-    help="don't include elements marked for review...")
+    help="don't include elements marked for review")
+  parser.add_option("", "--fuzzy", dest="includefuzzy",
+    action="store_true", default=False,
+    help="include elements marked fuzzy")
   parser.add_option("", "--openoffice", dest="filterobject",
     action="store_const", default=None, const=checks.OpenOfficeChecker(),
     help="use the standard checks for OpenOffice translations")
@@ -111,7 +117,7 @@ if __name__ == '__main__':
   parser.add_option("-l", "--listfilters", dest="listfilters",
     action="store_true", default=False, help="list filters available")
   requiredoptions = dict([(key, True) for key in 
-    ('includereview', 'filterobject', 'excludefilters', 'limitfilters', 'listfilters')])
+    ('includereview', 'includefuzzy', 'filterobject', 'excludefilters', 'limitfilters', 'listfilters')])
   options, args = parser.parse_args()
   # TODO: move this code into filtercmd...
   if options.input is None:
