@@ -235,7 +235,7 @@ class PootleServer(OptionalLoginAppServer):
         message += "If you have a problem with registration, please contact %s\n" % supportaddress
       else:
         message += "If you have a problem with registration, please contact the site administrator\n"
-      displaymessage = "That username already exists. Emailing the registered email address...\n"
+      displaymessage = "That username already exists. An email will be sent to the registered email address...\n"
       redirecturl = "login.html?username=%s" % username
       displaymessage += "Proceeding to <a href='%s'>login</a>\n" % redirecturl
     else:
@@ -259,7 +259,7 @@ class PootleServer(OptionalLoginAppServer):
       message += "Your activation code is:\n%s\n" % activationcode
       if activationlink:
         message += "If you are unable to follow the link, please enter the above code at the activation page\n"
-      message += "This message is sent to verify that the email address is in fact correct. If you did not want to register an account, you may simply ignore the message."
+      message += "This message is sent to verify that the email address is in fact correct. If you did not want to register an account, you may simply ignore the message.\n"
       redirecturl = "activate.html?username=%s" % username
       displaymessage = "Account created. You will be emailed login details and an activation code. Please enter your activation code on the <a href='%s'>activation page</a>. " % redirecturl
       if activationlink:
