@@ -50,6 +50,7 @@ def summarize(elements):
 class summarizer:
   def __init__(self, filenames):
     self.allelements = []
+    self.filecount = 0
     for filename in filenames:
       if not os.path.exists(filename):
         print >>sys.stderr, "cannot process %s: does not exist" % filename
@@ -58,9 +59,10 @@ class summarizer:
         self.handledir(filename)
       else:
         self.handlefile(filename)
-    if len(filenames) > 1:
+    if self.filecount > 1:
       print "TOTAL:"
       summarize(self.allelements)
+      print "File count:   %5d" % (self.filecount)
       print
 
   def handlefile(self, filename):
@@ -72,6 +74,7 @@ class summarizer:
     print filename
     summarize(pof.poelements)
     print
+    self.filecount += 1
 
   def handlefiles(self, arg, dirname, filenames):
     for filename in filenames:
