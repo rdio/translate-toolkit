@@ -154,6 +154,8 @@ class XpiFile(ZipFileCatcher):
     self.includenonloc = kwargs.get("includenonloc", True)
     if "includenonloc" in kwargs:
       del kwargs["includenonloc"]
+    if "compression" not in kwargs:
+      kwargs["compression"] = zipfile.ZIP_DEFLATED
     super(XpiFile, self).__init__(*args, **kwargs)
     self.jarfiles = {}
     self.commonprefix = self.findcommonprefix()
