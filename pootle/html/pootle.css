@@ -1,3 +1,20 @@
+a 		{ color: #694288; text-decoration: none; }
+a:link		{ color: #694288; text-decoration: none; }
+a:visited	{ color: #694288; text-decoration: none; }
+a:active	{ color: #694288; text-decoration: underline; }
+a:hover		{ color: #694288; text-decoration: underline; }
+h1, h2, h3
+{
+	margin: 0px;
+	padding: 0px;
+}
+.title
+{
+	font-family: verdana, arial, sans-serif;
+	font-size: small;
+  	text-transform:uppercase;
+	color: #694288;
+}
 div.autoexpand
 {
 	max-height: 50px;
@@ -61,7 +78,15 @@ td.translate-translation
 {
 	width: 50%;
 }
-
+div.intro {
+	font-family: verdana, arial, sans-serif;
+	color:#000;
+	font-size: normal;
+	font-weight:normal;
+	line-height:140%;
+	margin-bottom:15px;
+	margin-left:15px;
+}
 #banner
 {
 	font-family: verdana, arial, sans-serif;
