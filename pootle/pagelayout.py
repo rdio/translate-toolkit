@@ -86,7 +86,8 @@ class PootleSidebar(widgets.Division):
     loginimage = Icon("person.png")
     loginstatus = SidebarText([loginimage, loginstatus])
     loginlink = SidebarText(loginlinks)
-    widgets.Division.__init__(self, [title, loginstatus, loginlink], "links")
+    doclink = SidebarText(widgets.Link(baseurl+"doc/index.html", session.localize("Docs / Help")))
+    widgets.Division.__init__(self, [title, doclink, loginstatus, loginlink], "links")
 
 class Icon(widgets.Image):
   """an icon image"""
