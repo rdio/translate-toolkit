@@ -253,9 +253,9 @@ class dtd2po:
     thepofile.removeduplicates()
     return thepofile
 
-  def mergefiles(self, origdtdfile, translateddtdfile, filename="unknown file"):
+  def mergefiles(self, origdtdfile, translateddtdfile):
     thepofile = po.pofile()
-    headerpo = self.makeheader(filename)
+    headerpo = self.makeheader("%s, %s" % (origdtdfile.filename, translateddtdfile.filename))
     thepofile.poelements.append(headerpo)
     origdtdfile.makeindex()
     self.findmixedentities(origdtdfile)
@@ -279,7 +279,7 @@ class dtd2po:
     return thepofile
 
 def main(inputfile, outputfile, templatefile):
-  """reads in inputfile using dtd, converts using dtd2po, writes to outputfile"""
+  """reads in inputfile and templatefile using dtd, converts using dtd2po, writes to outputfile"""
   inputdtd = dtd.dtdfile(inputfile)
   convertor = dtd2po()
   if templatefile is None:
