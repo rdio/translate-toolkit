@@ -26,7 +26,11 @@ class TranslationSession:
   def receivetranslation(self, pofilename, item, trans, issuggestion):
     """submits a new/changed translation from the user"""
     if issuggestion:
-      self.project.suggesttranslation(pofilename, item, trans)
+      if self.session.isopen:
+        username = self.session.username
+      else:
+        username = None
+      self.project.suggesttranslation(pofilename, item, trans, username)
     else:
       self.project.updatetranslation(pofilename, item, trans)
 
@@ -338,11 +342,13 @@ class pootlefile(po.pofile):
     suggestpos = [suggestpo for suggestpo in self.pendingfile.poelements if suggestpo.getsources() == sources]
     return suggestpos
 
-  def addsuggestion(self, item, suggmsgstr):
+  def addsuggestion(self, item, suggmsgstr, username):
     """adds a new suggestion for the given item to the pendingfile"""
     self.readpendingfile()
     thepo = self.transelements[item]
     newpo = thepo.copy()
+    if username is not None:
+      newpo.msgidcomments.append('"_: suggested by %s"' % username)
     newpo.msgstr = suggmsgstr
     newpo.markfuzzy(False)
     self.pendingfile.poelements.append(newpo)
@@ -572,11 +578,11 @@ class TranslationProject:
     pofile = self.pofiles[pofilename]
     pofile.setmsgstr(item, newmsgstr)
 
-  def suggesttranslation(self, pofilename, item, trans):
+  def suggesttranslation(self, pofilename, item, trans, username):
     """stores a new suggestion for a translation..."""
     suggmsgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
     pofile = self.getpofile(pofilename)
-    pofile.addsuggestion(item, suggmsgstr)
+    pofile.addsuggestion(item, suggmsgstr, username)
 
   def getsuggestions(self, pofile, item):
     """find all the suggestions submitted for the given (pofile or pofilename) and item"""
@@ -594,6 +600,18 @@ class TranslationProject:
       pofile = self.getpofile(pofilename)
     pofile.deletesuggestion(item, suggitem)
     self.updatetranslation(pofilename, item, newtrans)
+
+  def getsuggester(self, pofile, item, suggitem):
+    """returns who suggested the given item's suggitem if recorded, else None"""
+    if isinstance(pofile, (str, unicode)):
+      pofilename = pofile
+      pofile = self.getpofile(pofilename)
+    suggestionpo = pofile.getsuggestions(item)[suggitem]
+    for msgidcomment in suggestionpo.msgidcomments:
+      if msgidcomment.find("suggested by ") != -1:
+        suggestedby = po.getunquotedstr([msgidcomment]).replace("_:", "", 1).replace("suggested by ", "", 1).strip()
+        return suggestedby
+    return None
 
   def rejectsuggestion(self, pofile, item, suggitem, newtrans):
     """rejects the suggestion and removes it from the pending file"""

@@ -287,12 +287,20 @@ class TranslatePage(pagelayout.PootlePage):
     for suggid, suggestion in enumerate(suggestions):
       suggdiffcodes = diffcodes[suggid]
       suggdiff = self.highlightdiffs(suggestion, suggdiffcodes, issrc=False)
+      suggestedby = self.project.getsuggester(self.pofilename, item, suggid)
       if isinstance(suggestion, str):
         suggestion = suggestion.decode("utf8")
       if len(suggestions) > 1:
-        suggtitle = widgets.Division("<b>Suggestion %d:</b>" % (suggid+1))
+        if suggestedby:
+          suggtitle = "Suggestion %d by %s:" % (suggid+1, suggestedby)
+        else:
+          suggtitle = "Suggestion %d:" % (suggid+1)
       else:
-        suggtitle = widgets.Division("<b>Suggestion:</b>")
+        if suggestedby:
+          suggtitle = "Suggestion by %s:" % (suggestedby)
+        else:
+          suggtitle = "Suggestion:"
+      suggtitle = widgets.Division("<b>%s</b>" % suggtitle)
       suggestiontext = pagelayout.TranslationText(widgets.Font(suggdiff, {"color":self.textcolors[item % 2]}))
       suggestionhidden = widgets.Input({'type': 'hidden', "name": "sugg%d.%d" % (item, suggid), 'value': suggestion})
       acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
