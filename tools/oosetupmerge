@@ -171,7 +171,9 @@ class SetupIndex(sparse.SimpleParser):
     languages = reduce(operator.add, languages)
     languages.sort()
     languages = ",".join(languages)
-    self.setfieldvalue('gid_Installation', 'Languages', '"%s"' % languages)
+    # TODO: reset the Languages list when supported by setup.ins
+    # support for Languages is needed in setup2/source/ui/pages/plang.*
+    # self.setfieldvalue('gid_Installation', 'Languages', '"%s"' % languages)
     # can't do anything about HelpText yet...
     directoriestorename = {}
     for index in indexes:
