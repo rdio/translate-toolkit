@@ -100,8 +100,8 @@ class TranslationProject:
 
   def getrights(self, session=None, username=None):
     """gets the rights for the given user (name or session, or not-logged-in if username is None)"""
-    if session is not None and session.isopen:
-      return self.getrights(username=session.username)
+    if session is not None and session.isopen and username is None:
+      username = session.username
     if hasattr(self.prefs, "rights"):
       rights = self.prefs.rights
     else:
@@ -115,7 +115,11 @@ class TranslationProject:
           rights = "view, archive, pocompile"
         else:
           rights = "view, review, translate, archive, pocompile"
-    return [right.strip() for right in rights.split(",")]
+    rights = [right.strip() for right in rights.split(",")]
+    if session is not None and session.issiteadmin():
+      if "admin" not in rights:
+        rights.append("admin")
+    return rights
 
   def setrights(self, username, rights):
     """sets the rights for the given username... (or not-logged-in if username is None)"""
@@ -127,7 +131,7 @@ class TranslationProject:
     setattr(self.prefs.rights, username, rights)
     self.saveprefs()
 
-  def getgoals(self):
+  def getgoals(self, dirfilter=None):
     """gets the goals and associated files for the project"""
     if hasattr(self.prefs, "goals"):
       goals = self.prefs.goals
@@ -136,9 +140,28 @@ class TranslationProject:
     goallist = []
     for goalname, goalnode in goals.iteritems():
       goalfiles = getattr(goalnode, "files", "")
-      goalfiles = [goalfile.strip() for goalfile in ",".split(goalfiles)]
+      goalfiles = [goalfile.strip() for goalfile in goalfiles.split(",")]
+      if dirfilter:
+        if not dirfilter.endswith(os.path.sep) and not dirfilter.endswith(os.path.extsep + "po"):
+          dirfilter += os.path.sep
+        goallist = [goal for goal in goallist if goal.startswith(dirfilter)]
       goallist.append((goalname, goalfiles))
     return goallist
+
+  def getgoal(self, goalname, dirfilter=None):
+    """gets the files for the given goal"""
+    goals = self.getgoals(dirfilter)
+    for testgoalname, goalfiles in goals:
+      if testgoalname == goalname:
+        return goalfiles
+    return []
+
+  def addfiletogoal(self, goalname, filename):
+    """adds the given file to the goal"""
+    goalfiles = self.getgoal(goalname)
+    if filename not in goalfiles:
+      goalfiles.append(filename)
+      self.setgoal(goalname, goalfiles)
 
   def setgoal(self, goalname, goalfiles):
     """sets the goalfiles for the given goalname"""
@@ -147,8 +170,8 @@ class TranslationProject:
     if not hasattr(self.prefs, "goals"):
       self.prefs.goals = prefs.PrefNode(self.prefs, "goals")
     if not hasattr(self.prefs.goals, goalname):
-      setattr(self.prefs.goals, "goalname", prefs.PrefNode(self.prefs.goals, goalname))
-    goalnode = getattr(self.prefs.goals, "goalname")
+      setattr(self.prefs.goals, goalname, prefs.PrefNode(self.prefs.goals, goalname))
+    goalnode = getattr(self.prefs.goals, goalname)
     goalnode.files = goalfiles
     self.saveprefs()
 
