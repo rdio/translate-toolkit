@@ -316,7 +316,7 @@ class TranslatePage(pagelayout.PootlePage):
       trans = trans.decode("utf8")
     currenttitle = widgets.Division(self.localize("<b>Current Translation:</b>"))
     diffcodes = [difflib.SequenceMatcher(None, trans, suggestion).get_opcodes() for suggestion in suggestions]
-    combineddiffs = reduce(list.__add__, diffcodes)
+    combineddiffs = reduce(list.__add__, diffcodes, [])
     transdiff = self.highlightdiffs(trans, combineddiffs, issrc=True)
     editlink = self.geteditlink(item)
     currenttext = pagelayout.TranslationText([editlink, transdiff])
