@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from jToolkit.web import server
+from jToolkit.web.session import md5hexdigest
 from jToolkit.widgets import widgets
 from jToolkit.widgets import form
 from translate.pootle import indexpage
@@ -25,7 +26,7 @@ class RegisterPage(pagelayout.PootlePage):
     columnlist = [("username", "Email Address", "Must be a valid email address")]
     formlayout = {1:("username", )}
     optionsdict = {}
-    extrawidgets = []
+    extrawidgets = [widgets.Input({'type': 'submit', 'name':'register', 'value':'Register'})]
     record = dict([(column[0], "") for column in columnlist])
     return form.SimpleForm(record, "register", columnlist, formlayout, optionsdict, extrawidgets)
 
@@ -63,7 +64,12 @@ class PootleServer(OptionalLoginAppServer):
         return server.Redirect("index.html", withpage=redirectpage)
       return LoginPage(session)
     elif top == "register.html":
-      return RegisterPage(session)
+      if "username" in argdict:
+        username = argdict["username"]
+        session.db.insert("users", {"username":username, "passwdhash":md5hexdigest(username)})
+        return LoginPage(session)
+      else:
+        return RegisterPage(session)
     elif hasattr(session.instance.projects, top):
       project = getattr(session.instance.projects, top)
       pathwords = pathwords[1:]
