@@ -179,7 +179,6 @@ class TranslationProject:
     """calculates translation statistics for the given po file"""
     if pofilename in self.stats:
       return self.stats[pofilename]
-    # print "creating stats for",pofilename
     pofile = self.getpofile(pofilename)
     postats = dict([(name, len(items)) for name, items in pofile.classify.iteritems()])
     self.stats[pofilename] = postats
@@ -210,6 +209,11 @@ class TranslationProject:
     pofile = po.pofile(inputfile)
     # we ignore all the headers by using this filtered set
     pofile.transelements = [poel for poel in pofile.poelements if not (poel.isheader() or poel.isblank())]
+    self.classifyelements(pofile)
+    self.pofiles[pofilename] = pofile
+    return pofile
+
+  def classifyelements(self, pofile):
     # we always want to have the classifications available
     pofile.classify = {}
     pofile.classify["fuzzy"] = [item for item, poel in enumerate(pofile.transelements) if poel.isfuzzy()]
@@ -225,8 +229,6 @@ class TranslationProject:
       for failure in failures:
         functionname = failure.split(":",2)[0]
         pofile.classify["check-" + functionname].append(item)
-    self.pofiles[pofilename] = pofile
-    return pofile
 
   def getpofilelen(self, pofilename):
     """returns number of items in the given pofilename"""
@@ -252,6 +254,7 @@ class TranslationProject:
     pofile.transelements[item].msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
     del self.stats[pofilename]
     self.savefile(pofilename)
+    self.classifyelements(pofile)
 
   def savefile(self, pofilename):
     """saves changes to disk..."""
