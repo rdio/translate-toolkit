@@ -17,11 +17,15 @@ def getmodtime(filename, default=None):
   else:
     return default
 
+class RightsError(ValueError):
+  pass
+
 class TranslationSession:
   """A translation session represents a users work on a particular translation project"""
   def __init__(self, project, session):
     self.session = session
     self.project = project
+    self.rights = self.getrights()
 
   def getrights(self):
     """gets the current users rights"""
@@ -33,12 +37,16 @@ class TranslationSession:
   def receivetranslation(self, pofilename, item, trans, issuggestion):
     """submits a new/changed translation from the user"""
     if issuggestion:
+      if "suggest" not in self.rights:
+        raise RightsError("you do not have rights to suggest changes here")
       if self.session.isopen:
         username = self.session.username
       else:
         username = None
       self.project.suggesttranslation(pofilename, item, trans, username)
     else:
+      if "translate" not in self.rights:
+        raise RightsError("you do not have rights to change translations here")
       self.project.updatetranslation(pofilename, item, trans)
 
   def skiptranslation(self, pofilename, item):
