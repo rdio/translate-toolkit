@@ -27,7 +27,7 @@ from translate.storage import ts
 from translate.misc import quote
 
 class ts2po:
-  def convertmessage(self, contextname, messagenum, msgid, msgstr, msgcomments, msgtype):
+  def convertmessage(self, contextname, messagenum, msgid, msgstr, msgcomments, transtype):
     """makes a poelement from the given message"""
     thepo = po.poelement()
     thepo.sourcecomments.append("#: %s#%d\n" % (contextname, messagenum))
@@ -37,9 +37,9 @@ class ts2po:
     thepo.msgstr = [quote.quotestr(quote.rstripeol(line)) for line in msgstr.split("\n")]
     if len(msgcomments)>0:
       thepo.othercomments.append("# %s\n" %(msgcomments))
-    if msgtype == "unfinished":
+    if transtype == "unfinished":
       thepo.typecomments.append("#, fuzzy\n")
-    if msgtype == "obsolete":
+    if transtype == "obsolete":
       thepo.visiblecomments.append("#_ OBSOLETE\n")
       # using the fact that -- quote -- "(this is nonsense)"
     return thepo
@@ -57,8 +57,8 @@ class ts2po:
         source = tsfile.getmessagesource(message)
         translation = tsfile.getmessagetranslation(message)
         comment = tsfile.getmessagecomment(message)
-        type = tsfile.getmessageattributes(message)
-        thepo = self.convertmessage(contextname, messagenum, source, translation, comment, type)
+        transtype = tsfile.getmessagetype(message)
+        thepo = self.convertmessage(contextname, messagenum, source, translation, comment, transtype)
         thepofile.poelements.append(thepo)
     return thepofile
 

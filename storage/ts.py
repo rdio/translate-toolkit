@@ -164,7 +164,7 @@ class QtTsParser:
     translationnode = message.getElementsByTagName("translation")[0]
     return self.getnodetext(translationnode)
 
-  def getmessageattributes(self, message):
+  def getmessagetype(self, message):
     """returns the message translation attributes for a given node"""
     translationnode = message.getElementsByTagName("translation")[0]
     return translationnode.getAttribute("type")
