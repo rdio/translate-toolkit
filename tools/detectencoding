@@ -29,27 +29,20 @@ import codecs
 import string
 
 class detector:
+  """the detector class encompasses all the functionality required to detect encodings"""
   excludechoices={'letters':string.letters, 'digits':string.digits,
                   'whitespace':string.whitespace, 'punctuation':string.punctuation,
                   'std':string.letters+string.digits+string.whitespace+string.punctuation}
 
   def __init__(self, filenames, options):
-    self.outputencoding = options.outputencoding
-    self.limitencodings = options.limitencodings
+    """constructs a detector with the given filenames and options"""
+    self.options = options
     self.alloriginals, self.alltranslations = [], []
-    for filename in filenames:
-      if not os.path.exists(filename):
-        print >>sys.stderr, "cannot process %s: does not exist" % filename
-        continue
-      elif os.path.isdir(filename):
-        self.handledir(filename)
-      else:
-        self.handlefile(filename)
+    self.recursefiles(filenames)
     if options.dictfile:
       self.dictstring = codecs.open(options.dictfile, 'r', options.dictencoding).read()
     else:
       self.dictstring = None
-    self.options = options
     self.excludestring = ""
     if options.exclude:
       for excludecategory in options.exclude:
@@ -57,8 +50,9 @@ class detector:
           self.excludestring += self.excludechoices[excludecategory]
 
   def listencodings(self):
-    if self.limitencodings is not None:
-      return self.limitencodings.split(",")
+    """lists the encodings we are using (all if none have been given on cmdline)"""
+    if self.options.limitencodings is not None:
+      return self.options.limitencodings.split(",")
     modules = encodings.aliases.aliases.values()
     moduledict = dict([(module, True) for module in modules])
     modules = moduledict.keys()
@@ -66,12 +60,15 @@ class detector:
     return modules
 
   def processoriginal(self, original):
+    """adds the given original string to the list of originals"""
     self.alloriginals.append(original)
 
   def processtranslation(self, translation):
+    """adds the given translation to the list of translations"""
     self.alltranslations.append(translation)
 
   def processfile(self, infile):
+    """processes all the strings in the given po file"""
     pof = po.pofile()
     pof.fromlines(infile.readlines())
     originals, translations = [], []
@@ -86,20 +83,35 @@ class detector:
       self.processoriginal(msgid)
       self.processtranslation(msgstr)
 
-  def handlefile(self, filename):
+  def recursefiles(self, filenames):
+    """reads in the filenames given and extracts their translations"""
+    for filename in filenames:
+      if not os.path.exists(filename):
+        print >>sys.stderr, "cannot process %s: does not exist" % filename
+        continue
+      elif os.path.isdir(filename):
+        self.handledir(filename)
+      else:
+        self.readfile(filename)
+
+  def readfile(self, filename):
+    """reads in the given file and processes it"""
     infile = open(filename)
     self.processfile(infile)
     infile.close()
-    print filename
+    if self.options.verbose:
+      print "read %s" % filename
 
-  def handlefiles(self, arg, dirname, filenames):
+  def readfiles(self, arg, dirname, filenames):
+    """reads in the given files in the given directory and processes them"""
     for filename in filenames:
       pathname = os.path.join(dirname, filename)
       if not os.path.isdir(pathname):
-        self.handlefile(pathname)
+        self.readfile(pathname)
 
   def handledir(self, dirname):
-    os.path.walk(dirname, self.handlefiles, None)
+    """walks through the directory structure and reads in all the files"""
+    os.path.walk(dirname, self.readfiles, None)
 
   def updatecountmap(self, charstring, excludestring="", countmap=None):
     """makes a countmap of the characters in the string, excluding those in excludestring
@@ -137,13 +149,13 @@ class detector:
   def encodeattempt(self, charstring):
     """encode what can be encoding in encoding, add the rest on at the end in a repr"""
     try:
-      return charstring.encode(self.outputencoding)
+      return charstring.encode(self.options.outputencoding)
     except:
       encoded = ""
       failed = ""
       for char in charstring:
         try:
-          encoded += char.encode(self.outputencoding)
+          encoded += char.encode(self.options.outputencoding)
         except:
           failed += char
       return encoded + " " + repr(failed)
@@ -189,6 +201,7 @@ class detector:
       print validencoding, self.encodeattempt(sortedstring)
 
   def findwords(self, dictmap, encoding):
+    """finds all words in the translations that when decoded with encoding match in the dictmap"""
     uniquewordsfound = {}
     wordsfound = 0
     for translation in self.alltranslations:
