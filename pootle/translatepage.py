@@ -280,7 +280,7 @@ class TranslatePage(pagelayout.PootlePage):
       if isinstance(suggestion, str):
         suggestion = suggestion.decode("utf8")
       if len(suggestions) > 1:
-        suggtitle = widgets.Division("<b>Suggestion %d:</b>" % suggid)
+        suggtitle = widgets.Division("<b>Suggestion %d:</b>" % (suggid+1))
       else:
         suggtitle = widgets.Division("<b>Suggestion:</b>")
       suggestiontext = pagelayout.TranslationText(widgets.Font(suggdiff, {"color":self.textcolors[item % 2]}))
@@ -290,7 +290,11 @@ class TranslatePage(pagelayout.PootlePage):
       suggdiv = widgets.Division(["<br/>", suggtitle, suggestiontext, suggestionhidden, "<br/>", acceptbutton, rejectbutton], "sugg%d" % item)
       suggdivs.append(suggdiv)
     skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
-    transdiv = widgets.Division([currenttitle, currenttext, editlink] + suggdivs + [skipbutton], "trans%d" % item, cls="translate-translation")
+    if suggdivs:
+      suggdivs[-1].addcontents(skipbutton)
+    else:
+      suggdivs.append(skipbutton)
+    transdiv = widgets.Division([currenttitle, currenttext, editlink] + suggdivs, "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def gettransview(self, item, trans):
