@@ -67,19 +67,19 @@ def runpofilter(inputfile, outputfile, includereview=1):
   return 1
 
 if __name__ == '__main__':
-  from translate.filters import filter
+  from translate.filters import filtercmd
   inputformats = {"po":runpofilter, "pot":runpofilter}
-  parser = filter.FilterOptionParser(filter.optionalrecursion, inputformats)
+  parser = filtercmd.FilterOptionParser(filter.optionalrecursion, inputformats)
   parser.add_option("", "--includereview", dest="includereview", default=True, action="store_true",
     help="include elements marked for review...")
-  parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
-  parser.add_option("-q", "--quiet", action="store_false", dest="verbose")
   options, args = parser.parse_args()
+  # TODO: move this code into filtercmd...
   if options.input is None:
     if len(args) == 0:
       parser.runfilter(options, runpofilter)
     else:
       for input in args:
+        options.input = input
         parser.runfilter(options, runpofilter)
   else:
     if len(args) != 0:
