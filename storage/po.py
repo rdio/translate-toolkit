@@ -70,8 +70,9 @@ class poelement:
     else:
       return len(getunquotedstr(self.msgstr).strip())
 
-  def merge(self, otherpo):
-    """merges the otherpo (with the same msgid) into this one"""
+  def merge(self, otherpo, overwrite=False):
+    """merges the otherpo (with the same msgid) into this one
+    overwrite non-blank self.msgstr only if overwrite is True"""
     def mergelists(list1, list2):
       list1.extend([item for item in list2 if not item in list1])
     mergelists(self.othercomments, otherpo.othercomments)
@@ -79,7 +80,7 @@ class poelement:
     mergelists(self.typecomments, otherpo.typecomments)
     mergelists(self.visiblecomments, otherpo.visiblecomments)
     mergelists(self.msgidcomments, otherpo.msgidcomments)
-    if self.isblankmsgstr():
+    if self.isblankmsgstr() or overwrite:
       self.msgstr = otherpo.msgstr
     elif otherpo.isblankmsgstr():
       if self.msgid != otherpo.msgid:
