@@ -6,6 +6,7 @@ import codecs
 from translate.misc import sparse
 import sys
 import operator
+import os
 
 class SetupIndex(sparse.SimpleParser):
   def __init__(self, filename=None):
@@ -211,6 +212,26 @@ class SetupIndex(sparse.SimpleParser):
         packedname = sparse.stringeval(self.getfieldvalue(fileentry, "PackedName"))
         self.setfieldvalue(fileentry, "PackedName", '"%s"' % (packedname+suffix))
 
+  def copyfiles(self, srcdirectory, destdirectory, onlychanged=0):
+    for fileentry in self.bytype['File']:
+     try:
+      fileentrysection = self.definitions[fileentry]
+      if 'PackedName' not in fileentrysection: continue
+      packedtokennum = self.getfieldtokennum(fileentry, "PackedName")
+      # FIXME: shouldn't have this problem
+      if self.tokens[packedtokennum] == '=': packedtokennum += 1
+      originalpackedname = sparse.stringeval(self.originaltokens[packedtokennum])
+      packedname = sparse.stringeval(self.tokens[packedtokennum])
+      if not onlychanged or packedname != originalpackedname:
+        srcfile = os.path.join(srcdirectory, originalpackedname)
+        destfile = os.path.join(destdirectory, packedname)
+        print 'cp -p %s %s' % (srcfile, destfile)
+        os.system('cp -p %s %s' % (srcfile, destfile))
+     except Exception, e:
+      print "error in %r %r" % (self.filename, fileentry)
+      print e
+      continue
+
 if __name__ == '__main__':
   import sys
   try:
@@ -225,5 +246,7 @@ if __name__ == '__main__':
     othersetupfiles.append(SetupIndex(arg))
   mainsetupfile.merge(othersetupfiles)
   open(sys.argv[-1], 'w').write(mainsetupfile.getsource())
-
+  mainsetupfile.copyfiles(os.path.dirname(sys.argv[1]), os.path.dirname(sys.argv[-1]))
+  for othersetupfile in othersetupfiles:
+    othersetupfile.copyfiles(os.path.dirname(othersetupfile.filename), os.path.dirname(sys.argv[-1]), 1)
 
