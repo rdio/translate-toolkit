@@ -50,11 +50,13 @@ class CatchStringOutput(NamedStringOutput, object):
     """Set up the output stream, and remember a method to call on closing"""
     NamedStringOutput.__init__(self)
     self.onclose = onclose
+
   def close(self):
     """wrap the underlying close method, to pass the value to onclose before it goes"""
     value = self.getvalue()
     self.onclose(value)
     super(CatchStringOutput, self).close()
+
   def slam(self):
     """use this method to force the closing of the stream if it isn't closed yet"""
     if not self.closed:
@@ -77,17 +79,20 @@ class CatchPotentialOutput(NamedStringInput, object):
     self.write = rememberchanged(self, s.write)
     self.writelines = rememberchanged(self, s.writelines)
     self.truncate = rememberchanged(self, s.truncate)
+
   def close(self):
     """wrap the underlying close method, to pass the value to onclose before it goes"""
     if self.changed:
       value = self.getvalue()
       self.onclose(value)
     NamedStringInput.close(self)
+
   def flush(self):
     """zip files call flush, not close, on file-like objects"""
     value = self.getvalue()
     self.onclose(value)
     NamedStringInput.flush(self)
+
   def slam(self):
     """use this method to force the closing of the stream if it isn't closed yet"""
     if not self.closed:
@@ -100,6 +105,7 @@ class ZipFileCatcher(zipfile.ZipFile, object):
     # storing oldclose as attribute, since if close is called from __del__ it has no access to external variables
     self.oldclose = super(ZipFileCatcher, self).close
     super(ZipFileCatcher, self).__init__(*args, **kwargs)
+
   def addcatcher(self, pendingsave):
     """remember to call the given method before closing"""
     if hasattr(self, "pendingsaves"):
@@ -107,6 +113,7 @@ class ZipFileCatcher(zipfile.ZipFile, object):
         self.pendingsaves.append(pendingsave)
     else:
       self.pendingsaves = [pendingsave]
+
   def close(self):
     """close the stream, remembering to call any addcatcher methods first"""
     if hasattr(self, "pendingsaves"):
