@@ -223,6 +223,7 @@ class PootleServer(OptionalLoginAppServer):
       displaymessage = "that username already exists. emailing the password to the username's email address...\n"
       redirecturl = "login.html"
     else:
+      setattr(self.instance.users, username + ".email", email)
       setattr(self.instance.users, username + ".passwdhash", session.md5hexdigest(password))
       message = "an account has been created for you\n"
       setattr(self.instance.users, username + ".activated", 0)
@@ -234,7 +235,9 @@ class PootleServer(OptionalLoginAppServer):
     self.saveprefs()
     message += "username: %s\npassword: %s\n" % (username, password)
     smtpserver = self.instance.registration.smtpserver
-    errmsg = mailer.dosendmessage(fromemail=self.instance.registration.fromaddress, recipientemails=[username], message=message, smtpserver=smtpserver)
+    fromaddress = self.instance.registration.fromaddress
+    message = mailer.makemessage({"from": fromaddress, "to": [email], "subject": "Pootle Registration", "body": message})
+    errmsg = mailer.dosendmessage(fromemail=self.instance.registration.fromaddress, recipientemails=[email], message=message, smtpserver=smtpserver)
     if errmsg:
       raise ValueError(errmsg)
     return displaymessage, redirecturl
