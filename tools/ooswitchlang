@@ -14,6 +14,7 @@ from translate import __version__
 availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'tn': 'Tswana', 'zu': 'Zulu'}
 
 class oosetupfile(xmlwrapper.XMLWrapper):
+  """this represents an openoffice.org Setup.xcu file"""
   def __init__(self, setupfile):
     self.setupfile = setupfile
     if not os.path.isfile(self.setupfile):
@@ -23,6 +24,7 @@ class oosetupfile(xmlwrapper.XMLWrapper):
     xmlwrapper.XMLWrapper.__init__(self, root)
 
   def getcurrentlanguage(self):
+    """Reads the current language attribute"""
     for node in self.getchildren("node"):
       if node.getattr("name") == "L10N":
         for prop in self.getchildren("prop"):
@@ -32,6 +34,7 @@ class oosetupfile(xmlwrapper.XMLWrapper):
     raise ValueError("Error finding language node")
 
   def setcurrentlanguage(self, language):
+    """Changes the current language attribute"""
     for node in self.getchildren("node"):
       if node.getattr("name") == "L10N":
         for prop in self.getchildren("prop"):
@@ -42,10 +45,13 @@ class oosetupfile(xmlwrapper.XMLWrapper):
     raise ValueError("Error finding language node")
 
   def savetofile(self, filename=None):
+    """Saves the language to the file"""
     if filename is None:
       filename = self.setupfile
     oonamespace = {'http://openoffice.org/2001/registry': 'oor', 'http://www.w3.org/2001/XMLSchema': 'xs'}
     self.obj.attrib['xmlns:xs'] = "http://www.w3.org/2001/XMLSchema"
+    # this fixes up the namespaces, otherwise OOo bombs
+    # anyway we use the setofficelang executable to do this, so this is just for show...
     xmlwrapper.ElementTree.fixtag = xmlwrapper.makefixtagproc(oonamespace)
     self.write(open(filename, 'w'))
 
@@ -285,12 +291,14 @@ class LanguageSelectionWindow(wx.Frame):
     self.setinstalldir(versiondir)
 
   def getlanguage(self):
+    """looks up the current language in the config files"""
     if self.adminchoice.GetValue():
       return self.config.getadminlanguage()
     else:
       return self.config.getuserlanguage()
 
   def setlanguage(self, newisocode, admin, force):
+    """changes the current language"""
     try:
       self.config.setofficelang(newisocode, admin=admin, force=force)
       wx.MessageBox("Setting language successful", "ooswitchlang", wx.OK, self)
@@ -306,6 +314,7 @@ class LanguageSelectionWindow(wx.Frame):
       return False
 
   def showcurrentlanguage(self):
+    """updates the GUI to display the current language"""
     currentisocode = self.getlanguage()
     currentlanguagename = self.languages.get(currentisocode, None)
     if currentlanguagename in self.languagenames:
