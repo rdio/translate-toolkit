@@ -39,6 +39,14 @@ class TranslateForm(widgets.Division):
   def __init__(self, contents):
     widgets.Division.__init__(self, contents, cls="translate-form")
 
+class ActionLinks(widgets.Division):
+  def __init__(self, contents):
+    widgets.Division.__init__(self, [], cls="item-description")
+    for num, item in enumerate(contents):
+      self.addcontents(item)
+      if num < len(contents)-1:
+        self.addcontents("| ")
+
 class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
   def __init__(self, session):
