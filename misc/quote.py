@@ -141,9 +141,12 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
 
   return (str,instring)
 
-def escapequotes(source):
+def escapequotes(source, escapeescapes=0):
   "Returns the same string, with double quotes escaped with backslash"
-  return source.replace('"','\\"')
+  if escapeescapes:
+    return source.replace('\\', '\\\\').replace('"', '\\"')
+  else:
+    return source.replace('"','\\"')
 
 def escapesinglequotes(source):
   "Returns the same string, with single quotes doubled"
@@ -155,9 +158,9 @@ def escapeunicode(str):
 def unescapeunicode(str):
   return str.replace('\\\\u','\\u')
 
-def quotestr(source):
+def quotestr(source, escapeescapes=0):
   "Returns a doublequote-delimited quoted string, escaping double quotes with backslash"
-  return '"' + escapequotes(source) + '"'
+  return '"' + escapequotes(source, escapeescapes) + '"'
 
 def singlequotestr(source):
   "Returns a doublequote-delimited quoted string, escaping single quotes with themselves"
