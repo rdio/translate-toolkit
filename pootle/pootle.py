@@ -14,6 +14,9 @@ import sys
 import os
 import random
 
+class RegistrationError(ValueError):
+  pass
+
 class LoginPage(server.LoginPage, pagelayout.PootlePage):
   """wraps the normal login page in a PootlePage layout"""
   def __init__(self, session, extraargs={}, confirmlogin=0, specialmessage=None, languagenames=None):
@@ -207,51 +210,70 @@ class PootleServer(OptionalLoginAppServer):
 
   def handleregistration(self, session, argdict):
     """handles the actual registration"""
+    supportaddress = getattr(self.instance.registration, 'supportaddress', "")
+    if supportaddress:
+      message = "Reply-To: %s\n" % supportaddress
+    else:
+      message = ""
     username = argdict.get("username", "")
     if not username or not username.isalnum() or not username[0].isalpha():
-      raise ValueError("username must be alphanumeric")
+      raise RegistrationError("Username must be alphanumeric, and must start with an alphabetic character")
     email = argdict.get("email", "")
     password = argdict.get("password", "")
-    if not email:
-      raise ValueError("must supply a valid email address")
-    minpasswordlen = 6
-    if not password or len(password) < minpasswordlen:
-      raise ValueError("must supply a valid password of at least %d characters" % minpasswordlen)
+    if not (email and "@" in email and "." in email):
+      raise RegistrationError("You must supply a valid email address")
     userexists = session.loginchecker.userexists(username)
     if userexists:
       usernode = getattr(session.loginchecker.users, username)
       # use the email address on file
       email = getattr(usernode, "email", email)
-      password = getattr(usernode, "passwdhash", "")
+      password = ""
       # TODO: we can't figure out the password as we only store the md5sum. have a password reset mechanism
-      message = "you (or someone else) requested your password... here is the md5sum of it, happy cracking\n"
-      displaymessage = "that username already exists. emailing the password to the username's email address...\n"
+      message += "You (or someone else) attempted to register an account with your username.\n"
+      message += "We don't store your actual password but only a hash of it\n"
+      if supportaddress:
+       message += "If you have a problem with registration, please contact %s\n" % supportaddress
+      else:
+       message += "If you have a problem with registration, please contact the site administrator\n"
+      displaymessage = "That username already exists. Emailing the registered email address...\n"
       redirecturl = "login.html?username=%s" % username
     else:
+      minpasswordlen = 6
+      if not password or len(password) < minpasswordlen:
+        raise RegistrationError("You must supply a valid password of at least %d characters" % minpasswordlen)
       setattr(session.loginchecker.users, username + ".email", email)
       setattr(session.loginchecker.users, username + ".passwdhash", session.md5hexdigest(password))
-      message = "an account has been created for you\n"
       setattr(session.loginchecker.users, username + ".activated", 0)
       activationcode = self.generateactivationcode()
       setattr(session.loginchecker.users, username + ".activationcode", activationcode)
-      message += "to activate it, enter the following activation code:\n%s\n" % activationcode
+      activationlink = ""
+      message += "A Pootle account has been created for you using this email address\n"
       if session.instance.baseurl.startswith("http://"):
-        message += "this should happen automatically if you click on the following link:\n"
+        message += "To activate your account, follow this link:\n"
         activationlink = session.instance.baseurl
         if not activationlink.endswith("/"):
           activationlink += "/"
         activationlink += "activate.html?username=%s&activationcode=%s" % (username, activationcode)
         message += "  %s  \n" % activationlink
-      displaymessage = "account created. will be emailed login details. enter activation code on the next page"
+      message += "Your activation code is:\n%s\n" % activationcode
+      if activationlink:
+        message += "If you are unable to follow the link, please enter the above code at the activation page\n"
+      message += "This message is sent to verify that the email address is in fact correct. If you did not want to register an account, you may simply ignore the message."
+      displaymessage = "Account created. You will be emailed login details and an activation code. Please enter your activation code on the next page. "
+      if activationlink:
+        displaymessage += "(Or simply click on the activation link in the email)"
       redirecturl = "activate.html?username=%s" % username
     self.saveuserprefs(session.loginchecker.users)
-    message += "username: %s\npassword: %s\n" % (username, password)
+    message += "Your user name is: %s\n" % username
+    if password.strip():
+      message += "Your password is: %s\n" % password
+    message += "Your registered email address is: %s\n" % email
     smtpserver = self.instance.registration.smtpserver
     fromaddress = self.instance.registration.fromaddress
     message = mailer.makemessage({"from": fromaddress, "to": [email], "subject": "Pootle Registration", "body": message})
     errmsg = mailer.dosendmessage(fromemail=self.instance.registration.fromaddress, recipientemails=[email], message=message, smtpserver=smtpserver)
     if errmsg:
-      raise ValueError("Error sending mail: %s" % errmsg)
+      raise RegistrationError("Error sending mail: %s" % errmsg)
     return displaymessage, redirecturl
 
   def registerpage(self, session, argdict):
@@ -259,7 +281,7 @@ class PootleServer(OptionalLoginAppServer):
     if "username" in argdict:
       try:
         displaymessage, redirecturl = self.handleregistration(session, argdict)
-      except ValueError, message:
+      except RegistrationError, message:
         session.status = str(message)
         return RegisterPage(session, argdict)
       message = pagelayout.IntroText(displaymessage)
