@@ -15,9 +15,10 @@ import sys
 import operator
 import os
 import copy
+import datetime
 
-class SetupIndex(sparse.SimpleParser):
-  def __init__(self, filename=None):
+class SetupParser(sparse.SimpleParser):
+  def __init__(self):
     sparse.SimpleParser.__init__(self)
     self.defaulttokenlist.extend(';\n')
     self.whitespacechars = " \t\r"
@@ -34,16 +35,6 @@ class SetupIndex(sparse.SimpleParser):
     self.insertions = {}
     for sectiontype in self.sectiontypes:
       self.bytype[sectiontype] = {}
-    if filename is not None:
-      self.readfile(filename)
-
-  def readfile(self, filename):
-    self.filename = filename
-    # f = codecs.open(self.filename, 'r', encoding='utf8')
-    f = open(self.filename, 'r')
-    contents = f.read()
-    f.close()
-    self.parse(contents)
 
   def parse(self, contents):
     self.tokenize(contents)
@@ -51,9 +42,6 @@ class SetupIndex(sparse.SimpleParser):
     tokennum = 0
     while tokennum < len(self.tokens):
       tokennum = self.parsesection(tokennum)
-    self.languagename = sparse.stringeval(self.getfieldvalue('gid_Dir_Config_Language', 'HostName'))
-    self.isocode = sparse.stringeval(self.getfieldvalue('gid_Dir_Share_Registry_Res_Lang', 'HostName'))
-    self.dialingcode = sparse.stringeval(self.getfieldvalue('gid_Installation', 'DefaultLanguage'))
 
   def parsesection(self, tokennum):
     sectiontype = self.tokens[tokennum]
@@ -160,7 +148,7 @@ class SetupIndex(sparse.SimpleParser):
   def getsectiontokenrange(self, sectionname):
     section = self.definitions[sectionname]
     start, end = section['tokennums']['start'], section['tokennums']['end']+1
-    while self.tokens[start+end] == '\n':
+    while self.tokens[start+end] == '\n' and start+end < len(self.tokens)-1:
       end += 1
     return (start, start+end)
 
@@ -170,6 +158,26 @@ class SetupIndex(sparse.SimpleParser):
       if self.originaltokens[tokennum] == fileentry:
         return tokennum
     return None
+
+class SetupIndex(SetupParser):
+  def __init__(self, filename=None):
+    SetupParser.__init__(self)
+    if filename is not None:
+      self.readfile(filename)
+
+  def readfile(self, filename):
+    self.filename = filename
+    # f = codecs.open(self.filename, 'r', encoding='utf8')
+    f = open(self.filename, 'r')
+    contents = f.read()
+    f.close()
+    self.parse(contents)
+
+  def parse(self, contents):
+    SetupParser.parse(self, contents)
+    self.languagename = sparse.stringeval(self.getfieldvalue('gid_Dir_Config_Language', 'HostName'))
+    self.isocode = sparse.stringeval(self.getfieldvalue('gid_Dir_Share_Registry_Res_Lang', 'HostName'))
+    self.dialingcode = sparse.stringeval(self.getfieldvalue('gid_Installation', 'DefaultLanguage'))
 
   def keymunge(self, keyname):
     """munges a keyname and removes invalid entries"""
@@ -266,6 +274,31 @@ class SetupIndex(sparse.SimpleParser):
           if index != self:
             self.addforeignconfigitem(index, configitem, suffix)
 
+  def addmanualfile(self, fileentry, direntry, filename, packedname, aftersection):
+    """Inserts an external file into the build system"""
+    fileinfo = os.stat_result(os.stat(filename))
+    filedate = datetime.datetime.fromtimestamp(fileinfo.st_mtime)
+    filesectionlines = ["File %s" % fileentry]
+    def addparam(paramname, paramstr):
+      filesectionlines.append("        %s%s = %s;" % (paramname, " "*(16-len(paramname)), paramstr))
+    addparam("Name", '"%s"' % os.path.basename(filename))
+    addparam("PackedName", '"%s"' % packedname)
+    addparam("Size", "%d" % fileinfo.st_size)
+    addparam("Dir", "%s" % direntry)
+    addparam("Carrier", "gid_DataCarrier")
+    addparam("UnixRights", ("%o" % fileinfo.st_mode)[-3:])
+    addparam("Date", filedate.strftime('"%d%m%Y"'))
+    addparam("Time", filedate.strftime('"%H%M"'))
+    addparam("Styles", "(PACKED)")
+    filesectionlines.append("End")
+    filesectionlines.extend(["", "", ""])
+    filesectionstr = "\r\n".join(filesectionlines)
+    dummysetup = SetupParser()
+    dummysetup.parse(filesectionstr)
+    fileentrysection = dummysetup.definitions[fileentry]
+    tokenrange = dummysetup.getsectiontokenrange(fileentry)
+    self.insertforeignsection(aftersection, fileentry, fileentrysection, dummysetup, tokenrange)
+
   def addforeignconfigitem(self, index, configitem, suffix):
     """adds the foreign config item and updates the modules list..."""
     tokenrange = index.getsectiontokenrange(configitem)
@@ -346,8 +379,8 @@ if __name__ == '__main__':
   options, args = optparser.parse_args()
   if len(args) < 2:
     optparser.error("need at least one inputdir and an outputdir")
-  maindir = args[1]
-  otherdirs = args[2:-1]
+  maindir = args[0]
+  otherdirs = args[1:-1]
   outputdir = args[-1]
   if os.path.isfile(os.path.join(maindir, 'setup.ins')):
     setupname = 'setup.ins'
@@ -361,6 +394,7 @@ if __name__ == '__main__':
   for otherdir in otherdirs:
     othersetupfiles.append(SetupIndex(os.path.join(otherdir, setupname)))
   mainsetupfile.merge(othersetupfiles)
+  # mainsetupfile.addmanualfile("gid_File_Bin_switchlang", "gid_Dir_Program", "ooswitchlang.exe", "f999999", "gid_File_Bin_Setofficelang")
   if not os.path.isdir(outputdir):
     os.mkdir(outputdir)
   open(os.path.join(outputdir, setupname), 'w').write(mainsetupfile.getsource())
