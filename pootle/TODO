@@ -21,7 +21,6 @@ requirements for translatathon:
 
 other:
   be able to add new projects / reconfigure without restarting the service
-  can't currently detect GNU languages
   manage new users / registration
   add ability to mark/unmark things as fuzzy
   move the sidebar to be like distributed proofreaders (at the top, small)
