@@ -285,6 +285,27 @@ class SetupIndex(SetupParser):
           if index != self:
             self.addforeignconfigitem(index, configitem, suffix)
 
+  def addmanualshortcut(self, shortcutentry, fileentry, iconid, baseentry):
+    """Inserts a manual shortcut into the build system"""
+    shortcutsectionlines = ["FolderItem %s" % shortcutentry]
+    def addparam(paramname, paramstr):
+      shortcutsectionlines.append("        %s%s = %s;" % (paramname, " "*(16-len(paramname)), paramstr))
+    addparam("ModuleID", self.getfieldvalue(baseentry, "ModuleID"))
+    addparam("Name", '"Change language"')
+    addparam("FolderID", self.getfieldvalue(baseentry, "FolderID"))
+    addparam("FileID", fileentry)
+    addparam("IconFile", fileentry)
+    addparam("IconID", "%d" % iconid)
+    addparam("Styles", self.getfieldvalue(baseentry, "Styles"))
+    shortcutsectionlines.append("End")
+    shortcutsectionlines.extend(["", "", ""])
+    shortcutsectionstr = "\r\n".join(shortcutsectionlines)
+    dummysetup = SetupParser()
+    dummysetup.parse(shortcutsectionstr)
+    shortcutentrysection = dummysetup.definitions[shortcutentry]
+    tokenrange = dummysetup.getsectiontokenrange(shortcutentry)
+    self.insertforeignsection(baseentry, shortcutentry, shortcutentrysection, dummysetup, tokenrange)
+
   def addmanualfile(self, fileentry, filename, packedname, baseentry):
     """Inserts an external file into the build system"""
     fileinfo = os.stat_result(os.stat(filename))
@@ -418,7 +439,9 @@ if __name__ == '__main__':
   mainsetupfile.merge(othersetupfiles)
   if options.switchlangexe is not None:
     packedname = mainsetupfile.makepackedname("f_")
-    mainsetupfile.addmanualfile("gid_File_Bin_switchlang", options.switchlangexe, packedname, "gid_File_Bin_Setofficelang")
+    mainsetupfile.addmanualfile("gid_File_Bin_Switchlang", options.switchlangexe, packedname, "gid_File_Bin_Setofficelang")
+    if "gid_Folderitem_Opendocument" in mainsetupfile.definitions:
+      mainsetupfile.addmanualshortcut("gid_Folderitem_Switchlang", "gid_File_Bin_Switchlang", 0, "gid_Folderitem_Opendocument")
   if not os.path.isdir(outputdir):
     os.mkdir(outputdir)
   open(os.path.join(outputdir, setupname), 'w').write(mainsetupfile.getsource())
