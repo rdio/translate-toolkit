@@ -66,6 +66,8 @@ bugs:
   when checks are on and you browse into one when you return checks are off
     (confusing)
   searching does not work when in the translation interface
+  currently project codes cannot have a dash "-" in them eg kde-i18n.  Either
+    we should allow or warn when starting pootle.
 
 assignment:
   assign to a group
