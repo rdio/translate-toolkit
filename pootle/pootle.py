@@ -30,8 +30,10 @@ class LoginPage(server.LoginPage, pagelayout.PootlePage):
 class RegisterPage(pagelayout.PootlePage):
   """page for new registrations"""
   def __init__(self, session, argdict):
-    introtext = [pagelayout.IntroText("Please enter your registration details"),
-                 pagelayout.IntroText("Current Status: %s" % session.status)]
+    introtext = [pagelayout.IntroText("Please enter your registration details")]
+    if session.status:
+      statustext = pagelayout.IntroText(session.status)
+      introtext.append(statustext)
     self.argdict = argdict
     contents = [introtext, self.getform()]
     pagelayout.PootlePage.__init__(self, "Pootle Registration", contents, session)
@@ -48,8 +50,10 @@ class RegisterPage(pagelayout.PootlePage):
 class ActivatePage(pagelayout.PootlePage):
   """page for new registrations"""
   def __init__(self, session, argdict):
-    introtext = [pagelayout.IntroText("Please enter your activation details"),
-                 pagelayout.IntroText("Current Status: %s" % session.status)]
+    introtext = [pagelayout.IntroText("Please enter your activation details")]
+    if session.status:
+      statustext = pagelayout.IntroText(session.status)
+      introtext.append(statustext)
     self.argdict = argdict
     contents = [introtext, self.getform()]
     pagelayout.PootlePage.__init__(self, "Pootle Account Activation", contents, session)
@@ -117,6 +121,9 @@ class PootleServer(OptionalLoginAppServer):
       top = ""
     if not top or top == "index.html":
       return indexpage.PootleIndex(self.potree, session)
+    elif top == 'res.html':
+      from jLogbook.python import configpage
+      return configpage.ResourcePage(self, session)
     elif top == "login.html":
       if session.isopen:
         redirecttext = pagelayout.IntroText("Redirecting to index...")
@@ -233,6 +240,7 @@ class PootleServer(OptionalLoginAppServer):
         message += "If you have a problem with registration, please contact the site administrator\n"
       displaymessage = "That username already exists. Emailing the registered email address...\n"
       redirecturl = "login.html?username=%s" % username
+      displaymessage += "Proceeding to <a href='%s'>login</a>\n" % redirecturl
     else:
       minpasswordlen = 6
       if not password or len(password) < minpasswordlen:
@@ -255,10 +263,10 @@ class PootleServer(OptionalLoginAppServer):
       if activationlink:
         message += "If you are unable to follow the link, please enter the above code at the activation page\n"
       message += "This message is sent to verify that the email address is in fact correct. If you did not want to register an account, you may simply ignore the message."
-      displaymessage = "Account created. You will be emailed login details and an activation code. Please enter your activation code on the next page. "
+      redirecturl = "activate.html?username=%s" % username
+      displaymessage = "Account created. You will be emailed login details and an activation code. Please enter your activation code on the <a href='%s'>activation page</a>. " % redirecturl
       if activationlink:
         displaymessage += "(Or simply click on the activation link in the email)"
-      redirecturl = "activate.html?username=%s" % username
     self.saveuserprefs(session.loginchecker.users)
     message += "Your user name is: %s\n" % username
     if password.strip():
