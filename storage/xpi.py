@@ -182,27 +182,22 @@ class XpiFile(ZipFileCatcher):
     base, ext = os.path.splitext(filename)
     return ext in (os.extsep + "dtd", os.extsep + "properties")
 
-  def iterjarcontents(self):
-    """iterate through all the localization files stored inside the jars"""
+  def initdirmap(self):
+    """finds the common prefix of all the files stored in the jar files"""
+    dirstructure = {}
     for jarfilename, jarfile in self.iterjars():
       for filename in jarfile.namelist():
         if filename.endswith('/'): continue
         if not self.islocfile(filename) and not self.includenonloc: continue
-        yield filename
-
-  def initdirmap(self):
-    """finds the common prefix of all the files stored in the jar files"""
-    dirstructure = {}
-    for filename in self.iterjarcontents():
-      parts = filename.split('/')[:-1]
-      treepoint = dirstructure
-      for partnum in range(len(parts)):
-        part = parts[partnum]
-        if part in treepoint:
-          treepoint = treepoint[part]
-        else:
-          treepoint[part] = {}
-          treepoint = treepoint[part]
+        parts = filename.split('/')[:-1]
+        treepoint = dirstructure
+        for partnum in range(len(parts)):
+          part = parts[partnum]
+          if part in treepoint:
+            treepoint = treepoint[part]
+          else:
+            treepoint[part] = {}
+            treepoint = treepoint[part]
     localematch = sre.compile("[a-z]{2,3}-[a-zA-Z]{2,3}")
     regmatch = sre.compile("[a-zA-Z]{2,3}")
     locale = None
