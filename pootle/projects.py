@@ -10,28 +10,28 @@ import os
 
 class TranslationSession:
   """A translation session represents a users work on a particular translation project"""
-  def __init__(self, translationproject, session):
+  def __init__(self, project, session):
     self.session = session
-    self.translationproject = translationproject
+    self.project = project
     self.pofilename = None
     self.lastitem = None
 
   def getnextitem(self, dirfilter=None, matchnames=[]):
     """gives the user the next item to be translated"""
-    self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchnames, dirfilter)
+    self.pofilename, item = self.project.findnextitem(self.pofilename, self.lastitem, matchnames, dirfilter)
     orig, trans = self.getitem(self.pofilename, item)
     return self.pofilename, item, orig, trans
 
   def getitem(self, pofilename, item):
     """returns a particular item from a particular po file's orig, trans strings as a tuple"""
-    pofile = self.translationproject.getpofile(pofilename)
+    pofile = self.project.getpofile(pofilename)
     thepo = pofile.transelements[item]
     orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
     return orig, trans
 
   def receivetranslation(self, pofilename, item, trans):
     """submits a new/changed translation from the user"""
-    self.translationproject.receivetranslation(pofilename, item, trans)
+    self.project.receivetranslation(pofilename, item, trans)
     self.pofilename = pofilename
     self.lastitem = item
 
@@ -292,13 +292,13 @@ class POTree:
     """checks if this language exists"""
     return hasattr(self.languages, languagecode)
 
-  def getlanguage(self, languagecode):
+  def getlanguageprefs(self, languagecode):
     """returns the language object"""
     return getattr(self.languages, languagecode)
 
   def getlanguagename(self, languagecode):
     """returns the language's full name"""
-    return getattr(self.getlanguage(languagecode), "fullname", languagecode)
+    return getattr(self.getlanguageprefs(languagecode), "fullname", languagecode)
 
   def getlanguagecodes(self):
     """returns a list of valid languagecodes"""
@@ -306,15 +306,15 @@ class POTree:
 
   def getprojectcodes(self, languagecode):
     """returns a list of project codes that are valid for the given languagecode"""
-    language = self.getlanguage(languagecode)
-    return dict(language.projects.iteritems())
+    languageprefs = self.getlanguageprefs(languagecode)
+    return [projectcode for projectcode, projectprefs in languageprefs.projects.iteritems()]
 
   def hasproject(self, languagecode, projectcode):
     """returns whether the project exists for the language"""
     if not self.haslanguage(languagecode):
       return False
-    language = self.getlanguage(languagecode)
-    return hasattr(language.projects, projectcode)
+    languageprefs = self.getlanguageprefs(languagecode)
+    return hasattr(languageprefs.projects, projectcode)
 
   def getproject(self, languagecode, projectcode):
     """returns the project object for the languagecode and projectcode"""
@@ -324,14 +324,14 @@ class POTree:
 
   def getprojectname(self, languagecode, projectcode):
     """returns the full name of the project"""
-    language = self.getlanguage(languagecode)
-    projectprefs = getattr(language.projects, projectcode)
+    languageprefs = self.getlanguageprefs(languagecode)
+    projectprefs = getattr(languageprefs.projects, projectcode)
     return getattr(projectprefs, "fullname", projectcode)
 
   def getpodir(self, languagecode, projectcode):
     """returns the full name of the project"""
-    language = self.getlanguage(languagecode)
-    projectprefs = getattr(language.projects, projectcode)
+    languageprefs = self.getlanguageprefs(languagecode)
+    projectprefs = getattr(languageprefs.projects, projectcode)
     return projectprefs.podir
 
 
