@@ -87,7 +87,7 @@ class ProjectIndex(pagelayout.PootlePage):
     message = argdict.get("message", [])
     if message:
       message = pagelayout.IntroText(message)
-    processlinks = pagelayout.IntroText([browselink, checkslink, quicklink])
+    processlinks = pagelayout.IntroText([browselink, checkslink, quicklink, reviewlink])
     if dirfilter is None:
       depth = 0
     else:
@@ -129,7 +129,7 @@ class ProjectIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % basename
     browselink = widgets.Link(basename+"/", 'Browse')
     checkslink = widgets.Link("%s/index.html?showchecks=1" % basename, "Checks")
-    reviewlink = widgets.Link("%s/translate.html?review=1&has-suggestion=1", "Review Suggestions")
+    reviewlink = widgets.Link("%s/translate.html?review=1&has-suggestion=1" % basename, "Review Suggestions")
     actionlinks = [browselink, checkslink, reviewlink]
     if translated < total:
       quicklink = widgets.Link("%s/translate.html?fuzzy=1&blank=1" % basename, "Quick Translate")
@@ -169,8 +169,8 @@ class ProjectIndex(pagelayout.PootlePage):
     viewlink = widgets.Link('%s?translate=1&view=1' % basename, 'View')
     checkslink = widgets.Link("%s?index=1&showchecks=1" % basename, "Checks")
     translatelink = widgets.Link('%s?translate=1' % basename, 'Translate All')
-    reviewlink = widgets.Link("%s?translate=1&review=1&has-suggestion=1", "Review Suggestions")
-    actionlinks = [viewlink, checkslink, translatelink, review]
+    reviewlink = widgets.Link("%s?translate=1&review=1&has-suggestion=1" % basename, "Review Suggestions")
+    actionlinks = [viewlink, checkslink, translatelink, reviewlink]
     if translated < total:
       quicklink = widgets.Link('%s?translate=1&fuzzy=1&blank=1' % basename, 'Quick Translate')
       actionlinks.append(quicklink)
