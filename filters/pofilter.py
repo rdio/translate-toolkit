@@ -109,8 +109,7 @@ class pocheckfilter:
       failures = self.filterelement(thepo)
       if failures:
         thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in failures])
-        if ("".join(thepo.typecomments)).find("fuzzy") == -1:
-          thepo.typecomments.append("#, fuzzy\n")
+        thepo.markfuzzy()
         thenewpofile.poelements.append(thepo)
     return thenewpofile
 

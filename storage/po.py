@@ -93,12 +93,10 @@ class poelement:
       self.msgstr = otherpo.msgstr
     elif otherpo.isblankmsgstr():
       if self.msgid != otherpo.msgid:
-        if not self.isfuzzy():
-          self.typecomments.append("#, fuzzy\n")
+        self.markfuzzy()
     else:
       if self.msgstr != otherpo.msgstr:
-        if not self.isfuzzy():
-          self.typecomments.append("#, fuzzy\n")
+        self.markfuzzy()
 
   def isheader(self):
     return (self.msgidlen() == 0) and (self.msgstrlen() > 0)
@@ -118,8 +116,16 @@ class poelement:
   def hastypecomment(self, typecomment):
     return ("".join(self.typecomments)).find(typecomment) != -1
 
+  def settypecomment(self, typecomment):
+    """adds a given typecomment if it isn't already present"""
+    if not self.hastypecomment(typecomment):
+      self.typecomments.append("#, %s\n" % typecomment)
+
   def isfuzzy(self):
     return self.hastypecomment("fuzzy")
+
+  def markfuzzy(self):
+    self.settypecomment("fuzzy")
 
   def isnotblank(self):
     return not self.isblank()
@@ -271,7 +277,7 @@ class pofile:
     """create a header for the given filename"""
     # TODO: clean this up, make it handle all the properties...
     headerpo = poelement()
-    headerpo.typecomments.append("#, fuzzy\n")
+    headerpo.markfuzzy()
     headerpo.msgid = ['""']
     headeritems = [""]
     headeritems.append("Project-Id-Version: PACKAGE VERSION\\n")
