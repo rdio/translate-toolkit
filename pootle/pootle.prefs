@@ -16,6 +16,7 @@ Pootle:
     fromaddress = "pootle-registration@localhost"
   users:
     # store user details here
+    __dummy__ = 0
   languages:
     # this is an example, please change...
     af:

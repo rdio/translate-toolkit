@@ -327,4 +327,3 @@ class POTree:
     projectprefs = getattr(languageprefs.projects, projectcode)
     return projectprefs.podir
 
-

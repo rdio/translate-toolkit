@@ -25,17 +25,20 @@ class LoginPage(server.LoginPage, pagelayout.PootlePage):
 
 class RegisterPage(pagelayout.PootlePage):
   """page for new registrations"""
-  def __init__(self, session):
-    contents = self.getform()
+  def __init__(self, session, argdict):
+    introtext = [pagelayout.IntroText("Please enter your registration details"),
+                 pagelayout.IntroText("Current Status: %s" % session.status)]
+    self.argdict = argdict
+    contents = [introtext, self.getform()]
     pagelayout.PootlePage.__init__(self, "Pootle Registration", contents, session)
 
   def getform(self):
-    columnlist = [("username", "Email Address", "Must be a valid email address")]
-    formlayout = {1:("username", )}
-    optionsdict = {}
+    columnlist = [("email", "Email Address", "Must be a valid email address"),
+                  ("username", "Username", "Your requested username")]
+    formlayout = {1:("email", ), 2:("username", )}
     extrawidgets = [widgets.Input({'type': 'submit', 'name':'register', 'value':'Register'})]
-    record = dict([(column[0], "") for column in columnlist])
-    return form.SimpleForm(record, "register", columnlist, formlayout, optionsdict, extrawidgets)
+    record = dict([(column[0], self.argdict.get(column[0], "")) for column in columnlist])
+    return form.SimpleForm(record, "register", columnlist, formlayout, {}, extrawidgets)
 
 class OptionalLoginAppServer(server.LoginAppServer):
   """a server that enables login but doesn't require it except for specified pages"""
@@ -78,28 +81,7 @@ class PootleServer(OptionalLoginAppServer):
         return server.Redirect("index.html", withpage=redirectpage)
       return LoginPage(session)
     elif top == "register.html":
-      if "username" in argdict:
-        username = argdict["username"]
-        password = passwordgen.createpassword()
-        userexists = session.userexists(username)
-        if userexists:
-	  getattr(self.instance.users, username).passwdhash = md5hexdigest(password)
-          message = "your password has been updated\n"
-        else:
-	  setattr(self.instance.users, username + ".passwdhash", md5hexdigest(password))
-          message = "an account has been created for you\n"
-	self.saveprefs()
-        message += "username: %s\npassword: %s\n" % (username, password)
-        # TODO: handle emailing properly, but printing now to make it easier
-	print message
-        # mailer.dosendmessage(self.instance.registration.fromaddress, [username], message)
-        redirecttext = pagelayout.IntroText(message + "Redirecting to login...")
-        redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
-	redirectpage.attribs["refresh"] = 10
-	redirectpage.attribs["refreshurl"] = "login.html"
-        return redirectpage
-      else:
-        return RegisterPage(session)
+      return self.registerpage(session, argdict)
     elif self.potree.haslanguage(top):
       languagecode = top
       pathwords = pathwords[1:]
@@ -161,6 +143,45 @@ class PootleServer(OptionalLoginAppServer):
 	else:
 	  return indexpage.ProjectIndex(project, session, argdict, os.path.join(*pathwords))
     return None
+
+  def handleregistration(self, session, argdict):
+    """handles the actual registration"""
+    username = argdict.get("username", "")
+    if not username or not username.isalnum() or not username[0].isalpha():
+      raise ValueError("username must be alphanumeric")
+    email = argdict.get("email", "")
+    if not email:
+      raise ValueError("must supply a valid email address")
+    password = passwordgen.createpassword()
+    userexists = session.userexists(username)
+    if userexists:
+      getattr(self.instance.users, username).passwdhash = md5hexdigest(password)
+      message = "your password has been updated\n"
+    else:
+      setattr(self.instance.users, username + ".passwdhash", md5hexdigest(password))
+      message = "an account has been created for you\n"
+    self.saveprefs()
+    message += "username: %s\npassword: %s\n" % (username, password)
+    # TODO: handle emailing properly, but printing now to make it easier
+    print message
+    return message
+
+  def registerpage(self, session, argdict):
+    """handle registration or return the Register page"""
+    if "username" in argdict:
+      try:
+        message = self.handleregistration(session, argdict)
+      except ValueError, message:
+        session.status = str(message)
+        return RegisterPage(session, argdict)
+      # mailer.dosendmessage(self.instance.registration.fromaddress, [username], message)
+      redirecttext = pagelayout.IntroText(message + "Redirecting to login...")
+      redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
+      redirectpage.attribs["refresh"] = 10
+      redirectpage.attribs["refreshurl"] = "login.html"
+      return redirectpage
+    else:
+      return RegisterPage(session, argdict)
 
 if __name__ == '__main__':
   # run the web server
