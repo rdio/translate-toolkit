@@ -72,14 +72,14 @@ class pocheckfilter:
     return thenewpofile
 
 # TODO: refactor to set the filter list once, and use every time, rather than recreating for each file
-def runpofilter(inputfile, outputfile, includereview=False, filterobject=None, excludefilters={}, limitfilters=None, listfilters=False):
+def runpofilter(inputfile, outputfile, includereview=False, includefuzzy=False, filterobject=None, excludefilters={}, limitfilters=None, listfilters=False):
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
   checkfilter = pocheckfilter(filterobject)
   if listfilters:
     print checkfilter.getfilterdocs()
     return
   fromfile = po.pofile(inputfile)
-  tofile = checkfilter.filterfile(fromfile, includereview, excludefilters, limitfilters)
+  tofile = checkfilter.filterfile(fromfile, includereview, includefuzzy, excludefilters, limitfilters)
   if tofile.isempty():
     return 0
   tolines = tofile.tolines()
