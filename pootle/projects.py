@@ -10,6 +10,10 @@ from translate.convert import po2csv
 from translate.tools import pogrep
 import os
 
+def getmodtime(filename):
+  """gets the modificationtime of the given file"""
+  return os.stat(filename)[os.path.stat.ST_MTIME]
+
 class TranslationSession:
   """A translation session represents a users work on a particular translation project"""
   def __init__(self, project, session):
@@ -89,7 +93,7 @@ class pootlefile(po.pofile):
     """reads the stats if neccessary or returns them from the cache"""
     if os.path.exists(self.statsfilename):
       self.readstats()
-    pomtime = self.getmodtime()
+    pomtime = getmodtime(self.pofilename)
     if pomtime != getattr(self, "statspomtime", None):
       self.calcstats()
       self.savestats()
@@ -97,7 +101,7 @@ class pootlefile(po.pofile):
 
   def readstats(self):
     """reads the stats from the associated stats file, returning the pomtime and stats"""
-    statsmtime = os.stat(self.statsfilename)[os.path.stat.ST_MTIME]
+    statsmtime = getmodtime(self.statsfilename)
     if statsmtime == getattr(self, "statsmtime", None):
       return self.statspomtime, self.statsmtime, self.stats
     stats = open(self.statsfilename, "r").read()
@@ -121,7 +125,7 @@ class pootlefile(po.pofile):
     # assumes self.stats is up to date
     try:
       postatsstring = "\n".join(["%s:%d" % (name, count) for name, count in self.stats.iteritems()])
-      open(self.statsfilename, "w").write("%d\n%s" % (self.getmodtime(), postatsstring))
+      open(self.statsfilename, "w").write("%d\n%s" % (getmodtime(self.pofilename), postatsstring))
     except IOError:
       # TODO: log a warning somewhere. we don't want an error as this is an optimization
       pass
@@ -132,10 +136,6 @@ class pootlefile(po.pofile):
       self.readpofile()
     postats = dict([(name, len(items)) for name, items in self.classify.iteritems()])
     self.stats = postats
-
-  def getmodtime(self):
-    """gets the modificationtime of the po file"""
-    return os.stat(self.filename)[os.path.stat.ST_MTIME]
 
   def setmsgstr(self, item, newmsgstr):
     """updates a translation with a new msgstr value"""
