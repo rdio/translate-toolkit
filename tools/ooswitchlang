@@ -313,7 +313,8 @@ class LanguageSelectionWindow(wx.Frame):
     """changes the current language"""
     try:
       self.config.setofficelang(newisocode, admin=admin, force=force)
-      wx.MessageBox("Setting language successful", "ooswitchlang", wx.OK, self)
+      wx.MessageBox("Setting language successful!\nYou may need to restart OpenOffice.org (including QuickStart)\n" + \
+                    "in order for the changes to take effect", "ooswitchlang", wx.OK, self)
       return True
     except ValueError, error:
       if force:
@@ -410,6 +411,6 @@ if __name__ == '__main__':
       help="Start in advanced mode")
   options, args = optparser.parse_args()
   app = wx.PySimpleApp()
-  frame = LanguageSelectionWindow(None, -1, "Choose language", options.advanced)
+  frame = LanguageSelectionWindow(None, -1, "OpenOffice.org Language", options.advanced)
   app.MainLoop()
 
