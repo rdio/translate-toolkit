@@ -30,9 +30,10 @@ from translate.misc import quote
 from translate import __version__
 
 class dtd2po:
-  def __init__(self, blankmsgstr=False):
+  def __init__(self, blankmsgstr=False, duplicatestyle="msgid_comment"):
     self.currentgroup = None
     self.blankmsgstr = blankmsgstr
+    self.duplicatestyle = duplicatestyle
 
   def convertcomments(self,thedtd,thepo):
     entity = quote.rstripeol(thedtd.entity)
@@ -252,7 +253,7 @@ class dtd2po:
       thepo = self.convertdtdelement(thedtdfile, thedtd)
       if thepo is not None:
         thepofile.poelements.append(thepo)
-    thepofile.removeduplicates()
+    thepofile.removeduplicates(self.duplicatestyle)
     return thepofile
 
   def mergefiles(self, origdtdfile, translateddtdfile):
@@ -278,13 +279,13 @@ class dtd2po:
         thepofile.poelements.append(origpo)
       elif translatedpo is not None:
         print >>sys.stderr, "error converting original dtd entity %s" % origdtd.entity
-    thepofile.removeduplicates()
+    thepofile.removeduplicates(self.duplicatestyle)
     return thepofile
 
-def convertdtd(inputfile, outputfile, templatefile, pot=False):
+def convertdtd(inputfile, outputfile, templatefile, pot=False, duplicatestyle="msgid_comment"):
   """reads in inputfile and templatefile using dtd, converts using dtd2po, writes to outputfile"""
   inputdtd = dtd.dtdfile(inputfile)
-  convertor = dtd2po(blankmsgstr=pot)
+  convertor = dtd2po(blankmsgstr=pot, duplicatestyle=duplicatestyle)
   if templatefile is None:
     outputpo = convertor.convertfile(inputdtd)
   else:
@@ -301,6 +302,7 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {"dtd": ("po", convertdtd), ("dtd", "dtd"): ("po", convertdtd)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, usepots=True, description=__doc__)
+  parser.add_duplicates_option()
   parser.passthrough.append("pot")
   parser.run()
 

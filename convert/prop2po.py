@@ -32,7 +32,7 @@ eol = "\n"
 
 class prop2po:
   """convert a .properties file to a .po file for handling the translation..."""
-  def convertfile(self, thepropfile):
+  def convertfile(self, thepropfile, duplicatestyle="msgid_comment"):
     """converts a .properties file to a .po file..."""
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
@@ -54,10 +54,10 @@ class prop2po:
         thepo.othercomments = waitingcomments + thepo.othercomments
         waitingcomments = []
         thepofile.poelements.append(thepo)
-    thepofile.removeduplicates()
+    thepofile.removeduplicates(duplicatestyle)
     return thepofile
 
-  def mergefiles(self, origpropfile, translatedpropfile, blankmsgstr=False):
+  def mergefiles(self, origpropfile, translatedpropfile, blankmsgstr=False, duplicatestyle="msgid_comment"):
     """converts two .properties files to a .po file..."""
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
@@ -93,7 +93,7 @@ class prop2po:
         thepofile.poelements.append(origpo)
       elif translatedpo is not None:
         print >>sys.stderr, "error converting original properties definition %s" % origprop.name
-    thepofile.removeduplicates()
+    thepofile.removeduplicates(duplicatestyle)
     return thepofile
 
   def convertelement(self, theprop):
@@ -118,15 +118,15 @@ class prop2po:
     thepo.msgstr = ['""']
     return thepo
 
-def convertprop(inputfile, outputfile, templatefile, pot=False):
+def convertprop(inputfile, outputfile, templatefile, pot=False, duplicatestyle="msgid_comment"):
   """reads in inputfile using properties, converts using prop2po, writes to outputfile"""
   inputprop = properties.propfile(inputfile)
   convertor = prop2po()
   if templatefile is None:
-    outputpo = convertor.convertfile(inputprop)
+    outputpo = convertor.convertfile(inputprop, duplicatestyle=duplicatestyle)
   else:
     templateprop = properties.propfile(templatefile)
-    outputpo = convertor.mergefiles(templateprop, inputprop, blankmsgstr=pot)
+    outputpo = convertor.mergefiles(templateprop, inputprop, blankmsgstr=pot, duplicatestyle=duplicatestyle)
   if outputpo.isempty():
     return 0
   outputpolines = outputpo.tolines()
@@ -138,6 +138,7 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {"properties": ("po", convertprop), ("properties", "properties"): ("po", convertprop)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, usepots=True, description=__doc__)
+  parser.add_duplicates_option()
   parser.passthrough.append("pot")
   parser.run()
 
