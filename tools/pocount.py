@@ -42,6 +42,7 @@ def summarize(elements):
   print "translated:   %5d %10d %15d" % (len(translated), msgidwords(translated), msgstrwords(translated))
   print "fuzzy:        %5d %10d             n/a" % (len(fuzzy), msgidwords(fuzzy))
   print "untranslated: %5d %10d             n/a" % (len(untranslated), msgidwords(untranslated))
+  print "Total:        %5d %10d %15d" % (len(translated) + len(fuzzy) + len(untranslated), msgidwords(translated) + msgidwords(fuzzy) + msgidwords(untranslated), msgstrwords(translated))
 
 class summarizer:
   def __init__(self, filenames):
