@@ -107,6 +107,8 @@ class PootleServer(users.OptionalLoginAppServer):
       if not top or top == "index.html":
         if "changelanguages" in argdict:
           self.potree.changelanguages(argdict)
+        if "changeprojects" in argdict:
+          self.potree.changeprojects(argdict)
         return indexpage.AdminPage(self.potree, session)
     elif self.potree.haslanguage(top):
       languagecode = top

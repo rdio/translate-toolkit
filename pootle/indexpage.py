@@ -166,15 +166,22 @@ class AdminPage(pagelayout.PootlePage):
   def getprojects(self):
     """gets the links to the projects"""
     projectstitle = pagelayout.Title(self.localize("Projects"))
-    projects = []
+    projects = table.TableLayout()
     for projectcode in self.potree.getprojectcodes():
       projectname = self.potree.getprojectname(projectcode)
       projectdescription = self.potree.getprojectdescription(projectcode)
-      project = pagelayout.ItemDescription("<strong>%s</strong>" % projectcode)
-      projects.append(project)
-    listwidget = widgets.SeparatedList(projects, "<br/>")
-    bodydescription = pagelayout.ItemDescription(listwidget)
-    return pagelayout.Contents([projectstitle, bodydescription])
+      projectname = self.potree.getprojectname(projectcode)
+      nametextbox = widgets.Input({"name": "projectname-%s" % projectcode, "value": projectname})
+      descriptiontextbox = widgets.Input({"name": "projectdescription-%s" % projectcode, "value": projectdescription})
+      removecheckbox = widgets.Input({"name": "projectremove-%s" % projectcode, "type": "checkbox"})
+      rownum = projects.maxrownum()+1
+      projects.setcell(rownum, 0, table.TableCell(projectcode))
+      projects.setcell(rownum, 1, table.TableCell(nametextbox))
+      projects.setcell(rownum, 2, table.TableCell(descriptiontextbox))
+      projects.setcell(rownum, 3, table.TableCell([removecheckbox, "Remove %s" % projectcode]))
+    submitbutton = widgets.Input({"type":"submit", "name":"changeprojects", "value":self.localize("Save changes")})
+    projectform = widgets.Form([projects, submitbutton], {"name": "projects", "action":""})
+    return pagelayout.Contents([projectstitle, projectform])
 
 class ProjectsIndex(PootleIndex):
   """the list of projects"""

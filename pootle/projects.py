@@ -739,6 +739,27 @@ class POTree:
             self.setlanguagename(languagecode, value)
     self.saveprefs()
 
+  def changeprojects(self, argdict):
+    """changes project entries"""
+    for key, value in argdict.iteritems():
+      if key.startswith("projectremove-"):
+        projectcode = key.replace("projectremove-", "", 1)
+        if hasattr(self.projects, projectcode):
+          raise NotImplementedError("Can't remove projects")
+      elif key.startswith("projectname-"):
+        projectcode = key.replace("projectname-", "", 1)
+        if hasattr(self.projects, projectcode):
+          projectname = self.getprojectname(projectcode)
+          if projectname != value:
+            self.setprojectname(projectcode, value)
+      elif key.startswith("projectdescription-"):
+        projectcode = key.replace("projectdescription-", "", 1)
+        if hasattr(self.projects, projectcode):
+          projectdescription = self.getprojectdescription(projectcode)
+          if projectdescription != value:
+            self.setprojectdescription(projectcode, value)
+    self.saveprefs()
+
   def haslanguage(self, languagecode):
     """checks if this language exists"""
     return hasattr(self.languages, languagecode)
@@ -799,10 +820,20 @@ class POTree:
     projectprefs = getattr(self.projects, projectcode)
     return getattr(projectprefs, "fullname", projectcode)
 
+  def setprojectname(self, projectcode, projectname):
+    """returns the full name of the project"""
+    projectprefs = getattr(self.projects, projectcode)
+    setattr(projectprefs, "fullname", projectname)
+
   def getprojectdescription(self, projectcode):
     """returns the project description"""
     projectprefs = getattr(self.projects, projectcode)
     return getattr(projectprefs, "description", projectcode)
+
+  def setprojectdescription(self, projectcode, projectdescription):
+    """returns the project description"""
+    projectprefs = getattr(self.projects, projectcode)
+    setattr(projectprefs, "description", projectdescription)
 
   def getpodir(self, languagecode, projectcode):
     """returns the base directory containing po files for the project"""
