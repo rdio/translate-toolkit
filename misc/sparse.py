@@ -23,23 +23,23 @@ each tokenizing function takes a string as input and returns a list of tokens
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-def stringeval(input):
-  """takes away repeated quotes (escapes) and returns the string represented by the input"""
-  stringchar = input[0]
-  if input[-1] != stringchar or stringchar not in ("'",'"'):
+def stringeval(text):
+  """takes away repeated quotes (escapes) and returns the string represented by the text"""
+  stringchar = text[0]
+  if text[-1] != stringchar or stringchar not in ("'",'"'):
     # scratch your head
-    raise ValueError, "error parsing escaped string: %r" % input
-  return input[1:-1].replace(stringchar+stringchar,stringchar)
+    raise ValueError, "error parsing escaped string: %r" % text
+  return text[1:-1].replace(stringchar+stringchar,stringchar)
 
-def stringquote(input):
-  """escapes quotes as neccessary and returns a string representing the input"""
-  if "'" in input:
-    if '"' in input:
-      return '"' + input.replace('"', '""') + '"'
+def stringquote(text):
+  """escapes quotes as neccessary and returns a string representing the text"""
+  if "'" in text:
+    if '"' in text:
+      return '"' + text.replace('"', '""') + '"'
     else:
-      return '"' + input + '"'
+      return '"' + text + '"'
   else:
-    return "'" + input + "'"
+    return "'" + text + "'"
 
 class ParserError(ValueError):
   """Intelligent parser error"""
@@ -67,97 +67,97 @@ class SimpleParser:
     self.endquotechars = {'"':'"',"'":"'"}
     self.stringescaping = 1
 
-  def stringtokenize(self, input):
-    """makes strings in input into tokens..."""
+  def stringtokenize(self, text):
+    """makes strings in text into tokens..."""
     tokens = []
     laststart = 0
     instring = 0
     endstringchar, escapechar = '', '\\'
     gotclose, gotescape = 0, 0
-    for pos in range(len(input)):
-      char = input[pos]
+    for pos in range(len(text)):
+      char = text[pos]
       if instring:
         if self.stringescaping and (gotescape or char == escapechar) and not gotclose:
           gotescape = not gotescape
         elif char == endstringchar:
           gotclose = not gotclose
         elif gotclose:
-          tokens.append(input[laststart:pos])
+          tokens.append(text[laststart:pos])
           instring, laststart, endstringchar = 0, pos, ''
       if not instring:
         if char in self.quotechars:
-          if pos > laststart: tokens.append(input[laststart:pos])
+          if pos > laststart: tokens.append(text[laststart:pos])
           instring, laststart, endstringchar, gotclose = 1, pos, self.endquotechars[char], 0
-    if laststart < len(input): tokens.append(input[laststart:])
+    if laststart < len(text): tokens.append(text[laststart:])
     return tokens
 
-  def keeptogether(self, input):
+  def keeptogether(self, text):
     """checks whether a token should be kept together"""
-    return self.isstringtoken(input)
+    return self.isstringtoken(text)
 
-  def isstringtoken(self, input):
+  def isstringtoken(self, text):
     """checks whether a token is a string token"""
-    return input[:1] in self.quotechars
+    return text[:1] in self.quotechars
 
-  def separatetokens(self, input, tokenlist = None):
+  def separatetokens(self, text, tokenlist = None):
     """this separates out tokens in tokenlist from whitespace etc"""
-    if self.keeptogether(input): return [input]
+    if self.keeptogether(text): return [text]
     if tokenlist is None:
       tokenlist = self.defaulttokenlist
     # loop through and put tokens into a list
     tokens = []
     pos = 0
     laststart = 0
-    while pos < len(input):
+    while pos < len(text):
       foundtoken = 0
       for token in tokenlist:
-        if input[pos:pos+len(token)] == token:
-          if laststart < pos: tokens.append(input[laststart:pos])
+        if text[pos:pos+len(token)] == token:
+          if laststart < pos: tokens.append(text[laststart:pos])
           tokens.append(token)
           pos += len(token)
           foundtoken, laststart = 1, pos
           break
       if not foundtoken: pos += 1
-    if laststart < len(input): tokens.append(input[laststart:])
+    if laststart < len(text): tokens.append(text[laststart:])
     return tokens
 
-  def removewhitespace(self, input):
+  def removewhitespace(self, text):
     """this removes whitespace but lets it separate things out into separate tokens"""
-    if self.keeptogether(input): return [input]
+    if self.keeptogether(text): return [text]
     # loop through and put tokens into a list
     tokens = []
     pos = 0
     inwhitespace = 0
     laststart = 0
-    for pos in range(len(input)):
-      char = input[pos]
+    for pos in range(len(text)):
+      char = text[pos]
       if inwhitespace:
         if char not in self.whitespacechars:
-          if laststart < pos and self.includewhitespacetokens: tokens.append(input[laststart:pos])
+          if laststart < pos and self.includewhitespacetokens: tokens.append(text[laststart:pos])
           inwhitespace, laststart = 0, pos
       else:
         if char in self.whitespacechars:
-          if laststart < pos: tokens.append(input[laststart:pos])
+          if laststart < pos: tokens.append(text[laststart:pos])
           inwhitespace, laststart = 1, pos
-    if laststart < len(input) and (not inwhitespace or self.includewhitespacetokens):
-      tokens.append(input[laststart:])
+    if laststart < len(text) and (not inwhitespace or self.includewhitespacetokens):
+      tokens.append(text[laststart:])
     return tokens
 
   def applytokenizer(self, inputlist, tokenizer):
-    """apply a tokenizer to a set of input, flattening the result"""
-    tokenizedlists = [tokenizer(input) for input in inputlist]
+    """apply a tokenizer to a set of text, flattening the result"""
+    tokenizedlists = [tokenizer(text) for text in inputlist]
     joined = []
     map(joined.extend, tokenizedlists)
     return joined
 
   def applytokenizers(self, inputlist, tokenizers):
-    """apply a set of tokenizers to a set of input, flattening each time"""
+    """apply a set of tokenizers to a set of text, flattening each time"""
     for tokenizer in tokenizers:
       inputlist = self.applytokenizer(inputlist, tokenizer)
     return inputlist
 
   def tokenize(self, source, tokenizers=None):
-    """tokenize the input string with the standard tokenizers"""
+    """tokenize the text string with the standard tokenizers"""
     self.source = source
     if tokenizers is None:
       tokenizers = self.standardtokenizers
@@ -165,7 +165,7 @@ class SimpleParser:
     return self.tokens
 
   def findtokenpos(self, tokennum):
-    """finds the position of the given token in the input"""
+    """finds the position of the given token in the text"""
     currenttokenpos = 0
     for currenttokennum in range(tokennum+1):
       currenttokenpos = self.source.find(self.tokens[currenttokennum], currenttokenpos)

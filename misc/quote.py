@@ -188,7 +188,6 @@ def mozillapropertiesdecode(source):
   # and modified it to retain escaped control characters
   output = u""
   s = 0
-  starts = 0
   def unichr2(i):
     """Returns a Unicode string of one character with ordinal 32 <= i, otherwise an escaped control character"""
     if 32 <= i:
@@ -205,7 +204,6 @@ def mozillapropertiesdecode(source):
       output += c
       s += 1
       continue
-    startinpos = s
     s += 1
     c = source[s]
     s += 1

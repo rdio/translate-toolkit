@@ -334,7 +334,7 @@ class RecursiveOptionParser(optparse.OptionParser, object):
         self.checkoutputsubdir(options, os.path.dirname(outputpath))
       try:
         success = self.processfile(fileprocessor, options, fullinputpath, fulloutputpath, fulltemplatepath)
-      except Exception, e:
+      except Exception:
         self.warning("Error processing: input %s, output %s, template %s" % (fullinputpath, fulloutputpath, fulltemplatepath))
         raise
       self.reportprogress(inputpath, success)
