@@ -34,13 +34,13 @@ defaultrecursion = 2
 
 class ConvertOptionParser(optparse.OptionParser):
   """a specialized Option Parser for convertor tools..."""
-  def __init__(self, recursion, inputformats, outputformat, usetemplates=False):
+  def __init__(self, recursion, inputformats, outputformats, usetemplates=False):
     """construct the specialized Option Parser"""
     optparse.OptionParser.__init__(self, version="%prog "+__version__.ver)
     self.usetemplates = usetemplates
     self.setrecursion(recursion)
     self.setinputformats(inputformats)
-    self.setoutputformat(outputformat)
+    self.setoutputformats(outputformats)
     self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
 
   def getusagestring(self, option):
@@ -57,7 +57,7 @@ class ConvertOptionParser(optparse.OptionParser):
     elif recursion == optionalrecursion:
       if self.has_option("-R"):
         self.remove_option("-R")
-      self.add_option("-R", "--recursive", action="store_true", dest="recursion", default=False, \
+      self.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False, \
         help="recurse subdirectories")
       self.argumentdesc = "file/dir"
     elif not recursion:
@@ -90,10 +90,12 @@ class ConvertOptionParser(optparse.OptionParser):
                     help="read from TEMPLATE %s in %s" % (self.argumentdesc, inputformathelp))
       self.define_option(templateoption)
 
-  def setoutputformat(self, outputformat):
-    """sets the output format to the given list/single string"""
-    self.outputformat = outputformat
-    outputformathelp = self.getformathelp([outputformat])
+  def setoutputformats(self, outputformats):
+    """sets the output formats to the given list/single string"""
+    if isinstance(outputformats, basestring):
+      outputformats = [outputformats]
+    self.outputformats = outputformats
+    outputformathelp = self.getformathelp(outputformats)
     outputoption = optparse.Option("-o", "--output", dest="output", default=None, metavar="OUTPUT",
                     help="write to OUTPUT %s in %s" % (self.argumentdesc, outputformathelp))
     self.define_option(outputoption)
@@ -123,7 +125,7 @@ class ConvertOptionParser(optparse.OptionParser):
 
   def runconversion(self, options, convertmethod):
     """runs the conversion method using the given commandline options..."""
-    if (self.recursion == optionalrecursion and options.recursion) or (self.recursion == defaultrecursion):
+    if (self.recursion == optionalrecursion and options.recursive) or (self.recursion == defaultrecursion):
       if options.input is None:
         self.error(optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile"))
       if not os.path.isdir(options.input):
@@ -197,5 +199,5 @@ class ConvertOptionParser(optparse.OptionParser):
   def getoutputname(self, inputname):
     """gets an output filename based on the input filename"""
     # TODO: handle replacing the input extension...
-    return inputname + os.extsep + self.outputformat
+    return inputname + os.extsep + self.outputformats[0]
 
