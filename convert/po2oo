@@ -44,7 +44,7 @@ def dounquotepo(thepo):
 
 class reoo:
   def __init__(self, templatefile, languages=None, timestamp=None):
-    """construct a reoo converter for the specified languages"""
+    """construct a reoo converter for the specified languages (timestamp=0 means leave unchanged)"""
     # languages is a pair of language ids
     self.readoo(templatefile)
     self.languages = languages
@@ -52,7 +52,10 @@ class reoo:
       self.timestamp = time.localtime(time.time())
     else:
       self.timestamp = timestamp
-    self.timestamp_str = time.strftime("%Y%m%d %H:%M:%S", self.timestamp)
+    if self.timestamp:
+      self.timestamp_str = time.strftime("%Y%m%d %H:%M:%S", self.timestamp)
+    else:
+      self.timestamp_str = None
 
   def makekey(self, ookey):
     """converts an oo key tuple into a key identifier for the po file"""
@@ -121,7 +124,8 @@ class reoo:
     if len(unquotedstr) > 0:
       setattr(part2, subkey, unquotedstr)
     # set the modified time
-    part2.timestamp = self.timestamp_str
+    if self.timestamp_str:
+      part2.timestamp = self.timestamp_str
 
   def convertfile(self, inputpo):
     self.p = inputpo
@@ -135,21 +139,24 @@ class reoo:
   def renumberdest(self, newcode):
     """change the language code oldcode to newcode"""
     for theooelement in self.o.ooelements:
-      theooline = theooelement.lines[1]
-      theooline.languageid = newcode
+      try:
+        theooline = theooelement.lines[1]
+        theooline.languageid = newcode
+      except IndexError:
+        print >> sys.stderr, "could not switch language code on ", "/".join(theooelement.lines[0].getkey())
 
 def getmtime(filename):
   import stat
   return time.localtime(os.stat(filename)[stat.ST_MTIME])
 
-def convertoo(inputfile, outputfile, templatefile, languagecode=None):
+def convertoo(inputfile, outputfile, templatefile, languagecode=None, timestamp=None):
   inputpo = po.pofile()
   inputpo.fromlines(inputfile.readlines())
   if templatefile is None:
     raise ValueError("must have template file for oo files")
     # convertor = po2oo()
   else:
-    convertor = reoo(templatefile)
+    convertor = reoo(templatefile, timestamp=timestamp)
   outputoo = convertor.convertfile(inputpo)
   if languagecode is None:
     raise ValueError("must specify language code")
@@ -167,6 +174,9 @@ if __name__ == '__main__':
   parser = convert.ArchiveConvertOptionParser(formats, usetemplates=True, description=__doc__, archiveformats=archiveformats)
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
+  parser.add_option("-T", "--keeptimestamp", dest="timestamp", default=None, action="store_const", const=0,
+                    help="don't change the timestamps of the strings")
   parser.passthrough.append("languagecode")
+  parser.passthrough.append("timestamp")
   parser.run()
 
