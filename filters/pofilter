@@ -55,11 +55,10 @@ class pocheckfilter:
         thenewpofile.poelements.append(thepo)
     return thenewpofile
 
-# TODO: work out how to psas in options like includereview here...
-def runpofilter(inputfile, outputfile, includereview=1):
+def runpofilter(inputfile, outputfile, includereview=1, filterobject=None):
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
   fromfile = po.pofile(inputfile)
-  checkfilter = pocheckfilter()
+  checkfilter = pocheckfilter(filterobject)
   tofile = checkfilter.filterfile(fromfile, includereview)
   if tofile.isempty():
     return 0
@@ -71,19 +70,26 @@ if __name__ == '__main__':
   from translate.filters import filtercmd
   inputformats = {"po":runpofilter, "pot":runpofilter}
   parser = filtercmd.FilterOptionParser(filtercmd.optionalrecursion, inputformats)
-  parser.add_option("", "--includereview", dest="includereview", default=True, action="store_true",
+  parser.add_option("", "--review", dest="includereview", default=False, action="store_true",
     help="include elements marked for review...")
+  parser.add_option("", "--ignorereview", dest="includereview", default=False, action="store_false",
+    help="don't include elements marked for review...")
+  parser.add_option("", "--openoffice", dest="filterobject", default=None, action="store_const",
+    const=checks.OpenOfficeChecker())
+  parser.add_option("", "--mozilla", dest="filterobject", default=None, action="store_const",
+    const=checks.MozillaChecker())
+  requiredoptions = {'includereview':True, 'filterobject':True}
   options, args = parser.parse_args()
   # TODO: move this code into filtercmd...
   if options.input is None:
     if len(args) == 0:
-      parser.runfilter(options, runpofilter)
+      parser.runfilter(options, runpofilter, requiredoptions)
     else:
       for inputarg in args:
         options.input = inputarg
-        parser.runfilter(options, runpofilter)
+        parser.runfilter(options, runpofilter, requiredoptions)
   else:
     if len(args) != 0:
       parser.error("incorrect number of arguments")
-    parser.runfilter(options, runpofilter)
+    parser.runfilter(options, runpofilter, requiredoptions)
 
