@@ -314,14 +314,14 @@ class LanguageSelectionWindow(wx.Frame):
     try:
       self.config.setofficelang(newisocode, admin=admin, force=force)
       wx.MessageBox("Setting language successful!\nYou may need to restart OpenOffice.org (including QuickStart)\n" + \
-                    "in order for the changes to take effect", "ooswitchlang", wx.OK, self)
+                    "in order for the changes to take effect", "OpenOffice.org Language", wx.OK, self)
       return True
     except ValueError, error:
       if force:
-        wx.MessageBox("Error setting language:\n%s" % error, "ooswitchlang", wx.ICON_ERROR | wx.OK, self)
+        wx.MessageBox("Error setting language:\n%s" % error, "OpenOffice.org Language", wx.ICON_ERROR | wx.OK, self)
       else:
         doforce = wx.MessageBox("Error setting language:\n%s\nWould you like to force the setting?" % error,
-          "ooswitchlang", wx.ICON_ERROR | wx.YES_NO, self)
+          "OpenOffice.org Language", wx.ICON_ERROR | wx.YES_NO, self)
         if doforce == wx.YES:
           return self.setlanguage(newisocode, admin, True)
       return False
