@@ -253,6 +253,8 @@ class ConvertOptionParser(optparse.OptionParser, object):
       if options.input:
         allfiles = [os.path.basename(options.input)]
         options.input = os.path.dirname(options.input)
+      else:
+        allfiles = [options.input]
     options.recursiveoutput = self.isrecursive(options.output)
     options.recursivetemplate = self.usetemplates and self.isrecursive(options.template)
     allfiles = self.initprogressbar(allfiles, options)
