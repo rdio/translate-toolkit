@@ -4,95 +4,21 @@ from jToolkit.web import server
 from jToolkit.web import session
 from jToolkit import prefs
 from jToolkit.widgets import widgets
-from jToolkit.widgets import form
 from jToolkit import mailer
 from translate.pootle import indexpage
 from translate.pootle import translatepage
 from translate.pootle import pagelayout
 from translate.pootle import projects
+from translate.pootle import users
 import sys
 import os
 import random
 
-class RegistrationError(ValueError):
-  pass
-
-class LoginPage(server.LoginPage, pagelayout.PootlePage):
-  """wraps the normal login page in a PootlePage layout"""
-  def __init__(self, session, extraargs={}, confirmlogin=0, specialmessage=None, languagenames=None):
-    server.LoginPage.__init__(self, session, extraargs, confirmlogin, specialmessage, languagenames)
-    contents = pagelayout.IntroText(self.contents)
-    pagelayout.PootlePage.__init__(self, "Login to Pootle", contents, session)
-
-  def getcontents(self):
-    return pagelayout.PootlePage.getcontents(self)
-
-class RegisterPage(pagelayout.PootlePage):
-  """page for new registrations"""
-  def __init__(self, session, argdict):
-    introtext = [pagelayout.IntroText("Please enter your registration details")]
-    if session.status:
-      statustext = pagelayout.IntroText(session.status)
-      introtext.append(statustext)
-    self.argdict = argdict
-    contents = [introtext, self.getform()]
-    pagelayout.PootlePage.__init__(self, "Pootle Registration", contents, session)
-
-  def getform(self):
-    columnlist = [("email", "Email Address", "Must be a valid email address"),
-                  ("username", "Username", "Your requested username"),
-                  ("password", "Password", "Your desired password")]
-    formlayout = {1:("email", ), 2:("username", ), 3:("password", )}
-    extrawidgets = [widgets.Input({'type': 'submit', 'name':'register', 'value':'Register'})]
-    record = dict([(column[0], self.argdict.get(column[0], "")) for column in columnlist])
-    return form.SimpleForm(record, "register", columnlist, formlayout, {}, extrawidgets)
-
-class ActivatePage(pagelayout.PootlePage):
-  """page for new registrations"""
-  def __init__(self, session, argdict):
-    introtext = [pagelayout.IntroText("Please enter your activation details")]
-    if session.status:
-      statustext = pagelayout.IntroText(session.status)
-      introtext.append(statustext)
-    self.argdict = argdict
-    contents = [introtext, self.getform()]
-    pagelayout.PootlePage.__init__(self, "Pootle Account Activation", contents, session)
-
-  def getform(self):
-    columnlist = [("username", "Username", "Your requested username"),
-                  ("activationcode", "Activation Code", "The activation code you received")]
-    formlayout = {1:("username", ), 2:("activationcode", )}
-    extrawidgets = [widgets.Input({'type': 'submit', 'name':'activate', 'value':'Activate Account'})]
-    record = dict([(column[0], self.argdict.get(column[0], "")) for column in columnlist])
-    return form.SimpleForm(record, "activate", columnlist, formlayout, {}, extrawidgets)
-
-class OptionalLoginAppServer(server.LoginAppServer):
-  """a server that enables login but doesn't require it except for specified pages"""
-  def handle(self, req, pathwords, argdict):
-    """handles the request and returns a page object in response"""
-    argdict = self.processargs(argdict)
-    session = self.getsession(req, argdict)
-    if session.isopen:
-      session.pagecount += 1
-      session.remote_ip = self.getremoteip(req)
-    return self.getpage(pathwords, session, argdict)
-
-class ActivateSession(session.LoginSession):
-  # TODO: refactor this into a LoginChecker somehow...
-  def validate(self):
-    """checks if this session is valid"""
-    if not super(ActivateSession, self).validate():
-      return False
-    if not getattr(getattr(self.loginchecker.users, self.username, None), "activated", 0):
-      self.isvalid = False
-      self.status = "username has not yet been activated"
-    return self.isvalid
-
-class PootleServer(OptionalLoginAppServer):
+class PootleServer(users.OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
-  def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage):
+  def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=users.LoginPage):
     if sessioncache is None:
-      sessioncache = session.SessionCache(sessionclass=ActivateSession)
+      sessioncache = session.SessionCache(sessionclass=users.ActivateSession)
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.potree = projects.POTree(self.instance)
 
@@ -121,6 +47,9 @@ class PootleServer(OptionalLoginAppServer):
       top = ""
     if not top or top == "index.html":
       return indexpage.PootleIndex(self.potree, session)
+    elif top == 'res.html':
+      from jLogbook.python import configpage
+      return configpage.ResourcePage(self, session)
     elif top == "login.html":
       if session.isopen:
         redirecttext = pagelayout.IntroText("Redirecting to index...")
@@ -128,7 +57,7 @@ class PootleServer(OptionalLoginAppServer):
         return server.Redirect("index.html", withpage=redirectpage)
       if 'username' in argdict:
         session.username = argdict["username"]
-      return LoginPage(session)
+      return users.LoginPage(session)
     elif top == "register.html":
       return self.registerpage(session, argdict)
     elif top == "activate.html":
@@ -217,11 +146,11 @@ class PootleServer(OptionalLoginAppServer):
     supportaddress = getattr(self.instance.registration, 'supportaddress', "")
     username = argdict.get("username", "")
     if not username or not username.isalnum() or not username[0].isalpha():
-      raise RegistrationError("Username must be alphanumeric, and must start with an alphabetic character")
+      raise users.RegistrationError("Username must be alphanumeric, and must start with an alphabetic character")
     email = argdict.get("email", "")
     password = argdict.get("password", "")
     if not (email and "@" in email and "." in email):
-      raise RegistrationError("You must supply a valid email address")
+      raise users.RegistrationError("You must supply a valid email address")
     userexists = session.loginchecker.userexists(username)
     if userexists:
       usernode = getattr(session.loginchecker.users, username)
@@ -241,7 +170,7 @@ class PootleServer(OptionalLoginAppServer):
     else:
       minpasswordlen = 6
       if not password or len(password) < minpasswordlen:
-        raise RegistrationError("You must supply a valid password of at least %d characters" % minpasswordlen)
+        raise users.RegistrationError("You must supply a valid password of at least %d characters" % minpasswordlen)
       setattr(session.loginchecker.users, username + ".email", email)
       setattr(session.loginchecker.users, username + ".passwdhash", session.md5hexdigest(password))
       setattr(session.loginchecker.users, username + ".activated", 0)
@@ -277,7 +206,7 @@ class PootleServer(OptionalLoginAppServer):
     fullmessage = mailer.makemessage(messagedict)
     errmsg = mailer.dosendmessage(fromemail=self.instance.registration.fromaddress, recipientemails=[email], message=fullmessage, smtpserver=smtpserver)
     if errmsg:
-      raise RegistrationError("Error sending mail: %s" % errmsg)
+      raise users.RegistrationError("Error sending mail: %s" % errmsg)
     return displaymessage, redirecturl
 
   def registerpage(self, session, argdict):
@@ -285,16 +214,16 @@ class PootleServer(OptionalLoginAppServer):
     if "username" in argdict:
       try:
         displaymessage, redirecturl = self.handleregistration(session, argdict)
-      except RegistrationError, message:
+      except users.RegistrationError, message:
         session.status = str(message)
-        return RegisterPage(session, argdict)
+        return users.RegisterPage(session, argdict)
       message = pagelayout.IntroText(displaymessage)
       redirectpage = pagelayout.PootlePage("Redirecting...", [message], session)
       redirectpage.attribs["refresh"] = 10
       redirectpage.attribs["refreshurl"] = redirecturl
       return redirectpage
     else:
-      return RegisterPage(session, argdict)
+      return users.RegisterPage(session, argdict)
 
   def activatepage(self, session, argdict):
     """handle activation or return the Register page"""
@@ -316,7 +245,7 @@ class PootleServer(OptionalLoginAppServer):
       failedpage = pagelayout.PootlePage("Activation Failed", failedtext, session)
       return failedpage
     else:
-      return ActivatePage(session, argdict)
+      return users.ActivatePage(session, argdict)
 
 def main_is_frozen():
   import imp
