@@ -175,14 +175,18 @@ def mozillapropertiesdecode(source):
     # escapes that are self-escaping
     "\\": "\\", "'": "'", '"': '"',
     # control characters that we keep
-    "b": "\\b", "f": "\\f", "t": "\\t", "n": "\\n", "v": "\\v", "a": "\\a"
+    "b": "\b", "f": "\f", "t": "\t", "n": "\n", "v": "\v", "a": "\a"
+    }
+  controlchars = {
+    # the reverse of the above...
+    "\b": "\b", "\f": "\f", "\t": "\t", "\n": "\n", "\v": "\v", "\a": "\a"
     }
   def unichr2(i):
     """Returns a Unicode string of one character with ordinal 32 <= i, otherwise an escaped control character"""
     if 32 <= i:
       return unichr(i)
-    elif unichr(i) in "\t\n":
-      return unichr(i)
+    elif unichr(i) in controlchars:
+      return controlchars[unichr(i)]
     else:
       return "\\u%04x" % i
   while s < len(source):
