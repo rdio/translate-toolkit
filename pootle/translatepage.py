@@ -7,12 +7,12 @@ from translate.pootle import projects
 
 class TranslatePage(pagelayout.PootlePage):
   """the page which lets people edit translations"""
-  def __init__(self, project, subproject, session, argdict, dirfilter=None):
+  def __init__(self, language, project, session, argdict, dirfilter=None):
+    self.language = language
     self.project = project
-    self.subproject = subproject
     self.argdict = argdict
     self.dirfilter = dirfilter
-    self.translationproject = projects.getproject(self.subproject)
+    self.translationproject = projects.getproject(self.project)
     self.matchnames = self.getmatchnames(self.translationproject.checker)
     self.translationsession = self.translationproject.gettranslationsession(session)
     self.instance = session.instance
@@ -20,7 +20,7 @@ class TranslatePage(pagelayout.PootlePage):
     translations = self.gettranslations()
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     translateform = widgets.Form([translations, contextinfo], {"name": "translate", "action":""})
-    title = "Pootle: translating %s into %s: %s" % (self.subproject.fullname, self.project.fullname, self.pofilename)
+    title = "Pootle: translating %s into %s: %s" % (self.project.fullname, self.language.fullname, self.pofilename)
     translatediv = pagelayout.TranslateForm(translateform)
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
     self.links.addcontents(pagelayout.SidebarTitle("current file"))
