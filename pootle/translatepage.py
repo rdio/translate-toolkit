@@ -23,8 +23,7 @@ class TranslatePage(pagelayout.PootlePage):
     self.viewmode = self.argdict.get("view", 0)
     self.reviewmode = self.argdict.get("review", 0)
     self.finditem()
-    translations = self.gettranslations()
-    self.maketable(translations)
+    self.maketable()
     searchcontextinfo = widgets.HiddenFieldList({"searchtext": self.searchtext})
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     translateform = widgets.Form([self.transtable, searchcontextinfo, contextinfo], {"name": "translate", "action":""})
@@ -68,20 +67,66 @@ class TranslatePage(pagelayout.PootlePage):
 
   def receivetranslations(self):
     """receive any translations submitted by the user"""
-    skip = "skip" in self.argdict
+    self.pofilename = self.argdict.get("pofilename", None)
+    if self.pofilename is None:
+      return
+    skips = []
+    submits = []
+    accepts = []
+    rejects = []
+    translations = {}
+    suggestions = {}
+    def getitem(key, prefix):
+      if not key.startswith(prefix):
+        return None
+      try:
+        return int(key.replace(prefix, "", 1))
+      except:
+        return None
+    def getpointitem(key, prefix):
+      if not key.startswith(prefix):
+        return None, None
+      try:
+        key = key.replace(prefix, "", 1)
+        item, suggid = key.split(".", 1)
+        return int(item), int(suggid)
+      except:
+        return None, None
     for key, value in self.argdict.iteritems():
-      if key.startswith("trans"):
-        try:
-          item = int(key.replace("trans",""))
-        except:
-          continue
-        # submit the actual translation back to the project...
-        self.pofilename = self.argdict["pofilename"]
-	if skip:
-          self.translationsession.skiptranslation(self.pofilename, item)
-	else:
-          self.translationsession.receivetranslation(self.pofilename, item, value)
-        self.lastitem = item
+      item = getitem(key, "skip")
+      if item is not None:
+        skips.append(item)
+      item = getitem(key, "submit")
+      if item is not None:
+        submits.append(item)
+      item, suggid = getpointitem(key, "accept")
+      if item is not None:
+        accepts.append((item, suggid))
+      item, suggid = getpointitem(key, "reject")
+      if item is not None:
+        rejects.append((item, suggid))
+      item = getitem(key, "trans")
+      if item is not None:
+        translations[item] = value
+      item, suggid = getpointitem(key, "sugg")
+      if item is not None:
+        suggestions[item, suggid] = value
+    for item in skips:
+      self.translationsession.skiptranslation(self.pofilename, item)
+    for item in submits:
+      if item in skips or item not in translations:
+        continue
+      value = translations[item]
+      self.translationsession.receivetranslation(self.pofilename, item, value)
+      self.lastitem = item
+    for item, suggid in rejects:
+      value = suggestions[item, suggid]
+      self.project.rejectsuggestion(self.pofilename, item, value)
+    for item, suggid in accepts:
+      if (item, suggid) in rejects or (item, suggid) not in suggestions:
+        continue
+      value = suggestions[item, suggid]
+      self.project.acceptsuggestion(self.pofilename, item, value)
 
   def getmatchnames(self, checker): 
     """returns any checker filters the user has asked to match..."""
@@ -118,14 +163,14 @@ class TranslatePage(pagelayout.PootlePage):
       self.firstitem = self.item
       return self.project.getitems(self.pofilename, self.item, self.item+10)
     else:
-      if self.reviewmode:
-        suggestions = self.project.getsuggestions(self.pofilename, self.item)
-        print "suggestions:", suggestions
       self.editable = [self.item]
       self.firstitem = max(self.item - 3, 0)
       return self.project.getitems(self.pofilename, self.item-3, self.item+4)
 
-  def maketable(self, translations):
+  def maketable(self):
+    translations = self.gettranslations()
+    if self.reviewmode:
+      suggestions = {self.item: self.project.getsuggestions(self.pofilename, self.item)}
     self.transtable = table.TableLayout({"class":"translate-table", "cellpadding":10})
     origtitle = table.TableCell("original", {"class":"translate-table-title"})
     transtitle = table.TableCell("translation", {"class":"translate-table-title"})
@@ -133,41 +178,64 @@ class TranslatePage(pagelayout.PootlePage):
     self.transtable.setcell(-1, 1, transtitle)
     self.textcolors = ["#000000", "#000060"]
     for row, (orig, trans) in enumerate(translations):
-      thisitem = self.firstitem + row
-      origcell = self.getorigcell(row, orig, thisitem in self.editable)
+      item = self.firstitem + row
+      origdiv = self.getorigdiv(item, orig, item in self.editable)
+      if item in self.editable:
+        if self.reviewmode:
+          transdiv = self.gettransreview(item, trans, suggestions[item])
+        else:
+          transdiv = self.gettransedit(item, trans)
+      else:
+        transdiv = self.gettransview(item, trans)
+      origcell = table.TableCell(origdiv, {"class":"translate-original"})
       self.transtable.setcell(row, 0, origcell)
-      transcell = self.gettranscell(row, trans, thisitem in self.editable)
+      transcell = table.TableCell(transdiv, {"class":"translate-translation"})
       self.transtable.setcell(row, 1, transcell)
     self.transtable.shrinkrange()
     return self.transtable
 
-  def getorigcell(self, row, orig, editable):
+  def getorigdiv(self, item, orig, editable):
     origclass = "translate-original "
     if editable:
       origclass += "translate-original-focus "
     else:
       origclass += "autoexpand "
-    origdiv = widgets.Division([], "orig%d" % row, cls=origclass)
-    origtext = widgets.Font(orig, {"color":self.textcolors[row % 2]})
+    origdiv = widgets.Division([], "orig%d" % item, cls=origclass)
+    origtext = widgets.Font(orig, {"color":self.textcolors[item % 2]})
     origdiv.addcontents(origtext)
-    return table.TableCell(origdiv, {"class":"translate-original"})
+    return origdiv
 
-  def gettranscell(self, row, trans, editable):
-    transclass = "translate-translation "
-    if not editable:
-      transclass += "autoexpand "
-    transdiv = widgets.Division([], "trans%d" % row, cls=transclass)
-    if editable:
-      if isinstance(trans, str):
-        trans = trans.decode("utf8")
-      textarea = widgets.TextArea({"name":"trans%d" % row, "rows":3, "cols":40}, contents=trans)
-      skipbutton = widgets.Input({"type":"submit", "name":"skip", "value":"skip"}, "skip")
-      submitbutton = widgets.Input({"type":"submit", "name":"submit", "value":"submit"}, "submit")
-      contents = [textarea, skipbutton, submitbutton]
-    else:
-      text = pagelayout.TranslationText(widgets.Font(trans, {"color":self.textcolors[row % 2]}))
-      editlink = pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (row, self.pofilename), "Edit", "editlink%d" % row)
-      contents = [text, editlink]
-    transdiv.addcontents(contents)
-    return table.TableCell(transdiv, {"class":"translate-translation"})
+  def gettransedit(self, item, trans):
+    if isinstance(trans, str):
+      trans = trans.decode("utf8")
+    textarea = widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
+    skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
+    submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
+    contents = [textarea, skipbutton, submitbutton]
+    transdiv = widgets.Division([textarea, skipbutton, submitbutton], "trans%d" % item, cls="translate-translation")
+    return transdiv
+
+  def gettransreview(self, item, trans, suggestions):
+    if isinstance(trans, str):
+      trans = trans.decode("utf8")
+    textarea = widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
+    skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
+    submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
+    suggdivs = []
+    for suggid, suggestion in enumerate(suggestions):
+      if isinstance(suggestion, str):
+        suggestion = suggestion.decode("utf8")
+      suggarea = widgets.TextArea({"name":"sugg%d.%d" % (item, suggid), "rows":3, "cols":40}, contents=suggestion)
+      acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
+      rejectbutton = widgets.Input({"type":"submit", "name":"reject%d.%d" % (item, suggid), "value":"reject"}, "reject")
+      suggdiv = widgets.Division([suggarea, acceptbutton, rejectbutton], "sugg%d" % item)
+      suggdivs.append(suggdiv)
+    transdiv = widgets.Division([textarea, skipbutton, submitbutton] + suggdivs, "trans%d" % item, cls="translate-translation")
+    return transdiv
+
+  def gettransview(self, item, trans):
+    text = pagelayout.TranslationText(widgets.Font(trans, {"color":self.textcolors[item % 2]}))
+    editlink = pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit", "editlink%d" % item)
+    transdiv = widgets.Division([text, editlink], "trans%d" % item, cls="translate-translation autoexpand")
+    return transdiv
 
