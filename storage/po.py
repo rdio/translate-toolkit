@@ -199,7 +199,7 @@ class pofile:
   def makeheader(self, charset="CHARSET", encoding="ENCODING"):
     """create a header for the given filename"""
     # TODO: clean this up, make it handle all the properties...
-    headerpo = po.poelement()
+    headerpo = poelement()
     headerpo.typecomments.append("#, fuzzy\n")
     headerpo.msgid = ['""']
     headeritems = [""]
