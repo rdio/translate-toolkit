@@ -94,7 +94,7 @@ class html2po:
     thepofile = po.pofile()
     htmlparser = POHTMLParser()
     if includeheader:
-      headerpo = thepofile.makeheader(charset="UTF8")
+      headerpo = thepofile.makeheader(charset="UTF8", encoding="8bit")
       thepofile.poelements.append(headerpo)
     contents = inputfile.read()
     htmlparser.feed(contents)

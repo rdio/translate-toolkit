@@ -227,10 +227,7 @@ class dtd2po:
 
   def convertfile(self, thedtdfile):
     thepofile = po.pofile()
-    if self.blankmsgstr:
-      headerpo = thepofile.makeheader()
-    else:
-      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
+    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
     headerpo.othercomments.append("# extracted from %s\n" % thedtdfile.filename)
     thepofile.poelements.append(headerpo)
     thedtdfile.makeindex()
@@ -245,10 +242,7 @@ class dtd2po:
 
   def mergefiles(self, origdtdfile, translateddtdfile):
     thepofile = po.pofile()
-    if self.blankmsgstr:
-      headerpo = thepofile.makeheader()
-    else:
-      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
+    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
     headerpo.othercomments.append("# extracted from %s, %s\n" % (origdtdfile.filename, translateddtdfile.filename))
     thepofile.poelements.append(headerpo)
     origdtdfile.makeindex()

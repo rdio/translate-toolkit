@@ -35,10 +35,7 @@ class prop2po:
   def convertfile(self, thepropfile, ispotfile=False):
     """converts a .properties file to a .po file..."""
     thepofile = po.pofile()
-    if ispotfile:
-      headerpo = thepofile.makeheader()
-    else:
-      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
+    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
     headerpo.othercomments.append("# extracted from %s\n" % thepropfile.filename)
     # we try and merge the header po with any comments at the start of the properties file
     appendedheader = 0
@@ -63,10 +60,7 @@ class prop2po:
   def mergefiles(self, origpropfile, translatedpropfile, blankmsgstr=False):
     """converts two .properties files to a .po file..."""
     thepofile = po.pofile()
-    if blankmsgstr:
-      headerpo = thepofile.makeheader()
-    else:
-      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
+    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
     headerpo.othercomments.append("# extracted from %s, %s\n" % (origpropfile.filename, translatedpropfile.filename))
     translatedpropfile.makeindex()
     # we try and merge the header po with any comments at the start of the properties file
