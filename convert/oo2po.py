@@ -96,7 +96,7 @@ class oo2po:
     polist = [textpo, quickhelppo, titlepo]
     return polist
 
-  def convertfile(self, theoofile):
+  def convertfile(self, theoofile, duplicatestyle="msgid_comment"):
     """converts an entire oo file to .po format"""
     thepofile = po.pofile()
     # create a header for the file
@@ -110,10 +110,10 @@ class oo2po:
         thepofile.poelements.append(thepo)
     thepofile.removeblanks()
     # TODO: add a switch for duplicates...
-    thepofile.removeduplicates()
+    thepofile.removeduplicates(duplicatestyle)
     return thepofile
 
-def convertoo(inputfile, outputfile, templates, pot=False, languages=None):
+def convertoo(inputfile, outputfile, templates, pot=False, languages=None, duplicatestyle="msgid_comment"):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   fromfile = oo.oofile()
   if hasattr(inputfile, "filename"):
@@ -123,7 +123,7 @@ def convertoo(inputfile, outputfile, templates, pot=False, languages=None):
   if languages is not None:
     languages = [language.strip() for language in languages.split(",") if language.strip()]
   convertor = oo2po(blankmsgstr=pot, languages=languages)
-  outputpo = convertor.convertfile(fromfile)
+  outputpo = convertor.convertfile(fromfile, duplicatestyle)
   if outputpo.isempty():
     return 0
   outputpolines = outputpo.tolines()
@@ -138,7 +138,12 @@ def main():
   parser = convert.ArchiveConvertOptionParser(formats, usepots=True, description=__doc__, archiveformats=archiveformats)
   parser.add_option("-l", "--languages", dest="languages", default=None,
     help="set languages to extract from oo file (comma-separated)", metavar="LANGUAGES")
+  parser.add_option("", "--duplicates", dest="duplicatestyle", default="msgid_comment",
+    type="choice", choices=["msgid_comment", "merge", "keep", "msgid_comment_all"],
+    help="what to do with duplicate strings (identical original text)", metavar="DUPLICATESTYLE")
+  parser.add_option("", "--nonrecursiveinput", dest="allowrecursiveinput", default=True, action="store_false", help="don't treat the input oo as a recursive store")
   parser.passthrough.append("pot")
   parser.passthrough.append("languages")
+  parser.passthrough.append("duplicatestyle")
   parser.run()
 
