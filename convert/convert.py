@@ -51,6 +51,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     self.setprogressoptions()
     if self.usepots:
       self.setpotoption()
+    self.convertparameters = []
     self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
 
   def getusagestring(self, option):
@@ -180,7 +181,16 @@ class ConvertOptionParser(optparse.OptionParser, object):
         templatefile = self.opentemplatefile(options, options.template)
       else:
         templatefile = None
-      convertmethod(inputfile, outputfile, templatefile)
+      requiredoptions = self.getrequiredoptions(options)
+      convertmethod(inputfile, outputfile, templatefile, **requiredoptions)
+
+  def getrequiredoptions(self, options):
+    """get the options required to pass to the filtermethod..."""
+    requiredoptions = {}
+    for optionname in dir(options):
+      if optionname in self.convertparameters:
+        requiredoptions[optionname] = getattr(options, optionname)
+    return requiredoptions
 
   def getconvertmethod(self, inputpath, outputpath):
     """works out which conversion method to use..."""
@@ -292,7 +302,8 @@ class ConvertOptionParser(optparse.OptionParser, object):
       outputfile = self.openoutputfile(options, fulloutputpath)
       tempoutput = False
     templatefile = self.opentemplatefile(options, fulltemplatepath)
-    if convertmethod(inputfile, outputfile, templatefile):
+    requiredoptions = self.getrequiredoptions(options)
+    if convertmethod(inputfile, outputfile, templatefile, **requiredoptions):
       if tempoutput:
         self.finalizetempoutputfile(options, outputfile, fulloutputpath)
       return True
