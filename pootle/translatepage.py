@@ -6,6 +6,12 @@ from translate.pootle import pagelayout
 from translate.pootle import projects
 import difflib
 
+def oddoreven(polarity):
+  if polarity % 2 == 0:
+    return "even"
+  elif polarity % 2== 1:
+    return "odd"
+
 class TranslatePage(pagelayout.PootlePage):
   """the page which lets people edit translations"""
   def __init__(self, project, session, argdict, dirfilter=None):
@@ -215,9 +221,10 @@ class TranslatePage(pagelayout.PootlePage):
           transdiv = self.gettransedit(item, trans)
       else:
         transdiv = self.gettransview(item, trans)
-      origcell = table.TableCell(origdiv, {"class":"translate-original"})
+      polarity = oddoreven(item)
+      origcell = table.TableCell(origdiv, {"class":"translate-original translate-original-%s" % polarity})
       self.transtable.setcell(row, 0, origcell)
-      transcell = table.TableCell(transdiv, {"class":"translate-translation"})
+      transcell = table.TableCell(transdiv, {"class":"translate-translation translate-translation-%s" % polarity})
       self.transtable.setcell(row, 1, transcell)
       if item in self.editable:
         origcell.attribs["class"] += " translate-focus"
@@ -231,12 +238,7 @@ class TranslatePage(pagelayout.PootlePage):
       origclass += "translate-original-focus "
     else:
       origclass += "autoexpand "
-    if item % 2:
-      textclass = "translate-original-odd "
-    else:
-      textclass = "translate-original-even "
-    origtext = widgets.Span(orig, cls=textclass)
-    origdiv = widgets.Division(origtext, "orig%d" % item, cls=origclass)
+    origdiv = widgets.Division(orig, "orig%d" % item, cls=origclass)
     return origdiv
 
   def geteditlink(self, item):
@@ -267,7 +269,7 @@ class TranslatePage(pagelayout.PootlePage):
     if "translate" in self.rights or "suggest" in self.rights:
       text= widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
     else:
-      text = pagelayout.TranslationText(trans, item % 2)
+      text = pagelayout.TranslationText(trans)
     buttons = self.gettransbuttons(item)
     transdiv = widgets.Division([text, buttons], "trans%d" % item, cls="translate-translation")
     return transdiv
@@ -312,7 +314,7 @@ class TranslatePage(pagelayout.PootlePage):
     combineddiffs = reduce(list.__add__, diffcodes)
     transdiff = self.highlightdiffs(trans, combineddiffs, issrc=True)
     editlink = self.geteditlink(item)
-    currenttext = pagelayout.TranslationText([editlink, transdiff], item % 2)
+    currenttext = pagelayout.TranslationText([editlink, transdiff])
     suggdivs = []
     for suggid, suggestion in enumerate(suggestions):
       suggdiffcodes = diffcodes[suggid]
@@ -331,7 +333,7 @@ class TranslatePage(pagelayout.PootlePage):
         else:
           suggtitle = "Suggestion:"
       suggtitle = widgets.Division("<b>%s</b>" % suggtitle)
-      suggestiontext = pagelayout.TranslationText(suggdiff, item % 2)
+      suggestiontext = pagelayout.TranslationText(suggdiff)
       suggestionhidden = widgets.Input({'type': 'hidden', "name": "sugg%d.%d" % (item, suggid), 'value': suggestion})
       if "review" in self.rights:
         acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
@@ -352,7 +354,7 @@ class TranslatePage(pagelayout.PootlePage):
   def gettransview(self, item, trans):
     """returns a widget for viewing the given item's translation"""
     editlink = self.geteditlink(item)
-    text = pagelayout.TranslationText([editlink, trans], item % 2)
+    text = pagelayout.TranslationText([editlink, trans])
     transdiv = widgets.Division(text, "trans%d" % item, cls="translate-translation autoexpand")
     return transdiv
 

@@ -85,19 +85,19 @@ div.translate-original-focus
 td.translate-original
 {
 	width: 50%;
-	background-color: #e0e0e0;
 }
 td.translate-focus
 {
-	background-color: #f0f0f0;
+	border-top:1px solid #000000;
+	border-bottom:1px solid #000000;
 }
 .translate-original-odd
 {
-	color: #000000;
+	background-color: #ffffff;
 }
 .translate-original-even
 {
-	color: #000060;
+	background-color: #f4f4f4;
 }
 td.translate-translation
 {
@@ -105,11 +105,11 @@ td.translate-translation
 }
 .translate-translation-odd
 {
-	color: #000000;
+	background-color: #ffffff;
 }
 .translate-translation-even
 {
-	color: #000060;
+	background-color: #f4f4f4;
 }
 div.intro {
 	font-family: verdana, arial, sans-serif;
