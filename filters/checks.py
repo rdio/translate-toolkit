@@ -272,8 +272,8 @@ class StandardChecker(TranslationChecker):
   def startcaps(self, str1, str2):
     """checks that the message starts with the correct capitalisation"""
     punc = "\\.,/?!`'\"[]{}()@#$%^&*_-;:<>"
-    str1 = self.filtervariables(prefilters.removekdecomments(str1)).lstrip().lstrip(punc)
-    str2 = self.filtervariables(str2).lstrip().lstrip(punc)
+    str1 = self.filteraccelerators(self.filtervariables(prefilters.removekdecomments(str1))).lstrip().lstrip(punc)
+    str2 = self.filteraccelerators(self.filtervariables(str2)).lstrip().lstrip(punc)
     if len(str1) > 1 and len(str2) > 1:
       return str1[0].isupper() == str2[0].isupper()
     if len(str1) == 0 and len(str2) == 0:
