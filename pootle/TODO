@@ -48,4 +48,5 @@ bugs:
   check that rejecting suggestions always gets the right id
   suggestion msgid comments get incorporated into main po file! this *totally* confuses things, item numbers seem to get messed up too...
   HTML gets incorporated into HTML rather than escaped
+  quotes aren't handled properly (display with escapes but submission changes)
 
