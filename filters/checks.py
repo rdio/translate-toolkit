@@ -326,11 +326,14 @@ class StandardChecker(TranslationChecker):
     """checks for Gettext compendium conflicts (#-#-#-#-#)"""
     return str2.find("#-#-#-#-#") == -1
 
-  preconditions = {"untranslated": ("escapes", "short", "long", "unchanged", "singlequoting", "doublequoting",
-                                    "accelerators", "variables", "numbers",
-                                    "doublespacing", "puncspacing", "startwhitespace", "endwhitespace",
-                                    "sentencecount", "startcaps", "startpunc", "endpunc", "purepunc", 
-                                    "simplecaps", "acronyms", "brackets", "xmltags"),
+  preconditions = {"untranslated": ("simplecaps", "variables", "startcaps",
+                                    "accelerators", "brackets", "endpunc",
+                                    "acronyms", "xmltags", "startpunc",
+                                    "endwhitespace", "startwhitespace",
+                                    "escapes", "doublequoting", "singlequoting", 
+                                    "filepaths", "purepunc", "doublespacing",
+                                    "sentencecount", "numbers", "isfuzzy",
+                                    "isreview"),
                    "compendiumconflicts": ("accelerators", "brackets", "escapes", 
                                     "numbers", "startpunc", "long", "variables", 
                                     "startcaps", "sentencecount", "simplecaps",
