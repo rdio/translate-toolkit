@@ -136,21 +136,11 @@ def handleoptions(options, inputformats, outputformat):
 
 if __name__ == '__main__':
   # handle command line options
-  try:
-    import optparse
-  except ImportError:
-    from translate.misc import optparse
+  from translate.convert import convert
   # TODO: add ability to import translations from another directory
   inputformats = {"dtd": convertdtd, "properties": convertprop}
   outputformat = "po"
-  parser = optparse.OptionParser(usage="%prog [-P|--pot] [-i|--input-dir inputdir] [-o|--output-dir outputdir] [-t|--template-dir templatedir]",
-                                 version="%prog "+__version__.ver)
-  parser.add_option("-i", "--input-dir", dest="inputdir", default=None,
-                    help="read from inputdir in "+", ".join(inputformats)+" formats", metavar="inputdir")
-  parser.add_option("-o", "--output-dir", dest="outputdir", default=None,
-                    help="write to outputdir in "+outputformat+" format", metavar="outputdir")
-  parser.add_option("-t", "--template", dest="templatedir", default=None,
-                    help="read from templatedir in "+". ".join(inputformats)+" formats", metavar="templatedir")
+  parser = convert.ConvertOptionParser(convert.defaultrecursion, inputformats, outputformat, True)
   parser.add_option("-P", "--pot", action="store_true", dest="pot", default=False, \
                     help="produce PO template (.pot) with blank msgstrs")
   (options, args) = parser.parse_args()
