@@ -158,8 +158,8 @@ class TranslatePage(pagelayout.PootlePage):
       submitbutton = widgets.Input({"type":"submit", "name":"submit", "value":"submit"}, "submit")
       contents = [textarea, skipbutton, submitbutton]
     else:
-      text = widgets.Font(trans, {"color":self.textcolors[row % 2]})
-      editlink = widgets.Link("?translate=1&item=%d&pofilename=%s" % (row, self.pofilename), "Edit")
+      text = pagelayout.TranslationText(widgets.Font(trans, {"color":self.textcolors[row % 2]}))
+      editlink = pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (row, self.pofilename), "Edit", "editlink%d" % row)
       contents = [text, editlink]
     transdiv.addcontents(contents)
     return table.TableCell(transdiv, {"class":"translate-translation"})

@@ -15,11 +15,13 @@ function init()
 			{
 				divobj.rownum = parseInt(divobj.id.replace("orig", ""));
 				divobj.partner = document.getElementById("trans"+divobj.rownum)
+				divobj.editlink = document.getElementById("editlink"+divobj.rownum)
 			}
 			else if (divobj.id.match("trans[0-9]+"))
 			{
 				divobj.rownum = parseInt(divobj.id.replace("trans", ""));
 				divobj.partner = document.getElementById("orig"+divobj.rownum)
+				divobj.editlink = document.getElementById("editlink"+divobj.rownum)
 			}
 			else
 			{
@@ -47,6 +49,8 @@ function makeexpanded()
 		this.style.borderBottom = '1px dotted #999';
 	else
 		this.style.borderBottom = '0';
+	if (this.editlink)
+		this.editlink.style.display = 'inline';
 }
 
 function makecontracted()
@@ -56,6 +60,8 @@ function makecontracted()
 		this.style.borderBottom = '1px dotted #999';
 	else
 		this.style.borderBottom = '0';
+	if (this.editlink)
+		this.editlink.style.display = 'none';
 }
 
 function expandaction()

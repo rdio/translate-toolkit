@@ -47,6 +47,15 @@ class ActionLinks(widgets.Division):
       if num < len(contents)-1:
         self.addcontents("| ")
 
+class TranslationText(widgets.Span):
+  def __init__(self, contents):
+    widgets.Span.__init__(self, contents, cls="translation-text")
+
+class TranslateActionLink(widgets.Span):
+  def __init__(self, href, contents, id=None):
+    link = widgets.Link(href, contents)
+    widgets.Span.__init__(self, link, id=id, cls="translation-action")
+
 class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
   def __init__(self, session):
