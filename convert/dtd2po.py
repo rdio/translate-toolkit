@@ -21,8 +21,7 @@
 """script to convert a mozilla .dtd localization format to a
 gettext .po localization file using the po and dtd modules, and the 
 dtd2po convertor class which is in this module
-You can convert back to .dtd using redtd.py
-reads from stdin, writes to stdout"""
+You can convert back to .dtd using redtd.py"""
 
 import sys
 from translate.storage import po
