@@ -47,6 +47,8 @@ class po2csv:
        thecsv.source = "source"
        thecsv.msgid = "original"
        thecsv.msgstr = "translation"
+     elif thepo.isblank():
+       return None
      else:
        self.convertstrings(thepo,thecsv)
      return thecsv
