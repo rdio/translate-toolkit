@@ -26,16 +26,30 @@ from translate.storage import po
 from translate.misc import quote
 from translate.convert import convert
 import os
+try:
+  import textwrap
+except:
+  textwrap = None
 
 class po2txt:
   """po2txt can take a po file and generate txt. best to give it a template file otherwise will just concat msgstrs"""
+  def convertmessage(self, message):
+    """converts a po message to a string"""
+    return po.getunquotedstr(message, includeescapes=False)
+
+  def wrapmessage(self, message):
+    """rewraps text as required"""
+    if self.wrap is None:
+      return message
+    return "\n".join([textwrap.fill(line, self.wrap, replace_whitespace=False) for line in message.split("\n")])
+
   def convertfile(self, inputpo):
     """converts a file to .po format"""
     txtresult = ""
     for thepo in inputpo.poelements:
       if thepo.isheader():
         continue
-      txtresult += po.getunquotedstr(thepo.msgstr, includeescapes=False) + "\n" + "\n"
+      txtresult += self.wrapmessage(self.convertmessage(thepo.msgstr)) + "\n" + "\n"
     return txtresult
  
   def mergefile(self, inputpo, templatetext):
@@ -46,15 +60,16 @@ class po2txt:
     for thepo in inputpo.poelements:
       if thepo.isheader():
         continue
-      msgid = po.getunquotedstr(thepo.msgid, includeescapes=False)
-      msgstr = po.getunquotedstr(thepo.msgstr, includeescapes=False)
+      msgid = self.convertmessage(thepo.msgid)
+      msgstr = self.wrapmessage(self.convertmessage(thepo.msgstr))
       txtresult = txtresult.replace(msgid, msgstr)
     return txtresult
 
-def converttxt(inputfile, outputfile, templatefile):
+def converttxt(inputfile, outputfile, templatefile, wrap=None):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   inputpo = po.pofile(inputfile)
   convertor = po2txt()
+  po2txt.wrap = wrap
   if templatefile is None:
     outputtxt = convertor.convertfile(inputpo)
   else:
@@ -68,5 +83,9 @@ if __name__ == '__main__':
   # handle command line options
   formats = {("po", "txt"):("txt",converttxt), ("po"):("txt",converttxt)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
+  if textwrap is not None:
+    parser.add_option("-w", "--wrap", dest="wrap", default=None, type="int",
+                      help="set number of columns to wrap text at", metavar="WRAP")
+    parser.passthrough.append("wrap")
   parser.run()
 
