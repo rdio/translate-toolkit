@@ -66,8 +66,7 @@ class reoo:
     else:
       fullid = groupid + "." + localid
     key = "%s/%s#%s" % (project, sourcefile, fullid)
-    # TODO: replace any unexpected characters with _, not just " "
-    return key.replace(" ","_")
+    return oo.normalizefilename(key)
 
   def makeindex(self):
     """makes an index of the oo keys that are used in the po file"""
@@ -96,7 +95,7 @@ class reoo:
       key = key.replace(':', '#')
       # this is to handle using / instead of \ in the sourcefile...
       key = key.replace('\\', '/')
-      # TODO: replace any unexpected characters with _ here...
+      key = oo.normalizefilename(key)
       if self.index.has_key(key):
         # now we need to replace the definition of entity with msgstr
         theoo = self.index[key] # find the oo

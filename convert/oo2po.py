@@ -56,8 +56,7 @@ class oo2po:
     else:
       id = groupid + "." + localid
     key = "%s/%s#%s" % (project, sourcefile, id)
-    # TODO: replace any unexpected characters with _, not just " "
-    return key.replace(" ","_")
+    return oo.normalizefilename(key)
 
   def convertelement(self, theoo):
     """convert an oo element into a list of po elements"""

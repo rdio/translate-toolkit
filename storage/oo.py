@@ -26,6 +26,17 @@ FIXME: add simple test which reads in a file and writes it out again"""
 import sys
 from translate.misc import quote
 
+normalizetable = ""
+for i in map(chr, range(256)):
+  if i in "/#.0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ":
+    normalizetable += i
+  else:
+    normalizetable += "_"
+
+def normalizefilename(filename):
+  """converts any non-alphanumeric (standard roman) characters to _"""
+  return filename.translate(normalizetable)
+
 class ooline:
   """this represents one line, one translation in an .oo file"""
   def __init__(self, parts=None):
