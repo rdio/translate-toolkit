@@ -31,15 +31,16 @@ import StringIO
 from translate.misc import zipfileext
 ZipFileBase = zipfileext.ZipFileExt
 
+from translate.misc import wStringIO
 # this is a fix to the StringIO in Python 2.3.3
 # submitted as patch 951915 on sourceforge
-class FixedStringIO(StringIO.StringIO):
+class FixedStringIO(wStringIO.StringIO):
   def truncate(self, size=None):
     StringIO.StringIO.truncate(self, size)
     self.len = len(self.buf)
 
-NamedStringInput = FixedStringIO
-NamedStringOutput = FixedStringIO
+NamedStringInput = wStringIO.StringIO
+NamedStringOutput = wStringIO.StringIO
 
 # TODO: use jarfile names instead of trying to do intelligent common-prefix-stripping
 # TODO: pick up lang name etc from command-line param and rename en-US to lang-reg
