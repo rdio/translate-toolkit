@@ -38,15 +38,13 @@ except ImportError:
 
 class ConvertOptionParser(optparse.OptionParser, object):
   """a specialized Option Parser for convertor tools..."""
-  def __init__(self, inputformats, outputformats, usetemplates=False, usepots=False, templateslikeinput=None):
+  def __init__(self, formats, usetemplates=False, usepots=False):
     """construct the specialized Option Parser"""
     optparse.OptionParser.__init__(self, version="%prog "+__version__.ver)
     self.usepots = usepots
     self.setprogressoptions()
     self.setpotoption()
-    self.setinputformats(inputformats)
-    self.setoutputformats(outputformats)
-    self.settemplatehandling(usetemplates, templateslikeinput)
+    self.setformats(formats, usetemplates)
     self.convertparameters = []
     self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
 
@@ -72,10 +70,30 @@ class ConvertOptionParser(optparse.OptionParser, object):
         self.remove_option(long_opt)
     self.add_option(option)
 
-  def setinputformats(self, inputformats):
+  def setformats(self, formats, usetemplates):
     """sets the input formats to the given list/single string"""
-    if isinstance(inputformats, (str, unicode)):
-      inputformats = [inputformats]
+    inputformats = []
+    outputformats = []
+    templateformats = []
+    self.outputoptions = {}
+    self.usetemplates = usetemplates
+    for formatgroup, outputoptions in formats.iteritems():
+      if isinstance(formatgroup, (str, unicode)):
+        formatgroup = (formatgroup, )
+      if not isinstance(formatgroup, tuple):
+        raise ValueError("formatgroups must be tuples or str/unicode")
+      if len(formatgroup) < 1 or len(formatgroup) > 2:
+        raise ValueError("formatgroups must be tuples of length 1 or 2")
+      if len(formatgroup) == 1:
+        formatgroup += (None, )
+      inputformat, templateformat = formatgroup
+      if not isinstance(outputoptions, tuple) or len(outputoptions) != 2:
+        raise ValueError("output options must be tuples of length 2")
+      outputformat, converter = outputoptions
+      if not inputformat in inputformats: inputformats.append(inputformat)
+      if not outputformat in outputformats: outputformats.append(outputformat)
+      if not templateformat in templateformats: templateformats.append(templateformat)
+      self.outputoptions[(inputformat, templateformat)] = (outputformat, converter)
     self.inputformats = inputformats
     inputformathelp = self.getformathelp(inputformats)
     inputoption = optparse.Option("-i", "--input", dest="input", default=None, metavar="INPUT",
@@ -83,34 +101,18 @@ class ConvertOptionParser(optparse.OptionParser, object):
     inputoption.optionalswitch = True
     inputoption.required = True
     self.define_option(inputoption)
-
-  def setoutputformats(self, outputformats):
-    """sets the output formats to the given list/single string"""
-    if isinstance(outputformats, (str, unicode)):
-      outputformats = [outputformats]
-    self.outputformats = outputformats
     outputformathelp = self.getformathelp(outputformats)
     outputoption = optparse.Option("-o", "--output", dest="output", default=None, metavar="OUTPUT",
                     help="write to OUTPUT in %s" % (outputformathelp))
     outputoption.optionalswitch = True
     outputoption.required = True
     self.define_option(outputoption)
-
-  def settemplatehandling(self, usetemplates, templateslikeinput):
-    """works out how to handle templates"""
-    self.usetemplates = usetemplates
-    if not self.usetemplates: return
-    if templateslikeinput is None:
-      self.templateslikeinput = not isinstance(self.outputformats, dict)
-    else:
-      self.templateslikeinput = templateslikeinput
-    if self.templateslikeinput:
-      templateformathelp = self.getformathelp(self.inputformats)
-    else:
-      templateformathelp = self.getformathelp(self.outputformats)
-    templateoption = optparse.Option("-t", "--template", dest="template", default=None, metavar="TEMPLATE",
+    if self.usetemplates:
+      self.templateformats = templateformats
+      templateformathelp = self.getformathelp(self.templateformats)
+      templateoption = optparse.Option("-t", "--template", dest="template", default=None, metavar="TEMPLATE",
                   help="read from TEMPLATE in %s" % (templateformathelp))
-    self.define_option(templateoption)
+      self.define_option(templateoption)
 
   def setprogressoptions(self):
     """sets the progress options"""
@@ -135,6 +137,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
         formats["pot"] = formats["po"]
       else:
         formats.append("pot")
+    formats = [format for format in formats if format is not None]
     if len(formats) == 0:
       return ""
     elif len(formats) == 1:
@@ -182,30 +185,26 @@ class ConvertOptionParser(optparse.OptionParser, object):
         requiredoptions[optionname] = getattr(options, optionname)
     return requiredoptions
 
-  def getconvertmethod(self, inputpath, outputpath):
+  def getoutputoptions(self, inputpath, templatepath):
     """works out which conversion method to use..."""
     if inputpath:
       inputbase, inputext = os.path.splitext(inputpath)
       inputext = inputext.replace(os.extsep, "", 1)
     else:
       inputext = None
-    if outputpath:
-      outputbase, outputext = os.path.splitext(outputpath)
-      outputext = outputext.replace(os.extsep, "", 1)
+    if templatepath:
+      templatebase, templateext = os.path.splitext(templatepath)
+      templateext = templateext.replace(os.extsep, "", 1)
     else:
-      outputext = None
-    if isinstance(self.inputformats, dict):
-      if not inputext:
-        return self.inputformats.itervalues().next()
-      else:
-        return self.inputformats[inputext]
-    elif isinstance(self.outputformats, dict):
-      if not outputext:
-        return self.outputformats.itervalues().next()
-      else:
-        return self.outputformats[outputext]
+      templateext = None
+    if (inputext, templateext) in self.outputoptions:
+      return self.outputoptions[inputext, templateext]
+    elif (inputext, None) in self.outputoptions:
+      return self.outputoptions[inputext, None]
+    elif (None, templateext) in self.outputoptions:
+      return self.outputoptions[None, templateext]
     else:
-      raise ValueError("one of input/output formats must be a dict: %r, %r" % (self.inputformats, self.outputformats))
+      raise ValueError("could not find outputoptions for inputext %s, templateext %s" % (inputext, templateext))
 
   def initprogressbar(self, allfiles, options):
     """sets up a progress bar appropriate to the options and files"""
@@ -260,14 +259,14 @@ class ConvertOptionParser(optparse.OptionParser, object):
     options.recursivetemplate = self.usetemplates and self.isrecursive(options.template)
     allfiles = self.initprogressbar(allfiles, options)
     for inputpath in allfiles:
+      templatepath = self.gettemplatename(options, inputpath)
+      outputformat, convertmethod = self.getoutputoptions(inputpath, templatepath)
       fullinputpath = self.getfullinputpath(options, inputpath)
-      outputpath = self.getoutputname(options, inputpath)
+      fulltemplatepath = self.getfulltemplatepath(options, templatepath)
+      outputpath = self.getoutputname(options, inputpath, outputformat)
       fulloutputpath = self.getfulloutputpath(options, outputpath)
       if options.recursiveoutput and outputpath:
         self.checksubdir(options.output, os.path.dirname(outputpath))
-      templatepath = self.gettemplatename(options, inputpath)
-      fulltemplatepath = self.getfulltemplatepath(options, templatepath)
-      convertmethod = self.getconvertmethod(fullinputpath, fulloutputpath)
       success = self.convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
       self.reportprogress(inputpath, success)
     del self.progressbar
@@ -387,27 +386,28 @@ class ConvertOptionParser(optparse.OptionParser, object):
       dirs.reverse()
       dirstack.extend(dirs)
 
+  def templateexists(self, options, templatepath):
+    """returns whether the given template exists..."""
+    fulltemplatepath = self.getfulltemplatepath(options, templatepath)
+    return os.path.isfile(fulltemplatepath)
+
   def gettemplatename(self, options, inputname):
     """gets an output filename based on the input filename"""
+    inputbase, inputext = os.path.splitext(inputname)
+    inputext = inputext.replace(os.extsep, "", 1)
     if self.usetemplates and options.template:
-      if self.templateslikeinput:
-        return inputname
-      else:
-        outputname = self.getoutputname(options, inputname)
-        # TODO: clean this up
-        # templates should be pot files sometimes...
-        outputbase, outputext = os.path.splitext(outputname)
-        if outputext == os.extsep + "po":
-          return outputbase + os.extsep + "pot"
-        return outputname
-    else:
-      return None
+      for inputext1, templateext1 in self.outputoptions:
+        if inputext == inputext1:
+          if templateext1:
+            templatepath = inputbase + os.extsep + templateext1
+            if self.templateexists(options, templatepath):
+              return templatepath
+    return None
 
-  def getoutputname(self, options, inputname):
+  def getoutputname(self, options, inputname, outputformat):
     """gets an output filename based on the input filename"""
     if not inputname or not options.recursiveoutput: return options.output
-    inputbase, ext = os.path.splitext(inputname)
-    outputformat = iter(self.outputformats).next()
+    inputbase, inputext = os.path.splitext(inputname)
     if self.usepots and options.pot and outputformat == "po":
       outputformat = "pot"
     return inputbase + os.extsep + outputformat
@@ -419,33 +419,4 @@ class ConvertOptionParser(optparse.OptionParser, object):
     if self.usepots and options.pot and inputext == "pot":
       inputext = "po"
     return inputext in self.inputformats
-
-class ConvertOptionParserExt(ConvertOptionParser):
-  """an extended ConvertOptionParser that does clever things with input and output formats"""
-  def getoutputname(self, options, inputname):
-    """gets an output filename based on the input filename"""
-    if not inputname or not options.recursiveoutput: return options.output
-    if isinstance(self.outputformats, dict):
-      # if there is a dictionary of outputformats, assume it is encoded in the inputname...
-      inputbase, ext = os.path.splitext(inputname)
-      return inputbase
-    else:
-      outputformat = self.outputformats[0]
-      if self.usepots and options.pot and outputformat == "po":
-        outputformat = "pot"
-      return inputname + os.extsep + outputformat
-
-  def isvalidinputname(self, options, inputname):
-    """checks if this is a valid input filename"""
-    inputbase, inputext = os.path.splitext(inputname)
-    inputext = inputext.replace(os.extsep, "", 1)
-    if self.usepots and options.pot and inputext == "pot":
-      inputext = "po"
-    if isinstance(self.outputformats, dict):
-      # if there is a dictionary of outputformats, check that the right format is encoded in the name...
-      outputbase, outputext = os.path.splitext(inputbase)
-      outputext = outputext.replace(os.extsep, "", 1)
-      return inputext in self.inputformats and outputext in self.outputformats
-    else:
-      return inputext in self.inputformats
 
