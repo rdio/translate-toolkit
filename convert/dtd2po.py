@@ -54,7 +54,9 @@ class dtd2po:
         thepo.visiblecomments.append("# " + quote.stripcomment(comment) + "\n")
     # handle group stuff
     if self.currentgroup is not None:
-      thepo.visiblecomments.append("# " + quote.stripcomment(self.currentgroup) + "\n")  
+      thepo.visiblecomments.append("# " + quote.stripcomment(self.currentgroup) + "\n")
+    if entity.endswith(".height") or entity.endswith(".width") or entity.endswith(".size"):
+      thepo.msgidcomments.append(quote.quotestr("_: Do not translate this.  Only change the numeric values if you need this dialogue box to appear bigger.\\n"))
 
   def extractdtdstring(self,dtdstring):
     # extract the string, get rid of quoting
@@ -72,7 +74,7 @@ class dtd2po:
     unquoted = unquoted.replace("\\", "\\\\")
     if not unquoted:
       if not thepo.msgidcomments:
-        thepo.msgidcomments.append(quote.quotestr("_: %s is blank in the original\\n\n" % thedtd.entity))
+        thepo.msgidcomments.append(quote.quotestr("_: %s is blank in the original\\n" % thedtd.entity))
     # now split the string into lines and quote them
     msgid = [quote.quotestr(line) for line in unquoted.split('\n')]
     thepo.msgid = msgid
