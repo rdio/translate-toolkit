@@ -24,6 +24,9 @@ class TranslatePage(pagelayout.PootlePage):
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
     self.links.addcontents(pagelayout.SidebarTitle("current file"))
     self.links.addcontents(pagelayout.SidebarText(self.pofilename))
+    if self.matchnames:
+      checknames = [matchname.replace("check-", "", 1) for matchname in self.matchnames]
+      self.links.addcontents(pagelayout.SidebarText("checking %s" % ", ".join(checknames)))
     self.links.addcontents(pagelayout.SidebarTitle("current folder"))
     if dirfilter is None:
       currentfolderlink = widgets.Link("index.html", "/")
