@@ -58,7 +58,7 @@ class csvfile:
       self.fromlines(csvlines)
 
   def fromlines(self,lines):
-    if type(lines) == list: lines = "\n".join(lines)
+    if type(lines) == list: lines = "".join(lines)
     csvfile = csv.StringIO(lines)
     reader = csv.DictReader(csvfile, self.fieldnames)
     for row in reader:
