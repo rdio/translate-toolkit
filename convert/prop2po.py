@@ -22,25 +22,21 @@
 gettext .pot format for translation.
 does a line-by-line conversion..."""
 
-from __future__ import generators
 import sys
 from translate.misc import quote
 from translate.storage import po
-
-# the rstripeols convert dos <-> unix nicely as well
-# output will be appropriate for the platform
-
-# TODO: make a translate.storage.properties class
-# TODO: convert to using that and the translate.storage.po class
+from translate.storage import properties
 
 eol = "\n"
 
 class prop2po:
+  """convert a .properties file to a .po file for handling the translation..."""
   def convertfile(self, inputfile, outputfile):
     self.inmultilinemsgid = 0
+    prf = properties.propfile(inputfile)
     alloutputlines = [self.getheader()]
-    for line in inputfile.xreadlines():
-      outputlines = self.convertline(line)
+    for pre in prf.propelements:
+      outputlines = self.convertelement(pre)
       alloutputlines.extend(outputlines)
     # this code generates munged lines, so we reconstruct them here...
     redolines = [line+'\n' for line in "".join(alloutputlines).split('\n')]
@@ -68,47 +64,17 @@ msgstr ""
 "Content-Transfer-Encoding: ENCODING\\n"
 '''+eol
 
-  def convertline(self, line):
-    """converts a line from properties format..."""
+  def convertelement(self, pre):
+    """converts a properties element from properties format to .po format..."""
+    # TODO: make this use the po classes
     # escape unicode
-    line = quote.escapeunicode(line)
-    outputlines = []
-    # handle multiline msgid if we're in one
-    if self.inmultilinemsgid:
-      msgid = quote.rstripeol(line).strip()
-      # see if there's more
-      self.inmultilinemsgid = (msgid[-1:] == '\\')
-      # if we're still waiting for more...
-      if self.inmultilinemsgid:
-        # strip the backslash
-        msgid = msgid[:-1]
-      outputlines.append(quote.quotestr(msgid, escapeescapes=1)+eol)
-      if not self.inmultilinemsgid:
-        # we're finished, print the msgstr
-        outputlines.append('msgstr ""'+eol+eol)
-    # otherwise, this could be a comment
-    elif line.strip()[:1] == '#':
-      outputlines.append(quote.rstripeol(line)+eol)
-    else:
-      equalspos = line.find('=')
-      # if no equals, just repeat it
-      if equalspos == -1:
-        outputlines.append(quote.rstripeol(line)+eol)
-      # otherwise, this is a definition
-      else:
-        name = line[:equalspos].strip()
-        msgid = quote.rstripeol(line[equalspos+1:]).strip()
-        # simply ignore anything with blank msgid
-        if len(msgid) > 0:
-          outputlines.append("#: "+name+eol)
-          # backslash at end means carry string on to next line
-          if msgid[-1:] == '\\':
-            self.inmultilinemsgid = 1
-            outputlines.append('msgid ""'+eol)
-            outputlines.append(quote.quotestr(msgid[:-1], escapeescapes=1)+eol) # don't print the backslash
-          else:
-            outputlines.append("msgid "+quote.quotestr(msgid, escapeescapes=1)+eol)
-            outputlines.append('msgstr ""'+eol+eol)
+    msgid = quote.escapeunicode(pre.msgid)
+    outputlines = pre.comments
+    # TODO: handle multiline msgid if we're in one
+    if len(msgid) > 0:
+      outputlines.append("#: "+pre.name+eol)
+      outputlines.append("msgid "+quote.quotestr(msgid, escapeescapes=1)+eol)
+      outputlines.append('msgstr ""'+eol+eol)
     return outputlines
 
 def main(inputfile, outputfile):
