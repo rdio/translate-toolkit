@@ -73,9 +73,12 @@ class TranslatePage(pagelayout.PootlePage):
   def getpagelinks(self, baselink, pagesize):
     """gets links to other pages of items, based on the given baselink"""
     pagelinks = []
+    pagelinks.append(widgets.Link(baselink + "&item=0", "Start"))
     if self.firstitem > 0:
       linkitem = max(self.firstitem - pagesize, 0)
       pagelinks.append(widgets.Link(baselink + "&item=%d" % linkitem, "Previous %d" % (self.firstitem - linkitem)))
+    else:
+      pagelinks.append("Previous %d" % pagesize)
     pofilelen = self.project.getpofilelen(self.pofilename)
     lastitem = min(pofilelen-1, self.firstitem + pagesize - 1)
     pagelinks.append(self.localize("Items %d to %d of %d") % (self.firstitem+1, lastitem+1, pofilelen))
@@ -83,6 +86,9 @@ class TranslatePage(pagelayout.PootlePage):
       linkitem = self.firstitem + pagesize
       itemcount = min(pofilelen - linkitem, pagesize)
       pagelinks.append(widgets.Link(baselink + "&item=%d" % linkitem, self.localize("Next %d") % itemcount))
+    else:
+      pagelinks.append("Next %d" % pagesize)
+    pagelinks.append(widgets.Link(baselink + "&item=%d" % (pofilelen - pagesize), "End"))
     return pagelayout.IntroText(widgets.SeparatedList(pagelinks, " | "))
 
   def addfilelinks(self, pofilename, matchnames):
