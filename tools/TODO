@@ -25,7 +25,5 @@ New tools
 		Translators get to define important words before beginning to translate
 
 pocount
-	- Count blank "   " messages seperately - currently does not count them but
-	  then figure is different to msgfmt --statistics.
 	- Optionally count items marked for review
 	- Fix po class so that it handles KDE style plurals there not in pocount
