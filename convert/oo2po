@@ -26,6 +26,9 @@ from translate.storage import oo
 from translate.misc import quote
 from translate import __version__
 
+# TODO: support single GSI file -> multiple po files (see it as an archive like an xpi)
+# TODO: support using one GSI file as template, another as input (for when English is in one and translation in another)
+
 class oo2po:
   def __init__(self, languages=None, blankmsgstr=False):
     """construct an oo2po converter for the specified languages"""
