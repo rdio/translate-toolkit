@@ -156,7 +156,7 @@ class OptionalLoginAppServer(server.LoginAppServer):
       minpasswordlen = 6
       if not password or len(password) < minpasswordlen:
         raise RegistrationError("You must supply a valid password of at least %d characters" % minpasswordlen)
-      self.adduser(users, username, emailaddress, password)
+      self.adduser(users, username, email, password)
       activationcode = self.makeactivationcode(users, username)
       activationlink = ""
       message = "A Pootle account has been created for you using this email address\n"
