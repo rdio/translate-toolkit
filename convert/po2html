@@ -62,7 +62,8 @@ class po2html:
         continue
       msgid = self.convertmessage(thepo.msgid)
       msgstr = self.wrapmessage(self.convertmessage(thepo.msgstr))
-      htmlresult = htmlresult.replace(msgid, msgstr)
+      if msgstr.strip():
+        htmlresult = htmlresult.replace(msgid, msgstr)
     return htmlresult
 
 def converthtml(inputfile, outputfile, templatefile, wrap=None):
