@@ -162,7 +162,10 @@ class TranslatePage(pagelayout.PootlePage):
         search = projects.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext)
         if self.session.session.isopen:
           search.assignedto = self.session.session.username
-          search.assignedaction = "suggest"
+          if self.reviewmode:
+            search.assignedaction = "review"
+          elif not self.viewmode:
+            search.assignedaction = "suggest"
         self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, search).next()
       except StopIteration:
         if self.lastitem is None:
