@@ -31,6 +31,5 @@ requirements for translatathon:
     - comment in suggestion
   translation review cycle
     - comment to explain rejection
-    - have a diff
   highlight spaces in original so you can see what is a space
 
