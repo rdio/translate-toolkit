@@ -70,17 +70,17 @@ class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
   def __init__(self, session):
     baseurl = session.instance.baseurl
-    title = SidebarTitle(getattr(session.instance, "title", "pootle"))
-    description = SidebarText(getattr(session.instance, "description", "translation web server"))
-    logintitle = SidebarTitle("login status")
+    title = SidebarTitle(getattr(session.instance, "title", session.localize("Pootle")))
+    description = SidebarText(getattr(session.instance, "description", session.localize("this is a demo installation of pootle")))
+    logintitle = SidebarTitle(session.localize("login status"))
     if session.status:
       loginstatus = session.status
     else:
-      loginstatus = "not logged in"
+      loginstatus = session.localize("not logged in")
     if session.isopen:
-      loginlink = widgets.Link(baseurl+"?islogout=1", "Log Out")
+      loginlink = widgets.Link(baseurl+"?islogout=1", session.localize("Log Out"))
     else:
-      loginlink = [widgets.Link(baseurl+"login.html", "Log In"), " / ", widgets.Link(baseurl+"register.html", "Register"), " / ", widgets.Link(baseurl+"activate.html", "Activate")]
+      loginlink = [widgets.Link(baseurl+"login.html", session.localize("Log In")), " / ", widgets.Link(baseurl+"register.html", session.localize("Register")), " / ", widgets.Link(baseurl+"activate.html", session.localize("Activate"))]
     loginimage = Icon("person.png")
     loginstatus = SidebarText([loginimage, loginstatus])
     loginlink = SidebarText(loginlink)
@@ -131,7 +131,7 @@ class PootlePage(widgets.Page):
 
   def addsearchbox(self, searchtext, contextinfo="", action=""):
     """adds a simple search box"""
-    self.links.addcontents(SidebarTitle("Search"))
+    self.links.addcontents(SidebarTitle(session.localize("Search")))
     searchbox = widgets.Input({"name": "searchtext", "value": searchtext})
     searchform = widgets.Form([contextinfo, searchbox], {"action": action, "name":"searchform"})
     self.links.addcontents(searchform)

@@ -17,16 +17,16 @@ class PootleIndex(pagelayout.PootlePage):
   """the main page"""
   def __init__(self, potree, session):
     self.potree = potree
-    introtext = pagelayout.IntroText("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>!")
-    nametext = pagelayout.IntroText('The name stands for <b>PO</b>-based <b>O</b>nline <b>T</b>ranslation / <b>L</b>ocalization <b>E</b>ngine, but you may need to read <a href="http://www.thechestnut.com/flumps.htm">this</a>.')
+    introtext = pagelayout.IntroText(session.localize("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>!"))
+    nametext = pagelayout.IntroText(session.localize('The name stands for <b>PO</b>-based <b>O</b>nline <b>T</b>ranslation / <b>L</b>ocalization <b>E</b>ngine, but you may need to read <a href="http://www.thechestnut.com/flumps.htm">this</a>.'))
     languagelinks = self.getlanguagelinks()
     projectlinks = self.getprojectlinks()
     contents = [introtext, nametext, languagelinks, projectlinks]
-    pagelayout.PootlePage.__init__(self, "Pootle", contents, session)
+    pagelayout.PootlePage.__init__(self, session.localize("Pootle"), contents, session)
 
   def getlanguagelinks(self):
     """gets the links to the languages"""
-    languagestitle = '<h3 class="title">Languages</h3>'
+    languagestitle = session.localize('<h3 class="title">Languages</h3>')
     languagelinks = []
     for languagecode in self.potree.getlanguagecodes():
       languagename = self.potree.getlanguagename(languagecode)
@@ -38,7 +38,7 @@ class PootleIndex(pagelayout.PootlePage):
 
   def getprojectlinks(self):
     """gets the links to the projects"""
-    projectstitle = widgets.ContentWidget('h3', widgets.Link("projects/", "Projects"), {"class":"title"})
+    projectstitle = widgets.ContentWidget('h3', widgets.Link("projects/", session.localize("Projects")), {"class":"title"})
     projectlinks = []
     for projectcode in self.potree.getprojectcodes():
       projectname = self.potree.getprojectname(projectcode)
@@ -56,7 +56,7 @@ class ProjectsIndex(PootleIndex):
 
   def getprojectlinks(self):
     """gets the links to the projects"""
-    projectstitle = '<h3 class="title">Projects</h3>'
+    projectstitle = session.localize('<h3 class="title">Projects</h3>')
     projectlinks = []
     for projectcode in self.potree.getprojectcodes():
       projectname = self.potree.getprojectname(projectcode)
@@ -84,7 +84,7 @@ class LanguageIndex(pagelayout.PootlePage):
   def getprojectitem(self, projectcode):
     projectname = self.potree.getprojectname(projectcode)
     bodytitle = '<h3 class="title">%s</h3>' % projectname
-    bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", '%s project' % projectname))
+    bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", session.localize('%s project') % projectname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
     project = self.potree.getproject(self.languagecode, projectcode)
     numfiles = len(project.pofilenames)
@@ -92,7 +92,7 @@ class LanguageIndex(pagelayout.PootlePage):
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
-    stats = pagelayout.ItemStatistics("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
+    stats = pagelayout.ItemStatistics(session.localize("%d files, %d/%d strings (%d%%) translated") % (numfiles, translated, total, percentfinished))
     return pagelayout.Item([body, stats])
 
 class ProjectLanguageIndex(pagelayout.PootlePage):
@@ -113,7 +113,7 @@ class ProjectLanguageIndex(pagelayout.PootlePage):
   def getlanguageitem(self, languagecode):
     languagename = self.potree.getlanguagename(languagecode)
     bodytitle = '<h3 class="title">%s</h3>' % languagename
-    bodydescription = pagelayout.ItemDescription(widgets.Link("../../%s/%s/" % (languagecode, self.projectcode), '%s language' % languagename))
+    bodydescription = pagelayout.ItemDescription(widgets.Link("../../%s/%s/" % (languagecode, self.projectcode), session.localize('%s language') % languagename))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
     language = self.potree.getproject(languagecode, self.projectcode)
     numfiles = len(language.pofilenames)
@@ -121,7 +121,7 @@ class ProjectLanguageIndex(pagelayout.PootlePage):
     translated = languagestats.get("translated", 0)
     total = languagestats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
-    stats = pagelayout.ItemStatistics("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
+    stats = pagelayout.ItemStatistics(session.localize("%d files, %d/%d strings (%d%%) translated") % (numfiles, translated, total, percentfinished))
     return pagelayout.Item([body, stats])
 
 class ProjectIndex(pagelayout.PootlePage):
@@ -163,13 +163,13 @@ class ProjectIndex(pagelayout.PootlePage):
       currentfolder = "/".join(dirfilter.split("/")[:-1])
     else:
       currentfolder = dirfilter
-    self.addfolderlinks("current folder", currentfolder, "index.html")
+    self.addfolderlinks(session.localize("current folder"), currentfolder, "index.html")
     if dirfilter is not None:
       parentfolder = "/".join(currentfolder.split("/")[:-1])
       if parentfolder:
-        self.addfolderlinks("parent folder", parentfolder, "../index.html")
+        self.addfolderlinks(session.localize("parent folder"), parentfolder, "../index.html")
       depth = currentfolder.count("/") + 1
-      self.addfolderlinks("project root", "/", "/".join([".."] * depth) + "/index.html")
+      self.addfolderlinks(session.localize("project root"), "/", "/".join([".."] * depth) + "/index.html")
 
   def getchilditems(self, dirfilter):
     """get all the items for directories and files viewable at this level"""
@@ -220,9 +220,9 @@ class ProjectIndex(pagelayout.PootlePage):
     browseurl = self.getbrowseurl(basename)
     bodytitle = widgets.Link(browseurl, '<h3 class="title">%s</h3>' % basename)
     actionlinks = self.getactionlinks(basename, projectstats)
-    downloadlink = widgets.Link(basename, 'PO file')
+    downloadlink = widgets.Link(basename, session.localize('PO file'))
     csvname = basename.replace(".po", ".csv")
-    csvlink = widgets.Link(csvname, 'CSV file')
+    csvlink = widgets.Link(csvname, session.localize('CSV file'))
     bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink])
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(basename, projectstats, None)
@@ -249,26 +249,26 @@ class ProjectIndex(pagelayout.PootlePage):
       baseindexlink = "%s?index=1" % basename
     if "check" in linksrequired and "translate" in self.rights:
       if self.showchecks:
-        checkslink = widgets.Link(baseindexlink + "&showchecks=0", "Hide Checks")
+        checkslink = widgets.Link(baseindexlink + "&showchecks=0", session.localize("Hide Checks"))
       else:
-        checkslink = widgets.Link(baseindexlink + "&showchecks=1", "Show Checks")
+        checkslink = widgets.Link(baseindexlink + "&showchecks=1", session.localize("Show Checks"))
       actionlinks.append(checkslink)
     if "review" in linksrequired and projectstats.get("has-suggestion", 0):
       if "review" in self.rights:
-        reviewlink = "Review Suggestions"
+        reviewlink = session.localize("Review Suggestions")
       else:
-        reviewlink = "View Suggestions"
+        reviewlink = session.localize("View Suggestions")
       reviewlink = widgets.Link(baseactionlink + "&review=1&has-suggestion=1", reviewlink)
       actionlinks.append(reviewlink)
     if "quick" in linksrequired and projectstats.get("translated", 0) < projectstats.get("total", 0):
       if "translate" in self.rights:
-        quicklink = "Quick Translate"
+        quicklink = session.localize("Quick Translate")
       else:
-        quicklink = "View Untranslated"
+        quicklink = session.localize("View Untranslated")
       quicklink = widgets.Link(baseactionlink + "&fuzzy=1&blank=1", quicklink)
       actionlinks.append(quicklink)
     if "all" in linksrequired and "translate" in self.rights:
-      translatelink = widgets.Link(baseactionlink, 'Translate All')
+      translatelink = widgets.Link(baseactionlink, session.localize('Translate All'))
       actionlinks.append(translatelink)
     return actionlinks
 
@@ -277,9 +277,9 @@ class ProjectIndex(pagelayout.PootlePage):
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
-    statssummary = "%d/%d strings (%d%%) translated" % (translated, total, percentfinished)
+    statssummary = session.localize("%d/%d strings (%d%%) translated") % (translated, total, percentfinished)
     if numfiles is not None:
-      statssummary = ("%d files, " % numfiles) + statssummary
+      statssummary = (session.localize("%d files, ") % numfiles) + statssummary
     if total and self.showchecks:
       if not basename or basename.endswith("/"):
         checklinkbase = basename + "translate.html?"
@@ -298,6 +298,6 @@ class ProjectIndex(pagelayout.PootlePage):
       checkname = checkname.replace("check-", "", 1)
       if total and checkcount:
         checklink = "<a href='%s&%s=1'>%s</a>" % (checklinkbase, checkname, checkname)
-        stats = "%d strings (%d%%) failed" % (checkcount, (checkcount * 100 / total))
+        stats = session.localize("%d strings (%d%%) failed") % (checkcount, (checkcount * 100 / total))
         yield "%s: %s" % (checklink, stats)
 

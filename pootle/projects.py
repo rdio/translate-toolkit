@@ -40,7 +40,7 @@ class TranslationSession:
     """submits a new/changed translation from the user"""
     if issuggestion:
       if "suggest" not in self.rights:
-        raise RightsError("you do not have rights to suggest changes here")
+        raise RightsError(session.localize("you do not have rights to suggest changes here"))
       if self.session.isopen:
         username = self.session.username
       else:
@@ -48,7 +48,7 @@ class TranslationSession:
       self.project.suggesttranslation(pofilename, item, trans, username)
     else:
       if "translate" not in self.rights:
-        raise RightsError("you do not have rights to change translations here")
+        raise RightsError(session.localize("you do not have rights to change translations here"))
       self.project.updatetranslation(pofilename, item, trans)
 
   def skiptranslation(self, pofilename, item):
