@@ -3,7 +3,6 @@ allow the user to mark strings fuzzy and write back into the input file
 provide options to handle true/false
   return all that don't have empty translations
 handle KDE and Gettext plural forms
-skip entries that have #-#-#-#-# gettext conflicts
 
 bugs
 	simplcaps shoudl detect sentences that do not have matching starting
