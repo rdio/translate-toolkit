@@ -35,32 +35,33 @@ class reprop:
     self.templatefile = templatefile
     self.podict = {}
 
-  def convertfile(self, pofile):
+  def convertfile(self, pofile, includefuzzy=False):
     self.inmultilinemsgid = 0
     self.inecho = 0
-    self.makepodict(pofile)
+    self.makepodict(pofile, includefuzzy)
     outputlines = []
     for line in self.templatefile.readlines():
       outputstr = self.convertline(line)
       outputlines.append(outputstr)
     return outputlines
 
-  def makepodict(self, pofile):
+  def makepodict(self, pofile, includefuzzy=False):
     # make a dictionary of the translations
     for thepo in pofile.poelements:
-      # there may be more than one entity due to msguniq merge
-      entities = []
-      for sourcecomment in thepo.sourcecomments:
-        entities += quote.rstripeol(sourcecomment)[3:].split()
-      for entity in entities:
-        # currently let's just get the msgstr back
-        # this converts the po-style string to a prop-style string
-        # i.e. no quotes but backslash at the end of the line continues to the next
-        propstring = self.convertstring(thepo.msgstr)
-        # NOTE: triple-space as a string means leave it empty (special signal)
-        if len(propstring.strip()) == 0 and propstring != "   ":
-          propstring = self.convertstring(thepo.msgid)
-        self.podict[entity] = propstring
+      if includefuzzy or not thepo.isfuzzy():
+        # there may be more than one entity due to msguniq merge
+        entities = []
+        for sourcecomment in thepo.sourcecomments:
+          entities += quote.rstripeol(sourcecomment)[3:].split()
+        for entity in entities:
+          # currently let's just get the msgstr back
+          # this converts the po-style string to a prop-style string
+          # i.e. no quotes but backslash at the end of the line continues to the next
+          propstring = self.convertstring(thepo.msgstr)
+          # NOTE: triple-space as a string means leave it empty (special signal)
+          if len(propstring.strip()) == 0 and propstring != "   ":
+            propstring = self.convertstring(thepo.msgid)
+          self.podict[entity] = propstring
 
   def convertstring(self, postring):
     """converts a po-style string to a properties-style string"""
@@ -104,14 +105,14 @@ class reprop:
           return line+eol
     return ""
 
-def convertprop(inputfile, outputfile, templatefile):
+def convertprop(inputfile, outputfile, templatefile, includefuzzy=False):
   inputpo = po.pofile(inputfile)
   if templatefile is None:
     raise ValueError("must have template file for properties files")
     # convertor = po2prop()
   else:
     convertor = reprop(templatefile)
-  outputproplines = convertor.convertfile(inputpo)
+  outputproplines = convertor.convertfile(inputpo, includefuzzy)
   outputfile.writelines(outputproplines)
   return 1
 
@@ -120,5 +121,10 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {("po", "properties"): ("properties", convertprop)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
+  parser.add_option("", "--fuzzy", dest="includefuzzy", action="store_true", default=False,
+    help="use translations marked fuzzy")
+  parser.add_option("", "--nofuzzy", dest="includefuzzy", action="store_false", default=False,
+    help="don't use translations marked fuzzy (default)")
+  parser.passthrough.append("includefuzzy")
   parser.run()
 
