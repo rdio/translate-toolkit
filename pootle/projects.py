@@ -140,11 +140,11 @@ class TranslationProject:
     goallist = []
     for goalname, goalnode in goals.iteritems():
       goalfiles = getattr(goalnode, "files", "")
-      goalfiles = [goalfile.strip() for goalfile in goalfiles.split(",")]
+      goalfiles = [goalfile.strip() for goalfile in goalfiles.split(",") if goalfile.strip()]
       if dirfilter:
         if not dirfilter.endswith(os.path.sep) and not dirfilter.endswith(os.path.extsep + "po"):
           dirfilter += os.path.sep
-        goallist = [goal for goal in goallist if goal.startswith(dirfilter)]
+        goalfiles = [goalfile for goalfile in goalfiles if goalfile.startswith(dirfilter)]
       goallist.append((goalname, goalfiles))
     return goallist
 
@@ -166,6 +166,7 @@ class TranslationProject:
   def setgoal(self, goalname, goalfiles):
     """sets the goalfiles for the given goalname"""
     if isinstance(goalfiles, list):
+      goalfiles = [goalfile.strip() for goalfile in goalfiles()]
       goalfiles = ", ".join(goalfiles)
     if not hasattr(self.prefs, "goals"):
       self.prefs.goals = prefs.PrefNode(self.prefs, "goals")

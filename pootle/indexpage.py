@@ -407,6 +407,8 @@ class ProjectIndex(pagelayout.PootlePage):
         fileitem = self.getfileitem(item, linksrequired=linksrequired)
         fileitems.append((item, fileitem))
       else:
+        if item.endswith(os.path.sep):
+          item = item.rstrip(os.path.sep)
         diritem = self.getdiritem(item, linksrequired=linksrequired)
         diritems.append((item, diritem))
       diritems.sort()
@@ -434,6 +436,9 @@ class ProjectIndex(pagelayout.PootlePage):
     for goalname, goalfiles in self.project.getgoals(dirfilter):
       goalitem = self.getgoalitem(goalname, goalfiles)
       allitems.append(goalitem)
+      if self.argdict.get("goal", None) == goalname:
+        goalchilditems = self.getitems(goalfiles, linksrequired=["setgoal"])
+        allitems.extend(goalchilditems)
       for goalfile in goalfiles:
         goalchildren[goalfile] = True
     goalless = []
