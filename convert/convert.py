@@ -32,6 +32,7 @@ optionalrecursion = 1
 defaultrecursion = 2
 
 # TODO: handle input/output without needing -i/-o
+# TODO: improve input-output format handling to allow the calling problem to set the logic
 
 class ConvertOptionParser(optparse.OptionParser):
   """a specialized Option Parser for convertor tools..."""
@@ -135,7 +136,7 @@ class ConvertOptionParser(optparse.OptionParser):
     if len(formats) == 0:
       return ""
     elif len(formats) == 1:
-      return "%s format" % (formats[0])
+      return "%s format" % (", ".join(formats))
     else:
       return "%s formats" % (", ".join(formats))
 
@@ -170,12 +171,12 @@ class ConvertOptionParser(optparse.OptionParser):
 
   def getconvertmethod(self, inputext, outputext):
     """works out which conversion method to use..."""
-    if len(self.inputformats) > 1:
+    if isinstance(self.inputformats, dict):
       return self.inputformats[inputext]
-    elif len(self.outputformats) > 1:
+    elif isinstance(self.outputformats, dict):
       return self.outputformats[outputext]
     else:
-      raise ValueError("one of input/output formats must be > 1: %r, %r" % (self.inputformats, self.outputformats))
+      raise ValueError("one of input/output formats must be a dict: %r, %r" % (self.inputformats, self.outputformats))
 
   def recurseconversion(self, options):
     """recurse through directories and convert files"""
@@ -283,24 +284,24 @@ class ConvertOptionParser(optparse.OptionParser):
 
   def gettemplatename(self, inputname):
     """gets an output filename based on the input filename"""
-    if len(self.outputformats) == 1:
-      return inputname
-    else:
-      # if there is more than one outputformat, assume the template is like the output
+    if isinstance(self.outputformats, dict):
+      # if there is a dictionary of outputformats, assume the template is like the output
       inputbase, ext = os.path.splitext(inputname)
       return inputbase
+    else:
+      return inputname
 
   def getoutputname(self, options, inputname):
     """gets an output filename based on the input filename"""
-    if len(self.outputformats) == 1:
+    if isinstance(self.outputformats, dict):
+      # if there is a dictionary of outputformats, assume it is encoded in the inputname...
+      inputbase, ext = os.path.splitext(inputname)
+      return inputbase
+    else:
       outputformat = self.outputformats[0]
       if self.usepots and options.pot and outputformat == "po":
         outputformat = "pot"
       return inputname + os.extsep + outputformat
-    else:
-      # if there is more than one outputformat, assume it is encoded in the inputname...
-      inputbase, ext = os.path.splitext(inputname)
-      return inputbase
 
   def isvalidinputname(self, options, inputname):
     """checks if this is a valid input filename"""
@@ -308,5 +309,11 @@ class ConvertOptionParser(optparse.OptionParser):
     inputext = inputext.replace(os.extsep, "", 1)
     if self.usepots and options.pot and inputext == "pot":
       inputext = "po"
-    return inputext in self.inputformats
+    if isinstance(self.outputformats, dict):
+      # if there is a dictionary of outputformats, check that the right format is encoded in the name...
+      outputbase, outputext = os.path.splitext(inputbase)
+      outputext = outputext.replace(os.extsep, "", 1)
+      return inputext in self.inputformats and outputext in self.outputformats
+    else:
+      return inputext in self.inputformats
 
