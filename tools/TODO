@@ -5,6 +5,11 @@ pomerge
 	- Don't merge header.  If there is a header is should be merged as indicates 
       last translators info but should be allowed to specify that it not get
       merged.
+    - msgblock headers ie #: should remain unchanged.  There seems to be a bug
+      that adds entries on one line when the output templates have them on
+	  seperate lines.
+    - Allow merge without a template and thus us the output as a template.  Or
+      at least don't complain when you don't find the templates.
 
 New tools
 	Some ideas for tools that would be helpfull
