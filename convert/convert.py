@@ -23,6 +23,8 @@ import sys
 import os.path
 try:
   import optparse
+  if optparse.__version__ < "1.4.1+":
+    raise ImportError("optparse version not compatible")
 except ImportError:
   from translate.misc import optparse
 from translate.misc import progressbar
