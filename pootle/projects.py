@@ -732,6 +732,11 @@ class POTree:
     projectprefs = getattr(self.projects, projectcode)
     return getattr(projectprefs, "fullname", projectcode)
 
+  def getprojectdescription(self, projectcode):
+    """returns the project description"""
+    projectprefs = getattr(self.projects, projectcode)
+    return getattr(projectprefs, "description", projectcode)
+
   def getpodir(self, languagecode, projectcode):
     """returns the base directory containing po files for the project"""
     search = self.getdirpattern(languagecode, projectcode)

@@ -21,12 +21,16 @@ Pootle:
   projects:
     openoffice:
       fullname = "OpenOffice.org"
+      description = "Office productivity suite"
     mozilla:
       fullname = "Mozilla"
+      description = "Web-browser, email program and HTML editor"
     firefox:
       fullname = "Firefox"
+      description = "Lean and mean, standards compliant web-browser"
     xfce42:
       fullname = "xfce 4.2"
+      description = "Linux desktop with good looks and speed to thrill"
   directories:
     mainsearch = "po/$project/$language"
     xfce:

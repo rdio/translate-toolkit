@@ -43,7 +43,8 @@ class PootleIndex(pagelayout.PootlePage):
     projectlinks = []
     for projectcode in self.potree.getprojectcodes():
       projectname = self.potree.getprojectname(projectcode)
-      projectlink = widgets.Link("projects/%s/" % projectcode, projectname)
+      projectdescription = self.potree.getprojectdescription(projectcode)
+      projectlink = widgets.Link("projects/%s/" % projectcode, projectname, {"title":projectdescription})
       projectlinks.append(projectlink)
     listwidget = widgets.SeparatedList(projectlinks, ", ")
     bodydescription = pagelayout.ItemDescription(listwidget)
