@@ -491,12 +491,12 @@ class ProjectIndex(pagelayout.PootlePage):
       uploadfile = argdict.get("uploadfile", None)
       if not uploadfile:
         raise ValueError("cannot upload file, no file attached")
-      if not uploadfile.filename.endswith(".po"):
-        raise ValueError("can only upload PO files")
-      pathname = os.path.join(self.project.podir, self.dirname, uploadfile.filename)
-      if os.path.exists(pathname):
-        raise ValueError("that file already exists")
-      self.project.addnewpofile(self.dirname, uploadfile.filename, uploadfile.contents)
+      if uploadfile.filename.endswith(".po"):
+        self.project.addnewpofile(self.dirname, uploadfile.filename, uploadfile.contents)
+      elif uploadfile.filename.endswith(".zip"):
+        self.project.uploadarchive(self.dirname, uploadfile.contents)
+      else:
+        raise ValueError("can only upload PO files and zips of PO files")
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []

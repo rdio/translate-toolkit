@@ -13,7 +13,7 @@ from jToolkit import timecache
 import time
 import os
 import sre
-import StringIO
+import cStringIO
 try:
   import PyLucene
 except:
@@ -527,7 +527,10 @@ class TranslationProject:
       dircheck = os.path.join(dircheck, part)
       if dircheck and not os.path.isdir(dircheck):
         os.mkdir(dircheck)
-    pofile = open(os.path.join(self.podir, dirname, pofilename), "wb")
+    pathname = os.path.join(self.podir, dirname, pofilename)
+    if os.path.exists(pathname):
+      raise ValueError("that file already exists")
+    pofile = open(pathname, "wb")
     pofile.write(contents)
     pofile.close()
     self.scanpofiles()
@@ -552,7 +555,7 @@ class TranslationProject:
         os.mkdir(self.podir)
     for potfilename in templates:
       inputfile = open(os.path.join(templatesdir, potfilename), "rb")
-      outputfile = StringIO.StringIO()
+      outputfile = cStringIO.StringIO()
       pot2po.convertpot(inputfile, outputfile, None)
       dirname, potfilename = os.path.dirname(potfilename), os.path.basename(potfilename)
       if self.filestyle == "gnu":
@@ -584,6 +587,37 @@ class TranslationProject:
       archive.write(pofile.filename, pofilename)
     archive.close()
     return archivecontents.getvalue()
+
+  def uploadarchive(self, dirname, archivecontents):
+    """uploads the files inside the archive"""
+    try:
+      tempzipfile = os.tmpnam()
+      # using zip command line is fast
+      # os.system("cd %s ; zip -r - %s > %s" % (self.podir, " ".join(pofilenames), tempzipfile))
+      # return open(tempzipfile, "r").read()
+      pass
+    finally:
+      if os.path.exists(tempzipfile):
+        os.remove(tempzipfile)
+    # but if it doesn't work, we can do it from python
+    import cStringIO, zipfile
+    archivefile = cStringIO.StringIO(archivecontents)
+    archive = zipfile.ZipFile(archivefile, 'r')
+    # TODO: find a better way to return errors...
+    for filename in archive.namelist():
+      if not filename.endswith(os.extsep + "po"):
+        print "error adding %s: not a .po file" % filename
+        continue
+      pathname = os.path.join(self.podir, dirname, filename)
+      contents = archive.read(filename)
+      subdirname, pofilename = os.path.dirname(filename), os.path.basename(filename)
+      try:
+        # TODO: use zipfile info to set the time and date of the file
+        self.addnewpofile(os.path.join(dirname, subdirname), pofilename, contents)
+      except ValueError, e:
+        print "error adding %s" % filename, e
+        continue
+    archive.close()
 
   def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
     """gets a list of pofilenames, optionally filtering with the parent directory"""
