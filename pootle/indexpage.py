@@ -592,11 +592,12 @@ class ProjectIndex(pagelayout.PootlePage):
       parentfolder = "/".join(currentfolder.split("/")[:-1])
       if parentfolder:
         self.addfolderlinks(self.localize("parent folder"), parentfolder, "../index.html")
-    if currentfolder:
-      archivename = "%s-%s-%s.zip" % (self.project.projectcode, self.project.languagecode, currentfolder.replace("/", "-"))
-    else:
-      archivename = "%s-%s.zip" % (self.project.projectcode, self.project.languagecode)
-    self.addfolderlinks(self.localize("zip of folder"), archivename, archivename, enhancelink=False)
+    if "archive" in self.rights:
+      if currentfolder:
+        archivename = "%s-%s-%s.zip" % (self.project.projectcode, self.project.languagecode, currentfolder.replace("/", "-"))
+      else:
+        archivename = "%s-%s.zip" % (self.project.projectcode, self.project.languagecode)
+      self.addfolderlinks(self.localize("zip of folder"), archivename, archivename, enhancelink=False)
 
   def addfolderlinks(self, title, foldername, folderlink, tooltip=None, enhancelink=True):
     """adds a folder link to the sidebar"""

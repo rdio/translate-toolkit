@@ -62,9 +62,7 @@ class PootleServer(users.OptionalLoginAppServer):
     self.languagenames = dict([(code, self.potree.getlanguagename(code)) for code in self.languagelist])
     self.defaultlanguage = defaultlanguage
     if self.defaultlanguage is None:
-      # self.defaultlanguage = localize.getdefaultlanguage(self.languagelist)
       self.defaultlanguage = 'en'
-    self.translation = self.potree.getproject(self.defaultlanguage, 'pootle')
     if self.potree.hasproject(self.defaultlanguage, 'pootle'):
       try:
         self.translation = self.potree.getproject(self.defaultlanguage, 'pootle')
@@ -248,6 +246,9 @@ class PootleServer(users.OptionalLoginAppServer):
 	  page.content_type = "application/octet-stream"
 	  return page
         elif bottom.endswith(".zip"):
+          translationsession = project.gettranslationsession(session)
+          if not "archive" in translationsession.getrights():
+            return None
 	  if len(pathwords) > 1:
             dirfilter = os.path.join(*pathwords[:-1])
 	  else:
