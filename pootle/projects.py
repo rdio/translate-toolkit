@@ -231,6 +231,11 @@ class TranslationProject:
     self.pofiles[pofilename] = pofile
     return pofile
 
+  def getpofilelen(self, pofilename):
+    """returns number of items in the given pofilename"""
+    pofile = self.getpofile(pofilename)
+    return len(pofile.transelements)
+
   def getitemsbefore(self, pofilename, item, num=3):
     """returns num items before the given item, as context"""
     pofile = self.getpofile(pofilename)
