@@ -124,10 +124,11 @@ class PootlePage(widgets.Page):
     stylesheets = [session.instance.baseurl + "pootle.css"]
     if hasattr(session.instance, "stylesheet"):
       stylesheets.append(session.instance.baseurl + session.instance.stylesheet)
+    favicon = widgets.PlainContents('<link rel="shortcut icon" href="favicon.ico" >')
       
     self.banner = PootleBanner(session.instance, bannerheight)
     self.links = PootleSidebar(session)
-    widgets.Page.__init__(self, title, contents, {"includeheading":False}, stylesheets=stylesheets)
+    widgets.Page.__init__(self, title, contents, {"includeheading":False}, stylesheets=stylesheets, headerwidgets=[favicon])
 
   def addsearchbox(self, searchtext, contextinfo="", action=""):
     """adds a simple search box"""
