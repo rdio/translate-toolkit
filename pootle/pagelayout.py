@@ -32,6 +32,10 @@ class MainItem(widgets.Division):
   def __init__(self, contents):
     widgets.Division.__init__(self, contents, cls="mainitem")
 
+class GoalItem(widgets.Division):
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="goalitem")
+
 class ItemDescription(widgets.Division):
   def __init__(self, contents):
     widgets.Division.__init__(self, contents, cls="item-description")
