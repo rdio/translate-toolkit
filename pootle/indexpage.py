@@ -402,17 +402,12 @@ class ProjectIndex(pagelayout.PootlePage):
   def __init__(self, project, session, argdict, dirfilter=None):
     self.project = project
     self.session = self.project.gettranslationsession(session)
+    self.argdict = argdict
     self.localize = session.localize
     self.rights = self.session.getrights()
-    self.showtracks = argdict.get("showtracks", 0)
-    if isinstance(self.showtracks, (str, unicode)) and self.showtracks.isdigit():
-      self.showtracks = int(self.showtracks)
-    self.showchecks = argdict.get("showchecks", 0)
-    if isinstance(self.showchecks, (str, unicode)) and self.showchecks.isdigit():
-      self.showchecks = int(self.showchecks)
-    self.showassigns = argdict.get("showassigns", 0)
-    if isinstance(self.showassigns, (str, unicode)) and self.showassigns.isdigit():
-      self.showassigns = int(self.showassigns)
+    self.showtracks = self.getboolarg("showtracks")
+    self.showchecks = self.getboolarg("showchecks")
+    self.showassigns = self.getboolarg("showassigns")
     message = argdict.get("message", "")
     if message:
       message = pagelayout.IntroText(message)
@@ -421,7 +416,7 @@ class ProjectIndex(pagelayout.PootlePage):
     if dirfilter == "":
       dirfilter = None
     self.dirfilter = dirfilter
-    if argdict.get("doassign", 0):
+    if self.getboolarg("doassign"):
       assignto = argdict.get("assignto", None)
       action = argdict.get("action", None)
       if not assignto and action:
@@ -429,7 +424,7 @@ class ProjectIndex(pagelayout.PootlePage):
       search = projects.Search(dirfilter=dirfilter)
       assigncount = self.project.assignpoitems(search, assignto, action)
       print "assigned %d strings to %s for %s" % (assigncount, assignto, action)
-    if argdict.get("removeassigns", 0):
+    if self.getboolarg("removeassigns"):
       assignedto = argdict.get("assignedto", None)
       removefilter = argdict.get("removefilter", "")
       if removefilter:
@@ -460,6 +455,36 @@ class ProjectIndex(pagelayout.PootlePage):
       self.addassignbox()
     self.addnavlinks(dirfilter)
 
+  def getboolarg(self, argname, default=False):
+    """gets a boolean argument from self.argdict"""
+    value = self.argdict.get(argname, default)
+    if isinstance(value, bool):
+      return value
+    elif isinstance(value, int):
+      return bool(value)
+    elif isinstance(value, (str, unicode)):
+      value = value.lower() 
+      if value.isdigit():
+        return bool(int(value))
+      if value == "true":
+        return True
+      if value == "false":
+        return False
+    raise ValueError("Invalid boolean value for %s: %r" % (argname, value))
+
+  def makelink(self, link, **newargs):
+    """constructs a link that keeps sticky arguments e.g. showchecks"""
+    combinedargs = self.argdict.copy()
+    combinedargs.update(newargs)
+    if '?' in link:
+      if not (link.endswith("&") or link.endswith("?")):
+        link += "&"
+    else:
+      link += '?'
+    # TODO: check escaping
+    link += "&".join(["%s=%s" % (arg, value) for arg, value in combinedargs.iteritems()])
+    return link
+
   def addnavlinks(self, dirfilter):
     """add navigation links to the sidebar"""
     if dirfilter and dirfilter.endswith(".po"):
@@ -482,7 +507,13 @@ class ProjectIndex(pagelayout.PootlePage):
       archivename = "%s-%s-%s.zip" % (self.project.projectcode, self.project.languagecode, currentfolder.replace("/", "-"))
     else:
       archivename = "%s-%s.zip" % (self.project.projectcode, self.project.languagecode)
-    self.addfolderlinks(self.localize("zip of folder"), archivename, archivename)
+    self.addfolderlinks(self.localize("zip of folder"), archivename, archivename, enhancelink=False)
+
+  def addfolderlinks(self, title, foldername, folderlink, tooltip=None, enhancelink=True):
+    """adds a folder link to the sidebar"""
+    if enhancelink:
+      folderlink = self.makelink(folderlink)
+    return pagelayout.PootlePage.addfolderlinks(self, title, foldername, folderlink, tooltip)
 
   def addassignbox(self):
     """adds a box that lets the user assign strings"""
@@ -553,10 +584,9 @@ class ProjectIndex(pagelayout.PootlePage):
   def getbrowseurl(self, basename):
     """gets the link to browse the item"""
     if not basename or basename.endswith("/"):
-      return basename or "index.html"
+      return self.makelink(basename or "index.html")
     else:
-      baseactionlink = "%s?translate=1" % basename
-      return '%s&view=1' % baseactionlink
+      return self.makelink(basename, translate=1, view=1)
 
   def getactionlinks(self, basename, projectstats, linksrequired=None):
     """get links to the actions that can be taken on an item (directory / file)"""
@@ -571,38 +601,38 @@ class ProjectIndex(pagelayout.PootlePage):
       baseindexlink = "%s?index=1" % basename
     if "track" in linksrequired:
       if self.showtracks:
-        trackslink = widgets.Link(baseindexlink + "&showtracks=0", self.localize("Hide Tracks"))
+        trackslink = widgets.Link(self.makelink(baseindexlink, showtracks=0), self.localize("Hide Tracks"))
       else:
-        trackslink = widgets.Link(baseindexlink + "&showtracks=1", self.localize("Show Tracks"))
+        trackslink = widgets.Link(self.makelink(baseindexlink, showtracks=1), self.localize("Show Tracks"))
       actionlinks.append(trackslink)
     if "check" in linksrequired and "translate" in self.rights:
       if self.showchecks:
-        checkslink = widgets.Link(baseindexlink + "&showchecks=0", self.localize("Hide Checks"))
+        checkslink = widgets.Link(self.makelink(baseindexlink, showchecks=0), self.localize("Hide Checks"))
       else:
-        checkslink = widgets.Link(baseindexlink + "&showchecks=1", self.localize("Show Checks"))
+        checkslink = widgets.Link(self.makelink(baseindexlink, showchecks=1), self.localize("Show Checks"))
       actionlinks.append(checkslink)
     if "assign" in linksrequired and "translate" in self.rights:
       if self.showassigns:
-        assignslink = widgets.Link(baseindexlink + "&showassigns=0", self.localize("Hide Assigns"))
+        assignslink = widgets.Link(self.makelink(baseindexlink, showassigns=0), self.localize("Hide Assigns"))
       else:
-        assignslink = widgets.Link(baseindexlink + "&showassigns=1", self.localize("Show Assigns"))
+        assignslink = widgets.Link(self.makelink(baseindexlink, showassigns=1), self.localize("Show Assigns"))
       actionlinks.append(assignslink)
     if "review" in linksrequired and projectstats.get("has-suggestion", 0):
       if "review" in self.rights:
         reviewlink = self.localize("Review Suggestions")
       else:
         reviewlink = self.localize("View Suggestions")
-      reviewlink = widgets.Link(baseactionlink + "&review=1&has-suggestion=1", reviewlink)
+      reviewlink = widgets.Link(self.makelink(baseactionlink, review=1, **{"has-suggestion": 1}), reviewlink)
       actionlinks.append(reviewlink)
     if "quick" in linksrequired and projectstats.get("translated", 0) < projectstats.get("total", 0):
       if "translate" in self.rights:
         quicklink = self.localize("Quick Translate")
       else:
         quicklink = self.localize("View Untranslated")
-      quicklink = widgets.Link(baseactionlink + "&fuzzy=1&blank=1", quicklink)
+      quicklink = widgets.Link(self.makelink(baseactionlink, fuzzy=1, blank=1), quicklink)
       actionlinks.append(quicklink)
     if "all" in linksrequired and "translate" in self.rights:
-      translatelink = widgets.Link(baseactionlink, self.localize('Translate All'))
+      translatelink = widgets.Link(self.makelink(baseactionlink), self.localize('Translate All'))
       actionlinks.append(translatelink)
     return actionlinks
 
@@ -611,45 +641,38 @@ class ProjectIndex(pagelayout.PootlePage):
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
-    statssummary = self.localize("%d/%d strings (%d%%) translated") % (translated, total, percentfinished)
-    if numfiles is not None:
-      statssummary = (self.localize("%d files, ") % numfiles) + statssummary
+    if numfiles is None:
+      statssummary = ""
+    else:
+      statssummary = self.localize("%d files, ") % numfiles
+    statssummary += self.localize("%d/%d strings (%d%%) translated") % (translated, total, percentfinished)
+    statsdetails = [statssummary]
+    if not basename or basename.endswith("/"):
+      linkbase = basename + "translate.html?"
+    else:
+      linkbase = basename + "?translate=1"
     if total and self.showchecks:
-      if not basename or basename.endswith("/"):
-        checklinkbase = basename + "translate.html?"
-      else:
-        checklinkbase = basename + "?translate=1"
-      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, checklinkbase))
-      statssummary += "<br/>" + statsdetails
+      statsdetails += self.getcheckdetails(projectstats, linkbase)
     if total and self.showtracks:
-      if not basename or basename.endswith("/"):
-        tracklinkbase = basename + "translate.html?"
-      else:
-        tracklinkbase = basename + "?translate=1"
       trackfilter = (self.dirfilter or "") + basename
       trackpofilenames = self.project.browsefiles(trackfilter)
       projecttracks = self.project.gettracks(trackpofilenames)
-      statsdetails = "<br/>\n".join(self.gettrackdetails(projecttracks, tracklinkbase))
-      statssummary += "<br/><span class='trackerdetails'>" + statsdetails + "</span>"
+      statsdetails += self.gettrackdetails(projecttracks, linkbase)
     if total and self.showassigns:
-      if not basename or basename.endswith("/"):
-        assignlinkbase = basename + "translate.html?"
-      else:
-        assignlinkbase = basename + "?translate=1"
       if not basename or basename.endswith("/"):
         removelinkbase = "?showassigns=1&removeassigns=1"
       else:
         removelinkbase = "?showassigns=1&removeassigns=1&removefilter=%s" % basename
-      statsdetails = "<br/>\n".join(self.getassigndetails(projectstats, assignlinkbase, removelinkbase))
-      statssummary += "<br/>" + statsdetails
-    return pagelayout.ItemStatistics(statssummary)
+      statsdetails += self.getassigndetails(projectstats, linkbase, removelinkbase)
+    statsdetails = widgets.SeparatedList(statsdetails, "<br/>\n")
+    return pagelayout.ItemStatistics(statsdetails)
 
-  def gettrackdetails(self, projecttracks, tracklinkbase):
+  def gettrackdetails(self, projecttracks, linkbase):
     """return a list of strings describing the results of tracks"""
     for trackmessage in projecttracks:
-      yield trackmessage + "<br/>"
+      yield widgets.Span(trackmessage, cls='trackerdetails')
 
-  def getcheckdetails(self, projectstats, checklinkbase):
+  def getcheckdetails(self, projectstats, linkbase):
     """return a list of strings describing the results of checks"""
     total = max(projectstats.get("total", 0), 1)
     for checkname, checkcount in projectstats.iteritems():
@@ -657,11 +680,11 @@ class ProjectIndex(pagelayout.PootlePage):
         continue
       checkname = checkname.replace("check-", "", 1)
       if total and checkcount:
-        checklink = "<a href='%s&%s=1'>%s</a>" % (checklinkbase, checkname, checkname)
+        checklink = widgets.Link(self.makelink(linkbase, **{checkname:1}), checkname)
         stats = self.localize("%d strings (%d%%) failed") % (checkcount, (checkcount * 100 / total))
-        yield "%s: %s" % (checklink, stats)
+        yield [checklink, stats]
 
-  def getassigndetails(self, projectstats, assignlinkbase, removelinkbase):
+  def getassigndetails(self, projectstats, linkbase, removelinkbase):
     """return a list of strings describing the assigned strings"""
     total = max(projectstats.get("total", 0), 1)
     for assignname, assigncount in projectstats.iteritems():
@@ -669,9 +692,9 @@ class ProjectIndex(pagelayout.PootlePage):
         continue
       assignname = assignname.replace("assign-", "", 1)
       if total and assigncount:
-        assignlink = "<a href='%s&assignedto=%s'>%s</a>" % (assignlinkbase, assignname, assignname)
+        assignlink = widgets.Link(self.makelink(linkbase, assignedto=assignname), assignname)
         stats = self.localize("%d strings (%d%%) assigned") % (assigncount, (assigncount * 100 / total))
         removetext = self.localize("Remove")
-        removelink = "<a href='%s&assignedto=%s'>%s</a>" % (removelinkbase, assignname, removetext)
-        yield "%s: %s %s" % (assignlink, stats, removelink)
+        removelink = widgets.Link(self.makelink(removelinkbase, assignedto=assignname), removetext)
+        yield [assignlink, ": ", stats, " ", removelink]
 

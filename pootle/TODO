@@ -80,8 +80,6 @@ feedback from Durban translatathon:
   autocreate POT files when packaging
   upload SA translations
   word counts, not just string counts
-  make things like show assigns sticky
-  add show assigns to file URLs
   some timeouts
   automatic tips for things like accelerators
   tutorial PO file
