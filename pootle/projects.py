@@ -1137,6 +1137,9 @@ class POTree:
         setattr(self.projects, projectcode + ".description", projectdescription)
         setattr(self.projects, projectcode + ".checkerstyle", projectcheckerstyle)
         setattr(self.projects, projectcode + ".createmofiles", projectcreatemofiles)
+        projectdir = os.path.join(self.podirectory, projectcode)
+        if not os.path.isdir(projectdir):
+          os.mkdir(projectdir)
     self.saveprefs()
 
   def haslanguage(self, languagecode):
