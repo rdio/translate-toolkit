@@ -138,6 +138,29 @@ def getvariables(startmarker, endmarker):
     return variables
   return getmarkedvariables
 
+def getnumbers(str1):
+  """returns any numbers that are in the string"""
+  numbers = []
+  innumber = False
+  possibleprefix = ""
+  lastnumber = ""
+  for chr1 in str1:
+    if chr1.isdigit():
+      innumber = True
+    elif innumber and chr1 == '.':
+      pass
+    elif innumber:
+      innumber = False
+      if lastnumber:
+        numbers.append(lastnumber)
+      lastnumber = ""
+    if innumber:
+      lastnumber += chr1
+  if innumber:
+    if lastnumber:
+      numbers.append(lastnumber)
+  return numbers
+
 def countaccelerators(accelmarker, ignorelist=[]):
   """returns a function that counts the number of accelerators marked with the given marker"""
   def countmarkedaccelerators(str1):

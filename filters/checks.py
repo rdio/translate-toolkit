@@ -136,6 +136,10 @@ class StandardChecker(TranslationChecker):
     """checks whether variables of various forms are consistent between the two strings"""
     return helpers.funcsmatch(str1, str2, self.varchecks)
 
+  def numbers(self, str1, str2):
+    """checks whether numbers of various forms are consistent between the two strings"""
+    return helpers.funcmatch(str1, str2, decoration.getnumbers)
+
   def whitespace(self, str1, str2):
     """checks whether whitespace at the beginning and end of the strings match"""
     str1 = self.filteraccelerators(self.filtervariables(str1))
