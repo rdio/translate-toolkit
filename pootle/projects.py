@@ -328,9 +328,7 @@ class pootlefile(po.pofile):
     thepo.markfuzzy(False)
     self.updateheader(PO_Revision_Date = time.strftime("%F %H:%M%z"))
     if userprefs:
-      fullname = userprefs.name
-      email = userprefs.email
-      if fullname and email:
+      if getattr(userprefs, "name", None) and getattr(userprefs, "email", None):
         self.updateheader(Last_Translator = "%s <%s>" % (userprefs.name, userprefs.email))
     self.savepofile()
     self.reclassifyelement(item)
@@ -477,52 +475,67 @@ class pootlefile(po.pofile):
         if item in self.classify[name]:
           yield item
 
-  def mergefile(self, newpofile, username):
-    """make sure each msgid is unique ; merge comments etc from duplicates into original"""
-    # TODO: look at removing / obsoleting old elements, and old source ids
-    self.makeindex()
-    def mergeitems(oldpo, newpo):
-      unchanged = po.unquotefrompo(oldpo.msgstr, False) == po.unquotefrompo(newpo.msgstr, False)
-      if oldpo.isblankmsgstr() or newpo.isblankmsgstr() or unchanged:
-        oldpo.merge(newpo)
-      else:
-        for item, matchpo in enumerate(self.transelements):
-          if matchpo == oldpo:
-            self.addsuggestion(item, newpo.msgstr, username)
-            return
-        raise KeyError("Could not find item for merge")
-    def mergesources(oldpo, newsources):
-      for newsource in newsources:
-        oldpo.sourcecomments.append("#: %s\n" % newsource)
+  def matchitems(self, newpofile):
+    """matches up corresponding items in this pofile with the given newpofile, and returns tuples of matching poitems (None if no match found)"""
+    if not hasattr(self, "msgidindex"):
+      self.makeindex()
+    if not hasattr(newpofile, "msgidindex"):
+      newpofile.makeindex()
+    matches = []
     for newpo in newpofile.poelements:
-      unmergedsources = []
-      mergedsources = []
+      foundsource = False
       newsources = newpo.getsources()
+      mergedsources = []
       for source in newsources:
         if source in mergedsources:
           continue
         if source in self.sourceindex:
           oldpo = self.sourceindex[source]
           if oldpo is not None:
-            mergeitems(oldpo, newpo)
-            # even if there are multiple sources, we only want to merge once...
+            foundsource = True
+            matches.append((oldpo, newpo))
             mergedsources.append(source)
-            for oldsource in oldpo.getsources():
-              if oldsource in newsources and oldsource not in mergedsources:
-                mergedsources.append(oldsource)
             continue
-        unmergedsources.append(source)
-      if mergedsources and unmergedsources:
-        oldpo = self.sourceindex[mergedsources[0]]
-        mergesources(oldpo, unmergedsources)
-      elif unmergedsources:
+      if not foundsource:
         msgid = po.getunquotedstr(newpo.msgid)
         if msgid in self.msgidindex:
           oldpo = self.msgidindex[msgid]
-          mergeitems(oldpo, newpo)
-          mergesources(oldpo, newpo.getsources())
+          matches.append((oldpo, newpo))
         else:
-          self.poelements.append(newpo)
+          matches.append((None, newpo))
+    # find items that have been removed
+    matcheditems = [oldpo for oldpo, newpo in matches if oldpo]
+    for oldpo in self.poelements:
+      if not oldpo in matcheditems:
+        matches.append((oldpo, None))
+    return matches
+
+  def mergeitem(self, oldpo, newpo, username):
+    """merges any changes from newpo into oldpo"""
+    unchanged = po.unquotefrompo(oldpo.msgstr, False) == po.unquotefrompo(newpo.msgstr, False)
+    if oldpo.isblankmsgstr() or newpo.isblankmsgstr() or oldpo.isheader() or newpo.isheader() or unchanged:
+      oldpo.merge(newpo)
+    else:
+      for item, matchpo in enumerate(self.transelements):
+        if matchpo == oldpo:
+          self.addsuggestion(item, newpo.msgstr, username)
+          return
+      raise KeyError("Could not find item for merge")
+
+  def mergefile(self, newpofile, username):
+    """make sure each msgid is unique ; merge comments etc from duplicates into original"""
+    self.makeindex()
+    matches = self.matchitems(newpofile)
+    for oldpo, newpo in matches:
+      if oldpo is None:
+        self.poelements.append(newpo)
+        continue
+      if newpo is None:
+        # TODO: mark the old one as obsolete
+        continue
+      self.mergeitem(oldpo, newpo, username)
+      # we invariably want to get the sources from the newpo
+      oldpo.sourcecomments = newpo.sourcecomments
     self.savepofile()
     # the easiest way to recalculate everythign
     self.readpofile()
@@ -621,24 +634,67 @@ class TranslationProject:
     """updates an individual PO file from version control"""
     pathname = self.getuploadpath(dirname, pofilename)
     # read from version control
-    contents = versioncontrol.getcleanfile(pathname)
     if os.path.exists(pathname):
       popath = os.path.join(dirname, pofilename)
-      origpofile = self.getpofile(popath)
+      currentpofile = self.getpofile(popath)
+      # reading BASE version of file""
+      origcontents = versioncontrol.getcleanfile(pathname, "BASE")
+      origpofile = pootlefile(self, popath)
+      originfile = cStringIO.StringIO(origcontents)
+      origpofile.parse(originfile)
+      # matching current file with BASE version""
+      matches = origpofile.matchitems(currentpofile)
+      # TODO: add some locking here...
+      # reading new version of file
+      versioncontrol.updatefile(pathname)
       newpofile = pootlefile(self, popath)
-      infile = cStringIO.StringIO(contents)
-      newpofile.parse(infile)
-      newpofile.transelements = [poel for poel in newpofile.poelements if not (poel.isheader() or poel.isblank())]
-      newpofile.classifyelements()
-      newpofile.filename = origpofile.filename
-      # this will overwrite the old file!
+      newpofile.readpofile()
+      if not hasattr(newpofile, "msgidindex"):
+        newpofile.makeindex()
+      newmatches = []
+      # sorting through old matches
+      for origpo, localpo in matches:
+        # we need to find the corresponding newpo to see what to merge
+        if localpo is None:
+          continue
+        if origpo is None:
+          # if it wasn't in the original, then use the addition for searching
+          origpo = localpo
+        else:
+          origmsgstr = po.unquotefrompo(origpo.msgstr, False)
+          localmsgstr = po.unquotefrompo(localpo.msgstr, False)
+          if origmsgstr == localmsgstr:
+            continue
+        foundsource = False
+        for source in origpo.getsources():
+          if source in newpofile.sourceindex:
+            newpo = newpofile.sourceindex[source]
+            if newpo is not None:
+              foundsource = True
+              newmatches.append((newpo, localpo))
+              continue
+        if not foundsource:
+          msgid = po.getunquotedstr(origpo.msgid)
+          if msgid in newpofile.msgidindex:
+            newpo = newpofile.msgidindex[msgid]
+            newmatches.append((newpo, localpo))
+          else:
+            newmatches.append((None, localpo))
+      # finding new matches
+      for newpo, localpo in newmatches:
+        if newpo is None:
+          # TODO: include localpo as obsolete
+          continue
+        if localpo is None:
+          continue
+        newpofile.mergeitem(newpo, localpo, "versionmerge")
+      # saving
       newpofile.savepofile()
-      # TODO: get the real username here
-      newpofile.mergefile(origpofile, "localpootle")
+      self.pofiles[pofilename] = newpofile
+      # recalculate everything
+      newpofile.readpofile()
     else:
-      outfile = open(pathname, "wb")
-      outfile.write(contents)
-      outfile.close()
+      versioncontrol.updatefile(pathname)
       self.scanpofiles()
 
   def converttemplates(self):

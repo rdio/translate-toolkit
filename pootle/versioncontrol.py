@@ -20,6 +20,10 @@ def pipe(command):
   c_stdin.close()
   return output, error
 
+def shellescape(path):
+  """Shell-escape any non-alphanumeric characters"""
+  return re.sub(r'(\W)', r'\\\1', path)
+
 def cvsreadfile(cvsroot, path, revision=None):
   """
   Read a single file from the CVS repository without checking out a full working directory
@@ -28,10 +32,7 @@ def cvsreadfile(cvsroot, path, revision=None):
   path: path to the file relative to cvs root
   revision: revision or tag to get (retrieves from HEAD if None)
   """
-  
-  # Shell-escape any non-alphanumeric characters
-  path = re.sub(r'(\W)', r'\\\1', path)
-  
+  path = shellescape(path)
   if revision:
     command = "cvs -d %s -Q co -p -r%s %s" % (cvsroot, revision, path)
   else:
@@ -43,32 +44,103 @@ def cvsreadfile(cvsroot, path, revision=None):
     raise IOError("Could not read %s from %s: %s" % (path, cvsroot, output))
   elif error.startswith('cvs [checkout aborted]'):
     raise IOError("Could not read %s from %s: %s" % (path, cvsroot, output))
-
   return output
+
+def cvsupdatefile(path, revision=None):
+  """Does a clean update of the given path"""
+  dirname = shellescape(os.path.dirname(path))
+  filename = shellescape(os.path.basename(path))
+  command = ""
+  if dirname:
+    command = "cd %s ; " % dirname
+  if revision:
+    command += "cvs -Q update -C -r%s %s" % (revision, filename)
+  else:
+    command += "cvs -Q update -C %s" % (filename)
+  output, error = pipe(command)
+  if error:
+    raise IOError("Error running CVS command '%s': %s" % (command, error))
+  return output
+
+def getcvsrevision(cvsentries, filename):
+  """returns the sticky tag the file was checked out with by looking in the lines of cvsentries"""
+  for cvsentry in cvsentries:
+    cvsentryparts = cvsentry.split("/")
+    if len(cvsentryparts) < 6:
+      continue
+    if os.path.normcase(cvsentryparts[1]) == os.path.normcase(filename):
+      return cvsentryparts[2].strip()
+  return None
+
+def getcvstag(cvsentries, filename):
+  """returns the sticky tag the file was checked out with by looking in the lines of cvsentries"""
+  for cvsentry in cvsentries:
+    cvsentryparts = cvsentry.split("/")
+    if len(cvsentryparts) < 6:
+      continue
+    if os.path.normcase(cvsentryparts[1]) == os.path.normcase(filename):
+      if cvsentryparts[5].startswith("T"):
+        return cvsentryparts[5][1:].strip()
+  return None
 
 def svnreadfile(path, revision=None):
   """Get a clean version of a file from the CVS repository"""
-  path = re.sub(r'(\W)', r'\\\1', path)
+  path = shellescape(path)
   if revision:
     command = "svn cat -r %s %s" % (revision, path)
   else:
     command = "svn cat %s" % path
   output, error = pipe(command)
   if error:
-    raise IOError("Subversion error: %s" % error)
+    raise IOError("Subversion error running '%s': %s" % (command, error))
   return output
+
+def svnupdatefile(path, revision=None):
+  """Does a clean update of the given path"""
+  path = shellescape(path)
+  command = "svn revert %s ; " % path
+  if revision:
+    command += "svn update -r%s %s" % (revision, path)
+  else:
+    command += "svn update %s" % (path)
+  output, error = pipe(command)
+  if error:
+    raise IOError("Subversion error running '%s': %s" % (command, error))
+  return output
+
+def hascvs(parentdir):
+  cvsdir = os.path.join(parentdir, "CVS")
+  return os.path.isdir(cvsdir)
+
+def hassvn(parentdir):
+  svndir = os.path.join(parentdir, ".svn")
+  return os.path.isdir(svndir)
 
 def getcleanfile(filename, revision=None):
   parentdir = os.path.dirname(filename)
-  cvsdir = os.path.join(parentdir, "CVS")
-  if os.path.isdir(cvsdir):
+  if hascvs(parentdir):
+    cvsdir = os.path.join(parentdir, "CVS")
     cvsroot = open(os.path.join(cvsdir, "Root"), "r").read().strip()
     cvspath = open(os.path.join(cvsdir, "Repository"), "r").read().strip()
-    cvsfilename = os.path.join(cvspath, os.path.basename(filename))
-    return cvsreadfile(cvsroot, cvsfilename)
-  svndir = os.path.join(parentdir, ".svn")
-  if os.path.isdir(svndir):
+    basename = os.path.basename(filename)
+    cvsfilename = os.path.join(cvspath, basename)
+    if revision is None:
+      cvsentries = open(os.path.join(cvsdir, "Entries"), "r").readlines()
+      revision = getcvstag(cvsentries, basename)
+    if revision == "BASE":
+      cvsentries = open(os.path.join(cvsdir, "Entries"), "r").readlines()
+      revision = getcvsrevision(cvsentries, basename)
+    return cvsreadfile(cvsroot, cvsfilename, revision)
+  if hassvn(parentdir):
     return svnreadfile(filename, revision)
+  raise IOError("Could not find version control information")
+
+def updatefile(filename, revision=None):
+  parentdir = os.path.dirname(filename)
+  if hascvs(parentdir):
+    return cvsupdatefile(filename, revision)
+  if hassvn(parentdir):
+    return svnupdatefile(filename, revision)
   raise IOError("Could not find version control information")
 
 if __name__ == "__main__":
