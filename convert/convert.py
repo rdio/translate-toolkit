@@ -160,26 +160,6 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       return "%s formats" % (", ".join(formats))
 
-  def getinputfile(self, options):
-    """gets the input file defined by the options"""
-    if options.input is None:
-      return sys.stdin
-    else:
-      return open(options.input, 'r')
-
-  def getoutputfile(self, options):
-    """gets the output file defined by the options"""
-    if options.output is None:
-      return sys.stdout
-    else:
-      return open(options.output, 'w')
-
-  def gettemplatefile(self, options):
-    """gets the template file defined by the options"""
-    if self.usetemplates and options.template:
-      return open(options.template, 'r')
-    return None
-
   def runconversion(self, options, convertmethod):
     """runs the conversion method using the given commandline options..."""
     if (self.recursion == optionalrecursion and options.recursive) or (self.recursion == defaultrecursion):
@@ -193,7 +173,10 @@ class ConvertOptionParser(optparse.OptionParser, object):
         self.error(optparse.OptionValueError("output must be existing directory for recursive run."))
       self.recurseconversion(options)
     else:
-      convertmethod(self.getinputfile(options), self.getoutputfile(options), self.gettemplatefile(options))
+      inputfile = self.openinputfile(options, options.input)
+      outputfile = self.getoutputfile(options, options.output)
+      templatefile = self.gettemplatefile(options, options.template)
+      convertmethod(inputfile, outputfile, templatefile)
 
   def getconvertmethod(self, inputpath, outputpath):
     """works out which conversion method to use..."""
@@ -252,10 +235,14 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def openinputfile(self, options, fullinputpath):
     """opens the input file"""
+    if fullinputpath is None:
+      return sys.stdin
     return open(fullinputpath, 'r')
 
   def openoutputfile(self, options, fulloutputpath):
     """opens the output file"""
+    if fulloutputpath is None:
+      return sys.stdout
     return open(fulloutputpath, 'w')
 
   def opentempoutputfile(self, options, fulloutputpath):
