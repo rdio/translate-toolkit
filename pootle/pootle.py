@@ -17,7 +17,7 @@ class PootleServer(users.OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=users.LoginPage):
     if sessioncache is None:
-      sessioncache = session.SessionCache(sessionclass=users.ActivateSession)
+      sessioncache = session.SessionCache(sessionclass=users.PootleSession)
     self.localedomains = ["jToolkit", "pootle"]
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.potree = projects.POTree(self.instance)
@@ -81,6 +81,20 @@ class PootleServer(users.OptionalLoginAppServer):
           top = ""
         if not top or top == "index.html":
           return indexpage.ProjectLanguageIndex(self.potree, projectcode, session)
+    elif top == "my":
+      pathwords = pathwords[1:]
+      if pathwords:
+        top = pathwords[0]
+      else:
+        top = ""
+      if not top or top == "index.html":
+        if not session.isopen:
+          redirecttext = pagelayout.IntroText("Redirecting to login...")
+          redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
+          return server.Redirect("../login.html", withpage=redirectpage)
+        if "changeoptions" in argdict:
+          session.setoptions(argdict)
+        return indexpage.UserIndex(self.potree, session)
     elif self.potree.haslanguage(top):
       languagecode = top
       pathwords = pathwords[1:]

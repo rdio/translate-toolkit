@@ -49,6 +49,29 @@ class PootleIndex(pagelayout.PootlePage):
     bodydescription = pagelayout.ItemDescription(listwidget)
     return pagelayout.Contents([projectstitle, bodydescription])
 
+class UserIndex(pagelayout.PootlePage):
+  def __init__(self, potree, session):
+    self.potree = potree
+    self.session = session
+    self.localize = session.localize
+    submitbutton = widgets.Input({"type":"submit", "name":"changeoptions", "value":"Submit"})
+    useroptions = widgets.Form([self.getprojectoptions(), submitbutton], {"name": "useroptions", "action":""})
+    contents = [useroptions]
+    pagelayout.PootlePage.__init__(self, self.localize("User Page for: %s") % session.username, contents, session)
+
+  def getprojectoptions(self):
+    """gets the links to the projects"""
+    projectstitle = widgets.ContentWidget('h3', self.localize("My Projects"), {"class":"title"})
+    projectoptions = []
+    userprojects = self.session.getprojects()
+    for projectcode in self.potree.getprojectcodes():
+      projectname = self.potree.getprojectname(projectcode)
+      projectoptions.append((projectcode, projectname))
+      projectdescription = self.potree.getprojectdescription(projectcode)
+    projectselect = widgets.MultiSelect({"value": userprojects, "name": "projects"}, projectoptions)
+    bodydescription = pagelayout.ItemDescription([projectselect, widgets.HiddenFieldList({"allowmultikey":"projects"})])
+    return pagelayout.Contents([projectstitle, bodydescription])
+
 class ProjectsIndex(PootleIndex):
   """the list of projects"""
   def getlanguagelinks(self):

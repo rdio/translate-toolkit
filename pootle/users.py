@@ -178,14 +178,31 @@ class OptionalLoginAppServer(server.LoginAppServer):
     else:
       return ActivatePage(session, argdict)
 
-class ActivateSession(session.LoginSession):
-  # TODO: refactor this into a LoginChecker somehow...
+class PootleSession(session.LoginSession):
   def validate(self):
-    """checks if this session is valid"""
-    if not super(ActivateSession, self).validate():
+    """checks if this session is valid (which means the user must be activated)"""
+    if not super(PootleSession, self).validate():
       return False
     if not getattr(getattr(self.loginchecker.users, self.username, None), "activated", 0):
       self.isvalid = False
       self.status = "username has not yet been activated"
     return self.isvalid
+
+  def getprefs(self):
+    """gets the prefs node for this user"""
+    return getattr(self.loginchecker.users, self.username)
+
+  def setoptions(self, argdict):
+    """sets the user options"""
+    userprefs = self.getprefs()
+    userprojects = argdict.get("projects", [])
+    if isinstance(userprojects, (str, unicode)):
+      userprojects = [userprojects]
+    setattr(userprefs, "projects", ",".join(userprojects))
+
+  def getprojects(self):
+    """gets the users projects"""
+    userprefs = self.getprefs()
+    userprojects = getattr(userprefs, "projects", "")
+    return userprojects.split(",")
 
