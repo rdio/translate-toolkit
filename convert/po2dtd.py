@@ -27,25 +27,6 @@ from translate.storage import po
 from translate.misc import quote
 from translate import __version__
 
-def findentities(definition):
-  entities = {}
-  amppos = 0
-  while amppos != -1:
-    amppos = definition.find("&",amppos)
-    if amppos != -1:
-      semicolonpos = definition.find(";",amppos)
-      # search backwards in case there's an intervening & (if not it's OK)...
-      amppos = definition.rfind("&", amppos, semicolonpos)
-      if semicolonpos != -1:
-        entities[definition[amppos:semicolonpos+1]] = 0
-      amppos=semicolonpos
-  return entities
-
-def entitycheck(original, translation):
-  originalset=findentities(original)
-  translatedset=findentities(translation)
-  return originalset == translatedset
-
 def getlabel(unquotedstr):
   """retrieve the label from a mixed label+accesskey entity"""
   # mixed labels just need the & taken out
@@ -139,21 +120,13 @@ def getmixedentities(entities):
         mixedentities += [entity,entitybase+".accesskey"]
   return mixedentities
 
-def applytranslation(entity, thedtd, thepo, mixedentities, showchecks, filename):
+def applytranslation(entity, thedtd, thepo, mixedentities):
   """applies the translation for entity in the po element to the dtd element"""
   # this converts the po-style string to a dtd-style string
   unquotedid, unquotedstr = dounquotepo(thepo)
   # check there aren't missing entities...
   if len(unquotedstr.strip()) == 0:
     return
-  if showchecks and not entitycheck(unquotedid, unquotedstr):
-    # print to stderr that the entities in the original and translation don't match
-    print >>sys.stderr, "entitycheck failed in %s (file %s)" % (entity, filename)
-    print >>sys.stderr, "  unquotedid: %r" % unquotedid
-    print >>sys.stderr, "  unquotedstr: %r" % unquotedstr
-    # we could alternatively make it the same as the original
-    # we lose the translation, but we avoid crash-type errors
-    # unquotedstr = unquotedid
   # handle mixed entities
   if entity.endswith(".label"):
     if entity in mixedentities:
@@ -161,9 +134,6 @@ def applytranslation(entity, thedtd, thepo, mixedentities, showchecks, filename)
   elif entity.endswith(".accesskey"):
     if entity in mixedentities:
       unquotedstr = getaccesskey(unquotedstr)
-  elif entity.endswith(".size"):
-    if showchecks and unquotedstr != unquotedid:
-      print >>sys.stderr, "warning: size may have changed in %s (file %s)" % (entity, filename)
   # handle invalid left-over ampersands (usually unneeded access key shortcuts)
   unquotedstr = removeinvalidamps(entity, unquotedstr)
   # finally set the new definition in the dtd, but not if its empty
@@ -172,9 +142,8 @@ def applytranslation(entity, thedtd, thepo, mixedentities, showchecks, filename)
 
 class redtd:
   """this is a convertor class that creates a new dtd based on a template using translations in a po"""
-  def __init__(self, dtdfile, showchecks=True):
+  def __init__(self, dtdfile):
     self.dtdfile = dtdfile
-    self.showchecks = showchecks
 
   def convertfile(self, pofile):
     # translate the strings
@@ -190,7 +159,7 @@ class redtd:
       if self.dtdfile.index.has_key(entity):
         # now we need to replace the definition of entity with msgstr
         thedtd = self.dtdfile.index[entity] # find the dtd
-        applytranslation(entity, thedtd, thepo, mixedentities, self.showchecks, self.dtdfile.filename)
+        applytranslation(entity, thedtd, thepo, mixedentities)
 
 class po2dtd:
   """this is a convertor class that creates a new dtd file based on a po file without a template"""
@@ -271,13 +240,13 @@ class po2dtd:
         thedtdfile.dtdelements.append(thedtd)
     return thedtdfile
 
-def convertdtd(inputfile, outputfile, templatefile, showchecks=True):
+def convertdtd(inputfile, outputfile, templatefile):
   inputpo = po.pofile(inputfile)
   if templatefile is None:
     convertor = po2dtd()
   else:
     templatedtd = dtd.dtdfile(templatefile)
-    convertor = redtd(templatedtd, showchecks)
+    convertor = redtd(templatedtd)
   outputdtd = convertor.convertfile(inputpo)
   outputdtdlines = outputdtd.tolines()
   outputfile.writelines(outputdtdlines)
@@ -287,10 +256,6 @@ if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
   formats = {"po": ("dtd", convertdtd), ("po", "dtd"): ("dtd", convertdtd)}
-  nochecksoption = convert.optparse.Option("", "--nochecks", dest="showchecks",
-    action="store_false", default=True, help="don't run and output results of checks")
   parser = convert.ConvertOptionParser(formats, usetemplates=True)
-  parser.add_option(nochecksoption)
-  parser.convertparameters.append("showchecks")
   parser.runconversion()
 

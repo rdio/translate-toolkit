@@ -100,7 +100,7 @@ class reprop:
           return line+eol
     return ""
 
-def convertprop(inputfile, outputfile, templatefile, showchecks=True):
+def convertprop(inputfile, outputfile, templatefile):
   inputpo = po.pofile(inputfile)
   if templatefile is None:
     raise ValueError("must have template file for properties files")

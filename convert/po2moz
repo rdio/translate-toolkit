@@ -149,10 +149,6 @@ if __name__ == '__main__':
              (None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}
-  nochecksoption = convert.optparse.Option("", "--nochecks", dest="showchecks",
-    action="store_false", default=True, help="don't run and output results of checks")
   parser = MozConvertOptionParser(formats, usetemplates=True)
-  parser.add_option(nochecksoption)
-  parser.convertparameters.append("showchecks")
   parser.runconversion()
 
