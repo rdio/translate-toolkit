@@ -460,6 +460,27 @@ class TranslationProject:
     print "error in filter %s: %r, %r, %s" % (functionname, str1, str2, e)
     return False
 
+  def getarchive(self, pofilenames):
+    """returns an archive of the given filenames"""
+    import os
+    tempzipfile = os.tmpnam()
+    try:
+      # using zip command line is fast
+      os.system("cd %s ; zip -r - %s > %s" % (self.podir, " ".join(pofilenames), tempzipfile))
+      return open(tempzipfile, "r").read()
+    finally:
+      if os.path.exists(tempzipfile):
+        os.remove(tempzipfile)
+    # but if it doesn't work, we can do it from python
+    import cStringIO, zipfile
+    archivecontents = cStringIO.StringIO()
+    archive = zipfile.ZipFile(archivecontents, 'w', zipfile.ZIP_DEFLATED)
+    for pofilename in pofilenames:
+      pofile = self.getpofile(pofilename)
+      archive.write(pofile.filename, pofilename)
+    archive.close()
+    return archivecontents.getvalue()
+
   def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
     """gets a list of pofilenames, optionally filtering with the parent directory"""
     if dirfilter is None:

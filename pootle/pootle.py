@@ -134,6 +134,16 @@ class PootleServer(users.OptionalLoginAppServer):
 	  page = widgets.PlainContents(contents)
 	  page.content_type = "text/plain"
 	  return page
+        elif bottom.endswith(".zip"):
+	  if len(pathwords) > 1:
+            dirfilter = os.path.join(*pathwords[:-1])
+	  else:
+	    dirfilter = None
+          pofilenames = project.browsefiles(dirfilter)
+          archivecontents = project.getarchive(pofilenames)
+          page = widgets.PlainContents(archivecontents)
+          page.content_type = "application/zip"
+          return page
 	elif bottom == "index.html":
           if len(pathwords) > 1:
             dirfilter = os.path.join(*pathwords[:-1])
