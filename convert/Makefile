@@ -117,7 +117,7 @@ test-oo2po: output=test-oo2po
 test-oo2po:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./oo2po.py --progress=$(progress) -R -P -i $(input) -o $(output)
+	./oo2po --progress=$(progress) -R -P -i $(input) -o $(output)
 
 test-po2oo: input=$(oopodir)/af
 test-po2oo: output=test-po2oo
@@ -126,14 +126,14 @@ test-po2oo: languagecode=27
 test-po2oo:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./po2oo.py --progress=$(progress) -R -l $(languagecode) -i $(input) -o $(output) -t $(template)
+	./po2oo --progress=$(progress) -R -l $(languagecode) -i $(input) -o $(output) -t $(template)
 
 test-po2csv: input=$(oopodir)/af
 test-po2csv: output=test-po2csv
 test-po2csv:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./po2csv.py --progress=$(progress) -R -i $(input) -o $(output)
+	./po2csv --progress=$(progress) -R -i $(input) -o $(output)
 
 test-csv2po: input=test-po2csv
 test-csv2po: output=test-csv2po
@@ -142,6 +142,6 @@ test-csv2po: test-po2csv
 test-csv2po: test-oo2po
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./csv2po.py --progress=$(progress) -R -i $(input) -o $(output) -t $(template)
+	./csv2po --progress=$(progress) -R -i $(input) -o $(output) -t $(template)
 
 
