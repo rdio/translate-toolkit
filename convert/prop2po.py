@@ -32,10 +32,13 @@ eol = "\n"
 
 class prop2po:
   """convert a .properties file to a .po file for handling the translation..."""
-  def convertfile(self, thepropfile):
+  def convertfile(self, thepropfile, ispotfile=False):
     """converts a .properties file to a .po file..."""
     thepofile = po.pofile()
-    headerpo = thepofile.makeheader()
+    if ispotfile:
+      headerpo = thepofile.makeheader()
+    else:
+      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
     headerpo.othercomments.append("# extracted from %s\n" % thepropfile.filename)
     # we try and merge the header po with any comments at the start of the properties file
     appendedheader = 0
@@ -60,7 +63,10 @@ class prop2po:
   def mergefiles(self, origpropfile, translatedpropfile, blankmsgstr=False):
     """converts a .properties file to a .po file..."""
     thepofile = po.pofile()
-    headerpo = thepofile.makeheader()
+    if blankmsgstr:
+      headerpo = thepofile.makeheader()
+    else:
+      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
     headerpo.othercomments.append("# extracted from %s, %s\n" % (origpropfile.filename, translatedpropfile.filename))
     translatedpropfile.makeindex()
     # we try and merge the header po with any comments at the start of the properties file
@@ -115,7 +121,7 @@ def convertprop(inputfile, outputfile, templatefile, pot=False):
   inputprop = properties.propfile(inputfile)
   convertor = prop2po()
   if templatefile is None:
-    outputpo = convertor.convertfile(inputprop)
+    outputpo = convertor.convertfile(inputprop, ispotfile=pot)
   else:
     templateprop = properties.propfile(templatefile)
     outputpo = convertor.mergefiles(templateprop, inputprop, blankmsgstr=pot)
