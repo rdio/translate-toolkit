@@ -29,11 +29,7 @@ except ImportError:
   from translate.misc import optparse
 from translate.convert import dtd2po
 from translate.convert import prop2po
-from translate.storage import dtd
-from translate.storage import properties
-from translate.storage import po
 from translate.storage import xpi
-from translate.misc import quote
 from translate import __version__
 from translate.convert import convert
 

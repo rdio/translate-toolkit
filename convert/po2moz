@@ -23,9 +23,6 @@ either done using a template or just using the .po file"""
 
 from translate.convert import po2dtd
 from translate.convert import po2prop
-from translate.storage import dtd
-from translate.storage import po
-from translate.misc import quote
 from translate import __version__
 
 if __name__ == '__main__':
