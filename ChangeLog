@@ -1,3 +1,455 @@
+2004-05-21 19:00  davidfraser
+
+	* convert/po2prop.py: .msg.wC8765
+
+2004-05-21 18:58  davidfraser
+
+	* __version__.py: version 0.8 beta 1
+
+2004-05-21 18:49  davidfraser
+
+	* misc/quote.py: removed escapeunicode and unescapeunicode
+
+2004-05-21 18:49  davidfraser
+
+	* convert/: po2prop.py, prop2po.py: removed
+	  escapeunicode/unescapeunicode changed lineending encoding in
+	  po2prop handle multiple lines in prop2po
+
+2004-05-21 18:19  davidfraser
+
+	* convert/: dtd2po.py, po2dtd.py, po2moz, po2prop.py, prop2po.py:
+	  added option to po2dtd and po2moz to not run entity and size
+	  checks fixed filename display for checks changed all leftover
+	  ConvertOptionParserExt to ConvertOptionParser
+
+2004-05-21 18:01  davidfraser
+
+	* convert/: dtd2po.py, prop2po.py: set charset, encoding in po
+	  output if not a pot file
+
+2004-05-21 17:59  davidfraser
+
+	* storage/po.py: added a utf8encode method, encode all unicode
+	  strings as utf8
+
+2004-05-21 17:53  davidfraser
+
+	* convert/po2prop.py: do proper mozilla-properties encoding on
+	  po2prop output (for \unnnn strings) fix reference to old
+	  converter class...
+
+2004-05-21 17:51  davidfraser
+
+	* storage/properties.py: un-escape unicode-escaped \unnnn strings
+	  on input, re-escape them on output
+
+2004-05-21 17:50  davidfraser
+
+	* misc/quote.py: added function to encode a string for a mozilla
+	  (java-style) properties file (we can decode with "unicode-escape"
+	  encoding, but encoding with this gives \xnn instead of \unnnn)
+
+2004-05-21 11:56  davidfraser
+
+	* misc/wStringIO.py: fixed basestring (python2.3 only) -> (str,
+	  unicode) (works on python2.2)
+
+2004-05-21 11:48  davidfraser
+
+	* storage/dtd.py: fixed creation of blank entities for blank lines
+	  at end of file set entity to None initially, detect this with
+	  isnull added comments to dtdelement class
+
+2004-05-21 11:24  davidfraser
+
+	* convert/convert.py: refactored po/pot selection algorithm added a
+	  helper function "potifyformat" to deal with both .po and .xxx.po
+	  (for mozilla) instead of using self.inputformats,
+	  self.outputoptions, added functions filterinputformats and
+	  filteroutputoptions these use options.pot to rename formats as
+	  required the results are stored in options.inputformats,
+	  options.outputoptions which are then used to determine names
+	  instead of self.inputformats, self.outputoptions also changed
+	  getformathelp so it doesn't actually modify the format
+	  dictionaries...
+
+2004-05-20 20:22  dwaynebailey
+
+	* convert/dtd2po.py: For msgid's that are blank a correct KDE style
+	  translator comment must end with a literal \n followed by \n ir
+	  \\n\n
+
+2004-05-19 13:37  davidfraser
+
+	* convert/po2oo: made languagecode a convertparameter so it gets
+	  passed through...
+
+2004-05-14 16:27  davidfraser
+
+	* filters/checks.py: removed unneccessary sparse import
+
+2004-05-11 17:56  davidfraser
+
+	* storage/xpi.py: changed to use wStringIO wrapper for cStringIO
+
+2004-05-11 17:52  davidfraser
+
+	* misc/wStringIO.py: added wrapper for cStringIO so we can speed up
+	  StringIO operations
+
+2004-05-11 17:35  davidfraser
+
+	* misc/zipfileext.py: don't need to write the endrec after a delete
+	  neccessarily...
+
+2004-05-11 16:47  davidfraser
+
+	* storage/xpi.py: use zipfileext enhancements to overwrite files
+	  inside zip files (removed TODO) use fix to StringIO to make sure
+	  truncate works for jar files stored in a StringIO...	only
+	  rewrite jar files if they've been changed... but catch their new
+	  value if they have test included jar files when testing the zip
+
+2004-05-11 16:41  davidfraser
+
+	* misc/zipfileext.py: added zipfileext which contains code to
+	  delete files in zipfiles, replace them, etc
+
+2004-05-11 13:19  dwaynebailey
+
+	* portal/portal-erd.dia: A few minor changes and new fields
+
+2004-05-11 11:59  davidfraser
+
+	* storage/xpi.py: added spacing between functions
+
+2004-05-10 18:57  davidfraser
+
+	* convert/po2moz: if you don't close the outputxpi you never get
+	  the output...  this now actually produces an xpi with
+	  translations the paths still need to be fixed up though...
+
+2004-05-10 18:50  davidfraser
+
+	* convert/: convert.py, po2moz: tried to add more intelligence to
+	  close files and not use temp files in po2moz (but use StringIO
+	  rather than stdout for misplaced files)
+
+2004-05-10 18:38  davidfraser
+
+	* convert/: Makefile, TODO, convert.py, moz2po, po2moz: added
+	  ability to write xpi files from po2moz (not complete)   major
+	  changes to po2moz to support this   use recurseconversion to read
+	  in the files rather than recurseinputfiles   added xpi file
+	  creation...  renamed checksubdir in convert to checkoutputsubdir,
+	  pass options instead of options.output made gettemplatename
+	  handle inputname=None (for stdin) etc handle IndexErrors when
+	  trying to map paths to xpi file added test for po2moz writing
+	  .xpi changed TODO - can now handle non-dtd/properties files
+
+2004-05-10 17:44  davidfraser
+
+	* convert/: Makefile, convert.py, moz2po, po2moz: added ability to
+	  handle wildcards in convert for extensions ("*" matches anything)
+	  added ability to po2moz, moz2po to handle non-dtd, non-properties
+	  files by copying them added ability to po2moz to handle xpi files
+	  for templates   - po2moz now has a MozConvertOptionParser like
+	  moz2po does, but it does some different stuff renamed methods
+	  recursefiles to recurseinputfiles, etc in convert made convert
+	  methods return lists instead of yielding generators added
+	  copyinput, copytemplate methods to convert that can be used to
+	  copy files
+
+2004-05-10 17:34  davidfraser
+
+	* convert/po2prop.py: changed xreadlines to readlines so it can
+	  work on StringIO from xpi
+
+2004-05-10 16:31  davidfraser
+
+	* convert/moz2po: moved inputxpi, templatexpi generation to
+	  recursefiles started updating to name files dtd.po, properties.po
+	  instaed of plain .po
+
+2004-05-10 16:28  davidfraser
+
+	* convert/convert.py: made splitinputext, splittemplateext methods
+	  to split the extension and replace the .
+
+2004-05-10 16:19  davidfraser
+
+	* storage/po.py: added an overwrite parameter to merge that allows
+	  overwriting existing msgstr...
+
+2004-05-10 16:18  davidfraser
+
+	* tools/pomerge: overwrite msgstr in target regardless...
+
+2004-05-10 15:50  dwaynebailey
+
+	* filters/: checks.py, pofilter: Add --kde to handle KDE specific
+	  accelerators and variables
+
+2004-05-10 15:49  dwaynebailey
+
+	* convert/TODO: Add .properties UTF<->escaped unicode to wish list
+
+2004-05-10 15:20  davidfraser
+
+	* convert/: moz2po, convert.py: removed unneccessary imports of
+	  optparse from moz2po also added warning method to convert so
+	  import sys in moz2po is unneccessary
+
+2004-05-07 17:15  davidfraser
+
+	* convert/TODO: added some more TODOs
+
+2004-05-07 16:54  davidfraser
+
+	* convert/Makefile: added missing test from moz2po suite
+
+2004-05-07 16:54  davidfraser
+
+	* tools/pomerge: converted podiff and pomerge to use new output
+	  syntax (and handle any combinatino of po, pot)
+
+2004-05-07 16:52  davidfraser
+
+	* convert/: csv2po, dtd2po.py, oo2po, po2csv, po2dtd.py, po2moz,
+	  po2oo, po2prop.py, poreplace.py, prop2po.py: updated all
+	  conversion scripts to use new formats syntax
+
+2004-05-07 16:50  davidfraser
+
+	* convert/moz2po: converted moz2po to work with new format system
+	  (see convert.py)
+
+2004-05-07 16:49  davidfraser
+
+	* convert/convert.py: overhauled the handling of input and output
+	  formats in convert this allows more sanity and flexibility
+	  basically formats expects a dictionary with keys either as
+	  inputformats or (inputformat, templateformat) tuples and values
+	  as tuples of (outputformat, convertmethod) this obliviates the
+	  need of ConvertOptionParseExt
+
+2004-05-07 15:57  davidfraser
+
+	* tools/pocount: added pocount tool
+
+2004-05-07 15:18  davidfraser
+
+	* filters/pofilter: don't skip over fuzzy elements...
+
+2004-05-07 15:06  davidfraser
+
+	* filters/pofilter: added includefuzzy option to runpofilter (left
+	  out when adding option)
+
+2004-05-07 14:57  davidfraser
+
+	* filters/pofilter: added code to include fuzzy elements
+
+2004-05-07 14:51  davidfraser
+
+	* storage/xpi.py: added code to prevent generating an error if a
+	  directory is present that doesn't match commonprefix (currently
+	  happens in moz1.0/langengb.xpi)
+
+2004-05-07 14:45  davidfraser
+
+	* __version__.py: version 0.8 prerelease time
+
+2004-05-07 14:42  davidfraser
+
+	* convert/convert.py, filters/filtercmd.py, misc/progressbar.py:
+	  removed curses progress option throughout (it never worked)
+
+2004-05-07 14:36  davidfraser
+
+	* convert/: dtd2po.py, moz2po, prop2po.py: added support for
+	  blanking msgstr when -P|--pot option is given
+
+2004-05-04 17:57  davidfraser
+
+	* convert/: moz2po, po2moz: took out unneccessary imports
+
+2004-05-04 17:53  davidfraser
+
+	* convert/convert.py: added code to prevent usage of older versions
+	  of optparse that can be installed alongside python 2.2
+
+2004-05-04 17:12  davidfraser
+
+	* storage/xpi.py: added clone method for xpi, and TODO to work out
+	  how to write without appending
+
+2004-05-04 16:38  davidfraser
+
+	* storage/xpi.py: converted to only use StringIO as cStringIO Input
+	  streams are unwriteable added CatchPotentialOutput class which is
+	  an InputStream that can become an OutputStream always add files
+	  to potentialsave, only actually add them if not already there
+	  open jarfiles in the same mode as the xpi (mostly to allow append
+	  to function) open jarfiles as CatchPotentialOutput streams when
+	  planning to use them for input
+
+2004-05-04 15:26  davidfraser
+
+	* storage/xpi.py: make sure commonprefix doesn't swallow up a whole
+	  file changed default extractdir to prevent errors...
+
+2004-05-04 15:14  davidfraser
+
+	* storage/xpi.py: added funky code to prevent funky error (if close
+	  is called from __del__ it can't see the class or anything except
+	  for self) all explained nicely in comments
+
+2004-05-04 14:03  davidfraser
+
+	* storage/xpi.py: create directories if required in extraction
+
+2004-05-04 13:46  davidfraser
+
+	* storage/po.py: allow display of a blank po entry if it has
+	  msgidcomments...
+
+2004-05-04 13:43  davidfraser
+
+	* convert/dtd2po.py: add a comment to explain an original being
+	  blank (this prevents it from being an invalid po file)
+
+2004-05-04 13:08  davidfraser
+
+	* convert/convert.py: fixed missing case for stdin input
+
+2004-05-04 12:56  davidfraser
+
+	* convert/prop2po.py: fixed ... was trying to extend list with a
+	  string so came out wierd...
+
+2004-05-04 11:00  davidfraser
+
+	* storage/xpi.py: added TODOs to redo file mapping
+
+2004-05-04 09:50  davidfraser
+
+	* convert/convert.py: rearranged setpotoption logic, forget about
+	  input/outputformats
+
+2004-04-30 18:22  davidfraser
+
+	* storage/xpi.py: added doc strings for new classes
+
+2004-04-30 18:15  davidfraser
+
+	* storage/xpi.py: added some initial work at outputting xpis (all
+	  about catching close events for inner zip files) some conversion
+	  to newstyle classes
+
+2004-04-30 17:18  davidfraser
+
+	* convert/moz2po: check that fileoption is a string before we check
+	  if it looks like an xpi filename (to avoid doing this to lists)
+
+2004-04-30 17:15  davidfraser
+
+	* convert/convert.py: added code to handle multiple input files as
+	  a list (and find a common directory for them)
+
+2004-04-30 16:52  davidfraser
+
+	* convert/moz2po: removed TODO about importing translations, as can
+	  be done using templates
+
+2004-04-30 16:33  davidfraser
+
+	* convert/convert.py: improved usage string by rearranging order,
+	  adding parameters for optionality (only affects usage string)
+	  required giving inputformats and outputformats to setpotoption as
+	  not set on self yet
+
+2004-04-30 16:24  davidfraser
+
+	* convert/: Makefile, convert.py: added code to handle input and
+	  output parameters without needing -i/-o (decided it was better in
+	  runconversion than recurseconversion, so put it there and changed
+	  args)
+
+2004-04-30 16:05  davidfraser
+
+	* tools/pomerge: use new simpler parser.runconversion() to run the
+	  operation
+
+2004-04-30 16:00  davidfraser
+
+	* convert/: convert.py, csv2po, dtd2po.py, moz2po, oo2po, po2csv,
+	  po2dtd.py, po2moz, po2oo, po2prop.py, poreplace.py, prop2po.py:
+	  updated runconversion to handle the options and argument parsing
+	  and error handling moved recursive checking logic into
+	  recurseconversion added args to recurseconversion options (can
+	  maybe use for input/output params) removed extraneous import from
+	  poreplace.py
+
+2004-04-30 15:38  davidfraser
+
+	* convert/: TODO, oo2po: oo2po: used new convertparameters
+	  attribute to pass the pot option through to convertoo TODO: took
+	  out TODO for recursion
+
+2004-04-30 15:27  davidfraser
+
+	* tools/pomerge: removed recursion option, since it is now detected
+	  automatically
+
+2004-04-30 15:27  davidfraser
+
+	* convert/: Makefile, convert.py, csv2po, dtd2po.py, moz2po, oo2po,
+	  po2csv, po2dtd.py, po2moz, po2oo, po2prop.py, poreplace.py,
+	  prop2po.py: totally removed recursive options since all this is
+	  now done automatically...
+
+2004-04-30 15:15  davidfraser
+
+	* convert/: convert.py, moz2po: simplified handling of recursion on
+	  output and templates (set option.recursivexxx and check in
+	  getfullxxxpath rearrange xpi handling on moz2po so runconversion
+	  doesn't have to be overridden.
+
+2004-04-30 14:51  davidfraser
+
+	* convert/: convert.py, moz2po: tried to improve intelligence of
+	  recursion detection (recurse iff the input is a directory) allow
+	  specifying input and output files, going through same method as
+	  if recursing a directory replaced inputisxpi and templateisxpi in
+	  moz2po with isxpi
+
+2004-04-29 17:31  davidfraser
+
+	* convert/Makefile: changed all dirs to ?= so they can be
+	  overridden
+
+2004-04-29 17:24  davidfraser
+
+	* convert/convert.py, storage/xpi.py: replaced os.path.sep,
+	  os.path.extsep with os.sep, os.extsep for python2.2 compat
+
+2004-04-29 17:19  davidfraser
+
+	* convert/convert.py, filters/filtercmd.py: changed basestring to
+	  (str, unicode) for python2.2 compatibility
+
+2004-04-29 17:17  davidfraser
+
+	* convert/moz2po: added __future__ for python 2.2 compatibility
+
+2004-04-29 17:13  davidfraser
+
+	* filters/filtercmd.py, storage/xpi.py, convert/convert.py: added
+	  from __future__ import generators to files using yield, for
+	  python 2.2 compatibility
+
 2004-04-24 11:34  davidfraser
 
 	* ChangeLog: Added ChangeLog for 0.7
