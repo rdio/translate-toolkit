@@ -20,8 +20,22 @@
 
 """Converts Mozilla .dtd and .properties files to Gettext .po files"""
 
-from translate.convert import moz2po
+import os.path
+from translate.convert import dtd2po
+from translate.convert import prop2po
+from translate.storage import xpi
+from translate import __version__
+from translate.convert import convert
 
-if __name__ == '__main__':
-  moz2po.main()
+def main():
+  formats = {("dtd", "dtd"): ("dtd.po", dtd2po.convertdtd),
+             ("properties", "properties"): ("properties.po", prop2po.convertprop),
+             "dtd": ("dtd.po", dtd2po.convertdtd),
+             "properties": ("properties.po", prop2po.convertprop),
+             (None, "*"): ("*", convert.copytemplate),
+             ("*", "*"): ("*", convert.copyinput),
+             "*": ("*", convert.copyinput)}
+  parser = convert.ArchiveConvertOptionParser(formats, usetemplates=True, usepots=True, description=__doc__, archiveformats={"xpi": xpi.XpiFile})
+  parser.passthrough.append("pot")
+  parser.run()
 
