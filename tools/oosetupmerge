@@ -163,6 +163,10 @@ class SetupIndex(sparse.SimpleParser):
         return tokennum
     return None
 
+  def keymunge(self, keyname):
+    """munges a keyname and removes invalid entries"""
+    return keyname.replace("-", "_")
+
   def merge(self, otherindexes):
     """merges this with another index... hmmm ...."""
     indexes = [self] + otherindexes
@@ -213,13 +217,14 @@ class SetupIndex(sparse.SimpleParser):
     for index in indexes:
       for directory in directoriestorename:
         suffix = "_" + sparse.stringeval(index.getfieldvalue(directory, "HostName"))
+        suffix = self.keymunge(suffix)
         if directory.find('_Language') != -1:
           newname = directory.replace("_Language", suffix)
         elif directory.find('_Lang') != -1:
           newname = directory.replace("_Lang", suffix)
         elif directory.find('_Isolanguage') != -1:
           newname = directory.replace("_Isolanguage", suffix)
-        else: newname = directory + "_" + suffix
+        else: newname = directory + suffix
         index.renamedirectory(directory, newname, suffix)
         if index != self:
           directorysection = index.definitions[directory]
@@ -232,7 +237,7 @@ class SetupIndex(sparse.SimpleParser):
         filename = sparse.stringeval(index.getfieldvalue(fileentry, 'Name'))
         # handle resource files
         if filename.endswith("%s.res" % index.dialingcode):
-          suffix = "_" + index.isocode
+          suffix = self.keymunge("_" + index.isocode)
           index.rename(fileentry, fileentry + suffix)
           packedname = sparse.stringeval(index.getfieldvalue(fileentry, "PackedName"))
           newpackedname = packedname + suffix
@@ -245,7 +250,7 @@ class SetupIndex(sparse.SimpleParser):
           isocodes = ",".join([eachindex.isocode for eachindex in indexes])
           index.setfieldvalue(configitem, "Value", '"%s"' % isocodes)
         if key == index.isocode:
-          suffix = "_" + index.isocode
+          suffix = self.keymunge("_" + index.isocode)
           index.rename(configitem, configitem + suffix)
           if index != self:
             self.addforeignconfigitem(index, configitem, suffix)
