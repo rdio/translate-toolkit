@@ -54,6 +54,8 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
         options.outputxpi = xpi.XpiFile(options.output)
     result = super(MozConvertOptionParser, self).recursiveprocess(options)
     if self.isxpi(options.output):
+      if options.progress in ('console', 'verbose'):
+        print "writing xpi file..."
       options.outputxpi.close()
     return result
 
@@ -61,8 +63,10 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
     """gets the absolute path to an output file"""
     if self.isxpi(options.output):
       return outputpath
-    else:
+    elif options.recursiveoutput and options.output:
       return os.path.join(options.output, outputpath)
+    else:
+      return outputpath
 
   def checkoutputsubdir(self, options, subdir):
     """checks to see if subdir under options.output needs to be created, creates if neccessary"""
@@ -92,8 +96,9 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
       if fileprocessor(inputfile, outputfile, templatefile, **passthroughoptions):
         return True
       else:
-        outputfile.close()
-        os.unlink(fulloutputpath)
+        if fulloutputpath and os.path.isfile(fulloutputpath):
+          outputfile.close()
+          os.unlink(fulloutputpath)
         return False
     else:
       return super(MozConvertOptionParser, self).processfile(fileprocessor, options, fullinputpath, fulloutputpath, fulltemplatepath)
