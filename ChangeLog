@@ -1,0 +1,4 @@
+2003-12-23: Moved into new package structure from old flat structure
+Renamed files
+Improved command line option consistency
+Renamed project from mozpotools to translate
