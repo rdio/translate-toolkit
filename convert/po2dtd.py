@@ -99,6 +99,8 @@ def extractpoline(line):
   return quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=0)[0]
 
 def dounquotepo(thepo):
+  # NOTE: the \n newline characters included here are merely for readability.
+  # they don't come out as actual newlines in mozilla
   unquotedid = "\n".join([extractpoline(line) for line in thepo.msgid])
   if unquotedid[:1] == "\n":
     unquotedid = unquotedid[1:]
