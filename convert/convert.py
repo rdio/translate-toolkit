@@ -37,9 +37,9 @@ except ImportError:
 
 class ConvertOptionParser(optparse.OptionParser, object):
   """a specialized Option Parser for convertor tools..."""
-  def __init__(self, formats, usetemplates=False, usepots=False):
+  def __init__(self, formats, usetemplates=False, usepots=False, description=None):
     """construct the specialized Option Parser"""
-    optparse.OptionParser.__init__(self, version="%prog "+__version__.ver)
+    optparse.OptionParser.__init__(self, version="%prog "+__version__.ver, description=description)
     self.usepots = usepots
     self.setprogressoptions()
     self.setpotoption()

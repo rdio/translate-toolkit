@@ -256,6 +256,6 @@ if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
   formats = {"po": ("dtd", convertdtd), ("po", "dtd"): ("dtd", convertdtd)}
-  parser = convert.ConvertOptionParser(formats, usetemplates=True)
+  parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.runconversion()
 

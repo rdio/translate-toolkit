@@ -28,8 +28,8 @@ from translate import __version__
 from translate.convert import convert
 
 class MozConvertOptionParser(convert.ConvertOptionParser):
-  def __init__(self, formats, usetemplates=False, usepots=False):
-    convert.ConvertOptionParser.__init__(self, formats, usetemplates, usepots)
+  def __init__(self, formats, usetemplates=False, usepots=False, description=None):
+    convert.ConvertOptionParser.__init__(self, formats, usetemplates, usepots, description=description)
 
   def isrecursive(self, fileoption):
     """checks if fileoption is a recursive file"""
@@ -117,7 +117,7 @@ if __name__ == '__main__':
              (None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}
-  parser = MozConvertOptionParser(formats, usetemplates=True, usepots=True)
+  parser = MozConvertOptionParser(formats, usetemplates=True, usepots=True, description=__doc__)
   parser.convertparameters.append("pot")
   parser.runconversion()
 
