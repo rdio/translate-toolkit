@@ -237,7 +237,7 @@ class TranslatePage(pagelayout.PootlePage):
 
   def maketable(self):
     self.translations = self.gettranslations()
-    if self.reviewmode:
+    if self.reviewmode and self.item is not None:
       suggestions = {self.item: self.project.getsuggestions(self.pofilename, self.item)}
     self.transtable = table.TableLayout({"class":"translate-table", "cellpadding":10})
     origtitle = table.TableCell("original", {"class":"translate-table-title"})
