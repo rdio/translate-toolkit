@@ -18,7 +18,7 @@
 
 # this Makefile currently just contains tests that we can run to check against major errors...
 
-mozillatests=test-moz2po-notemplate test-moz2po-withtemplate test-po2moz
+mozillatests=test-moz2po-notemplate test-moz2po-xpinotemplate test-moz2po-withtemplate test-po2moz
 openofficetests=test-oo2po test-po2oo
 csvtests=test-po2csv test-csv2po
 maintests=$(mozillatests) $(openofficetests) $(csvtests)
@@ -64,11 +64,12 @@ clean-openoffice:
 clean-csv:
 	rm -fR $(csvtests)
 
-test-moz2po: test-moz2po-notemplate test-moz2po-withtemplate
+test-moz2po: test-moz2po-notemplate test-moz2po-xpinotemplate test-moz2po-withtemplate
 
 # set the progress option...
 progress ?= none
-# TODO: download xpi for tests and unpack if neccessary...
+# TODO: download xpi for tests if neccessary...
+xpidir=/share/translate.org.za/translate.sourceforge.net/xpi-import/
 dtddir=/share/translate.org.za/dev/mozilla/dtd
 oodir=/share/translate.org.za/dev/openoffice/oo
 oopodir=/share/translate.org.za/translate.sourceforge.net/po/openoffice/
@@ -79,6 +80,13 @@ test-moz2po-notemplate:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
 	./moz2po --progress=$(progress) -P -i $(input) -o $(output)
+
+test-moz2po-xpinotemplate: input=$(xpidir)/mozilla-1.6-langenus.xpi
+test-moz2po-xpinotemplate: output=test-moz2po-xpinotemplate
+test-moz2po-xpinotemplate:
+	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
+	mkdir $(output)
+	./moz2po --progress=$(progress) -P -x -i $(input) -o $(output)
 
 test-moz2po-withtemplate: input=$(dtddir)/de-AT-1.6
 test-moz2po-withtemplate: output=test-moz2po-withtemplate
