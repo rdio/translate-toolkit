@@ -24,7 +24,7 @@ import cStringIO
 
 class StringIO:
     def __init__(self, buf = ''):
-        if not isinstance(buf, basestring):
+        if not isinstance(buf, (str, unicode)):
             buf = str(buf)
         self.len = len(buf)
         self.buf = cStringIO.StringIO()
