@@ -24,8 +24,8 @@ class TranslatePage(pagelayout.PootlePage):
     self.lastitem = None
     self.receivetranslations()
     # TODO: clean up modes to be one variable
-    self.viewmode = self.argdict.get("view", 0) and "view" in rights
-    self.reviewmode = self.argdict.get("review", 0) and "review" in rights
+    self.viewmode = self.argdict.get("view", 0) and "view" in self.rights
+    self.reviewmode = self.argdict.get("review", 0)
     if not self.viewmode and not self.reviewmode:
       if not "translate" in self.rights:
         if "view" in self.rights:
@@ -239,14 +239,34 @@ class TranslatePage(pagelayout.PootlePage):
     origdiv.addcontents(origtext)
     return origdiv
 
+  def geteditlink(self, item):
+    """gets a link to edit the given item, if the user has permission"""
+    if "translate" in self.rights or "suggest" in self.rights:
+      return pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit", "editlink%d" % item)
+    else:
+      return ""
+
+  def gettransbuttons(self, item, desiredbuttons=["skip", "suggest", "translate"]):
+    """gets buttons for actions on translation"""
+    buttons = []
+    if "skip" in desiredbuttons:
+      skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
+      buttons.append(skipbutton)
+    if "suggest" in desiredbuttons and "suggest" in self.rights:
+      suggestbutton = widgets.Input({"type":"submit", "name":"submitsuggest%d" % item, "value":"suggest"}, "suggest")
+      buttons.append(suggestbutton)
+    if "translate" in desiredbuttons and "translate" in self.rights:
+      submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
+      buttons.append(submitbutton)
+    return buttons
+
   def gettransedit(self, item, trans):
+    """returns a widget for editing the given item and translation"""
     if isinstance(trans, str):
       trans = trans.decode("utf8")
     textarea = widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
-    skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
-    suggestbutton = widgets.Input({"type":"submit", "name":"submitsuggest%d" % item, "value":"suggest"}, "suggest")
-    submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
-    transdiv = widgets.Division([textarea, skipbutton, suggestbutton, submitbutton], "trans%d" % item, cls="translate-translation")
+    buttons = self.gettransbuttons(item)
+    transdiv = widgets.Division([textarea, buttons], "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def highlightdiffs(self, text, diffs, issrc=True):
@@ -280,13 +300,8 @@ class TranslatePage(pagelayout.PootlePage):
     textdiff += text[textpos:]
     return textdiff
 
-  def geteditlink(self, item):
-    if "translate" in self.rights:
-      return pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit", "editlink%d" % item)
-    else:
-      return ""
-
   def gettransreview(self, item, trans, suggestions):
+    """returns a widget for reviewing the given item's suggestions"""
     if isinstance(trans, str):
       trans = trans.decode("utf8")
     currenttitle = widgets.Division("<b>Current Translation:</b>")
@@ -315,19 +330,24 @@ class TranslatePage(pagelayout.PootlePage):
       suggtitle = widgets.Division("<b>%s</b>" % suggtitle)
       suggestiontext = pagelayout.TranslationText(widgets.Font(suggdiff, {"color":self.textcolors[item % 2]}))
       suggestionhidden = widgets.Input({'type': 'hidden', "name": "sugg%d.%d" % (item, suggid), 'value': suggestion})
-      acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
-      rejectbutton = widgets.Input({"type":"submit", "name":"reject%d.%d" % (item, suggid), "value":"reject"}, "reject")
-      suggdiv = widgets.Division(["<br/>", suggtitle, suggestiontext, suggestionhidden, "<br/>", acceptbutton, rejectbutton], "sugg%d" % item)
+      if "review" in self.rights:
+        acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
+        rejectbutton = widgets.Input({"type":"submit", "name":"reject%d.%d" % (item, suggid), "value":"reject"}, "reject")
+        buttons = [acceptbutton, rejectbutton]
+      else:
+        buttons = []
+      suggdiv = widgets.Division(["<br/>", suggtitle, suggestiontext, suggestionhidden, "<br/>", buttons], "sugg%d" % item)
       suggdivs.append(suggdiv)
-    skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
+    transbuttons = self.gettransbuttons(item, ["skip"])
     if suggdivs:
-      suggdivs[-1].addcontents(skipbutton)
+      suggdivs[-1].addcontents(transbuttons)
     else:
-      suggdivs.append(skipbutton)
+      suggdivs.append(transbuttons)
     transdiv = widgets.Division([currenttitle, currenttext] + suggdivs, "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def gettransview(self, item, trans):
+    """returns a widget for viewing the given item's translation"""
     editlink = self.geteditlink(item)
     text = pagelayout.TranslationText([editlink, widgets.Font(trans, {"color":self.textcolors[item % 2]})])
     transdiv = widgets.Division(text, "trans%d" % item, cls="translate-translation autoexpand")
