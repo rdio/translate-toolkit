@@ -309,7 +309,6 @@ class pofile:
     headerpo.msgid = ['""']
     headeritems = [""]
     headeritems.append("Project-Id-Version: PACKAGE VERSION\\n")
-    headeritems.append("POT-Creation-Date: 2002-07-15 17:13+0100\\n")
     headeritems.append("POT-Creation-Date: " + datetime.datetime.utcnow().strftime("%F %H:%M%z") + "\\n")
     headeritems.append("PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n")
     headeritems.append("Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n")
