@@ -63,7 +63,7 @@ for elementclassname in dir(minidom):
     continue
   elementclass.writexml = writexml
 
-def getElementsByTagName(parent, name):
+def getElementsByTagName(parent, name, dummy=None):
     for node in parent.childNodes:
         if node.nodeType == minidom.Node.ELEMENT_NODE and \
             (name == "*" or node.tagName == name):
@@ -81,6 +81,7 @@ def searchElementsByTagName(parent, name, onlysearch):
             for node in node.searchElementsByTagName(name, onlysearch):
                 yield node
 
+minidom._get_elements_by_tagName_helper = getElementsByTagName
 minidom.Document.getElementsByTagName = getElementsByTagName
 minidom.Node.getElementsByTagName = getElementsByTagName
 minidom.Document.searchElementsByTagName = searchElementsByTagName
