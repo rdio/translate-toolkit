@@ -41,14 +41,13 @@ class TranslationProject:
     self.languagename = self.potree.getlanguagename(self.languagecode)
     self.projectname = self.potree.getprojectname(self.projectcode)
     self.podir = potree.getpodir(languagecode, projectcode)
+    self.pofilenames = potree.getpofiles(languagecode, projectcode)
     checkerclasses = [checks.projectcheckers.get(projectcode, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses)
-    self.pofilenames = []
     self.pofiles = {}
     # TODO: handle pending file caching, re-reading if newer, etc
     self.pendingfiles = {}
     self.stats = {}
-    os.path.walk(self.podir, self.addfiles, None)
     self.initstatscache()
 
   def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
@@ -202,14 +201,6 @@ class TranslationProject:
     except IOError:
       pass
     return self.stats[pofilename]
-
-  def addfiles(self, dummy, dirname, fnames):
-    """adds the files to the set of files for this project"""
-    basedirname = dirname.replace(self.podir, "")
-    while basedirname.startswith(os.sep):
-      basedirname = basedirname.replace(os.sep, "", 1)
-    ponames = [fname for fname in fnames if fname.endswith(os.extsep+"po")]
-    self.pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
 
   def getpofile(self, pofilename):
     """parses the file into a pofile object and stores in self.pofiles"""
@@ -467,7 +458,7 @@ class POTree:
     return getattr(projectprefs, "fullname", projectcode)
 
   def getpodir(self, languagecode, projectcode):
-    """returns the full name of the project"""
+    """returns the base directory containing po files for the project"""
     for searchname, search in self.directories.iteritems():
       if isinstance(search, (str, unicode)):
         directoryname = search.replace("$project", projectcode).replace("$language", languagecode)
@@ -483,6 +474,20 @@ class POTree:
       if os.path.exists(directoryname):
         return directoryname
     raise IndexError("directory not found for language %s, project %s" % (languagecode, projectcode))
+
+  def getpofiles(self, languagecode, projectcode):
+    """returns a list of po files for the project and language"""
+    pofilenames = []
+    def addfiles(podir, dirname, fnames):
+      """adds the files to the set of files for this project"""
+      basedirname = dirname.replace(podir, "")
+      while basedirname.startswith(os.sep):
+        basedirname = basedirname.replace(os.sep, "", 1)
+      ponames = [fname for fname in fnames if fname.endswith(os.extsep+"po")]
+      pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
+    podir = self.getpodir(languagecode, projectcode)
+    os.path.walk(podir, addfiles, podir)
+    return pofilenames
 
   def refreshstats(self):
     """manually refreshes all the stats files"""
