@@ -56,6 +56,6 @@ class ProjectIndex(pagelayout.PootlePage):
     numfiles = len(translationproject.pofilenames)
     translated, total = translationproject.calculatestats()
     percentfinished = (translated*100/total)
-    stats = widgets.Division("%d files, %d strings, %d%% translated" % (numfiles, total, percentfinished), None, {"class":"posted"})
+    stats = widgets.Division("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished), None, {"class":"posted"})
     return widgets.Division([body, stats], None, {"class":"item"})
 

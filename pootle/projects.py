@@ -163,6 +163,7 @@ class TranslationProject:
     """receives a new translation that has been submitted..."""
     pofile = self.getpofile(pofilename)
     pofile.transelements[item].msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
+    del self.stats[pofilename]
     self.savefile(pofilename)
 
   def savefile(self, pofilename):
