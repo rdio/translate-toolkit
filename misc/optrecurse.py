@@ -198,7 +198,7 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     else:
       return "%s formats" % (", ".join(formats))
 
-  def isrecursive(self, fileoption):
+  def isrecursive(self, fileoption, filepurpose='input'):
     """checks if fileoption is a recursive file"""
     if fileoption is None:
       return False
@@ -330,8 +330,8 @@ class RecursiveOptionParser(optparse.OptionParser, object):
 
   def recursiveprocess(self, options):
     """recurse through directories and process files"""
-    if self.isrecursive(options.input):
-      if not self.isrecursive(options.output):
+    if self.isrecursive(options.input, 'input') and getattr(options, "allowrecursiveinput", True):
+      if not self.isrecursive(options.output, 'output'):
         try:
           self.warning("Output directory does not exist. Attempting to create")
           os.mkdir(options.output)
@@ -347,8 +347,8 @@ class RecursiveOptionParser(optparse.OptionParser, object):
         options.input = os.path.dirname(options.input)
       else:
         inputfiles = [options.input]
-    options.recursiveoutput = self.isrecursive(options.output)
-    options.recursivetemplate = self.usetemplates and self.isrecursive(options.template)
+    options.recursiveoutput = self.isrecursive(options.output, 'output') and getattr(options, "allowrecursiveoutput", True)
+    options.recursivetemplate = self.usetemplates and self.isrecursive(options.template, 'template') and getattr(options, "allowrecursivetemplate", True)
     self.initprogressbar(inputfiles, options)
     for inputpath in inputfiles:
       try:
