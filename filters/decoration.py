@@ -60,6 +60,13 @@ def ispurepunctuation(str1):
     if c.isalpha(): return 0
   return 1
 
+def isvalidaccelerator(accelerator, ignorelist=[]):
+  """returns whether the given accelerator string is a valid one..."""
+  if len(accelerator) == 0 or accelerator in ignorelist:
+    return 0
+  accelerator = accelerator.replace("_","")
+  return accelerator.isalnum()
+
 def findaccelerators(str1, accelmarker, ignorelist=[]):
   """returns all the accelerators and locations in str1 marked with a given marker"""
   accelerators = []
@@ -74,7 +81,7 @@ def findaccelerators(str1, accelmarker, ignorelist=[]):
       if accelend > len(str1): break
       accelerator = str1[currentpos:accelend]
       currentpos = accelend
-      if len(accelerator) > 0 and accelerator.replace("_","").isalnum() and accelerator not in ignorelist:
+      if isvalidaccelerator(accelerator, ignorelist):
         accelerators.append((accelstart, accelerator))
   return accelerators
 
