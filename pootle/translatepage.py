@@ -160,7 +160,7 @@ class TranslatePage(pagelayout.PootlePage):
       try:
         self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, self.matchnames, self.dirfilter, self.searchtext).next()
       except StopIteration:
-        if self.session.lastitem is None:
+        if self.lastitem is None:
           raise StopIteration("There are no items matching that search")
         else:
           raise StopIteration("You have finished going through the items you selected")

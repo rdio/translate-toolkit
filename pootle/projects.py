@@ -15,8 +15,6 @@ class TranslationSession:
   def __init__(self, project, session):
     self.session = session
     self.project = project
-    self.pofilename = None
-    self.lastitem = None
 
   def receivetranslation(self, pofilename, item, trans, issuggestion):
     """submits a new/changed translation from the user"""
@@ -24,13 +22,10 @@ class TranslationSession:
       self.project.suggesttranslation(pofilename, item, trans)
     else:
       self.project.updatetranslation(pofilename, item, trans)
-    self.pofilename = pofilename
-    self.lastitem = item
 
   def skiptranslation(self, pofilename, item):
     """skips a declined translation from the user"""
-    self.pofilename = pofilename
-    self.lastitem = item
+    pass
 
 class pootlefile(po.pofile):
   """this represents a pootle-managed .po file and its associated files"""
@@ -149,7 +144,6 @@ class pootlefile(po.pofile):
     thepo = self.transelements[item]
     thepo.msgstr = newmsgstr
     thepo.markfuzzy(False)
-    # TODO: recalculate stats
     self.savepofile()
     self.reclassifyelement(item)
 
