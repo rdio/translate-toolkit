@@ -26,6 +26,14 @@ from translate.filters import decoration
 
 # filters that the string is passed through before certain tests:
 
+def removekdecomments(str1):
+  lines = str1.split("\n")
+  for linenum in range(len(lines)):
+    line = lines[linenum]
+    if line.startswith("_:"):
+      lines[linenum] = ""
+  return "\n".join(lines)
+
 ignoreaccelerators = []
 
 def filteraccelerators(accelmarker):
