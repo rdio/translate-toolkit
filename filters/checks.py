@@ -328,6 +328,13 @@ class KdeChecker(StandardChecker):
       **kwargs
       )
 
+projectcheckers = {
+  "openoffice": OpenOfficeChecker,
+  "mozilla": MozillaChecker,
+  "kde": KdeChecker,
+  "gnome": GnomeChecker
+  }
+
 def runtests(str1, str2, ignorelist=()):
   """verifies that the tests pass for a pair of strings"""
   checker = StandardChecker(excludefilters=ignorelist)
