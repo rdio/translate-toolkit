@@ -124,7 +124,7 @@ class OptionalLoginAppServer(server.LoginAppServer):
       displaymessage = "Account created. You will be emailed login details and an activation code. Please enter your activation code on the <a href='%s'>activation page</a>. " % redirecturl
       if activationlink:
         displaymessage += "(Or simply click on the activation link in the email)"
-    self.saveuserprefs(session.loginchecker.users)
+    session.saveprefs()
     message += "Your user name is: %s\n" % username
     if password.strip():
       message += "Your password is: %s\n" % password
@@ -166,7 +166,7 @@ class OptionalLoginAppServer(server.LoginAppServer):
         correctcode = getattr(usernode, "activationcode", "")
         if correctcode and correctcode.strip().lower() == activationcode.strip().lower():
           setattr(usernode, "activated", 1)
-          self.saveuserprefs(session.loginchecker.users)
+          session.saveprefs()
           redirecttext = pagelayout.IntroText("Your account has been activated! Redirecting to login...")
           redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
           redirectpage.attribs["refresh"] = 10
@@ -199,10 +199,27 @@ class PootleSession(session.LoginSession):
     if isinstance(userprojects, (str, unicode)):
       userprojects = [userprojects]
     setattr(userprefs, "projects", ",".join(userprojects))
+    userlanguages = argdict.get("languages", [])
+    if isinstance(userlanguages, (str, unicode)):
+      userlanguages = [userlanguages]
+    setattr(userprefs, "languages", ",".join(userlanguages))
+    self.saveprefs()
 
   def getprojects(self):
-    """gets the users projects"""
+    """gets the user's projects"""
     userprefs = self.getprefs()
     userprojects = getattr(userprefs, "projects", "")
     return userprojects.split(",")
+
+  def getlanguages(self):
+    """gets the user's languages"""
+    userprefs = self.getprefs()
+    userlanguages = getattr(userprefs, "languages", "")
+    return userlanguages.split(",")
+
+  def saveprefs(self):
+    """saves changed preferences back to disk"""
+    # TODO: this is a hack, fix it up nicely :-)
+    prefsfile = self.loginchecker.users.__root__.__dict__["_setvalue"].im_self
+    prefsfile.savefile()
 

@@ -55,7 +55,9 @@ class UserIndex(pagelayout.PootlePage):
     self.session = session
     self.localize = session.localize
     submitbutton = widgets.Input({"type":"submit", "name":"changeoptions", "value":"Submit"})
-    useroptions = widgets.Form([self.getprojectoptions(), submitbutton], {"name": "useroptions", "action":""})
+    hiddenfields = widgets.HiddenFieldList([("allowmultikey","languages"), ("allowmultikey","projects")])
+    formmembers = [self.getprojectoptions(), self.getlanguageoptions(), hiddenfields, submitbutton]
+    useroptions = widgets.Form(formmembers, {"name": "useroptions", "action":""})
     contents = [useroptions]
     pagelayout.PootlePage.__init__(self, self.localize("User Page for: %s") % session.username, contents, session)
 
@@ -67,10 +69,21 @@ class UserIndex(pagelayout.PootlePage):
     for projectcode in self.potree.getprojectcodes():
       projectname = self.potree.getprojectname(projectcode)
       projectoptions.append((projectcode, projectname))
-      projectdescription = self.potree.getprojectdescription(projectcode)
     projectselect = widgets.MultiSelect({"value": userprojects, "name": "projects"}, projectoptions)
     bodydescription = pagelayout.ItemDescription([projectselect, widgets.HiddenFieldList({"allowmultikey":"projects"})])
     return pagelayout.Contents([projectstitle, bodydescription])
+
+  def getlanguageoptions(self):
+    """gets the links to the languages"""
+    languagestitle = widgets.ContentWidget('h3', self.localize("My Projects"), {"class":"title"})
+    languageoptions = []
+    userlanguages = self.session.getlanguages()
+    for languagecode in self.potree.getlanguagecodes():
+      languagename = self.potree.getlanguagename(languagecode)
+      languageoptions.append((languagecode, languagename))
+    languageselect = widgets.MultiSelect({"value": userlanguages, "name": "languages"}, languageoptions)
+    bodydescription = pagelayout.ItemDescription(languageselect)
+    return pagelayout.Contents([languagestitle, bodydescription])
 
 class ProjectsIndex(PootleIndex):
   """the list of projects"""

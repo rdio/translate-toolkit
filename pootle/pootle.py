@@ -22,12 +22,6 @@ class PootleServer(users.OptionalLoginAppServer):
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.potree = projects.POTree(self.instance)
 
-  def saveuserprefs(self, users):
-    """saves changed preferences back to disk"""
-    # TODO: this is a hack, fix it up nicely :-)
-    prefsfile = users.__root__.__dict__["_setvalue"].im_self
-    prefsfile.savefile()
-
   def refreshstats(self):
     """refreshes all the available statistics..."""
     self.potree.refreshstats()
