@@ -25,6 +25,12 @@ csv2po
 oo2po / po2oo
   fix problem with OOO_VENDOR and \" quoting in offmgr.po (see help - about)
   make oo output order the same as in input file...
+  ? remove the comment before msgid, treat all msgids as duplicated, thus inserting _: <comment>\n in msgid
+
+pot2po discussion with pavel:
+  pot2po should be as simple as using pot as one arg and po as the second ;-)
+  pot2po pot po -t po warns me for every file: pot2po: warning: writing to temporary output...
+  pot2po pot po -t po does not merge existing translations from old POs that have more then one comment and thus are duplicated in the new POs
 
 docs
   not sure where else to put this!
