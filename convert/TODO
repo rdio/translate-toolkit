@@ -1,0 +1,14 @@
+--update option
+  make recursive methods only run if input is newer than output
+mozilla - automate
+  unpackxpi
+  convert to .po files
+    * make it handle already translated languages well
+  convert back
+  repackxpi
+mozilla - migrate from one version to another
+add openoffice conversion
+
+make po files of all existing translations
+take over the world
+

@@ -90,6 +90,7 @@ if __name__ == '__main__':
     import optparse
   except ImportError:
     from translate.misc import optparse
+  # TODO: add ability to import translations from another directory
   parser = optparse.OptionParser(usage="%prog [-i|--input-dir inputdir] [-o|--output-dir outputdir]")
   parser.add_option("-i", "--input-dir", dest="inputdir", default=None,
                     help="read from inputdir in "+", ".join(inputformats)+" formats", metavar="inputdir")
