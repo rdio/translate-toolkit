@@ -718,6 +718,27 @@ class POTree:
     self.directories = instance.directories
     self.projectcache = {}
 
+  def saveprefs(self):
+    """saves any changes made to the preferences"""
+    # TODO: this is a hack, fix it up nicely :-)
+    prefsfile = self.languages.__root__.__dict__["_setvalue"].im_self
+    prefsfile.savefile()
+
+  def changelanguages(self, argdict):
+    """changes language entries"""
+    for key, value in argdict.iteritems():
+      if key.startswith("languageremove-"):
+        languagecode = key.replace("languageremove-", "", 1)
+        if self.haslanguage(languagecode):
+          raise NotImplementedError("Can't remove languages")
+      elif key.startswith("languagename-"):
+        languagecode = key.replace("languagename-", "", 1)
+        if self.haslanguage(languagecode):
+          languagename = self.getlanguagename(languagecode)
+          if languagename != value:
+            self.setlanguagename(languagecode, value)
+    self.saveprefs()
+
   def haslanguage(self, languagecode):
     """checks if this language exists"""
     return hasattr(self.languages, languagecode)
@@ -729,6 +750,10 @@ class POTree:
   def getlanguagename(self, languagecode):
     """returns the language's full name"""
     return getattr(self.getlanguageprefs(languagecode), "fullname", languagecode)
+
+  def setlanguagename(self, languagecode, languagename):
+    """returns the language's full name"""
+    setattr(self.getlanguageprefs(languagecode), "fullname", languagename)
 
   def getlanguagecodes(self, projectcode=None):
     """returns a list of valid languagecodes for a given project or all projects"""

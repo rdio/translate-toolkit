@@ -90,6 +90,24 @@ class PootleServer(users.OptionalLoginAppServer):
         if "changeoptions" in argdict:
           session.setoptions(argdict)
         return indexpage.UserOptions(self.potree, session)
+    elif top == "admin":
+      pathwords = pathwords[1:]
+      if pathwords:
+        top = pathwords[0]
+      else:
+        top = ""
+      if not session.isopen:
+        redirecttext = pagelayout.IntroText("Redirecting to login...")
+        redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
+        return server.Redirect("../login.html", withpage=redirectpage)
+      if not session.issiteadmin():
+        redirecttext = pagelayout.IntroText(self.localize("You do not have the rights to administer pootle."))
+        redirectpage = pagelayout.PootlePage("Redirecting to home...", redirecttext, session)
+        return server.Redirect("../index.html", withpage=redirectpage)
+      if not top or top == "index.html":
+        if "changelanguages" in argdict:
+          self.potree.changelanguages(argdict)
+        return indexpage.AdminPage(self.potree, session)
     elif self.potree.haslanguage(top):
       languagecode = top
       pathwords = pathwords[1:]

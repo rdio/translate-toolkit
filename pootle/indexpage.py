@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from jToolkit.widgets import widgets
+from jToolkit.widgets import table
 from translate.pootle import pagelayout
 import os
 
@@ -73,7 +74,7 @@ class UserIndex(pagelayout.PootlePage):
     optionslink = pagelayout.IntroText(widgets.Link("options.html", self.localize("Change options")))
     contents = [self.getquicklinks(), optionslink]
     if session.issiteadmin():
-      adminlink = pagelayout.IntroText(widgets.Link("admin.html", self.localize("Admin page")))
+      adminlink = pagelayout.IntroText(widgets.Link("../admin/", self.localize("Admin page")))
       contents.append(adminlink)
     pagelayout.PootlePage.__init__(self, self.localize("User Page for: %s") % session.username, contents, session)
 
@@ -101,7 +102,7 @@ class UserOptions(pagelayout.PootlePage):
     self.potree = potree
     self.session = session
     self.localize = session.localize
-    submitbutton = widgets.Input({"type":"submit", "name":"changeoptions", "value":"Submit"})
+    submitbutton = widgets.Input({"type":"submit", "name":"changeoptions", "value": self.localize("Save changes")})
     hiddenfields = widgets.HiddenFieldList([("allowmultikey","languages"), ("allowmultikey","projects")])
     formmembers = [self.getprojectoptions(), self.getlanguageoptions(), hiddenfields, submitbutton]
     useroptions = widgets.Form(formmembers, {"name": "useroptions", "action":""})
@@ -132,6 +133,48 @@ class UserOptions(pagelayout.PootlePage):
     languageselect = widgets.MultiSelect({"value": userlanguages, "name": "languages"}, languageoptions)
     bodydescription = pagelayout.ItemDescription(languageselect)
     return pagelayout.Contents([languagestitle, bodydescription])
+
+class AdminPage(pagelayout.PootlePage):
+  """page for administering pootle..."""
+  def __init__(self, potree, session):
+    self.potree = potree
+    self.session = session
+    self.localize = session.localize
+    if self.session.issiteadmin():
+      indexlink = pagelayout.IntroText(widgets.Link("../home/", self.localize("Home page")))
+      contents = [indexlink, self.getlanguages(), self.getprojects()]
+    else:
+      contents = pagelayout.IntroText(self.localize("You do not have the rights to administer pootle."))
+    pagelayout.PootlePage.__init__(self, self.localize("Pootle Admin Page"), contents, session)
+
+  def getlanguages(self):
+    """gets the links to the languages"""
+    languagestitle = pagelayout.Title(self.localize('Languages'))
+    languages = table.TableLayout()
+    for languagecode in self.potree.getlanguagecodes():
+      languagename = self.potree.getlanguagename(languagecode)
+      nametextbox = widgets.Input({"name": "languagename-%s" % languagecode, "value": languagename})
+      removecheckbox = widgets.Input({"name": "languageremove-%s" % languagecode, "type": "checkbox"})
+      rownum = languages.maxrownum()+1
+      languages.setcell(rownum, 0, table.TableCell(languagecode))
+      languages.setcell(rownum, 1, table.TableCell(nametextbox))
+      languages.setcell(rownum, 2, table.TableCell([removecheckbox, "Remove %s" % languagecode]))
+    submitbutton = widgets.Input({"type":"submit", "name":"changelanguages", "value":self.localize("Save changes")})
+    languageform = widgets.Form([languages, submitbutton], {"name": "languages", "action":""})
+    return pagelayout.Contents([languagestitle, languageform])
+
+  def getprojects(self):
+    """gets the links to the projects"""
+    projectstitle = pagelayout.Title(self.localize("Projects"))
+    projects = []
+    for projectcode in self.potree.getprojectcodes():
+      projectname = self.potree.getprojectname(projectcode)
+      projectdescription = self.potree.getprojectdescription(projectcode)
+      project = pagelayout.ItemDescription("<strong>%s</strong>" % projectcode)
+      projects.append(project)
+    listwidget = widgets.SeparatedList(projects, "<br/>")
+    bodydescription = pagelayout.ItemDescription(listwidget)
+    return pagelayout.Contents([projectstitle, bodydescription])
 
 class ProjectsIndex(PootleIndex):
   """the list of projects"""
