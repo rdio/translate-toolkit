@@ -41,8 +41,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     optparse.OptionParser.__init__(self, version="%prog "+__version__.ver)
     self.usepots = usepots
     self.setprogressoptions()
-    if self.usepots:
-      self.setpotoption(inputformats, outputformats)
+    self.setpotoption()
     self.setinputformats(inputformats)
     self.setoutputformats(outputformats)
     self.settemplatehandling(usetemplates, templateslikeinput)
@@ -121,18 +120,11 @@ class ConvertOptionParser(optparse.OptionParser, object):
                       help="set progress type to one of %s" % (", ".join(self.progresstypes)))
     self.define_option(progressoption)
 
-  def setpotoption(self, inputformats, outputformats):
+  def setpotoption(self):
     """sets the -P/--pot option depending on input/output formats etc"""
     if self.usepots:
-      if "po" in inputformats:
-        potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
-                                   help="use PO template files (.pot) as input")
-      elif "po" in outputformats:
-        potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
-                                   help="use PO template files (.pot) in output")
-      else:
-        potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
-                                   help="use PO template files (.pot)")
+      potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
+                                 help="use PO template files (.pot) rather than PO files (.po)")
       self.define_option(potoption)
 
   def getformathelp(self, formats):
