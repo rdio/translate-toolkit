@@ -113,12 +113,15 @@ moz2po, po2moz - convert from a Mozilla XPI file and PO.  Including unpacking
 txt2po, po2txt - convert simple text files to PO
 sxw2po - convert OpenOffice.org Writer files to PO
 csv2po, po2csv - convert PO format to CSV for editing in a spreadsheet program
+ts2po, po2ts - convert Qt Linguist (.ts) files to PO
+html2po - convert HTML to PO (beta)
+pot2po - PO file initialiser
 
 * Tools
 pomerge - merge corrected translations from pofilter back into your existing
 	PO files.
 pogrep - find words in PO files
-pofilter - run any of the 25 checks on your PO files
+pofilter - run any of the 28 checks on your PO files
 podebug - Create comment in your PO files' msgstr which can then be used to quickly track down
 	mistranslations as the comments appear in the application.
 
