@@ -45,6 +45,7 @@ class SetupIndex(sparse.SimpleParser):
       tokennum = self.parsesection(tokennum)
     self.languagename = sparse.stringeval(self.getfieldvalue('gid_Dir_Config_Language', 'HostName'))
     self.isocode = sparse.stringeval(self.getfieldvalue('gid_Dir_Share_Registry_Res_Lang', 'HostName'))
+    self.dialingcode = sparse.stringeval(self.getfieldvalue('gid_Installation', 'DefaultLanguage'))
 
   def parsesection(self, tokennum):
     sectiontype = self.tokens[tokennum]
@@ -181,7 +182,6 @@ class SetupIndex(sparse.SimpleParser):
         hostname = sparse.stringeval(hostname)
         if hostname == self.languagename or hostname == self.isocode:
           directoriestorename[directory] = 1
-          print "renaming ", directory, hostname, self.languagename, self.isocode
         parentid = index.getfieldvalue(directory, 'ParentID')
         if parentid not in index.directorychildren:
           index.directorychildren[parentid] = [directory]
@@ -226,6 +226,16 @@ class SetupIndex(sparse.SimpleParser):
           if directory in index.directoryfiles:
             for fileentry in index.directoryfiles[directory]:
               self.addforeignfile(index, fileentry, suffix)
+      for fileentry in index.bytype["File"]:
+        filename = sparse.stringeval(index.getfieldvalue(fileentry, 'Name'))
+        # handle resource files
+        if filename.endswith("%s.res" % index.dialingcode):
+          suffix = "_" + index.isocode
+          index.rename(fileentry, fileentry + suffix)
+          packedname = sparse.stringeval(index.getfieldvalue(fileentry, "PackedName"))
+          index.setfieldvalue(fileentry, "PackedName", '"%s"' % (packedname + suffix))
+          if index != self:
+            self.addforeignfile(index, fileentry, suffix)
 
   def addforeignfile(self, index, fileentry, suffix):
     """adds the foreign file entry and updates the modules list..."""
