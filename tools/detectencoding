@@ -265,6 +265,40 @@ class detector:
     fuzzyword += '.'
     return ' '.join(fuzzyword.split())[1:-1]
 
+  def updatecharmap(self, charmap, word, dictword, ignoremap):
+    """updates the given charmap with the changes from word to dictword (using ignoremap)"""
+    if word != dictword:
+      wordparts = word.translate(ignoremap).split()
+      dictparts = dictword.translate(ignoremap).split()
+      for wordpart, dictpart in zip(wordparts, dictparts):
+        if wordpart != dictpart:
+          if wordpart not in charmap:
+            charmap[wordpart] = {}
+          transmap = charmap[wordpart]
+          if dictpart in transmap:
+            transmap[dictpart] += 1
+          else:
+            transmap[dictpart] = 1
+
+  def writescript(self, charmap, encoding):
+    """writes a script to a file that replaces chars in a po file as defined by charmap"""
+    scriptfile = open(self.options.outputscript, 'w')
+    scriptfile.write("# created by translate.tools.detectencoding\n")
+    scriptfile.write("from translate.convert import poreplace\n")
+    scriptfile.write("class pocharmap(poreplace.poreplace):\n")
+    scriptfile.write("  def convertstring(self, postr):\n")
+    scriptfile.write("    postr = postr.decode(%r)\n" % encoding)
+    for wordpart, transmap in charmap.iteritems():
+      # only handle exact matches...
+      if len(transmap) == 1:
+        dictpart, count = transmap.items()[0]
+        scriptfile.write("    postr = postr.replace(%r, %r)\n" % (wordpart, dictpart))
+    scriptfile.write("    postr = postr.encode(%r)\n" % encoding)
+    scriptfile.write("    return postr\n")
+    scriptfile.write("if __name__ == '__main__':\n")
+    scriptfile.write("  poreplace.main(pocharmap)\n")
+    scriptfile.close()
+
   def fuzzywordmatch(self, encoding):
     """does fuzzy word match for given encoding, and shows correspondence to dict"""
     ignoremap = {}
@@ -294,36 +328,19 @@ class detector:
           if self.options.verbose:
             if (not self.options.unique) or (word not in uniquewordsfound):
               print repr(word), repr(fuzzyword), repr(dictword)
+          self.updatecharmap(charmap, word, dictword, ignoremap)
           uniquewordsfound[word] = fuzzyword
-          if word != dictword:
-            wordparts = word.translate(ignoremap).split()
-            dictparts = dictword.translate(ignoremap).split()
-            for wordpart, dictpart in zip(wordparts, dictparts):
-              if wordpart != dictpart:
-                if wordpart not in charmap:
-                  charmap[wordpart] = {}
-                transmap = charmap[wordpart]
-                if dictpart in transmap:
-                  transmap[dictpart] += 1
-                else:
-                  transmap[dictpart] = 1
     if options.unique:
       print "fuzzy match on encoding %s produced %d unique words" % (encoding, len(uniquewordsfound))
     else:
       print "fuzzy match on encoding %s produced %d words" % (encoding, wordsfound)
     if options.outputscript:
-      scriptfile = open(options.outputscript, 'w')
-      scriptfile.write("from translate.convert import poreplace\n")
-      scriptfile.write("class pocharmap(poreplace.poreplace):\n")
-      scriptfile.write("  def convertstring(self, postr):\n")
-      scriptfile.write("    postr = postr.decode(%r)\n" % encoding)
+      self.writescript(charmap, encoding)
     for wordpart, transmap in charmap.iteritems():
       if len(transmap) == 1:
         dictpart, count = transmap.items()[0]
         print "char %r in translations always found to match char %r in dict (%d times)" % \
               (wordpart, dictpart, count)
-        if options.outputscript:
-          scriptfile.write("    postr = postr.replace(%r, %r)\n" % (wordpart, dictpart))
       else:
         counts = [(count, dictpart) for dictpart, count in transmap.iteritems()]
         counts.sort()
@@ -332,12 +349,6 @@ class detector:
         for dictpart in dictparts:
           count = transmap[dictpart]
           print "  %r: %d" % (dictpart, count)
-    if options.outputscript:
-      scriptfile.write("    postr = postr.encode(%r)\n" % encoding)
-      scriptfile.write("    return postr\n")
-      scriptfile.write("if __name__ == '__main__':\n")
-      scriptfile.write("  poreplace.main(pocharmap)\n")
-      scriptfile.close()
 
 if __name__ == '__main__':
   try:
