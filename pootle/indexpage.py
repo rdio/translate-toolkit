@@ -310,7 +310,7 @@ class ProjectIndex(pagelayout.PootlePage):
       if not goalfile:
         raise ValueError("cannot add goal, no filename given")
       # TODO: check that its a valid goalname (alphanumeric etc)
-      self.project.addfiletogoal(goalname.strip(), goalfile)
+      self.project.addfiletogoal(goalname.strip(), goalfile, True)
       del self.argdict["dosetgoal"]
 
   def getboolarg(self, argname, default=False):

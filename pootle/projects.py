@@ -153,17 +153,40 @@ class TranslationProject:
       return goalfiles
     return []
 
-  def addfiletogoal(self, goalname, filename):
+  def getfilegoals(self, filename):
+    """gets the goals the given file is part of"""
+    goals = getattr(self.prefs, "goals", {})
+    filegoals = []
+    for goalname, goalnode in goals.iteritems():
+      goalfiles = getattr(goalnode, "files", "")
+      goalfiles = [goalfile.strip() for goalfile in goalfiles.split(",") if goalfile.strip()]
+      if filename in goalfiles:
+        filegoals.append(goalname)
+    return filegoals
+
+  def addfiletogoal(self, goalname, filename, exclusive=False):
     """adds the given file to the goal"""
+    if exclusive:
+      filegoals = self.getfilegoals(filename)
+      for othergoalname in filegoals:
+        if othergoalname != goalname:
+          self.removefilefromgoal(othergoalname, filename)
     goalfiles = self.getgoalfiles(goalname)
     if filename not in goalfiles:
       goalfiles.append(filename)
       self.setgoal(goalname, goalfiles)
 
+  def removefilefromgoal(self, goalname, filename):
+    """removes the given file from the goal"""
+    goalfiles = self.getgoalfiles(goalname)
+    if filename in goalfiles:
+      goalfiles.remove(filename)
+      self.setgoal(goalname, goalfiles)
+
   def setgoal(self, goalname, goalfiles):
     """sets the goalfiles for the given goalname"""
     if isinstance(goalfiles, list):
-      goalfiles = [goalfile.strip() for goalfile in goalfiles() if goalfile.strip()]
+      goalfiles = [goalfile.strip() for goalfile in goalfiles if goalfile.strip()]
       goalfiles = ", ".join(goalfiles)
     if not hasattr(self.prefs, "goals"):
       self.prefs.goals = prefs.PrefNode(self.prefs, "goals")
