@@ -316,6 +316,9 @@ class ProjectIndex(pagelayout.PootlePage):
     self.showchecks = argdict.get("showchecks", 0)
     if isinstance(self.showchecks, (str, unicode)) and self.showchecks.isdigit():
       self.showchecks = int(self.showchecks)
+    self.showassigns = argdict.get("showassigns", 0)
+    if isinstance(self.showassigns, (str, unicode)) and self.showassigns.isdigit():
+      self.showassigns = int(self.showassigns)
     message = argdict.get("message", "")
     if message:
       message = pagelayout.IntroText(message)
@@ -330,7 +333,7 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       pofilenames = self.project.browsefiles(dirfilter)
       projectstats = self.project.calculatestats(pofilenames)
-      actionlinks = self.getactionlinks("", projectstats, ["review", "check", "quick", "all"])
+      actionlinks = self.getactionlinks("", projectstats, ["review", "check", "assign", "quick", "all"])
       actionlinks = pagelayout.ActionLinks(actionlinks)
       mainstats = self.getitemstats("", projectstats, len(pofilenames))
       mainicon = pagelayout.Icon("folder.png")
@@ -446,6 +449,12 @@ class ProjectIndex(pagelayout.PootlePage):
       else:
         checkslink = widgets.Link(baseindexlink + "&showchecks=1", self.localize("Show Checks"))
       actionlinks.append(checkslink)
+    if "assign" in linksrequired and "translate" in self.rights:
+      if self.showassigns:
+        assignslink = widgets.Link(baseindexlink + "&showassigns=0", self.localize("Hide Assigns"))
+      else:
+        assignslink = widgets.Link(baseindexlink + "&showassigns=1", self.localize("Show Assigns"))
+      actionlinks.append(assignslink)
     if "review" in linksrequired and projectstats.get("has-suggestion", 0):
       if "review" in self.rights:
         reviewlink = self.localize("Review Suggestions")
@@ -480,6 +489,13 @@ class ProjectIndex(pagelayout.PootlePage):
         checklinkbase = basename + "?translate=1"
       statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, checklinkbase))
       statssummary += "<br/>" + statsdetails
+    if total and self.showassigns:
+      if not basename or basename.endswith("/"):
+        assignlinkbase = basename + "translate.html?"
+      else:
+        assignlinkbase = basename + "?translate=1"
+      statsdetails = "<br/>\n".join(self.getassigndetails(projectstats, assignlinkbase))
+      statssummary += "<br/>" + statsdetails
     return pagelayout.ItemStatistics(statssummary)
 
   def getcheckdetails(self, projectstats, checklinkbase):
@@ -493,4 +509,16 @@ class ProjectIndex(pagelayout.PootlePage):
         checklink = "<a href='%s&%s=1'>%s</a>" % (checklinkbase, checkname, checkname)
         stats = self.localize("%d strings (%d%%) failed") % (checkcount, (checkcount * 100 / total))
         yield "%s: %s" % (checklink, stats)
+
+  def getassigndetails(self, projectstats, assignlinkbase):
+    """return a list of strings describing the assigned strings"""
+    total = max(projectstats.get("total", 0), 1)
+    for assignname, assigncount in projectstats.iteritems():
+      if not assignname.startswith("assign-"):
+        continue
+      assignname = assignname.replace("assign-", "", 1)
+      if total and assigncount:
+        assignlink = "<a href='%s&assignedto=%s'>%s</a>" % (assignlinkbase, assignname, assignname)
+        stats = self.localize("%d strings (%d%%) assigned") % (assigncount, (assigncount * 100 / total))
+        yield "%s: %s" % (assignlink, stats)
 

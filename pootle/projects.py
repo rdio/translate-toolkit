@@ -682,12 +682,26 @@ class TranslationProject:
       postats = self.getpostats(pofilename)
       for name, count in postats.iteritems():
         totalstats[name] = totalstats.get(name, 0) + count
+      assignstats = self.getassignstats(pofilename)
+      for name, count in assignstats.iteritems():
+        totalstats["assign-"+name] = totalstats.get("assign-"+name, 0) + count
     return totalstats
 
   def getpostats(self, pofilename):
     """calculates translation statistics for the given po file"""
     return self.pofiles[pofilename].getstats()
 
+  def getassignstats(self, pofilename):
+    """calculates translation statistics for the given po file"""
+    assigns = self.pofiles[pofilename].getassigns()
+    assignstats = {}
+    for username, userassigns in assigns.iteritems():
+      count = 0
+      for action, items in userassigns.iteritems():
+        count += len(items)
+      assignstats[username] = count
+    return assignstats
+ 
   def getpofile(self, pofilename):
     """parses the file into a pofile object and stores in self.pofiles"""
     pofile = self.pofiles[pofilename]
