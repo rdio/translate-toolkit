@@ -232,6 +232,6 @@ if __name__ == '__main__':
   # open the appropriate files
   try:
     handleoptions(options)
-  except optparse.OptParseError, message:
+  except convert.optparse.OptParseError, message:
     parser.error(message)
 
