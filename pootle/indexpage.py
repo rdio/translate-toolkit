@@ -91,7 +91,7 @@ class UserIndex(pagelayout.PootlePage):
         if self.potree.hasproject(languagecode, projectcode):
           projectname = self.potree.getprojectname(projectcode)
           projecturl = "../%s/%s/" % (languagecode, projectcode)
-          projecttitle = self.localize("%s %s" % (languagename, projectname))
+          projecttitle = self.localize("%s %s") % (languagename, projectname)
           languagelinks.append([widgets.Link(projecturl, projecttitle), "<br/>"])
       quicklinks.append(pagelayout.ItemDescription(languagelinks))
     if not quicklinks:
@@ -221,9 +221,11 @@ class AdminPage(pagelayout.PootlePage):
     codetextbox = widgets.Input({"name": "newprojectcode", "value": "", "size": 6})
     nametextbox = widgets.Input({"name": "newprojectname", "value": self.localize("(add project here)")})
     descriptiontextbox = widgets.Input({"name": "newprojectdescription", "value": ""})
+    checkerstylecheckbox = widgets.Input({"name": "projectcheckerstyle", "value": ""})
     projects.setcell(rownum, 0, table.TableCell(codetextbox))
     projects.setcell(rownum, 1, table.TableCell(nametextbox))
     projects.setcell(rownum, 2, table.TableCell(descriptiontextbox))
+    projects.setcell(rownum, 3, table.TableCell(checkerstylecheckbox))
     submitbutton = widgets.Input({"type":"submit", "name":"changeprojects", "value":self.localize("Save changes")})
     projectform = widgets.Form([projects, submitbutton], {"name": "projects", "action":""})
     return pagelayout.Contents([projectstitle, projectform])
