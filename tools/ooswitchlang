@@ -5,6 +5,7 @@ import os
 import ConfigParser
 import urlparse
 import urllib
+import operator
 from translate.misc import xmlwrapper
 
 availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'zu': 'Zulu'}
@@ -137,6 +138,11 @@ class ooinstallmanager(ConfigParser.RawConfigParser):
     if scheme.lower() != 'file' or location.lower() not in ('', 'localhost'):
       raise ValueError("unable to handle non-local installation location: %s" % versionurl)
     elif not os.path.isdir(path):
+      # different-to-expected number of slashes cause problems on Windows
+      if path.startswith(os.sep):
+        path = path.replace(os.sep, '', 1)
+        if os.path.isdir(path):
+          return path
       raise ValueError("could not find install directory: %s" % path)
     return path
       
@@ -202,9 +208,11 @@ class LanguageSelectionWindow(wx.Frame):
     """Tries to find the current installation"""
     currentdir = os.getcwd()
     currentdir = os.path.normcase(os.path.normpath(currentdir))
+    # if we don't have os.path.samefile, just check if the paths are equal
+    samefile = getattr(os.path, 'samefile', operator.eq)
     # see if the current directory is in one of the described versions
     for versionname, versiondir in self.versions.iteritems():
-      if os.path.samefile(versiondir, currentdir):
+      if samefile(versiondir, currentdir):
         self.versionchoice.SetStringSelection(versionname)
         self.setinstalldir(versiondir)
         return
