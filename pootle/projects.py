@@ -5,7 +5,7 @@
 from translate.storage import po
 from translate.misc import quote
 from translate.filters import checks
-from translate.convert import po2csvmod
+from translate.convert import po2csv
 import os
 
 class TranslationSession:
@@ -185,6 +185,7 @@ class TranslationProject:
     """calculates translation statistics for the given po file"""
     if pofilename in self.stats:
       return self.stats[pofilename]
+    # print "creating stats for",pofilename
     pofile = self.getpofile(pofilename)
     postats = dict([(name, len(items)) for name, items in pofile.classify.iteritems()])
     self.stats[pofilename] = postats
@@ -269,7 +270,7 @@ class TranslationProject:
     """returns pofile as csv"""
     pofilename = csvfilename.replace(".csv", ".po")
     pofile = self.getpofile(pofilename)
-    convertor = po2csvmod.po2csv()
+    convertor = po2csv.po2csv()
     csvfile = convertor.convertfile(pofile)
     lines = csvfile.tolines()
     return "".join(lines)
