@@ -212,6 +212,9 @@ class SetupIndex(sparse.SimpleParser):
         else: newname = directory + "_" + suffix
         index.renamedirectory(directory, newname, suffix)
         if index != self:
+          directorysection = index.definitions[directory]
+          tokenrange = index.getsectiontokenrange(directory)
+          self.insertforeignsection(directory, newname, directorysection, index, tokenrange)
           if directory in index.directoryfiles:
             for fileentry in index.directoryfiles[directory]:
               self.addforeignfile(index, fileentry, suffix)
