@@ -42,7 +42,7 @@ def convertprop(inputfile, outputfile):
 inputformats = {"dtd": convertdtd, "properties": convertprop}
 outputformat = "po"
 
-def recurse(inputdir, outputdir):
+def recurse(inputdir, outputdir, outputformat):
   dirstack = ['']
   while dirstack:
     top = dirstack.pop(-1)
@@ -82,7 +82,10 @@ def handleoptions(options):
     raise optparse.OptionValueError("must specify output directory for recursive run.")
   if not os.path.isdir(options.outputdir):
     raise optparse.OptionValueError("output must be existing directory for recursive run.")
-  recurse(options.inputdir, options.outputdir)
+  if options.pot:
+    global outputformat
+    outputformat = "pot"
+  recurse(options.inputdir, options.outputdir, outputformat)
 
 if __name__ == '__main__':
   # handle command line options
@@ -96,6 +99,8 @@ if __name__ == '__main__':
                     help="read from inputdir in "+", ".join(inputformats)+" formats", metavar="inputdir")
   parser.add_option("-o", "--output-dir", dest="outputdir", default=None,
                     help="write to outputdir in "+outputformat+" format", metavar="outputdir")
+  parser.add_option("-P", "--pot", action="store_true", dest="pot", default=False, \
+                    help="produce PO template (.pot) with blank msgstrs")
   (options, args) = parser.parse_args()
   # recurse the appropriate directories...
   try:
