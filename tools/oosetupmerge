@@ -247,7 +247,10 @@ class SetupIndex(sparse.SimpleParser):
       for configitem in index.bytype["ConfigurationItem"]:
         key = sparse.stringeval(index.getfieldvalue(configitem, 'Key'))
         if configitem == "gid_Configurationitem_Setup_Office_Locales":
-          isocodes = ",".join([eachindex.isocode for eachindex in indexes])
+          # wierdness. the setup program will put in a comma-separated attribute if its all alpha
+          # but if there's a - it won't, so we need to check for this...
+          # TODO: work out a better fix
+          isocodes = ",".join([eachindex.isocode for eachindex in indexes if eachindex.isocode.isalpha()])
           index.setfieldvalue(configitem, "Value", '"%s"' % isocodes)
         if key == index.isocode:
           suffix = self.keymunge("_" + index.isocode)
