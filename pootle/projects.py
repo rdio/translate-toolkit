@@ -46,7 +46,7 @@ class potimecache(timecache.timecache):
       # use the currentfile.pomtime as a timestamp as well, so any modifications will extend its life
       if time.time() - currentfile.pomtime > self.expiryperiod.seconds:
         self.__setitem__(pofilename, pootlefile.pootlefile(self.project, pofilename))
- 
+
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
   def __init__(self, languagecode, projectcode, potree, create=False):
@@ -97,7 +97,7 @@ class TranslationProject:
             ("assign", localize("Assign")),
             ("admin", localize("Administrate")),
            ]
-    
+
   def getrights(self, session=None, username=None):
     """gets the rights for the given user (name or session, or not-logged-in if username is None)"""
     if session is not None and session.isopen:
@@ -125,6 +125,31 @@ class TranslationProject:
     if not hasattr(self.prefs, "rights"):
       self.prefs.rights = prefs.PrefNode(self.prefs, "rights")
     setattr(self.prefs.rights, username, rights)
+    self.saveprefs()
+
+  def getgoals(self):
+    """gets the goals and associated files for the project"""
+    if hasattr(self.prefs, "goals"):
+      goals = self.prefs.goals
+    else:
+      goals = {}
+    goallist = []
+    for goalname, goalnode in goals.iteritems():
+      goalfiles = getattr(goalnode, "files", "")
+      goalfiles = [goalfile.strip() for goalfile in ",".split(goalfiles)]
+      goallist.append((goalname, goalfiles))
+    return goallist
+
+  def setgoal(self, goalname, goalfiles):
+    """sets the goalfiles for the given goalname"""
+    if isinstance(goalfiles, list):
+      goalfiles = ", ".join(goalfiles)
+    if not hasattr(self.prefs, "goals"):
+      self.prefs.goals = prefs.PrefNode(self.prefs, "goals")
+    if not hasattr(self.prefs.goals, goalname):
+      setattr(self.prefs.goals, "goalname", prefs.PrefNode(self.prefs.goals, goalname))
+    goalnode = getattr(self.prefs.goals, "goalname")
+    goalnode.files = goalfiles
     self.saveprefs()
 
   def scanpofiles(self):
@@ -586,7 +611,7 @@ class TranslationProject:
         count += len(items)
       assignstats[username] = count
     return assignstats
- 
+
   def getpofile(self, pofilename):
     """parses the file into a pofile object and stores in self.pofiles"""
     pofile = self.pofiles[pofilename]
