@@ -24,8 +24,15 @@ from translate.storage import po
 from translate.misc import quote
 from translate import __version__
 import os
+import sre
 
 class podebug:
+  def __init__(self, format=None):
+    if format is None:
+      self.format = ""
+    else:
+      self.format = format
+
   def openofficeignore(self, source):
     if source.startswith("Common.xcu#..Common.View.Localisation"):
       return True
@@ -41,23 +48,30 @@ class podebug:
       sourceparts.append(sourcecomment.replace("#:","",1).strip())
     return " ".join(sourceparts)
 
-  def convertelement(self, thepo, filename):
+  def convertelement(self, thepo, prefix):
     source = self.convertsource(thepo)
     if self.openofficeignore(source):
       return thepo
     msgstr = po.getunquotedstr(thepo.msgstr)
     if not msgstr:
       msgstr = po.getunquotedstr(thepo.msgid)
-    msgstr = "[%s] " % filename + msgstr
+    msgstr = prefix + msgstr
     thepo.msgstr = [quote.quotestr(line) for line in msgstr.split('\n')]
     return thepo
 
   def convertfile(self, thepofile):
     filename = self.shrinkfilename(thepofile.filename)
+    prefix = self.format
+    for formatstr in sre.findall("%[a-zA-Z]", self.format):
+      if formatstr.endswith("s"):
+       formatted = self.shrinkfilename(thepofile.filename)
+      elif formatstr.endswith("f"):
+       formatted = thepofile.filename
+      prefix = prefix.replace(formatstr, formatted)
     for thepo in thepofile.poelements:
       if thepo.isheader() or thepo.isblank():
         continue
-      thepo = self.convertelement(thepo, filename)
+      thepo = self.convertelement(thepo, prefix)
     return thepofile
 
   def shrinkfilename(self, filename):
@@ -76,13 +90,13 @@ class podebug:
       baseshrunk = baseshrunk[:baseshrunk.find(".")]
     return dirshrunk + baseshrunk
 
-def convertpo(inputfile, outputfile, templatefile):
+def convertpo(inputfile, outputfile, templatefile, format=None):
   """reads in inputfile using po, changes to have debug strings, writes to outputfile"""
   # note that templatefile is not used, but it is required by the converter...
   inputpo = po.pofile(inputfile)
   if inputpo.isempty():
     return 0
-  convertor = podebug()
+  convertor = podebug(format=format)
   outputpo = convertor.convertfile(inputpo)
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
@@ -92,5 +106,7 @@ def main():
   from translate.convert import convert
   formats = {"po":("po",convertpo)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
+  parser.add_option("-f", "--format", dest="format", default="[%s] ", help="specify format string")
+  parser.passthrough.append("format")
   parser.run()
 
