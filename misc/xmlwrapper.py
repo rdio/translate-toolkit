@@ -23,6 +23,28 @@
 from elementtree import XMLTreeBuilder
 from elementtree import ElementTree
 
+basicfixtag = ElementTree.fixtag
+
+def makefixtagproc(namespacemap):
+  """this constructs an alternative fixtag procedure that will use appropriate names for namespaces..."""
+  def fixtag(tag, namespaces):
+    """given a decorated tag (of the form {uri}tag), return prefixed tag and namespace declaration, if any"""
+    if isinstance(tag, ElementTree.QName):
+      tag = tag.text
+    namespace_uri, tag = tag[1:].split("}", 1)
+    prefix = namespaces.get(namespace_uri)
+    if prefix is None:
+        if namespace_uri in namespacemap:
+          prefix = namespacemap[namespace_uri]
+        else:
+          prefix = "ns%d" % len(namespaces)
+        namespaces[namespace_uri] = prefix
+        xmlns = ("xmlns:%s" % prefix, namespace_uri)
+    else:
+        xmlns = None
+    return "%s:%s" % (prefix, tag), xmlns
+  return fixtag
+
 def splitnamespace(fulltag):
   if '{' in fulltag:
     namespace = fulltag[fulltag.find('{'):fulltag.find('}')+1]
@@ -52,7 +74,7 @@ class XMLWrapper:
         child = tagclass(childobj)
         return child
     raise KeyError("could not find child with tag %r" % searchtag)
-  def getchildren(self, searchtag, tagclass=None):
+  def getchildren(self, searchtag, tagclass=None, excludetags=[]):
     """get all children with the given tag name"""
     if tagclass is None: tagclass=XMLWrapper
     childobjects = []
@@ -69,12 +91,13 @@ class XMLWrapper:
     return self.getchild(searchtag).obj.text
   def getxml(self, encoding=None):
     return ElementTree.tostring(self.obj, encoding)
-  def getplaintext(self):
+  def getplaintext(self, excludetags=[]):
     text = ""
     if self.obj.text != None: text += self.obj.text
     for child in self.obj._children:
       simplechild = XMLWrapper(child)
-      text += simplechild.getplaintext()
+      if simplechild.tag not in excludetags:
+        text += simplechild.getplaintext(excludetags)
     if self.obj.tail != None: text += self.obj.tail
     return text
   def getvalues(self, searchtag):
