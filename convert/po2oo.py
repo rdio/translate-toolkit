@@ -156,82 +156,18 @@ def convertoo(inputfile, outputfile, templatefile, languagecode=None):
   outputoolines = outputoo.tolines()
   outputfile.writelines(outputoolines)
 
-inputformat = "po"
-outputformat = "oo"
-templateformat = "oo"
-
-def recurse(inputdir, outputdir, templatedir, languagecode=None):
-  dirstack = ['']
-  while dirstack:
-    top = dirstack.pop(-1)
-    names = os.listdir(os.path.join(inputdir, top))
-    dirs = []
-    for name in names:
-      inputname = os.path.join(inputdir, top, name)
-      # handle directories...
-      if os.path.isdir(inputname):
-        dirs.append(os.path.join(top, name))
-        outputname = os.path.join(outputdir, top, name)
-        if not os.path.isdir(outputname):
-          os.mkdir(outputname)
-        if templatedir is not None:
-          templatename = os.path.join(templatedir, top, name)
-          if not os.path.isdir(templatename):
-            print >>sys.stderr, "warning: missing template directory %s" % templatename
-      elif os.path.isfile(inputname):
-        base, inputext = os.path.splitext(name)
-        if inputext != os.extsep + inputformat:
-          # only handle names that match the correct input file extension
-          continue
-        outputname = os.path.join(outputdir, top, base) + os.extsep + outputformat
-        inputfile = open(inputname, 'r')
-        outputfile = open(outputname, 'w')
-        templatefile = None
-        if templatedir is not None:
-          templatename = os.path.join(templatedir, top, base) + os.extsep + templateformat
-          if os.path.isfile(templatename):
-            templatefile = open(templatename, 'r')
-          else:
-            print >>sys.stderr, "warning: missing template file %s" % templatename
-        convertoo(inputfile, outputfile, templatefile, languagecode)
-    # make sure the directories are processed next time round...
-    dirs.reverse()
-    dirstack.extend(dirs)
-
-def handleoptions(options):
-  """handles the options, and runs the neccessary functions..."""
-  # TODO: make it handle non-recursive as well!
-  if options.input is None:
-    raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputdir")
-  if not os.path.isdir(options.input):
-    raise optparse.OptionValueError("inputfile must be directory for recursive run.")
-  if options.output is None:
-    raise optparse.OptionValueError("must specify output directory for recursive run.")
-  if not os.path.isdir(options.output):
-    raise optparse.OptionValueError("output must be existing directory for recursive run.")
-  if options.template is not None:
-    if not os.path.isdir(options.template):
-      raise optparse.OptionValueError("template must be existing directory for recursive run.")
-  if options.languagecode is None:
-    languagecode = None
-  else:
-    try:
-      languagecode = int(options.languagecode)
-    except ValueError:
-      raise optparse.OptionValueError("languagecode must be a two-digit number")
-    languagecode = "%02d" % languagecode
-  recurse(options.input, options.output, options.template, languagecode)
-
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformat, outputformat, usetemplates=True)
+  inputformats = {"po":convertoo}
+  outputformat = "oo"
+  templateformat = "oo"
+  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformats, outputformat, usetemplates=True, templateslikeinput=False)
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
   (options, args) = parser.parse_args()
-  # open the appropriate files
   try:
-    handleoptions(options)
+    parser.runconversion(options, None)
   except convert.optparse.OptParseError, message:
     parser.error(message)
 

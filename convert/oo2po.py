@@ -114,7 +114,8 @@ class oo2po:
     thepofile.removeblanks()
     return thepofile
 
-def convertfile(inputfile, outputfile, blankmsgstr):
+# TODO: work out how to get the convertor's --pot switch into blankmsgstr
+def convertoo(inputfile, outputfile, blankmsgstr=0):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   fromfile = oo.oofile()
   filelines = inputfile.readlines()
@@ -124,72 +125,16 @@ def convertfile(inputfile, outputfile, blankmsgstr):
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
 
-def recurse(inputdir, outputdir, inputformat, outputformat, blankmsgstr):
-  """recurse through inputdir and convertfiles in inputformat to outputformat in outputdir"""
-  dirstack = ['']
-  while dirstack:
-    top = dirstack.pop(-1)
-    names = os.listdir(os.path.join(inputdir, top))
-    dirs = []
-    for name in names:
-      inputname = os.path.join(inputdir, top, name)
-      # handle directories...
-      if os.path.isdir(inputname):
-        dirs.append(os.path.join(top, name))
-        outputname = os.path.join(outputdir, top, name)
-        if not os.path.isdir(outputname):
-          os.mkdir(outputname)
-      elif os.path.isfile(inputname):
-        # only handle names that match the correct extension...
-        base, inputext = os.path.splitext(name)
-        if inputext != os.extsep + inputformat:
-          print >>sys.stderr, "not processing %s: wrong extension (%r != %r)" % (name, inputext, inputformat)
-          continue
-        outputname = os.path.join(outputdir, top, base) + os.extsep + outputformat
-        inputfile = open(inputname, 'r')
-        outputfile = open(outputname, 'w')
-        convertfile(inputfile, outputfile, blankmsgstr)
-    # make sure the directories are processed next time round...
-    dirs.reverse()
-    dirstack.extend(dirs)
-
-def handleoptions(options, inputformat, outputformat):
-  """handles the options, allocates files, and runs the neccessary functions..."""
-  if options.recursive:
-    if options.pot:
-      outputformat = "pot"
-    if options.input is None:
-      raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile")
-    if not os.path.isdir(options.input):
-      raise optparse.OptionValueError("inputfile must be directory for recursive run.")
-    if options.output is None:
-      raise optparse.OptionValueError("must specify output directory for recursive run.")
-    if not os.path.isdir(options.output):
-      raise optparse.OptionValueError("output must be existing directory for recursive run.")
-    recurse(options.input, options.output, inputformat, outputformat, options.pot)
-  else:
-    if options.input is None:
-      inputfile = sys.stdin
-    else:
-      inputfile = open(options.input, 'r')
-    if options.output is None:
-      outputfile = sys.stdout
-    else:
-      outputfile = open(options.output, 'w')
-    convertfile(inputfile, outputfile, options.pot)
-
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  inputformat = "oo"
+  inputformat = {"oo":convertoo}
   outputformat = "po"
-  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformat, outputformat)
-  parser.add_option("-P", "--pot", action="store_true", dest="pot", default=False, \
-                    help="produce PO template (.pot) with blank msgstrs")
+  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformat, outputformat, usepots=True)
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:
-    handleoptions(options, inputformat, outputformat)
-  except optparse.OptParseError, message:
+    parser.runconversion(options, None)
+  except convert.optparse.OptParseError, message:
     parser.error(message)
 
