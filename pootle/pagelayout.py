@@ -7,9 +7,9 @@ class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
   def __init__(self, session):
     baseurl = session.instance.baseurl
-    title = widgets.Division(session.instance.title, None, {"class":"sidetitle"})
-    description = widgets.Division(session.instance.description, None, {"class":"side"})
-    logintitle = widgets.Division("login status", None, {"class":"sidetitle"})
+    title = widgets.Division(session.instance.title, cls="sidetitle")
+    description = widgets.Division(session.instance.description, cls="side")
+    logintitle = widgets.Division("login status", cls="sidetitle")
     if session.status:
       loginstatus = session.status
     else:
@@ -18,8 +18,8 @@ class PootleSidebar(widgets.Division):
       loginlink = widgets.Link(baseurl+"?islogout=1", "Log Out")
     else:
       loginlink = widgets.Link(baseurl+"login.html", "Log In")
-    loginstatus = widgets.Division(loginstatus, None, {"class":"side"})
-    loginlink = widgets.Division(loginlink, None, {"class":"side"})
+    loginstatus = widgets.Division(loginstatus, cls="side")
+    loginlink = widgets.Division(loginlink, cls="side")
     widgets.Division.__init__(self, [title, description, logintitle, loginstatus, loginlink], "links")
 
 class PootleBanner(widgets.Division):

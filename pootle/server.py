@@ -11,7 +11,7 @@ class LoginPage(server.LoginPage, pagelayout.PootlePage):
   def __init__(self, session, extraargs={}, confirmlogin=0, specialmessage=None, languagenames=None):
     server.LoginPage.__init__(self, session, extraargs, confirmlogin, specialmessage, languagenames)
     loginform = self.contents
-    contents = widgets.Division(widgets.Division(loginform, None, {"class":"intro"}), "content")
+    contents = widgets.Division(widgets.Division(loginform, cls="intro"), "content")
     pagelayout.PootlePage.__init__(self, "Login to Pootle", contents, session)
 
 class OptionalLoginAppServer(server.LoginAppServer):
@@ -43,7 +43,7 @@ class PootleServer(OptionalLoginAppServer):
       return indexpage.PootleIndex(session)
     elif top == "login.html":
       if session.isopen:
-        redirecttext = widgets.Division("Redirecting to index...", None, {"class":"intro"})
+        redirecttext = widgets.Division("Redirecting to index...", cls="intro")
         redirectpage = pagelayout.PootlePage("Redirecting to index...", redirecttext, session)
         return server.Redirect("index.html", withpage=redirectpage)
       return LoginPage(session)
