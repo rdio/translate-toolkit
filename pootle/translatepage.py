@@ -62,9 +62,9 @@ class TranslatePage(pagelayout.PootlePage):
     for checkname in argdict:
       if checkname in checker.getfilters():
         matchnames.append("check-" + checkname)
-    if matchnames:
-      return matchnames
-    return None
+      if checkname in ["fuzzy", "blank", "translated"]:
+        matchnames.append(checkname)
+    return matchnames
 
   def addtransrow(self, rownum, origcell, transcell):
     self.transtable.setcell(rownum, 0, origcell)

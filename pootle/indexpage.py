@@ -79,7 +79,7 @@ class ProjectIndex(pagelayout.PootlePage):
     self.showchecks = showchecks
     browselink = widgets.Link("index.html", "Browse")
     checkslink = widgets.Link("checks.html", "Checks")
-    quicklink = widgets.Link("translate.html", "Quick Translate")
+    quicklink = widgets.Link("translate.html?fuzzy=1&blank=1", "Quick Translate")
     processlinks = pagelayout.IntroText([browselink, checkslink, quicklink])
     if dirfilter is None:
       depth = 0
@@ -100,7 +100,7 @@ class ProjectIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % basename
     browselink = widgets.Link(basename+"/", 'Browse')
     checkslink = widgets.Link("%s/checks.html" % basename, "Checks")
-    quicklink = widgets.Link("%s/translate.html" % basename, "Quick Translate")
+    quicklink = widgets.Link("%s/translate.html?fuzzy=1&blank=1" % basename, "Quick Translate")
     bodydescription = pagelayout.ItemDescription([browselink, checkslink, quicklink])
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
     pofilenames = self.translationproject.browsefiles(direntry)
@@ -131,10 +131,10 @@ class ProjectIndex(pagelayout.PootlePage):
   def getfileitem(self, fileentry):
     basename = os.path.basename(fileentry)
     bodytitle = '<h3 class="title">%s</h3>' % basename
-    browselink = widgets.Link('%s?translate=1' % basename, 'Quick Translate')
-    downloadlink = widgets.Link(basename, 'Download as PO')
+    browselink = widgets.Link('%s?translate=1&fuzzy=1&blank=1' % basename, 'Quick Translate')
+    downloadlink = widgets.Link(basename, 'PO file')
     csvname = basename.replace(".po", ".csv")
-    csvlink = widgets.Link(csvname, 'Download as CSV')
+    csvlink = widgets.Link(csvname, 'CSV file')
     bodydescription = pagelayout.ItemDescription([browselink, downloadlink, csvlink])
     pofilenames = [fileentry]
     projectstats = self.translationproject.calculatestats(pofilenames)

@@ -17,10 +17,8 @@ class TranslationSession:
     self.pofile = None
     self.lastitem = None
 
-  def getnextitem(self, dirfilter=None, matchnames=None):
+  def getnextitem(self, dirfilter=None, matchnames=[]):
     """gives the user the next item to be translated"""
-    if matchnames is None:
-      matchnames = ["fuzzy", "blank"]
     self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchnames, dirfilter)
     self.pofile = self.translationproject.getpofile(self.pofilename)
     thepo = self.pofile.transelements[item]
@@ -96,7 +94,7 @@ class TranslationProject:
       pofilename = self.getnextpofilename(pofilename)
       if dirfilter is not None and not pofilename.startswith(dirfilter):
         continue
-      if matchnames is None:
+      if not matchnames:
         return pofilename
       postats = self.getpostats(pofilename)
       for name in matchnames:
@@ -111,6 +109,9 @@ class TranslationProject:
       pofilename, item = self.getnextitem(pofilename, item, matchnames, dirfilter)
       pofile = self.getpofile(pofilename)
       matches = False
+      if not matchnames:
+        matches = True
+        continue
       for name in matchnames:
         if item in pofile.classify[name]:
           matches = True
@@ -128,10 +129,7 @@ class TranslationProject:
     else:
       pofile = self.getpofile(pofilename)
     while pofile is None or item >= len(pofile.transelements):
-      if matchnames:
-        pofilename = self.findnextpofilename(pofilename, matchnames, dirfilter)
-      else:
-        pofilename = self.findnextpofilename(pofilename, None, dirfilter)
+      pofilename = self.findnextpofilename(pofilename, matchnames, dirfilter)
       pofile = self.getpofile(pofilename)
       item = 0
     return pofilename, item
