@@ -21,6 +21,5 @@ csv2po
 
 oo2po / po2oo
   fix problem with OOO_VENDOR and \" quoting in offmgr.po (see help - about)
-  fix \n double escaping
-  make oo output the same as in input file...
+  make oo output order the same as in input file...
 
