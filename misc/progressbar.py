@@ -20,7 +20,7 @@
 
 """progress bar utilities for reporting feedback on progress of application..."""
 
-class SimpleProgressBar:
+class DotsProgressBar:
   """an ultra-simple progress indicator that just writes a dot for each action"""
   def __init__(self):
     import sys
@@ -85,7 +85,7 @@ class ProgressBar:
     """displays the progress bar"""
     print self
 
-class ConsoleProgressBar(ProgressBar):
+class HashProgressBar(ProgressBar):
   """a ProgressBar which knows how to go back to the beginning of the line..."""
   def __init__(self, *args, **kwargs):
     import sys
@@ -103,10 +103,10 @@ class ConsoleProgressBar(ProgressBar):
   def __del__(self):
     self.close()
 
-class VerboseProgressBar(ConsoleProgressBar):
+class VerboseProgressBar(HashProgressBar):
   def __init__(self, *args, **kwargs):
     self.lastwidth = 0
-    ConsoleProgressBar.__init__(self, *args, **kwargs)
+    HashProgressBar.__init__(self, *args, **kwargs)
 
   def show(self, verbosemessage):
     output = str(self)
@@ -124,6 +124,6 @@ def test(progressbar):
     time.sleep(0.2)
 
 if __name__ == '__main__':
-  p = ConsoleProgressBar(0,100,50)
+  p = HashProgressBar(0,100,50)
   test(p)
 
