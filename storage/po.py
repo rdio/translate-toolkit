@@ -24,13 +24,14 @@ gettext-style .po (or .pot) files are used in translations for KDE et al (see kb
 from __future__ import generators
 from translate.misc import quote
 
-def getunquotedstr(lines, joinwithlinebreak=True):
+def getunquotedstr(lines, joinwithlinebreak=True, includeescapes=True):
   esc = '\\'
   if joinwithlinebreak:
     joiner = "\n"
   else:
     joiner = ""
-  thestr = joiner.join([quote.extractwithoutquotes(line,'"','"',esc,includeescapes=1)[0] for line in lines])
+  extractline = lambda line: quote.extractwithoutquotes(line,'"','"',esc,includeescapes=includeescapes)[0]
+  thestr = joiner.join([extractline(line) for line in lines])
   if thestr[:1] == "\n": thestr = thestr[1:]
   if thestr[-1:] == "\n": thestr = thestr[:-1]
   return thestr

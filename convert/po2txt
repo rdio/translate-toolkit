@@ -35,7 +35,7 @@ class po2txt:
     for thepo in inputpo.poelements:
       if thepo.isheader():
         continue
-      txtresult += po.getunquotedstr(thepo.msgstr) + "\n" + "\n"
+      txtresult += po.getunquotedstr(thepo.msgstr, includeescapes=False) + "\n" + "\n"
     return txtresult
  
   def mergefile(self, inputpo, templatetext):
@@ -46,8 +46,8 @@ class po2txt:
     for thepo in inputpo.poelements:
       if thepo.isheader():
         continue
-      msgid = po.getunquotedstr(thepo.msgid)
-      msgstr = po.getunquotedstr(thepo.msgstr)
+      msgid = po.getunquotedstr(thepo.msgid, includeescapes=False)
+      msgstr = po.getunquotedstr(thepo.msgstr, includeescapes=False)
       txtresult = txtresult.replace(msgid, msgstr)
     return txtresult
 
