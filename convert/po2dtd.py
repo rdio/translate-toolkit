@@ -22,7 +22,6 @@
 either done using a template or just using the .po file"""
 
 import sys
-import os
 from translate.storage import dtd
 from translate.storage import po
 from translate.misc import quote

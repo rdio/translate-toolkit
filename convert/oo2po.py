@@ -24,8 +24,6 @@ gettext .po localization file using the po and oo modules, and the
 oo2po convertor class which is in this module
 You can convert back to .oo using po2oo.py"""
 
-import sys
-import os
 from translate.storage import po
 from translate.storage import oo
 from translate.misc import quote
@@ -109,7 +107,6 @@ class oo2po:
     for theoo in theoofile.ooelements:
       polist = self.convertelement(theoo)
       for thepo in polist:
-        # print >>sys.stderr, "%r" % thepo.msgid
         thepofile.poelements.append(thepo)
     thepofile.removeblanks()
     return thepofile
