@@ -288,12 +288,16 @@ class TranslatePage(pagelayout.PootlePage):
     else:
       return ""
 
-  def gettransbuttons(self, item, desiredbuttons=["skip", "suggest", "translate"]):
+  def gettransbuttons(self, item, desiredbuttons=["skip", "copy", "suggest", "translate"]):
     """gets buttons for actions on translation"""
     buttons = []
     if "skip" in desiredbuttons:
       skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
       buttons.append(skipbutton)
+    if "copy" in desiredbuttons:
+      copyscript = "document.forms.translate.trans%d.value = document.getElementById('orig%d').innerHTML" % (item, item)
+      copybutton = widgets.Button({"onclick": copyscript}, "copy")
+      buttons.append(copybutton)
     if "suggest" in desiredbuttons and "suggest" in self.rights:
       suggestbutton = widgets.Input({"type":"submit", "name":"submitsuggest%d" % item, "value":"suggest"}, "suggest")
       buttons.append(suggestbutton)
