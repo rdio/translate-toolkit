@@ -27,88 +27,6 @@ from translate.storage import xpi
 from translate import __version__
 from translate.convert import convert
 
-class MozConvertOptionParser(convert.ConvertOptionParser):
-  def __init__(self, formats, usetemplates=False, usepots=False, description=None):
-    convert.ConvertOptionParser.__init__(self, formats, usetemplates, usepots, description=description)
-
-  def isrecursive(self, fileoption):
-    """checks if fileoption is a recursive file"""
-    if self.isxpi(fileoption): return True
-    return super(MozConvertOptionParser, self).isrecursive(fileoption)
-
-  def isxpi(self, fileoption):
-    """returns whether the file option is an xpi file"""
-    return isinstance(fileoption, (str, unicode)) and fileoption.endswith(os.extsep + "xpi") and os.path.isfile(fileoption)
-
-  def recurseinputfiles(self, options):
-    """recurse through xpi file / directories and return files to be converted"""
-    if options.template and self.isxpi(options.template):
-      options.templatexpi = xpi.XpiFile(options.template, includenonloc=True)
-    if self.isxpi(options.input):
-      options.inputxpi = xpi.XpiFile(options.input, includenonloc=True)
-      return self.recursexpifiles(options)
-    else:
-      return super(MozConvertOptionParser, self).recurseinputfiles(options)
-
-  def recursexpifiles(self, options):
-    """recurse through xpi files and convert files"""
-    inputfiles = []
-    for inputpath in options.inputxpi.iterextractnames(includenonjars=True):
-      top, name = os.path.split(inputpath)
-      if not self.isvalidinputname(options, name):
-        continue
-      inputfiles.append(inputpath)
-    return inputfiles
-
-  def openinputfile(self, options, fullinputpath):
-    """opens the input file"""
-    if self.isxpi(options.input):
-      jarfilename, filename = options.inputxpi.ostojarpath(fullinputpath)
-      return options.inputxpi.openinputstream(jarfilename, filename)
-    else:
-      return super(MozConvertOptionParser, self).openinputfile(options, fullinputpath)
-
-  def getfullinputpath(self, options, inputpath):
-    """gets the absolute path to an input file"""
-    if self.isxpi(options.input):
-      return inputpath
-    else:
-      return os.path.join(options.input, inputpath)
-
-  def opentemplatefile(self, options, fulltemplatepath):
-    """opens the template file (if required)"""
-    if fulltemplatepath is not None:
-      if self.isxpi(options.template):
-        # TODO: deal with different names in input/template xpis
-        jarfilename, filename = options.templatexpi.ostojarpath(fulltemplatepath)
-        if options.templatexpi.jarfileexists(jarfilename, filename):
-          return options.templatexpi.openinputstream(jarfilename, filename)
-        else:
-          self.warning("missing template file %s" % fulltemplatepath)
-    return super(MozConvertOptionParser, self).opentemplatefile(options, fulltemplatepath)
-
-  def getfulltemplatepath(self, options, templatepath):
-    """gets the absolute path to a template file"""
-    if templatepath is not None and self.usetemplates and options.template:
-      if self.isxpi(options.template):
-        return templatepath
-      else:
-        return os.path.join(options.template, templatepath)
-    else:
-      return None
-
-  def templateexists(self, options, templatepath):
-    """returns whether the given template exists..."""
-    if templatepath is not None:
-      if self.isxpi(options.template):
-        # TODO: deal with different names in input/template xpis
-        try:
-          jarfilename, filename = options.templatexpi.ostojarpath(templatepath)
-        except IndexError:
-          return False
-        return options.templatexpi.jarfileexists(jarfilename, filename)
-    return super(MozConvertOptionParser, self).templateexists(options, templatepath)
-
 if __name__ == '__main__':
   formats = {("dtd", "dtd"): ("dtd.po", dtd2po.convertdtd),
              ("properties", "properties"): ("properties.po", prop2po.convertprop),
@@ -117,7 +35,7 @@ if __name__ == '__main__':
              (None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}
-  parser = MozConvertOptionParser(formats, usetemplates=True, usepots=True, description=__doc__)
+  parser = convert.ArchiveConvertOptionParser(formats, usetemplates=True, usepots=True, description=__doc__, archiveformats={"xpi": xpi.XpiFile})
   parser.passthrough.append("pot")
   parser.run()
 
