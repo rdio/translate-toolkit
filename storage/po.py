@@ -72,14 +72,20 @@ class poelement:
 
   def merge(self, otherpo):
     """merges the otherpo (with the same msgid) into this one"""
-    self.othercomments.extend(otherpo.othercomments)
-    self.sourcecomments.extend(otherpo.sourcecomments)
-    self.typecomments.extend(otherpo.typecomments)
-    self.visiblecomments.extend(otherpo.visiblecomments)
-    self.msgidcomments.extend(otherpo.msgidcomments)
+    def mergelists(list1, list2):
+      list1.extend([item for item in list2 if not item in list1])
+    mergelists(self.othercomments, otherpo.othercomments)
+    mergelists(self.sourcecomments, otherpo.sourcecomments)
+    mergelists(self.typecomments, otherpo.typecomments)
+    mergelists(self.visiblecomments, otherpo.visiblecomments)
+    mergelists(self.msgidcomments, otherpo.msgidcomments)
     if self.isblankmsgstr():
       self.msgstr = otherpo.msgstr
-    elif not otherpo.isblankmsgstr():
+    elif otherpo.isblankmsgstr():
+      if self.msgid != otherpo.msgid:
+        if not self.isfuzzy():
+          self.typecomments.append("#, fuzzy\n")
+    else:
       if self.msgstr != otherpo.msgstr:
         if not self.isfuzzy():
           self.typecomments.append("#, fuzzy\n")
