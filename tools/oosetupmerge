@@ -429,10 +429,41 @@ if __name__ == '__main__':
     othersetupfile.copyfiles(otherdir, outputdir, 1)
   # copy other unmodified files
   for filename in os.listdir(maindir):
-    if not filename.lower().startswith('f') and filename.lower() != setupname:
-      srcfile = os.path.join(maindir, filename)
-      destfile = os.path.join(outputdir, filename)
+    checkname = filename.lower()
+    if checkname.startswith('f') or checkname == setupname:
+      continue
+    srcfile = os.path.join(maindir, filename)
+    destfile = os.path.join(outputdir, filename)
+    print '%s -> %s' % (srcfile, destfile)
+    os.system('cp -p %s %s' % (srcfile, destfile))
+    # also copy the following files to language-specific names
+    if checkname.startswith("readme") or checkname.startswith("license") or checkname.endswith("html"):
+      extpos = filename.rfind(os.extsep)
+      if extpos == -1:
+        destname = filename + "-" + mainsetupfile.isocode
+      else:
+        destname = filename[:extpos] + "-" + mainsetupfile.isocode + filename[extpos:]
+      destfile = os.path.join(outputdir, destname)
       print '%s -> %s' % (srcfile, destfile)
       os.system('cp -p %s %s' % (srcfile, destfile))
+  for dirnum in range(len(otherdirs)):
+    otherdir = otherdirs[dirnum]
+    setupfile = othersetupfiles[dirnum]
+    for filename in os.listdir(otherdir):
+      checkname = filename.lower()
+      if checkname.startswith('f') or checkname == setupname:
+        continue
+      # we want readmes in every language...
+      if checkname.startswith("readme") or checkname.startswith("license") or checkname.endswith("html"):
+        srcfile = os.path.join(otherdir, filename)
+        extpos = filename.rfind(os.extsep)
+        if extpos == -1:
+          destname = filename + "-" + setupfile.isocode
+        else:
+          destname = filename[:extpos] + "-" + setupfile.isocode + filename[extpos:]
+        destfile = os.path.join(outputdir, destname)
+        print '%s -> %s' % (srcfile, destfile)
+        os.system('cp -p %s %s' % (srcfile, destfile))
+
 
 
