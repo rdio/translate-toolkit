@@ -1,3 +1,203 @@
+2004-06-09 18:14  davidfraser
+
+	* __version__.py: version 0.8 beta 2
+
+2004-06-09 18:13  davidfraser
+
+	* filters/pofilter, storage/po.py: added a switch to getunquotedstr
+	  for linebreak inclusion, turn it off for pofilter (still unclear
+	  as to long-term strategy:-) )
+
+2004-06-09 17:55  davidfraser
+
+	* convert/po2dtd.py, misc/quote.py: remove all leftover doencode
+	  stuff
+
+2004-06-09 17:49  davidfraser
+
+	* misc/optrecurse.py: added more sensible error handling for
+	  missing output directories - try create the directory, report an
+	  error if it fails
+
+2004-06-09 17:38  davidfraser
+
+	* convert/TODO: encodings are now utf8 which is better...
+	  properties encodings have been converted as well
+
+2004-06-09 17:36  davidfraser
+
+	* convert/moz2po: include non-jar files in extraction for moz2po
+	  ... otherwise we miss install.js
+
+2004-06-09 17:02  davidfraser
+
+	* filters/checks.py: added long, split whitespace into start/end
+
+2004-06-09 16:55  davidfraser
+
+	* convert/convert.py: get optparse from the optrecurse namespace
+	  (also others can access it here)
+
+2004-06-09 16:42  davidfraser
+
+	* misc/quote.py: added implementation for \N{name} unicode escaping
+	  for completion
+
+2004-06-09 16:17  davidfraser
+
+	* misc/quote.py: only keep \t and \n when decoding mozilla
+	  properties files
+
+2004-06-09 15:04  davidfraser
+
+	* misc/quote.py: rewrote mozillapropertiesdecode based on the C
+	  unicode-escape source this lets us change some of the behaviour
+	  (e.g. how we handle control characters)
+
+2004-06-09 11:06  davidfraser
+
+	* filters/checks.py: added doublespacing and puncspacing checks...
+
+2004-06-09 11:01  davidfraser
+
+	* filters/helpers.py: use operator.and_ instead of int.__and__ to
+	  and a whole lot of expressions together
+
+2004-06-09 10:41  davidfraser
+
+	* filters/decoration.py: don't tread periods that don't have
+	  following digits as part of the number added TODO for
+	  locale-specific delimiters (2,5 for Afrikaans)
+
+2004-06-09 10:31  davidfraser
+
+	* misc/optrecurse.py: show progress regardless of success
+
+2004-06-08 17:17  davidfraser
+
+	* filters/TODO: preconditions are there now...
+
+2004-06-08 17:03  davidfraser
+
+	* filters/checks.py: added ability to have preconditions - don't do
+	  most checks if untraslated...
+
+2004-06-08 16:44  davidfraser
+
+	* filters/: checks.py, pofilter: moved all the arguments,
+	  construction of list of filters into pocheckfilter constructor
+	  general refactoring to try do as much as possible once only
+
+2004-06-08 16:13  davidfraser
+
+	* tools/pomerge: .msg.I15348
+
+2004-06-08 16:08  davidfraser
+
+	* convert/: csv2po, dtd2po.py, moz2po, oo2po, po2csv, po2dtd.py,
+	  po2moz, po2oo, po2prop.py, poreplace.py, prop2po.py: modified all
+	  the scripts to work with new convert parameters based on
+	  translate.misc.optrecurse
+
+2004-06-08 16:07  davidfraser
+
+	* filters/: pofilter, pogrep: redid btis of pofilter and pogrep to
+	  work with new translate.misc.optrecurse (filtercmd is gone... bye
+	  bye)
+
+2004-06-08 16:01  davidfraser
+
+	* tools/detectencoding: minor fixups for when no matches are
+	  found...
+
+2004-06-08 15:56  davidfraser
+
+	* misc/optrecurse.py, convert/convert.py, filters/filtercmd.py:
+	  refactored common code out of convert/convert.py and
+	  filter/filtercmd.py into misc/optrecurse.py this now handles
+	  everything cleanly. filter/filtercmd is no longer neccessary, has
+	  been removed some specialisation and parameters have also
+	  changed, and will affect other files...   recursiveoptions /
+	  convertparameters have been renamed to self.passthrough   all the
+	  convert parameter/method names have changed to process   there is
+	  a new simpler run method which parses the args and passes them to
+	  recursiveprocess
+
+2004-05-28 15:48  davidfraser
+
+	* tools/pomerge: added mergeblanks option refactored option
+	  checking into str2bool removed unneccessary default options
+
+2004-05-28 15:42  davidfraser
+
+	* tools/pomerge: added option to control merging comments
+
+2004-05-28 15:10  dwaynebailey
+
+	* tools/pocount: Changed wording on output slightly to make it
+	  clear that fuzzies wordcount is for the original message
+
+2004-05-28 15:00  davidfraser
+
+	* tools/pocount: redid counting to count everything on elements
+	  rather than counting first and summarizing later makes it a bit
+	  slower but better...	also added code to count fuzzy strings /
+	  words
+
+2004-05-25 18:37  davidfraser
+
+	* storage/properties.py: use new quote function to decode
+
+2004-05-25 17:31  davidfraser
+
+	* misc/quote.py: added a mozillapropertiesdecode function which
+	  does unicode-escape but doesn't transform \\n
+
+2004-05-25 16:43  davidfraser
+
+	* storage/po.py: added option whether to merge comments or not in
+	  merge make sure that a blank string with a msgid_comment works
+	  properly
+
+2004-05-25 16:41  davidfraser
+
+	* convert/dtd2po.py: only convert elements with valid entities...
+
+2004-05-25 15:38  davidfraser
+
+	* tools/pomerge: added docstring to help
+
+2004-05-25 15:31  davidfraser
+
+	* convert/dtd2po.py: added comment if field looks like a
+	  height/width/size field, to help translators changed blank
+	  comment to not have \n at end...
+
+2004-05-25 15:07  davidfraser
+
+	* convert/convert.py: if there is an error in conversion, give a
+	  warning with the names of the files before raising it made
+	  warning always start on newline by adding \n at beginning
+
+2004-05-25 12:10  davidfraser
+
+	* convert/: convert.py, csv2po, dtd2po.py, moz2po, oo2po, po2csv,
+	  po2dtd.py, po2moz, po2oo, po2prop.py, prop2po.py: added
+	  descriptions for command line help using doc strings
+
+2004-05-25 11:42  davidfraser
+
+	* README: added a link to the docs page
+
+2004-05-25 11:15  davidfraser
+
+	* convert/: po2dtd.py, po2moz, po2prop.py: removed all checking
+	  code as this is now done in the filters area, not when converting
+
+2004-05-21 19:15  davidfraser
+
+	* ChangeLog: added changelog for 0.8b1
+
 2004-05-21 19:00  davidfraser
 
 	* convert/po2prop.py: .msg.wC8765
@@ -450,6 +650,10 @@
 	  from __future__ import generators to files using yield, for
 	  python 2.2 compatibility
 
+2004-04-24 12:50  davidfraser
+
+	* ChangeLog: added changelog for 0.7.1
+
 2004-04-24 11:34  davidfraser
 
 	* ChangeLog: Added ChangeLog for 0.7
@@ -462,15 +666,19 @@
 
 	* convert/Makefile: removed .py from files that have been renamed
 
-2004-04-24 10:43  davidfraser
+2004-04-23 23:04  davidfraser
 
-	* setup.py, MANIFEST.in: fixed MANIFEST.in to include scripts by
-	  auto-generating from setup.py
+	* storage/xpi.py: added crucial missing link in ospathexists...
 
 2004-04-23 22:57  davidfraser
 
 	* storage/po.py: in merge, merge comments rather than adding them
 	  to avoid duplicates tried to improve fuzziness algorithm in merge
+
+2004-04-23 22:55  davidfraser
+
+	* storage/xpi.py: added options to treat xpi.py like an unzip
+	  program...
 
 2004-04-23 22:54  davidfraser
 
@@ -484,6 +692,12 @@
 2004-04-23 22:50  davidfraser
 
 	* __version__.py: version 0.7
+
+2004-04-23 22:49  davidfraser
+
+	* convert/: csv2po, csv2po.py, oo2po, oo2po.py, po2csv, po2csv.py,
+	  po2oo, po2oo.py: renamed oo2po, po2oo, csv2po, po2csv from .py
+	  files to scripts without .py extension
 
 2004-04-23 16:57  davidfraser
 
@@ -507,11 +721,12 @@
 
 2004-04-23 15:24  davidfraser
 
-	* convert/: convert.py, dtd2po.py, moz2po, po2dtd.py, po2moz,
-	  po2prop.py, prop2po.py: removed convertmethod option from
-	  runconversion (since this was a special case for single input and
-	  output,  and we can determine it from the filenames or guess)
-	  added removeduplicates call to oo2po
+	* convert/: convert.py, csv2po.py, dtd2po.py, moz2po, oo2po.py,
+	  po2csv.py, po2dtd.py, po2moz, po2oo.py, po2prop.py, poreplace.py,
+	  prop2po.py: removed convertmethod option from runconversion
+	  (since this was a special case for single input and output,  and
+	  we can determine it from the filenames or guess) added
+	  removeduplicates call to oo2po
 
 2004-04-22 12:50  davidfraser
 
@@ -522,15 +737,51 @@
 	* convert/moz2po: added switches to only include localization files
 	  from xpi - thus avoiding unneccessary commonprefix
 
+2004-04-20 11:48  davidfraser
+
+	* storage/xpi.py: added method islocfile, argument includenonloc
+	  code to allow only browsing localizable files (and only counting
+	  them for commonprefix) added methods jarfileexists, ospathexists
+
 2004-04-20 11:36  davidfraser
 
 	* convert/moz2po: only check if template is a file if it is filled
 	  in (could be None)
 
+2004-04-18 22:46  davidfraser
+
+	* convert/oo2po.py: added kludge to get --pot into blankmsgstr
+	  (real fix is to pass options like we do in filters)
+
+2004-04-18 22:38  davidfraser
+
+	* convert/po2oo.py: return True to show output is successful
+
 2004-04-16 18:25  davidfraser
 
 	* convert/TODO: have done unpacking xpi added TODO to remove need
 	  for -R switch
+
+2004-04-16 16:23  davidfraser
+
+	* tools/detectencoding: updated to be able to handle multiple words
+	  having the same fuzzyword (in which case they are ignored) use a
+	  dictionary as dictword to handle this also output script in order
+	  of count decreasing, and show count
+
+2004-04-16 15:43  davidfraser
+
+	* tools/detectencoding: factored out updatecharmap, writescript
+
+2004-04-16 15:32  davidfraser
+
+	* tools/detectencoding: added option to generate a script that will
+	  do the changes found by fuzzymatch...
+
+2004-04-16 15:31  davidfraser
+
+	* convert/poreplace.py: added poreplace script as basis for tools
+	  to replace stuff inside po files
 
 2004-04-16 15:25  davidfraser
 
@@ -540,6 +791,65 @@
 
 	* convert/convert.py: replaced calls to get functions with calls to
 	  open functions added TODO
+
+2004-04-16 14:58  davidfraser
+
+	* tools/detectencoding: tell the user if they haven't requested any
+	  action...
+
+2004-04-16 14:55  davidfraser
+
+	* tools/detectencoding: don't store options that we can just use
+	  straight from self.options moved filename init from __init__ to
+	  recursefiles only print filename if verbose added lots of
+	  docstrings changed names of functions (especially handle...) to
+	  make it clearer
+
+2004-04-16 14:47  davidfraser
+
+	* tools/detectencoding: added option for ignorecase (so we don't do
+	  lower unless ignorecase is true)
+
+2004-04-16 14:43  davidfraser
+
+	* tools/detectencoding: added code to fuzzymatch to count
+	  correspondence of chars, print out results
+
+2004-04-16 14:29  davidfraser
+
+	* tools/detectencoding: fixed mistake in countmaps...  factored out
+	  findwords from testwordstats fixed decodedwords being undecoded
+	  in fuzzymatch simplified printout of fuzzymatch (only one
+	  encoding)
+
+2004-04-16 14:22  davidfraser
+
+	* tools/detectencoding: split fuzzymatch off from testwordstats,
+	  made it a different test fixed some bugs (decodedwords was
+	  actually translationwords!) made fuzzymatch use only one encoding
+	  added docstring for testcharstats
+
+2004-04-16 14:07  davidfraser
+
+	* tools/detectencoding: factored out makecountmap method add
+	  docstring for fuzzy
+
+2004-04-16 14:03  davidfraser
+
+	* tools/detectencoding: renamed getcountmap to updatecountmap
+
+2004-04-16 13:34  davidfraser
+
+	* tools/detectencoding: improved fuzzy matching (number of chars of
+	  non-std chars doesn't have to match) added unique and verbose
+	  options
+
+2004-04-16 13:20  davidfraser
+
+	* tools/detectencoding: moved listencodings, options into detector
+	  class changed testencodings to testcharstats added testwordstats,
+	  also handles fuzzy word matching added options to select tests
+	  added limitencodings option
 
 2004-04-15 18:07  davidfraser
 
@@ -557,6 +867,11 @@
 
 	* convert/: Makefile, moz2po: removed -x switch from moz2po -
 	  automatically detect xpi file / dir
+
+2004-04-15 17:34  davidfraser
+
+	* storage/xpi.py: added actual xpi filename into name of
+	  inputstream
 
 2004-04-15 17:29  davidfraser
 
@@ -577,6 +892,12 @@
 	  don't need to checksubdir for every subdir in moz2po, just let
 	  convert handle it
 
+2004-04-15 16:46  davidfraser
+
+	* storage/xpi.py: added clever trickery so streams can have names
+	  like normal files (so for example a converted po file will
+	  contain the 'name' of the .dtd file from inside the xpi)
+
 2004-04-15 16:22  davidfraser
 
 	* convert/Makefile: added test for moz2po from xpi
@@ -590,6 +911,11 @@
 	  need to be overridden in moz2po improved directory creation
 	  scheme (create a directory if we're going to create a file that
 	  needs it)
+
+2004-04-15 10:13  davidfraser
+
+	* storage/xpi.py: fixed bug with giving reduce an initial value -
+	  limits the result thus commonprefix wasn't working...
 
 2004-04-15 09:32  davidfraser
 
@@ -605,6 +931,11 @@
 	* convert/moz2po: fixed wrong reference to base class added sys
 	  import for warning output
 
+2004-04-10 09:18  davidfraser
+
+	* storage/xpi.py: gave initial value to reduce to prevent error on
+	  empty list in commonprefix
+
 2004-04-08 15:36  davidfraser
 
 	* convert/moz2po: added initial code to handle reading files
@@ -615,11 +946,46 @@
 	* convert/convert.py: initprogressbar needs to return allfiles as
 	  sometimes it converts it from a generator to a list...
 
+2004-04-08 15:04  davidfraser
+
+	* storage/xpi.py: added openinputstream method for getting a
+	  file-like input stream from a file (inside the xpi or an inner
+	  jar) added includedirs parameter to iterextractnames
+
+2004-04-08 14:32  davidfraser
+
+	* storage/xpi.py: added functions jartoospath and ostojarpath that
+	  handle finding files inside jars
+
 2004-04-08 13:56  davidfraser
 
 	* convert/convert.py: refactored recurseconversion - was too
 	  complex and difficult to override added methods initprogressbar
 	  and convertfile
+
+2004-04-08 11:12  davidfraser
+
+	* storage/xpi.py: modified _commonprefix to handle strings as well
+	  as lists use it to simplify jarprefixes (strip leading
+	  languagename-)
+
+2004-04-08 11:04  davidfraser
+
+	* storage/xpi.py: a lot of refactoring extracted _commonprefix
+	  method added a XpiFile constructor that reads out the important
+	  information cache jarfiles in self.jarfiles so they aren't
+	  extracted repeatedly added stripcommonprefix, findjarprefixes
+	  methods added ziptoospath, ostozippath methods this all
+	  simplifies iterextractnames a lot
+
+2004-04-08 10:12  davidfraser
+
+	* storage/xpi.py: added xpi module
+
+2004-04-06 13:53  davidfraser
+
+	* tools/detectencoding: added tool to detect encoding of files
+	  (currently po files)
 
 2004-04-04 08:05  davidfraser
 
@@ -644,80 +1010,873 @@
 	* filters/prefilters.py: added code to detect any apostrophe in the
 	  middle of a word as not being punctuation
 
+2004-03-31 08:42  davidfraser
+
+	* convert/po2csv.py: added ' to list of values to be escaped at
+	  start of string (spreadsheet cell)...
+
 2004-03-31 08:29  davidfraser
 
 	* ChangeLog: added proper changelog for 0.6 (try keep this up to
 	  date :-))
 
-2004-03-31: David Fraser <david@translate.org.za>
-	* translate/convert/po2csv.py
-	- added ' to list of values to be escaped at start of string (spreadsheet cell)...
-	* translate/filters/prefilters.py
-	- added code to detect any apostrophe in the middle of a word as not being punctuation
-	* translate/filters/checks.py
-	- separated quoting into singlequoting and doublequoting
-	- removed unneccessary calls to filterwordswithpunctuation prefilter
-	- added checks for numbers
-	* translate/filters/decoration.py
-	- added checks for numbers
+2004-03-30 18:20  davidfraser
 
-2004-03-30: David Fraser <david@translate.org.za>
-	* MANIFEST.in
-	- added new scripts
-	* setup.py
-	- added new scripts
-	* translate/__version__.py
-	- version 0.6
-	* translate/convert/convert.py
-	- added ability to use templates in non-recursive case...
-	- made templates pot files if output is po (needs cleanup)
-	- added code to handle outputing to the input or template file without overwriting them
-	  (this uses a temp file)
-	* translate/convert/csv2po.py
-	- merged csv2po and repo into one class so we can sort out related issues together...
-	- moved header testing out of template-merging code to make it apply to all conversions
-	- removed doencode (what was it there for?)
-	- added handling for plural forms
-	- added code to handle duplicate source strings so they don't fool us...
-	* translate/convert/po2csv.py
-	- added handling for msgid_plural
-	- refactored so convertstring is used generally
-	* translate/filters/checks.py
-	- added gnome checking option
-	- rearranged checkss -added whitespace (and associated decoration functions) and separated startandend
-	- gave filters shorter names to make them easier on the command line
-	* translate/filters/decoration.py
-	- rearranged checkss -added whitespace (and associated decoration functions) and separated startandend
-	* translate/filters/filtercmd.py
-	- show progress whether successful or not
-	  (not usually just means a blank file, we are still progressing...)
-	* translate/filters/pofilter
-	- add option to list all filters instead of actually running them
-	- added gnome checking option
-	- updated to show filter documentation as well when listing filters
-	- refactored the getfilterdocs approach
-	- updated pofilter to handle plurals in po
-	* translate/filters/prefilters.py
-	- added more common words with punctuation...
-	- added TODO to fix up punctuation check
-	* translate/storage/csvl10n.py
-	- don't need to join lines with a linebreak since they already have one...
-	* translate/storage/po.py
-	- added option to check if msgstr is blank
-	- added ability to handle msgid_plural and msgstr[n]
-	- refactored each part's construction into getmsgpartstr
-	- refactored stuff so we don't calculate lengths all over the place.
-	- This also handles plurals in msgstr
-	- renamed hasplurals to hasplural
-	- improved creation of index (always create entry in msgidindex, makes sourceindex simpler)
-	* translate/filters/pogrep
-	- added grep tool for po files
-	* translate/tools/pomerge
-	- added po merge tool
+	* filters/prefilters.py: added TODO to fix up punctuation check
 
-2003-12-23: David Fraser <david@translate.org.za>
-	* Moved into new package structure from old flat structure
-	* Renamed files
-	* Improved command line option consistency
-	* Renamed project from mozpotools to translate
+2004-03-30 18:19  davidfraser
+
+	* ChangeLog: witty change log
+
+2004-03-30 18:15  davidfraser
+
+	* __version__.py: version 0.6
+
+2004-03-30 18:11  davidfraser
+
+	* filters/prefilters.py: added more common words with
+	  punctuation...
+
+2004-03-30 18:10  davidfraser
+
+	* filters/pofilter: updated pofilter to handle plurals in po
+
+2004-03-30 18:07  davidfraser
+
+	* filters/filtercmd.py: show progress whether successful or not
+	  (not usually just means a blank file, we are still
+	  progressing...)
+
+2004-03-30 18:04  davidfraser
+
+	* tools/pomerge: added po merge tool
+
+2004-03-30 16:22  davidfraser
+
+	* storage/po.py: renamed hasplurals to hasplural improved creation
+	  of index (always create entry in msgidindex, makes sourceindex
+	  simpler)
+
+2004-03-30 15:45  davidfraser
+
+	* convert/csv2po.py: added code to handle duplicate source strings
+	  so they don't fool us...
+
+2004-03-30 14:55  davidfraser
+
+	* filters/pogrep: added grep tool for po files
+
+2004-03-30 14:55  davidfraser
+
+	* convert/csv2po.py: added handling for plural forms
+
+2004-03-30 14:45  davidfraser
+
+	* convert/po2csv.py: added handling for msgid_plural refactored so
+	  convertstring is used generally
+
+2004-03-30 14:28  davidfraser
+
+	* storage/po.py: refactored stuff so we don't calculate lengths all
+	  over the place.  This also handles plurals in msgstr
+
+2004-03-30 14:10  davidfraser
+
+	* storage/po.py: added ability to handle msgid_plural and msgstr[n]
+	  refactored each part's construction into getmsgpartstr
+
+2004-03-30 12:22  davidfraser
+
+	* filters/checks.py: gave filters shorter names to make them easier
+	  on the command line
+
+2004-03-30 12:00  davidfraser
+
+	* convert/convert.py: added code to handle outputing to the input
+	  or template file without overwriting them (use temp file)
+
+2004-03-30 11:30  davidfraser
+
+	* filters/: checks.py, decoration.py: rearranged checkss -added
+	  whitespace (and associated decoration functions) and separated
+	  startandend
+
+2004-03-30 11:28  davidfraser
+
+	* filters/pofilter: refactored the getfilterdocs approach
+
+2004-03-30 11:21  davidfraser
+
+	* filters/pofilter: updated to show filter documentation as well
+	  when listing filters
+
+2004-03-30 10:46  davidfraser
+
+	* storage/csvl10n.py: don't need to join lines with a linebreak
+	  since they already have one...
+
+2004-03-30 10:39  davidfraser
+
+	* convert/csv2po.py: removed doencode (what was it there for?)
+
+2004-03-30 10:29  davidfraser
+
+	* convert/csv2po.py: moved header testing out of template-merging
+	  code to make it apply to all conversions
+
+2004-03-30 10:17  davidfraser
+
+	* filters/: checks.py, pofilter: added gnome checking option
+
+2004-03-30 10:16  davidfraser
+
+	* convert/convert.py: made templates pot files if output is po
+	  (needs cleanup)
+
+2004-03-30 10:14  davidfraser
+
+	* convert/csv2po.py: merged csv2po and repo into one class so we
+	  can sort out related issues together...
+
+2004-03-29 21:59  davidfraser
+
+	* filters/pofilter: addoption to list all filters instead of
+	  actually running them
+
+2004-03-29 16:28  davidfraser
+
+	* storage/po.py: added option to check if msgstr is blank
+
+2004-03-23 14:03  davidfraser
+
+	* convert/convert.py: added ability to use templates in
+	  non-recursive case...
+
+2004-03-13 20:57  dwaynebailey
+
+	* filters/TODO: Updated TODO items
+
+2004-03-12 18:20  davidfraser
+
+	* filters/TODO: added TODO file...
+
+2004-03-12 18:20  davidfraser
+
+	* __version__.py: version 0.5
+
+2004-03-12 18:15  davidfraser
+
+	* filters/pofilter: .msg.d10442
+
+2004-03-12 17:49  davidfraser
+
+	* filters/filtercmd.py: added ability to pass options through to
+	  filter command by specifying option keywords...
+
+2004-03-12 17:49  davidfraser
+
+	* filters/pofilter: added ability to specify filterobject used new
+	  ability to pass options into filter command to allow
+	  openoffice/mozilla checker, handle includereview etc
+
+2004-03-12 17:32  davidfraser
+
+	* convert/convert.py: added TODO about refactoring to share common
+	  code with filters.filtercmd limited progress options to available
+	  choices
+
+2004-03-12 17:32  davidfraser
+
+	* filters/pofilter: modified to use new run_filters method of
+	  checks added TODO about handling options fixed filter. to
+	  filtercmd.  renamed input to inputarg to avoid pychecker warning
+
+2004-03-12 17:30  davidfraser
+
+	* filters/filtercmd.py: made progress options limited to the
+	  availablae choices
+
+2004-03-12 17:27  davidfraser
+
+	* filters/checks.py: .msg.bm9152
+
+2004-03-12 17:11  davidfraser
+
+	* filters/pofilter: renamed filter to filtercmd removed unused
+	  options...
+
+2004-03-12 17:09  davidfraser
+
+	* filters/: filter.py, filtercmd.py: renamed filter to filtercmd
+	  since filter is a builtin function
+
+2004-03-12 17:01  davidfraser
+
+	* filters/pofilter: added pofilter tool which curently uses checks
+	  to filter po files
+
+2004-03-12 16:58  davidfraser
+
+	* filters/filter.py: added filter as base class for filter tools
+
+2004-03-12 16:55  davidfraser
+
+	* convert/: moz2po, po2moz: removed unneccessary imports...
+
+2004-03-12 16:51  davidfraser
+
+	* storage/po.py: forgot to remove po. when moving makeheader into
+	  po
+
+2004-03-12 16:44  davidfraser
+
+	* convert/csv2po.py: added a TODO to merge the two classes defined
+	  here also added a redundant return to avoid a pychecker error...
+
+2004-03-12 16:36  davidfraser
+
+	* convert/dtd2po.py: moved po header creation into storage.po (all
+	  the other cvs comments say convert/dtdpo.py because I messed up
+	  the command line)
+
+2004-03-12 16:35  davidfraser
+
+	* convert/oo2po.py, convert/prop2po.py, storage/po.py:
+	  convert/dtd2po.py
+
+2004-03-12 16:34  davidfraser
+
+	* convert/po2csv.py: removed unused modules
+
+2004-03-12 16:24  davidfraser
+
+	* convert/csv2po.py: moved the counts about matching strings so
+	  they don't get called added in a TODO to display them in verbose
+	  mode
+
+2004-03-12 16:17  davidfraser
+
+	* filters/.cvsignore: added .cvsignore for filters
+
+2004-03-12 16:16  davidfraser
+
+	* portal/: .cvsignore, portaldb.py: added .cvsignore for
+	  translate.portal
+
+2004-03-12 16:14  davidfraser
+
+	* misc/sparse.py: .msg.cR7134
+
+2004-03-12 16:12  davidfraser
+
+	* misc/quote.py: changed from cp1250 to iso-8859-1 and added FIXME
+	  to avoid things like doencode...
+
+2004-03-12 16:08  davidfraser
+
+	* convert/po2csv.py: handle blank po elements (don't produce a
+	  blank csv line)
+
+2004-03-12 16:00  davidfraser
+
+	* convert/Makefile: fixed csv2po to use appropriate templates...
+
+2004-03-12 15:57  davidfraser
+
+	* convert/: convert.py, csv2po.py, oo2po.py, po2csv.py, po2oo.py:
+	  updated to make convertmethods work...  only show filename if
+	  successful...  improved handling of header in csv2po
+
+2004-03-12 15:45  davidfraser
+
+	* convert/csv2po.py: fixed to use standard Convert class, make
+	  templates like input imported sparse option converted extract. to
+	  quote. (from old code)
+
+2004-03-12 15:38  davidfraser
+
+	* convert/csv2po.py: changed csv2po from defaultrecursion to
+	  optionalrecursion
+
+2004-03-12 15:36  davidfraser
+
+	* convert/Makefile: allow the progress option to be set by an
+	  environment variable
+
+2004-03-12 15:34  davidfraser
+
+	* convert/oo2po.py: indicate if outputpo is empty (so it can be
+	  removed by convertor)
+
+2004-03-12 15:31  davidfraser
+
+	* convert/csv2po.py: added in the repo class (previously csv2po2)
+	  that allows conversion using a .po template converted to use
+	  convert.ConvertOptionParser methods...
+
+2004-03-12 15:15  davidfraser
+
+	* convert/po2csv.py: converted totally to
+	  convert.ConvertOptionParser system
+
+2004-03-12 15:12  davidfraser
+
+	* convert/Makefile: added better system of categorization now you
+	  can test-mozilla, test-openoffice, test-csv, or clean- each of
+	  them also added csv tests...
+
+2004-03-12 15:10  davidfraser
+
+	* convert/convert.py: updated formathelp to handle format
+	  dictionaries...
+
+2004-03-12 15:01  davidfraser
+
+	* convert/: oo2po.py, po2dtd.py, po2prop.py: removed unneccessary
+	  imports...
+
+2004-03-12 14:30  davidfraser
+
+	* convert/: oo2po.py, po2oo.py: converted to use new
+	  ConvertOptionParser runconversion system
+
+2004-03-12 14:25  davidfraser
+
+	* convert/: dtd2po.py, moz2po, prop2po.py: moved convertdtd to
+	  dtd2po and convertprop to prop2po (updated existing methods)
+	  converted main methods in dtd2po and prop2po to use convert
+
+2004-03-12 14:17  davidfraser
+
+	* convert/: moz2po, dtd2po.py, po2dtd.py, po2moz, po2prop.py,
+	  prop2po.py: updated Mozilla command lines to use new
+	  ConvertOptionParserExt (this gives the .dtd.po instead of simple
+	  .po handling capabilities) changed old --pot options to new
+	  usepots took out silly comments
+
+2004-03-12 14:12  davidfraser
+
+	* convert/convert.py: split off the code that combines extensions
+	  (e.g. .dtd.pot) into a subclass, do a simpler thing in
+	  ConvertOptionParser improved template format intelligence (allow
+	  user to override whether template is like input or output)
+
+2004-03-12 13:20  davidfraser
+
+	* convert/convert.py: improved the logic for detecting
+	  input/outpformats to be based on dict/list rather than
+	  single/multiple (this is to help po2dtd.py and po2prop.py) also
+	  added a TODO to improve it further...
+
+2004-03-12 13:10  davidfraser
+
+	* convert/: po2dtd.py, po2moz, po2prop.py: moved convertdtd to
+	  po2dtd and convertprop to po2prop (updated existing methods)
+	  converted main methods in po2dtd and po2prop to use convert
+
+2004-03-12 12:32  davidfraser
+
+	* convert/Makefile: added makefile that runs tests...
+
+2004-03-12 12:30  davidfraser
+
+	* convert/convert.py: added a none option for progresstype
+
+2004-03-12 12:28  davidfraser
+
+	* convert/po2oo.py: fixed reference to optparse (the rest of this
+	  needs to be updated though...)
+
+2004-03-12 11:34  davidfraser
+
+	* misc/progressbar.py: added an invisible progress bar...
+
+2004-03-12 11:10  davidfraser
+
+	* filters/prefilters.py: removed unused variable (what was it for?)
+
+2004-03-12 08:16  davidfraser
+
+	* convert/convert.py: strip off the . before the inputext (like we
+	  do with the outputext)
+
+2004-03-11 07:22  davidfraser
+
+	* misc/: quote.py, setup.py: renaming variables for pychecker
+	  updated _cvs version in setup
+
+2004-03-11 06:32  davidfraser
+
+	* storage/: po.py, properties.py: renamed/removed variables to
+	  remove pychecker warnings...
+
+2004-03-11 06:29  davidfraser
+
+	* convert/convert.py: fixed errors picked up py pychecker (and
+	  Caio!)
+
+2004-03-10 18:56  davidfraser
+
+	* filters/: checks.py, prefilters.py: refactored so all the helper
+	  functions are in TranslationChecker (and automatically
+	  ignored...) also made accelerators and varmatch parameters so
+	  they don't have to be defined in prefilters...  moved the
+	  definitions for OpenOffice and Mozilla into classes in checks
+	  removed unneeded stuff from prefilter
+
+2004-03-10 18:38  davidfraser
+
+	* filters/helpers.py: added default argument to reduce calls so if
+	  list is empty, no error is produced...
+
+2004-03-10 18:03  davidfraser
+
+	* filters/: checks.py, prefilters.py: moved all the checks in
+	  checks into a class adjusted the wrapping of prefilters to work
+	  in a more readable fashion...  fixed unneccessary parameter in
+	  prefilters
+
+2004-03-10 16:36  davidfraser
+
+	* filters/: __init__.py, checks.py, decoration.py, helpers.py,
+	  prefilters.py: added initial versions of filtering code...
+
+2004-03-08 18:50  davidfraser
+
+	* convert/convert.py: adapted to support using .pot files instead
+	  of .po files adapted to handle multiple input formats, one output
+	  format fixed prunesubdirs...
+
+2004-03-02 17:16  davidfraser
+
+	* convert/po2csv.py: temporarily added import optparse to handle
+	  errors added header columns to csv
+
+2004-03-02 16:57  davidfraser
+
+	* convert/po2moz: converted to use convert module for recursion,
+	  option handling made convert functions return 1 so that they are
+	  registered as successful...  took out unneccessary code,
+	  rearranged rest...
+
+2004-03-02 13:52  davidfraser
+
+	* convert/convert.py: added support for verbose progress output...
+
+2004-03-02 13:52  davidfraser
+
+	* misc/progressbar.py: added Simple, Verbose progress bars...
+	  added verbosemessage option
+
+2004-03-02 13:43  davidfraser
+
+	* convert/convert.py: refactored recursion.  added support for
+	  progress indicators added support for multiple output formats
+	  instead of input formats
+
+2004-03-02 12:44  davidfraser
+
+	* misc/progressbar.py: added progress bar classes...
+
+2004-03-02 11:49  davidfraser
+
+	* convert/convert.py: reverted patch to only use single
+	  outputformat (po2moz needs multiple)...  still need to make it
+	  work out extension in that case...  changed name from
+	  options.recursion to options.recursive
+
+2004-03-01 18:47  dwaynebailey
+
+	* .cvsignore, convert/.cvsignore, misc/.cvsignore,
+	  storage/.cvsignore: Add .cvsignore files everywhere
+
+2004-02-27 17:33  davidfraser
+
+	* storage/po.py: escape escapes in getunquotedstr
+
+2004-02-27 17:09  davidfraser
+
+	* convert/: convert.py, moz2po: moved recursion and handling of
+	  options into convert module (fixed mistaken earlier using of
+	  self. for options.) changed from supporting multiple
+	  outputformats to only supporting one...
+
+2004-02-27 16:51  davidfraser
+
+	* convert/convert.py: refactored convert to be more intelligent and
+	  modular...  started adding functions to actually run the
+	  conversion...
+
+2004-02-27 16:07  davidfraser
+
+	* convert/: convert.py, dtd2po.py, moz2po, oo2po.py, po2csv.py,
+	  po2moz, po2oo.py, po2prop.py, prop2po.py: converted all tools to
+	  use new convert.ConvertOptionsParser also changed from new type
+	  to standard class, added default parameter to constructor
+
+2004-02-27 15:23  davidfraser
+
+	* convert/: convert.py, moz2po: added a new convert module to
+	  incorporate common elements of convert tools - option
+	  construction and parsing (done) - will also have recursion logic,
+	  etc...
+
+2004-02-27 14:26  davidfraser
+
+	* convert/csv2po.py, storage/csvl10n.py: made storage.csvl10n
+	  handle construction from inputfile startedc converting csv2po to
+	  standard options
+
+2004-02-27 14:21  davidfraser
+
+	* convert/: csv2po.py, oo2po.py, po2csv.py: added csv2po from old
+	  version
+
+2004-02-27 13:06  davidfraser
+
+	* convert/po2csv.py: converted to new command-line options system
+
+2004-02-27 13:01  davidfraser
+
+	* convert/po2csv.py: added po2csv from old version...
+
+2004-02-24 19:12  davidfraser
+
+	* misc/setup.py: made the csv setup script usable by other setup
+	  scripts
+
+2004-02-24 17:34  davidfraser
+
+	* convert/: dtd2po.py, moz2po, oo2po.py, po2dtd.py, po2moz,
+	  po2oo.py, po2prop.py, prop2po.py: added --version options
+
+2004-02-24 17:26  davidfraser
+
+	* __version__.py: added version file
+
+2004-02-24 14:16  davidfraser
+
+	* convert/oo2po.py: changed variable names that shadow builtin
+	  variables
+
+2004-02-24 14:15  davidfraser
+
+	* convert/oo2po.py: made inputformat and outputformat local
+	  variables/parameters rather than globals
+
+2004-02-24 14:11  davidfraser
+
+	* storage/dtd.py: added comments...
+
+2004-02-24 14:10  davidfraser
+
+	* convert/: TODO, moz2po, prop2po.py: added full template support
+	  for properties files in moz2po fixed wrong variable name in
+	  prop2po improved comments...
+
+2004-02-24 14:07  davidfraser
+
+	* storage/properties.py: added a propfile.makeindex method cleaned
+	  up comments
+
+2004-02-24 14:05  davidfraser
+
+	* convert/prop2po.py: added mergefiles method, use it to convert
+	  template + inputfile...
+
+2004-02-24 13:42  davidfraser
+
+	* convert/dtd2po.py: added both original and translated dtd
+	  filename into header when merging files...  improved comments to
+	  reflect template usage
+
+2004-02-24 13:31  davidfraser
+
+	* convert/: moz2po, prop2po.py: started adding support for
+	  templates to prop2po started rearranging moz2po based on new
+	  system (storage.properties etc)
+
+2004-02-24 13:30  davidfraser
+
+	* storage/po.py: improved logic of pofile.isblank() so that if it
+	  has extra blank elements it still is blank
+
+2004-02-24 13:15  davidfraser
+
+	* convert/TODO: done the translate.storage.properties class
+
+2004-02-24 13:13  davidfraser
+
+	* storage/po.py: rearranged handling of blank msgid... to not
+	  include sourcecomments etc also altered merging to not merge
+	  blank msgids
+
+2004-02-24 13:03  davidfraser
+
+	* convert/prop2po.py: improved handling of comments (generic now
+	  instead of just header comments)...  prevents blank propelements
+	  from being discarded...
+
+2004-02-24 12:16  davidfraser
+
+	* storage/properties.py: added code to handle blank properties
+	  elements (i.e. just comments followed by a blank line)
+
+2004-02-24 12:13  davidfraser
+
+	* convert/prop2po.py: did better handling of headers (merge
+	  comments in at the start) stripped msgids...
+
+2004-02-24 11:18  davidfraser
+
+	* convert/dtd2po.py, storage/dtd.py: added code to pick up the
+	  input file name and put it in the header...
+
+2004-02-24 11:16  davidfraser
+
+	* convert/prop2po.py: converted to use poelements when generating
+	  the po file that way we don't have to regenerate it...
+
+2004-02-24 10:59  davidfraser
+
+	* convert/TODO: added need to convert existing properties files to
+	  translated .po
+
+2004-02-24 10:51  davidfraser
+
+	* convert/prop2po.py: converted to use new storage.properties
+	  module added TODOs for rest of conversion...
+
+2004-02-24 10:41  davidfraser
+
+	* storage/properties.py: added storage.properties module for
+	  handling properties files...
+
+2004-02-24 10:40  davidfraser
+
+	* storage/po.py: improved comments, took out unneccessary TODOs
+
+2004-02-20 17:30  davidfraser
+
+	* convert/dtd2po.py: added template capabilities to command line...
+
+2004-02-20 17:23  davidfraser
+
+	* convert/moz2po: added the ability to use template directories
+	  (produce a .po that represents a translation)
+
+2004-02-20 17:21  davidfraser
+
+	* convert/dtd2po.py: added code to merge two dtd files (original
+	  and translated) removed leftover code
+
+2004-02-20 17:08  davidfraser
+
+	* convert/dtd2po.py: refactored convertfile into findmixedentities,
+	  convertdtdelement, convertfile made findmixedentities construct a
+	  dictionary rather than a list, indicate success with the values
+	  this is a much cleaner approach ...  the refactoring should help
+	  with merging dtd files of translations into the originals to
+	  produce .po files
+
+2004-02-20 16:32  davidfraser
+
+	* convert/dtd2po.py: refactored creating the po header...
+
+2004-02-20 16:17  dwaynebailey
+
+	* convert/moz2po: made properties files conversions always succeed
+	  (previously they weren't returning anything)
+
+2004-02-20 14:47  davidfraser
+
+	* storage/po.py: added code to handle empty lines added
+	  pofile.isempty to check if a file contains no definitions (at
+	  most a header)...
+
+2004-02-20 14:44  davidfraser
+
+	* convert/: TODO, moz2po: removed empty directories and .pot files
+	  added -P|--pot to usage
+
+2004-02-20 14:41  davidfraser
+
+	* convert/TODO: added TODO to not create empty directories...
+
+2004-02-20 12:19  davidfraser
+
+	* convert/: TODO, prop2po.py: handled duplicates in prop2po with a
+	  kludge because it is already a kludge added TODOs to indicate
+	  that...
+
+2004-02-20 11:59  davidfraser
+
+	* convert/dtd2po.py: added code to remove duplicates...
+
+2004-02-20 11:53  davidfraser
+
+	* convert/moz2po: made a switch, --pot or -P which produces .pot
+	  extensions
+
+2004-02-20 11:42  davidfraser
+
+	* convert/oo2po.py: made it produce .pot files if -P is given
+
+2004-02-20 11:32  davidfraser
+
+	* __init__.py, convert/__init__.py, convert/dtd2po.py,
+	  convert/moz2po, convert/oo2po.py, convert/po2dtd.py,
+	  convert/po2moz, convert/po2oo.py, convert/po2prop.py,
+	  convert/prop2po.py, misc/__init__.py, misc/quote.py,
+	  misc/setup.py, portal/__init__.py, portal/createdb.py,
+	  portal/dropdb.py, portal/portaldb.py, storage/__init__.py,
+	  storage/csvl10n.py, storage/dtd.py, storage/oo.py, storage/po.py:
+	  changed all #!/usr/bin/python2.2 headers to #!/usr/bin/env python
+
+2004-02-17 15:50  davidfraser
+
+	* convert/TODO: sorted out extension handling...
+
+2004-02-17 15:36  davidfraser
+
+	* convert/po2oo.py: adjusted po2oo.py to cater for plain .po files,
+	  not .oo.po files
+
+2004-02-17 15:21  davidfraser
+
+	* storage/dtd.py: rearranged code to prevent entities inside
+	  comments from being seen...  (delete the comment part once we've
+	  parsed it...)
+
+2004-02-17 12:35  davidfraser
+
+	* convert/oo2po.py, convert/po2oo.py, storage/oo.py: added methods
+	  to normalize unexpected characters in OO keys
+
+2004-02-13 13:23  davidfraser
+
+	* storage/po.py: added note on todict function...
+
+2004-02-10 15:23  davidfraser
+
+	* portal/: __init__.py, createdb.py, dropdb.py, portaldb.py: added
+	  initial database framework for portal
+
+2004-02-10 15:23  davidfraser
+
+	* convert/: oo2po.py, po2oo.py: improved method of converting
+	  OpenOffice key tuples into po location strings this prevents
+	  errors with gettext tools like msguniq also added some TODOs
+	  about future improvements that are required...
+
+2004-02-06 13:24  davidfraser
+
+	* portal/portal-erd.dia: created ER diagram for portal database,
+	  using dia
+
+2004-02-06 12:33  davidfraser
+
+	* misc/quote.py: added ability to escape escapes when escaping
+	  quotes (otherwise you can't unescape them back...)
+
+2004-02-06 12:32  davidfraser
+
+	* convert/: dtd2po.py, prop2po.py: po headers should be fuzzy, for
+	  templates the charset should not be set also escapes need to be
+	  escaped when converting .properties files to .po files
+
+2004-01-28 13:07  davidfraser
+
+	* convert/TODO: need to handle duplicates in moz2pot and oo2pot
+	  (merge #: id/source)
+
+2004-01-26 12:27  davidfraser
+
+	* convert/po2oo.py: added code to renumber the language code
+
+2004-01-26 09:20  davidfraser
+
+	* convert/: oo2po.py, po2oo.py: added openoffice <-> gettext
+	  converters
+
+2004-01-26 09:13  davidfraser
+
+	* convert/TODO: added TODO about extensions done openoffice
+	  conversion (about to add...)
+
+2004-01-26 09:12  davidfraser
+
+	* convert/dtd2po.py: corrected doc string
+
+2004-01-20 17:50  davidfraser
+
+	* convert/: TODO, moz2po: added TODO file
+
+2004-01-20 17:18  davidfraser
+
+	* convert/po2prop.py: fixed escaping (needs to know escape
+	  character even though it isn't included in the new string)
+	  changed to show proper optparse error if no template file
+	  given...
+
+2004-01-20 14:39  davidfraser
+
+	* convert/dtd2po.py: took out obsolete docstring
+
+2004-01-20 14:37  davidfraser
+
+	* convert/moz2po: added moz2po script to convert mozilla trees to
+	  po files
+
+2004-01-20 14:37  davidfraser
+
+	* convert/po2moz: fixed silly doc string
+
+2004-01-20 14:25  davidfraser
+
+	* storage/: dtd.py, oo.py, po.py: fixed warnings from pychecker -
+	  builtin variable names, unused variables, etc
+
+2004-01-20 14:20  davidfraser
+
+	* convert/po2moz: added po2moz script to convert a whole tree from
+	  .po to mozilla-style (including .dtd and .properties files
+
+2004-01-20 14:10  davidfraser
+
+	* convert/: dtd2po.py, po2dtd.py, po2prop.py, prop2po.py: fixed
+	  error - templatefile instead of self.templatefile fixed help
+	  strings for outputfile fixed warnings from pychecker - builtins
+	  used as variables
+
+2004-01-20 12:28  davidfraser
+
+	* convert/po2dtd.py: added recursive option to process directory
+	  trees...
+
+2004-01-16 11:56  davidfraser
+
+	* storage/po.py: remember the filename that this pofile object
+	  comes from...
+
+2003-12-23 15:19  davidfraser
+
+	* COPYING, ChangeLog, README, __init__.py, convert/README,
+	  convert/__init__.py, convert/dtd2po.py, convert/po2dtd.py,
+	  convert/po2prop.py, convert/prop2po.py, misc/csv.py,
+	  storage/__init__.py, storage/csvl10n.py, storage/dtd.py,
+	  storage/oo.py, storage/po.py, misc/README, misc/__init__.py,
+	  misc/_csv.c, misc/optparse.py, misc/quote.py, misc/setup.py,
+	  misc/textwrap.py: Initial revision
+
+2003-12-23 15:19  davidfraser
+
+	* COPYING, ChangeLog, README, __init__.py, convert/README,
+	  convert/__init__.py, convert/dtd2po.py, convert/po2dtd.py,
+	  convert/po2prop.py, convert/prop2po.py, misc/csv.py,
+	  storage/__init__.py, storage/csvl10n.py, storage/dtd.py,
+	  storage/oo.py, storage/po.py, misc/README, misc/__init__.py,
+	  misc/_csv.c, misc/optparse.py, misc/quote.py, misc/setup.py,
+	  misc/textwrap.py: imported a restructured, cleaner, nicer version
+	  of the l10ntools.mozdev.org scripts
 
