@@ -6,12 +6,14 @@ import ConfigParser
 import urlparse
 import urllib
 import operator
-try:
-  from translate.misc import xmlwrapper
-except ImportError:
-  import xmlwrapper
+from translate.misc import xmlwrapper
 
 availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'tn': 'Tswana', 'zu': 'Zulu'}
+
+# TODO: make force the default
+# TODO: rename default options
+# TODO: maybe advanced / simple GUI
+# TODO: maybe remove combo, path...
 
 class oosetupfile(xmlwrapper.XMLWrapper):
   def __init__(self, setupfile):
