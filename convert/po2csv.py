@@ -20,8 +20,6 @@
 
 """simple script to convert a gettext .po localization file to a comma-separated values (.csv) file"""
 
-import sys
-import os
 from translate.storage import po
 from translate.storage import csvl10n
 from translate import __version__
