@@ -125,11 +125,17 @@ class reoo:
     # return the modified oo file object
     return self.o
 
+  def renumberdest(self, newcode):
+    """change the language code oldcode to newcode"""
+    for theooelement in self.o.ooelements:
+      theooline = theooelement.lines[1]
+      theooline.languageid = newcode
+
 def getmtime(filename):
   import stat
   return time.localtime(os.stat(filename)[stat.ST_MTIME])
 
-def convertoo(inputfile, outputfile, templatefile):
+def convertoo(inputfile, outputfile, templatefile, languagecode=None):
   inputpo = po.pofile()
   inputpo.fromlines(inputfile.readlines())
   if templatefile is None:
@@ -138,6 +144,8 @@ def convertoo(inputfile, outputfile, templatefile):
   else:
     convertor = reoo(templatefile)
   outputoo = convertor.convertfile(inputpo)
+  if languagecode is not None:
+    convertor.renumberdest(languagecode)
   outputoolines = outputoo.tolines()
   outputfile.writelines(outputoolines)
 
@@ -145,7 +153,7 @@ inputformat = "po"
 outputformat = "oo"
 templateformat = "oo"
 
-def recurse(inputdir, outputdir, templatedir):
+def recurse(inputdir, outputdir, templatedir, languagecode=None):
   dirstack = ['']
   while dirstack:
     top = dirstack.pop(-1)
@@ -184,13 +192,14 @@ def recurse(inputdir, outputdir, templatedir):
             templatefile = open(templatename, 'r')
           else:
             print >>sys.stderr, "warning: missing template file %s" % templatename
-        convertoo(inputfile, outputfile, templatefile)
+        convertoo(inputfile, outputfile, templatefile, languagecode)
     # make sure the directories are processed next time round...
     dirs.reverse()
     dirstack.extend(dirs)
 
 def handleoptions(options):
   """handles the options, and runs the neccessary functions..."""
+  # TODO: make it handle non-recursive as well!
   if options.inputfile is None:
     raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputdir")
   if not os.path.isdir(options.inputfile):
@@ -202,7 +211,15 @@ def handleoptions(options):
   if options.templatefile is not None:
     if not os.path.isdir(options.templatefile):
       raise optparse.OptionValueError("template must be existing directory for recursive run.")
-  recurse(options.inputfile, options.outputfile, options.templatefile)
+  if options.languagecode is None:
+    languagecode = None
+  else:
+    try:
+      languagecode = int(options.languagecode)
+    except ValueError:
+      raise optparse.OptionValueError("languagecode must be a two-digit number")
+    languagecode = "%02d" % languagecode
+  recurse(options.inputfile, options.outputfile, options.templatefile, languagecode)
 
 if __name__ == '__main__':
   # handle command line options
@@ -211,7 +228,10 @@ if __name__ == '__main__':
   except ImportError:
     from translate.misc import optparse
   parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]")
-  parser.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False, help="recurse subdirectories")
+  parser.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False,
+                    help="recurse subdirectories")
+  parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
+                    help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")
   parser.add_option("-o", "--output-file", dest="outputfile", default=None,
