@@ -233,32 +233,41 @@ class ProjectsAdminPage(pagelayout.PootlePage):
     projects.setcell(0, 1, table.TableCell(pagelayout.Title(self.localize("Full Name"))))
     projects.setcell(0, 2, table.TableCell(pagelayout.Title(self.localize("Project Description"))))
     projects.setcell(0, 3, table.TableCell(pagelayout.Title(self.localize("Checker Style"))))
-    projects.setcell(0, 4, table.TableCell(pagelayout.Title(self.localize("Remove project"))))
+    projects.setcell(0, 4, table.TableCell(pagelayout.Title(self.localize("Create MO Files"))))
+    projects.setcell(0, 5, table.TableCell(pagelayout.Title(self.localize("Remove project"))))
     for projectcode in self.potree.getprojectcodes():
       projectadminlink = "../projects/%s/admin.html" % projectcode
       projectname = self.potree.getprojectname(projectcode)
       projectdescription = self.potree.getprojectdescription(projectcode)
       projectname = self.potree.getprojectname(projectcode)
       projectcheckerstyle = self.potree.getprojectcheckerstyle(projectcode)
+      if self.potree.getprojectcreatemofiles(projectcode):
+        projectcreatemofiles = "checked"
+      else:
+        projectcreatemofiles = ""
       nametextbox = widgets.Input({"name": "projectname-%s" % projectcode, "value": projectname})
       descriptiontextbox = widgets.Input({"name": "projectdescription-%s" % projectcode, "value": projectdescription})
       checkerstyletextbox = widgets.Input({"name": "projectcheckerstyle-%s" % projectcode, "value": projectcheckerstyle})
+      createmofilescheckbox = widgets.Input({"name": "projectcreatemofiles-%s" % projectcode, "value": projectcreatemofiles, "type": "checkbox", projectcreatemofiles:''})
       removecheckbox = widgets.Input({"name": "projectremove-%s" % projectcode, "type": "checkbox"})
       rownum = projects.maxrownum()+1
       projects.setcell(rownum, 0, table.TableCell(widgets.Link(projectadminlink, projectcode)))
       projects.setcell(rownum, 1, table.TableCell(nametextbox))
       projects.setcell(rownum, 2, table.TableCell(descriptiontextbox))
       projects.setcell(rownum, 3, table.TableCell(checkerstyletextbox))
-      projects.setcell(rownum, 4, table.TableCell([removecheckbox, self.localize("Remove %s") % projectcode]))
+      projects.setcell(rownum, 4, table.TableCell(createmofilescheckbox))
+      projects.setcell(rownum, 5, table.TableCell([removecheckbox, self.localize("Remove %s") % projectcode]))
     rownum = projects.maxrownum()+1
     codetextbox = widgets.Input({"name": "newprojectcode", "value": "", "size": 6})
     nametextbox = widgets.Input({"name": "newprojectname", "value": self.localize("(add project here)")})
     descriptiontextbox = widgets.Input({"name": "newprojectdescription", "value": self.localize("(project description)")})
-    checkerstylecheckbox = widgets.Input({"name": "projectcheckerstyle", "value": self.localize("(checker style)")})
+    checkerstyletextbox = widgets.Input({"name": "newprojectcheckerstyle", "value": self.localize("(checker style)")})
+    createmofilescheckbox = widgets.Input({"name": "newprojectcreatemofiles", "type": "checkbox"})
     projects.setcell(rownum, 0, table.TableCell(codetextbox))
     projects.setcell(rownum, 1, table.TableCell(nametextbox))
     projects.setcell(rownum, 2, table.TableCell(descriptiontextbox))
-    projects.setcell(rownum, 3, table.TableCell(checkerstylecheckbox))
+    projects.setcell(rownum, 3, table.TableCell(checkerstyletextbox))
+    projects.setcell(rownum, 4, table.TableCell(createmofilescheckbox))
     submitbutton = widgets.Input({"type":"submit", "name":"changeprojects", "value":self.localize("Save changes")})
     projectform = widgets.Form([projects, submitbutton], {"name": "projects", "action":""})
     return pagelayout.Contents([projectstitle, projectform])
@@ -647,7 +656,12 @@ class ProjectIndex(pagelayout.PootlePage):
     downloadlink = widgets.Link(basename, self.localize('PO file'))
     csvname = basename.replace(".po", ".csv")
     csvlink = widgets.Link(csvname, self.localize('CSV file'))
-    bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink])
+    if self.project.hascreatemofiles(self.project.projectcode):
+      moname = basename.replace(".po", ".mo")
+      molink = widgets.Link(moname, self.localize('MO file'))
+      bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink, molink])
+    else:
+      bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink])
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(basename, projectstats, None)
     return pagelayout.Item([body, stats])

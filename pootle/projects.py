@@ -8,6 +8,7 @@ from translate.filters import checks
 from translate.filters import pofilter
 from translate.convert import po2csv
 from translate.convert import pot2po
+from translate.tools import pocompile
 from translate.tools import pogrep
 from jToolkit import timecache
 import time
@@ -123,6 +124,13 @@ class pootlefile(po.pofile):
     csvfile = convertor.convertfile(self)
     lines = csvfile.tolines()
     return "".join(lines)
+
+  def getmo(self):
+    """returns pofile compiled into mo"""
+    self.pofreshen()
+    convertor = pocompile.pocompile()
+    mofile = convertor.convertfile(self)
+    return mofile
 
   def readpendingfile(self):
     """reads and parses the pending file corresponding to this po file"""
@@ -997,6 +1005,12 @@ class TranslationProject:
     pofile = self.getpofile(pofilename)
     return pofile.getcsv()
 
+  def getmo(self, mofilename):
+    """return pofile as compiled mo"""
+    pofilename = mofilename.replace(".mo", ".po")
+    pofile = self.getpofile(pofilename)
+    return pofile.getmo()
+
   def gettext(self, message):
     """uses the project as a live translator for the given message"""
     for pofilename, pofile in self.pofiles.iteritems():
@@ -1034,6 +1048,10 @@ class TranslationProject:
       except Exception, e:
         print "error reading translation from pofile %s: %s" % (pofilename, e)
     return unicode(message)
+
+  def hascreatemofiles(self, projectcode):
+    """returns whether the project has createmofile set"""
+    return self.potree.getprojectcreatemofiles(projectcode) == 1
 
 class POTree:
   """Manages the tree of projects and languages"""
@@ -1099,6 +1117,10 @@ class POTree:
           projectcheckerstyle = self.getprojectcheckerstyle(projectcode)
           if projectcheckerstyle != value:
             self.setprojectcheckerstyle(projectcode, value)
+      elif key.startswith("projectcreatemofiles-"):
+        projectcode = key.replace("projectcreatemofiles-", "", 1)
+        if hasattr(self.projects, projectcode):
+          self.setprojectcreatemofiles(projectcode, 1)
       elif key == "newprojectcode":
         projectcode = value.lower()
         if not projectcode:
@@ -1109,8 +1131,12 @@ class POTree:
           raise ValueError("Already have project with the code %s" % projectcode)
         projectname = argdict.get("newprojectname", projectcode)
         projectdescription = argdict.get("newprojectdescription", "")
+        projectcheckerstyle = argdict.get("newprojectcheckerstyle", "")
+        projectcreatemofiles = argdict.get("newprojectcreatemofiles", "")
         setattr(self.projects, projectcode + ".fullname", projectname)
         setattr(self.projects, projectcode + ".description", projectdescription)
+        setattr(self.projects, projectcode + ".checkerstyle", projectcheckerstyle)
+        setattr(self.projects, projectcode + ".createmofiles", projectcreatemofiles)
     self.saveprefs()
 
   def haslanguage(self, languagecode):
@@ -1224,6 +1250,16 @@ class POTree:
     """sets the project checker style"""
     projectprefs = getattr(self.projects, projectcode)
     setattr(projectprefs, "checkerstyle", projectcheckerstyle)
+
+  def getprojectcreatemofiles(self, projectcode):
+    """returns whether the project builds MO files"""
+    projectprefs = getattr(self.projects, projectcode)
+    return getattr(projectprefs, "createmofiles", False)
+
+  def setprojectcreatemofiles(self, projectcode, projectcreatemofiles):
+    """sets whether the project builds MO files"""
+    projectprefs = getattr(self.projects, projectcode)
+    setattr(projectprefs, "createmofiles", projectcreatemofiles)
 
   def hasgnufiles(self, podir, languagecode=None):
     """returns whether this directory contains gnu-style PO filenames for the given language"""

@@ -227,13 +227,19 @@ class PootleServer(users.OptionalLoginAppServer):
 	  else:
 	    contents = project.getsource(pofilename)
 	    page = widgets.PlainContents(contents)
-	    page.content_type = "text/plain"
+	    page.content_type = "text/plain; charset=UTF-8"
 	    return page
 	elif bottom.endswith(".csv"):
 	  csvfilename = os.path.join(*pathwords)
 	  contents = project.getcsv(csvfilename)
 	  page = widgets.PlainContents(contents)
-	  page.content_type = "text/plain"
+	  page.content_type = "text/plain; charset=UTF-8"
+	  return page
+	elif bottom.endswith(".mo"):
+	  mofilename = os.path.join(*pathwords)
+	  contents = project.getmo(mofilename)
+	  page = widgets.PlainContents(contents)
+	  page.content_type = "application/octet-stream"
 	  return page
         elif bottom.endswith(".zip"):
 	  if len(pathwords) > 1:
