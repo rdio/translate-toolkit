@@ -360,13 +360,18 @@ class RecursiveOptionParser(optparse.OptionParser, object):
         fulloutputpath = self.getfulloutputpath(options, outputpath)
         if options.recursiveoutput and outputpath:
           self.checkoutputsubdir(options, os.path.dirname(outputpath))
-      except Exception:
+      except Exception, error:
+        if isinstance(error, KeyboardInterrupt):
+          raise
         self.warning("Couldn't handle input file %s" % inputpath, options, sys.exc_info())
         continue
       try:
         success = self.processfile(fileprocessor, options, fullinputpath, fulloutputpath, fulltemplatepath)
-      except Exception:
+      except Exception, error:
+        if isinstance(error, KeyboardInterrupt):
+          raise
         self.warning("Error processing: input %s, output %s, template %s" % (fullinputpath, fulloutputpath, fulltemplatepath), options, sys.exc_info())
+        success = False
       self.reportprogress(inputpath, success)
     del self.progressbar
 
