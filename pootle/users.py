@@ -183,7 +183,31 @@ class PootleSession(session.LoginSession):
   def __init__(self, sessioncache, server, sessionstring = None, loginchecker = None):
     """sets up the session and remembers the users prefs"""
     super(PootleSession, self).__init__(sessioncache, server, sessionstring, loginchecker)
-    self.prefs = getattr(self.loginchecker.users, self.username)
+    self.getprefs()
+
+  def getprefs(self):
+    """gets the users prefs into self.prefs"""
+    if self.isopen:
+      self.prefs = getattr(self.loginchecker.users, self.username)
+    else:
+      self.prefs = None
+
+  def saveprefs(self):
+    """saves changed preferences back to disk"""
+    # TODO: this is a hack, fix it up nicely :-)
+    prefsfile = self.loginchecker.users.__root__.__dict__["_setvalue"].im_self
+    prefsfile.savefile()
+
+  def open(self):
+    """opens the session, along with the users prefs"""
+    super(PootleSession, self).open()
+    self.getprefs()
+    return self.isopen
+
+  def close(self, req):
+    """opens the session, along with the users prefs"""
+    super(PootleSession, self).close(req)
+    self.getprefs()
 
   def validate(self):
     """checks if this session is valid (which means the user must be activated)"""
@@ -220,9 +244,7 @@ class PootleSession(session.LoginSession):
     """gets the user's rights"""
     return getattr(self.prefs, "rights", None)
 
-  def saveprefs(self):
-    """saves changed preferences back to disk"""
-    # TODO: this is a hack, fix it up nicely :-)
-    prefsfile = self.loginchecker.users.__root__.__dict__["_setvalue"].im_self
-    prefsfile.savefile()
+  def issiteadmin(self):
+    """returns whether the user can administer the site"""
+    return getattr(self.getrights(), "siteadmin", False)
 
