@@ -94,7 +94,8 @@ class reprop:
         name = line[:equalspos].strip()
         if self.podict.has_key(name):
           self.inecho = 0
-          return name+"="+quote.doencode(self.podict[name])+eol
+          postr = self.podict[name].decode('utf8')
+          return name+"="+quote.mozillapropertiesencode(postr)+eol
         else:
           self.inecho = 1
           return line+eol
@@ -115,6 +116,6 @@ if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
   formats = {("po", "properties"): ("properties", convertprop)}
-  parser = convert.ConvertOptionParserExt(formats, usetemplates=True)
+  parser = convert.ConvertOptionParser(formats, usetemplates=True)
   parser.runconversion()
 
