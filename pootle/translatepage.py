@@ -234,20 +234,25 @@ class TranslatePage(pagelayout.PootlePage):
   def gettransreview(self, item, trans, suggestions):
     if isinstance(trans, str):
       trans = trans.decode("utf8")
-    textarea = widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
-    skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
-    suggestbutton = widgets.Input({"type":"submit", "name":"submitsuggest%d" % item, "value":"suggest"}, "suggest")
-    submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
+    origtitle = widgets.Division("<b>Original:</b>")
+    original = pagelayout.TranslationText(widgets.Font(trans, {"color":self.textcolors[item % 2]}))
+    editlink = pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit",
+"editlink%d" % item)
+    
     suggdivs = []
     for suggid, suggestion in enumerate(suggestions):
       if isinstance(suggestion, str):
         suggestion = suggestion.decode("utf8")
-      suggarea = widgets.TextArea({"name":"sugg%d.%d" % (item, suggid), "rows":3, "cols":40}, contents=suggestion)
+      if len(suggestions) > 1:
+        suggtitle = widgets.Division("<b>Suggestion %d:</b>" % suggid)
+      else:
+        suggtitle = widgets.Division("<b>Suggestion:</b>")
+      suggestiontext = pagelayout.TranslationText(widgets.Font(suggestion, {"color":self.textcolors[item % 2]}))
       acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
       rejectbutton = widgets.Input({"type":"submit", "name":"reject%d.%d" % (item, suggid), "value":"reject"}, "reject")
-      suggdiv = widgets.Division([suggarea, acceptbutton, rejectbutton], "sugg%d" % item)
+      suggdiv = widgets.Division([suggtitle, suggestiontext, acceptbutton, rejectbutton], "sugg%d" % item)
       suggdivs.append(suggdiv)
-    transdiv = widgets.Division([textarea, skipbutton, suggestbutton, submitbutton] + suggdivs, "trans%d" % item, cls="translate-translation")
+    transdiv = widgets.Division([origtitle, original, editlink] + suggdivs, "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def gettransview(self, item, trans):
