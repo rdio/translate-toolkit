@@ -76,6 +76,7 @@ def filtervariables(startmarker, endmarker, varfilter):
     return fstr1
   return filtermarkedvariables
 
+# TODO: rather just check for a ' in the middle of alphabetic characters...
 wordswithpunctuation = ["can't", "couldn't", "doesn't", "don't", "wasn't", "won't", "you're",
                         "user's", "system's", "writer's",  "isn't", "it's", "I'll", "you've", 
 			"window's", "folder's", "viewer's", "haven't", "today's", "I've", 
