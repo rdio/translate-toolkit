@@ -24,9 +24,9 @@ class PootleIndex(pagelayout.PootlePage):
     if not hasattr(language, "fullname"):
       language.fullname = languagecode
     bodytitle = '<h3 class="title">%s</h3>' % language.fullname
-    bodydescription = pagelayout.ItemDescription('<a href="%s/">%s languages</a>' % (languagecode, language.fullname))
+    bodydescription = pagelayout.ItemDescription(widgets.Link(languagecode+"/", language.fullname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    subprojects = [projects.getlanguage(subproject) for (subprojectcode, subproject) in language.subprojects.iteritems()]
+    subprojects = [projects.getproject(subproject) for (subprojectcode, subproject) in language.subprojects.iteritems()]
     subprojectcount = len(subprojects)
     totalstats = {"translated":0, "total":0}
     for subproject in subprojects:
@@ -54,7 +54,7 @@ class LanguageIndex(pagelayout.PootlePage):
 
   def getsubprojectitem(self, subprojectcode, subproject):
     bodytitle = '<h3 class="title">%s</h3>' % subproject.fullname
-    bodydescription = pagelayout.ItemDescription('<a href="%s/">%s subproject</a>' % (subprojectcode, subproject.fullname))
+    bodydescription = pagelayout.ItemDescription(widgets.Link(subprojectcode+"/", '%s subproject' % subproject.fullname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
     translationproject = projects.getproject(subproject)
     numfiles = len(translationproject.pofilenames)
@@ -71,7 +71,7 @@ class SubprojectIndex(pagelayout.PootlePage):
     self.subproject = subproject
     self.instance = session.instance
     self.translationproject = projects.getproject(self.subproject)
-    startlink = widgets.Link("translate.html", "Start Translating")
+    startlink = pagelayout.IntroText(widgets.Link("translate.html", "Start Translating"))
     processlinks = [startlink]
     if dirfilter is None:
       depth = 0
