@@ -48,7 +48,7 @@ def dounquotepo(thepo):
   return unquotedid, unquotedstr
 
 class reoo:
-  def __init__(self, templatefile, languages=None, timestamp=None):
+  def __init__(self, templatefile, languages=None, timestamp=None, includefuzzy=False):
     """construct a reoo converter for the specified languages (timestamp=0 means leave unchanged)"""
     # languages is a pair of language ids
     self.readoo(templatefile)
@@ -61,6 +61,7 @@ class reoo:
       self.timestamp_str = time.strftime("%Y%m%d %H:%M:%S", self.timestamp)
     else:
       self.timestamp_str = None
+    self.includefuzzy = includefuzzy
 
   def makekey(self, ookey):
     """converts an oo key tuple into a key identifier for the po file"""
@@ -124,6 +125,8 @@ class reoo:
     else:
       part1 = theoo.languages[self.languages[0]]
       part2 = theoo.languages[self.languages[1]]
+    if not self.includefuzzy and thepo.isfuzzy():
+      return
     # this converts the po-style string to a dtd-style string
     unquotedid, unquotedstr = dounquotepo(thepo)
     # check there aren't missing entities...
@@ -136,13 +139,12 @@ class reoo:
     if self.timestamp_str:
       part2.timestamp = self.timestamp_str
 
-  def convertfile(self, inputpo, includefuzzy=False):
+  def convertfile(self, inputpo):
     self.p = inputpo
     # translate the strings
     for thepo in self.p.poelements:
       # there may be more than one element due to msguniq merge
-      if includefuzzy or not thepo.isfuzzy():
-        self.handlepoelement(thepo)
+      self.handlepoelement(thepo)
     # return the modified oo file object
     return self.o
 
@@ -166,8 +168,8 @@ def convertoo(inputfile, outputfile, templatefile, languagecode=None, timestamp=
     raise ValueError("must have template file for oo files")
     # convertor = po2oo()
   else:
-    convertor = reoo(templatefile, timestamp=timestamp)
-  outputoo = convertor.convertfile(inputpo, includefuzzy)
+    convertor = reoo(templatefile, timestamp=timestamp, includefuzzy=includefuzzy)
+  outputoo = convertor.convertfile(inputpo)
   if languagecode is None:
     raise ValueError("must specify language code")
   else:
