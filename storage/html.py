@@ -81,3 +81,13 @@ class POHTMLParser(HTMLParser):
       self.startblock(None)
       self.currentblock += data
 
+  def handle_charref(self, name):
+    self.handle_data("&#%s;" % name)
+
+  def handle_entityref(self, name):
+    self.handle_data("&%s;" % name)
+
+  def handle_comment(self, data):
+    # we don't do anything with comments
+    pass
+
