@@ -1053,7 +1053,7 @@ class POTree:
       # TODO: handle multiple regions
       if len(languagedirs) > 1:
         raise IndexError("multiple regions defined for language %s, project %s" % (languagecode, projectcode))
-      languagedir = languagedirs[0]
+      languagedir = os.path.join(projectdir, languagedirs[0])
     return languagedir
 
   def languagematch(self, languagecode, otherlanguagecode):
