@@ -264,6 +264,19 @@ class StandardChecker(TranslationChecker):
     """checks that the number of sentences in both strings match"""
     return helpers.countsmatch(prefilters.removekdecomments(str1), str2, ".")
 
+  def startcaps(self, str1, str2):
+    """ checks that the message starts with the correct capitalisation"""
+    punc = "\\.,/?!`'\"[]{}()@#$%^&*_-;:<>"
+    str1 = self.filtervariables(prefilters.removekdecomments(str1)).lstrip().lstrip(punc)
+    str2 = self.filtervariables(str2).lstrip().lstrip(punc)
+    if len(str1) > 1 and len(str2) > 1:
+      return str1[0].isupper() == str2[0].isupper()
+    if len(str1) == 0 and len(str2) == 0:
+      return True
+    if len(str1) == 0 or len(str2) == 0:
+      return False
+    return True
+
   def simplecaps(self, str1, str2):
     """checks the capitalisation of two strings isn't wildly different"""
     capitals1, capitals2 = helpers.filtercount(str1, type(str1).isupper), helpers.filtercount(str2, type(str2).isupper)
@@ -316,7 +329,7 @@ class StandardChecker(TranslationChecker):
   preconditions = {"untranslated": ("escapes", "short", "long", "unchanged", "singlequoting", "doublequoting",
                                     "accelerators", "variables", "numbers",
                                     "doublespacing", "puncspacing", "startwhitespace", "endwhitespace",
-                                    "startpunc", "endpunc", "purepunc", "simplecaps", "acronyms", "brackets", "xmltags") }
+                                    "startcaps", "startpunc", "endpunc", "purepunc", "simplecaps", "acronyms", "brackets", "xmltags") }
 
 # code to actually run the tests (use unittest?)
 

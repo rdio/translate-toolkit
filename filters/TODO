@@ -5,8 +5,8 @@ provide options to handle true/false
 handle KDE and Gettext plural forms
 
 bugs
-	simplcaps shoudl detect sentences that do not have matching starting
-	capital.
+  startcaps - read the locale data to determine what letters are considered
+    capitals. msgid should be treated as English caps.
 
 other checks
   stop words - 
