@@ -6,52 +6,33 @@ import sys
 import os
 from translate.storage import po
 
-class count:
-  def __init__(self, message):
-    self.chars = len(message)
-    self.words = len(message.strip().split())
-  def __repr__(self):
-    return "%d chars, %d words" % (self.chars, self.words)
-
-def processfile(infile):
-  pof = po.pofile()
-  pof.fromlines(infile.readlines())
-  originals, translations = [], []
-  for poe in pof.poelements:
-    if poe.isheader() or poe.isblank():
-      continue
-    msgid = po.getunquotedstr(poe.msgid)
-    if isinstance(poe.msgstr, dict):
-      msgstr = po.getunquotedstr(poe.msgstr[0])
-    else:
-      msgstr = po.getunquotedstr(poe.msgstr)
-    original = count(msgid)
-    translation = count(msgstr)
-    originals.append(original)
-    translations.append(translation)
-  return originals, translations
-
 def sum(parts):
   return reduce(int.__add__, parts, 0)
-
-def istranslated(translation):
-  return translation.chars == 0
 
 def untranslatedwords(pair):
   original, translation = pair
   if translation.words != 0: return 0
   return original.words
 
-def summarize(originals, translations):
-  print "strings:", len(originals)
-  print "untranslated strings:", len(filter(istranslated, translations))
-  print "untranslated words:", sum(map(untranslatedwords, zip(originals, translations)))
-  print "words (original):", sum([original.words for original in originals])
-  print "words (translation):", sum([translation.words for translation in translations])
+def wordcount(postr):
+  return len(po.getunquotedstr(postr).split())
+
+def summarize(elements):
+  # ignore totally blank or header elements
+  elements = filter(lambda poel: not (poel.isblank() or poel.isheader()), elements)
+  print "strings:", len(elements)
+  untranslated = filter(lambda poel: not (po.getunquotedstr(poel.msgstr).strip()), elements)
+  print "untranslated strings:", len(untranslated)
+  print "untranslated words:", sum(map(lambda poel: wordcount(poel.msgstr), untranslated))
+  fuzzy = filter(lambda poel: poel.isfuzzy(), elements)
+  print "fuzzy strings:", len(fuzzy)
+  print "fuzzy words:", sum(map(lambda poel: wordcount(poel.msgid), fuzzy))
+  print "words (original):", sum([wordcount(poel.msgid) for poel in elements])
+  print "words (translation):", sum([wordcount(poel.msgstr) for poel in elements])
 
 class summarizer:
   def __init__(self, filenames):
-    self.alloriginals, self.alltranslations = [], []
+    self.allelements = []
     for filename in filenames:
       if not os.path.exists(filename):
         print >>sys.stderr, "cannot process %s: does not exist" % filename
@@ -61,17 +42,17 @@ class summarizer:
       else:
         self.handlefile(filename)
     print "TOTAL:"
-    summarize(self.alloriginals, self.alltranslations)
+    summarize(self.allelements)
     print
 
   def handlefile(self, filename):
     infile = open(filename)
-    originals, translations = processfile(infile)
-    self.alloriginals.extend(originals)
-    self.alltranslations.extend(translations)
+    pof = po.pofile()
+    pof.fromlines(infile.readlines())
     infile.close()
+    self.allelements.extend(pof.poelements)
     print filename
-    summarize(originals, translations)
+    summarize(pof.poelements)
     print
 
   def handlefiles(self, arg, dirname, filenames):
