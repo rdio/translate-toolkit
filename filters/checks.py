@@ -94,39 +94,39 @@ class StandardChecker(TranslationChecker):
     """checks whether a string has been translated at all"""
     return not (len(str1.strip()) > 0 and len(str2) == 0)
 
-  def translationdifferent(self, str1, str2):
+  def unchanged(self, str1, str2):
     """checks whether a translation is basically identical to the original string"""
     return str1.strip().lower() != str2.strip().lower()
 
-  def blanktranslation(self, str1, str2):
+  def blank(self, str1, str2):
     """checks whether a translation is totally blank"""
     len1 = len(str1.strip())
     len2 = len(str2.strip())
     return not (len1 > 0 and len(str2) != 0 and len2 == 0)
 
-  def shorttranslation(self, str1, str2):
+  def short(self, str1, str2):
     """checks whether a translation is much shorter than the original string"""
     len1 = len(str1.strip())
     len2 = len(str2.strip())
     return not ((len1 > 0) and (0 < len2 < (len1 * 0.1)))
 
-  def escapeconsistent(self, str1, str2):
+  def escapes(self, str1, str2):
     """checks whether escaping is consistent between the two strings"""
     return helpers.countsmatch(str1, str2, ("\\", "\\\\"))
 
-  def quoteconsistent(self, str1, str2):
+  def quoting(self, str1, str2):
     """checks whether quoting is consistent between the two strings"""
     str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
     str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
     return helpers.countsmatch(str1, str2, ('"', "'", '""', "''", '\\"', "\\'"))
 
-  def acceleratorsconsistent(self, str1, str2):
+  def accelerators(self, str1, str2):
     """checks whether accelerators are consistent between the two strings"""
     str1 = self.filtervariables(str1)
     str2 = self.filtervariables(str2)
     return helpers.funcsmatch(str1, str2, self.acccounters)
 
-  def variablesconsistent(self, str1, str2):
+  def variables(self, str1, str2):
     """checks whether variables of various forms are consistent between the two strings"""
     return helpers.funcsmatch(str1, str2, self.varchecks)
 
@@ -148,14 +148,14 @@ class StandardChecker(TranslationChecker):
     str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
     return helpers.funcmatch(str1, str2, decoration.puncend)
 
-  def purepunctuationunchanged(self, str1, str2):
+  def purepunc(self, str1, str2):
     """checks that strings that are purely punctuation are not changed"""
     # this test is a subset of startandend
     if (decoration.ispurepunctuation(str1)):
       return str1 == str2
     return 1
 
-  def simplecapitalisation(self, str1, str2):
+  def simplecaps(self, str1, str2):
     """checks the capitalisation of two strings isn't wildly different"""
     capitals1, capitals2 = helpers.filtercount(str1, str.isupper), helpers.filtercount(str2, str.isupper)
     # some heuristic tests to try and see that the style of capitals is vaguely the same
