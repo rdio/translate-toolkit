@@ -63,7 +63,15 @@ for elementclassname in dir(minidom):
     continue
   elementclass.writexml = writexml
 
-# TODO: handle comments
+def _get_elements_by_tagName_faster_helper(parent, name, rc):
+    for node in parent.childNodes:
+        if node.nodeType == minidom.Node.ELEMENT_NODE and \
+            (name == "*" or node.tagName == name):
+            yield node
+	for node in _get_elements_by_tagName_faster_helper(node, name, rc):
+            yield node
+
+minidom._get_elements_by_tagName_helper = _get_elements_by_tagName_faster_helper
 
 class QtTsParser:
   def __init__(self, inputfile=None):
@@ -90,7 +98,7 @@ class QtTsParser:
       self.document.documentElement.appendChild(contextnode)
     for message in self.getmessagenodes(contextnode):
       if self.getmessagesource(message).strip() == source.strip():
-        translationnode = message.getElementsByTagName("translation")[0]
+        translationnode = self.getFirstElementByTagName(message, "translation")
         newtranslationnode = self.document.createElement("translation")
         translationtext = self.document.createTextNode(translation)
         newtranslationnode.appendChild(translationtext)
@@ -119,6 +127,7 @@ class QtTsParser:
 
   def getnodetext(self, node):
     """returns the node's text by iterating through the child nodes"""
+    if node is None: return ""
     return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
 
   def getxml(self):
@@ -127,12 +136,19 @@ class QtTsParser:
     xml = "\n".join([line for line in xml.split("\n") if line.strip()])
     return xml
 
+  def getFirstElementByTagName(self, node, name):
+    results = node.getElementsByTagName(name)
+    if isinstance(results, list):
+      return results[0]
+    try:
+      return results.next()
+    except StopIteration:
+      return None
+
   def getcontextname(self, contextnode):
     """returns the name of the given context"""
-    namenodes = contextnode.getElementsByTagName("name")
-    if not namenodes:
-      return None
-    return self.getnodetext(namenodes[0])
+    namenode = self.getFirstElementByTagName(contextnode, "name")
+    return self.getnodetext(namenode)
 
   def getcontextnode(self, contextname):
     """finds the contextnode with the given name"""
@@ -156,28 +172,25 @@ class QtTsParser:
 
   def getmessagesource(self, message):
     """returns the message source for a given node"""
-    sourcenode = message.getElementsByTagName("source")[0]
+    sourcenode = self.getFirstElementByTagName(message, "source")
     return self.getnodetext(sourcenode)
 
   def getmessagetranslation(self, message):
     """returns the message translation for a given node"""
-    translationnode = message.getElementsByTagName("translation")[0]
+    translationnode = message.getElementsByTagName("translation")
     return self.getnodetext(translationnode)
 
   def getmessagetype(self, message):
     """returns the message translation attributes for a given node"""
-    translationnode = message.getElementsByTagName("translation")[0]
+    translationnode = self.getFirstElementByTagName(message, "translation")
     return translationnode.getAttribute("type")
 
   def getmessagecomment(self, message):
     """returns the message comment for a given node"""
-    commentnode = message.getElementsByTagName("comment")
+    commentnode = self.getFirstElementByTagName(message, "comment")
     # NOTE: handles only one comment per msgid (OK)
     # and only one-line comments (can be VERY wrong) TODO!!!
-    if commentnode.length > 0 :
-      return self.getnodetext(commentnode[0])
-    else:
-      return ""
+    return self.getnodetext(commentnode)
 
   def iteritems(self):
     """iterates through (contextname, messages)"""
