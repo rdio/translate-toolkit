@@ -220,7 +220,10 @@ class dtd2po:
           self.mixedentities[labelentity] = 1
           return thepo
         # otherwise the mix failed. add each one separately...
-    return self.convertelement(thedtd)
+    if thedtd.entity:
+      return self.convertelement(thedtd)
+    else:
+      return None
 
   def convertfile(self, thedtdfile):
     thepofile = po.pofile()
