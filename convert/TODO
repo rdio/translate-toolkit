@@ -1,7 +1,5 @@
 --update option
   make recursive methods only run if input is newer than output
-make sure extensions, etc are consistent all the way through
-  e.g. .dtd -> .dtd.po -> .dtd
 handle duplicates in moz2pot and oo2pot
 mozilla - automate
   unpackxpi
