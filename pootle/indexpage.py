@@ -62,7 +62,8 @@ class ProjectsIndex(PootleIndex):
     projectlinks = []
     for projectcode in self.potree.getprojectcodes():
       projectname = self.potree.getprojectname(projectcode)
-      projectlink = widgets.Link("%s/" % projectcode, projectname)
+      projectdescription = self.potree.getprojectdescription(projectcode)
+      projectlink = widgets.Link("%s/" % projectcode, projectname, {"title":projectdescription})
       projectlinks.append(projectlink)
     listwidget = widgets.SeparatedList(projectlinks, ", ")
     bodydescription = pagelayout.ItemDescription(listwidget)
@@ -87,7 +88,8 @@ class LanguageIndex(pagelayout.PootlePage):
   def getprojectitem(self, projectcode):
     projectname = self.potree.getprojectname(projectcode)
     bodytitle = '<h3 class="title">%s</h3>' % projectname
-    bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", self.localize('%s project') % projectname))
+    projectdescription = self.potree.getprojectdescription(projectcode)
+    bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", self.localize('%s project') % projectname, {"title":projectdescription}))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
     project = self.potree.getproject(self.languagecode, projectcode)
     numfiles = len(project.pofilenames)
