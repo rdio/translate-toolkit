@@ -18,17 +18,34 @@
 
 # this Makefile currently just contains tests that we can run to check against major errors...
 
-maintests=test-moz2po test-po2moz test-oo2po test-po2oo
-alltests=$(maintests) test-moz2po-notemplate test-moz2po-withtemplate
+mozillatests=test-moz2po-notemplate test-moz2po-withtemplate test-po2moz
+openofficetests=test-oo2po test-po2oo
+csvtests=test-po2csv test-csv2po
+maintests=$(mozillatests) $(openofficetests) $(csvtests)
+alltests=$(maintests)
 
 .PHONY: all clean test $(alltests)
 
 all:
 
-test: $(maintests) clean
+test: test-mozilla test-openoffice test-csv
 
-clean:
-	rm -fR $(alltests)
+clean: clean-mozilla clean-openoffice clean-csv
+
+test-mozilla: $(mozillatests) clean-mozilla
+
+test-openoffice: $(openofficetests) clean-openoffice
+
+test-csv: $(csvtests) clean-csv
+
+clean-mozilla:
+	rm -fR $(mozillatests)
+
+clean-openoffice:
+	rm -fR $(openofficetests)
+
+clean-csv:
+	rm -fR $(csvtests)
 
 test-moz2po: test-moz2po-notemplate test-moz2po-withtemplate
 
@@ -55,7 +72,7 @@ test-moz2po-withtemplate:
 test-po2moz: input=test-moz2po-withtemplate
 test-po2moz: output=test-po2moz
 test-po2moz: template=$(dtddir)/en-US-1.6
-test-po2moz:
+test-po2moz: test-moz2po-withtemplate
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
 	./po2moz --progress=none -i $(input) -o $(output) -t $(template)
@@ -75,5 +92,19 @@ test-po2oo:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
 	./po2oo.py --progress=none -R -l $(languagecode) -i $(input) -o $(output) -t $(template)
+
+test-po2csv: input=$(oopodir)/af
+test-po2csv: output=test-po2csv
+test-po2csv:
+	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
+	mkdir $(output)
+	./po2csv.py --progress=none -R -i $(input) -o $(output)
+
+test-csv2po: input=$(oopodir)/af
+test-csv2po: output=test-csv2po
+test-csv2po: test-po2csv
+	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
+	mkdir $(output)
+	./csv2po.py --progress=none -R -i $(input) -o $(output)
 
 
