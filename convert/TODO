@@ -14,6 +14,9 @@ moz2po
 headers
   charset=UTF-8
 
+copyright
+  need to insert the standard copyright text unitialised
+
 csv2po
   * change order of columns: original, translation, other stuff
   * It does not currently reflow text to create a newline around literal \n
@@ -23,3 +26,8 @@ oo2po / po2oo
   fix problem with OOO_VENDOR and \" quoting in offmgr.po (see help - about)
   make oo output order the same as in input file...
 
+docs
+  not sure where else to put this!
+    docs are installed in /usr/lib/python2.3/site-packages/translate/doc
+    should be /usr/share/docs/translate-toolkit-0.8
+    Not sure what's needed on Windows - non critical
