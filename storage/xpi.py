@@ -51,8 +51,7 @@ class XpiFile(zipfile.ZipFile):
     for filename in self.namelist():
       if filename.lower().endswith('.jar'):
         if filename not in self.jarfiles:
-          jarcontents = self.read(filename)
-          jarstream = StringIO(jarcontents)
+          jarstream = self.openinputstream(None, filename)
           jarfile = zipfile.ZipFile(jarstream)
           self.jarfiles[filename] = jarfile
         else:
@@ -140,16 +139,27 @@ class XpiFile(zipfile.ZipFile):
           return jarfilename, filename
       raise IndexError("ospath not found in xpi file, could not guess location: %r" % ospath)
 
-  def iterextractnames(self, includenonjars=False):
+  def openinputstream(self, jarfilename, filename):
+    """opens a file (possibly inside a jarfile as a StringIO"""
+    if jarfilename is None:
+      contents = self.read(filename)
+    else:
+      jarfile = self.jarfiles[jarfilename]
+      contents = jarfile.read(filename)
+    return StringIO(contents)
+
+  def iterextractnames(self, includenonjars=False, includedirs=False):
     """iterates through all the localization files with the common prefix stripped and a jarfile name added if neccessary"""
     if includenonjars:
       for filename in self.namelist():
-        if filename.endswith('/'): continue
+        if filename.endswith('/') and not includedirs: continue
         if not filename.lower().endswith(".jar"):
           yield self.jartoospath(None, filename)
     for jarfilename, jarfile in self.iterjars():
       for filename in jarfile.namelist():
-        if filename.endswith('/'): continue
+        if filename.endswith('/'):
+          if not includedirs: continue
+          elif len(filename.split('/'))-1 < len(self.commonprefix): continue
         yield self.jartoospath(jarfilename, filename)
 
 if __name__ == '__main__':
@@ -163,6 +173,6 @@ if __name__ == '__main__':
     optparser.error("need at least one argument")
   else:
     x = XpiFile(args[0])
-  for name in x.iterextractnames(True):
+  for name in x.iterextractnames(True, True):
     print name, x.ostojarpath(name)
 
