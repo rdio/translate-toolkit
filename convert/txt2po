@@ -19,10 +19,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-"""Converts plain text files to Gettext .po files (Note: po2txt does not exist
-yet)"""
-
-# TODO: create po2txt
+"""Converts plain text files to Gettext .po files
+You can convert back to .txt using po2txt"""
 
 from translate.storage import po
 from translate.misc import quote
