@@ -125,6 +125,7 @@ def convertfile(inputfile, outputfile, blankmsgstr):
   outputfile.writelines(outputpolines)
 
 def recurse(inputdir, outputdir, inputformat, outputformat, blankmsgstr):
+  """recurse through inputdir and convertfiles in inputformat to outputformat in outputdir"""
   dirstack = ['']
   while dirstack:
     top = dirstack.pop(-1)
