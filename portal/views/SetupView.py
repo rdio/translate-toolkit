@@ -25,11 +25,20 @@ from translate.portal.database import dbhelper
 
 "code to setup the view templates for the translate portal"
 
+def formatter(string):
+    """Format an original/translated string so that it does not contain
+    unintended markup (can also later be extended to include require highlights
+    and/or markup (e.g. for whitespace and accelerator highlighting, etc"""
+    if string == None or len(string) == 0 : 
+        return ''
+    return string.replace('<', '&lt;').replace('>','&gt;').replace('\\n','<br/>')
+    
 def setupGlobal(transaction,tmpl):
     "Global setup - applies to all views"
     from time import *
     Logging.debug("Global view setup func setupGlobal() called")
     tmpl.time = asctime(localtime())
+    tmpl.format = formatter
 
 def setupTesting(transaction,tmpl):
     from time import *

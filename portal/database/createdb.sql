@@ -58,7 +58,7 @@ DROP TABLE original CASCADE;
 CREATE TABLE original
 (
     orig_id serial,
-    orig_location varchar(64) NOT NULL,
+    orig_location varchar(4096) NOT NULL,
     orig_translator_comment varchar(4096),
     orig_string_raw varchar(4096) NOT NULL,
     orig_comment varchar(4096),

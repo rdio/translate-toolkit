@@ -5,7 +5,7 @@
     <h2>$lang.name ($lang.iso639_2 $lang.iso639_3 $lang.country_iso3166_2)</h2>   
     <table border="0">
         <tr>
-            <td align="right">Translation version : </td><td>$transl.version</td>
+            <td align="right">Translation version : </td><td>$format($transl.version)</td>
         </tr>
             #if $ed
             <form name="editForm" action="index" method="post">
@@ -24,15 +24,15 @@
             <form>
         #else
             <tr>
-                <td align="right">Raw string : </td><td>$transl.raw</td>
+                <td align="right">Raw string : </td><td>$format($transl.raw)</td>
             </tgr>
         #end if
         </tr>
         <tr>
-            <td align="right">Accelerator : </td><td>$transl.getAccelerator()</td>
+            <td align="right">Accelerator : </td><td>$format($transl.getAccelerator())</td>
         </tr>
         <tr>
-            <td align="right">Stripped string : </td><td>$transl.getStripped()</td>
+            <td align="right">Stripped string : </td><td>$format($transl.getStripped())</td>
         </tr>
         <tr>
             <td align="right">Number of words : </td><td>$transl.getWordcount()</td>
@@ -45,10 +45,10 @@
 
 <html>
     <head>
-        #set $displayname = $original.getStripped()
+        #set $displayname = $format($original.getStripped())
         <small><a href="index?view=projectlist">Home</a></small>>
-        <small><a href="index?view=projectdetail&project=$original.file.project.id">$original.file.project.name ($original.file.project.version)</a></small> >
-        <small><a href="index?view=filedetail&file=$original.file.id">$original.file.name</a></small>>
+        <small><a href="index?view=projectdetail&project=$original.file.project.id">$format($original.file.project.name) $format(($original.file.project.version))</a></small> >
+        <small><a href="index?view=filedetail&file=$original.file.id">$format($original.file.name)</a></small>>
         <small><u>$displayname[:20] ...</u></small>
         <title>String details</title>
     </head>
@@ -61,19 +61,19 @@
         <h2>Original</h2>
         <table border="0">
             <tr>
-                <td align="right">Translator comment : </td><td>$original.translator_comment</td>
+                <td align="right">Translator comment : </td><td>$format($original.translator_comment)</td>
             </tr>
             <tr>
-                <td align="right">Comment : </td><td>$original.comment</td>
+                <td align="right">Comment : </td><td>$format($original.comment)</td>
             </tr>
             <tr>
-                <td align="right">Raw string : </td><td>$original.raw</td>
+                <td align="right">Raw string : </td><td>$format($original.raw)</td>
             </tr>
             <tr>
-                <td align="right">Accelerator : </td><td>$original.getAccelerator()</td>
+                <td align="right">Accelerator : </td><td>$format($original.getAccelerator())</td>
             </tr>
             <tr>
-                <td align="right">Stripped string : </td><td>$original.getStripped()</td>
+                <td align="right">Stripped string : </td><td>$format($original.getStripped())</td>
             </tr>
             <tr>
                 <td align="right">Number of words : </td><td>$original.getWordcount()</td>

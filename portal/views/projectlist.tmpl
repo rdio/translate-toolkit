@@ -6,7 +6,7 @@
         <h1>Projects:</h1>
         <hr/>
         #for  $project in $projects
-            <p><a href="index?view=projectdetail&project=$project.id">$project.name ($project.version)</a></p>
+            <p><a href="index?view=projectdetail&project=$project.id">$format($project.name) ($format($project.version))</a></p>
         #end for
     </body>
 </html>

@@ -46,6 +46,10 @@ def executeQuery(sql):
     if db: pool.releaseConnection(db)
     return results
 
+def safeSQLString(string):
+    if string == None or len(string) == 0:
+        return ''
+    return string.replace('\'', '\'\'').replace('%','\\\\%')
 
 def executeCustomDelete(sql):
     """custom_delete(sql) -> execute a custom DELETE query"""
@@ -71,12 +75,12 @@ def retrieve(cls,criteria={},orderby=[]):
     """    
     if (len(criteria)):
         if isinstance(criteria,dict): criteria = criteria.items()
-        conditions = [" AND ".join(["%s LIKE '%s'" % (str(k),v) for k,v in criteria if isinstance(v,str)]),
+        conditions = [" AND ".join(["%s LIKE '%s'" % (str(k),safeSQLString(v)) for k,v in criteria if isinstance(v,str)]),
             " AND ".join(["%s=%s" % (str(k),str(v)) for k,v in criteria if not isinstance(v,str)])
         ]
     whereclause = len(criteria) and " WHERE " + " AND ".join([c for c in conditions if len(c)]) or ""
     orderbyclause = len(orderby) and " ORDER BY " + ",".join(orderby) or ""
-    sql = "SELECT * FROM " + cls.TABLE + whereclause + orderbyclause    
+    sql = "SELECT * FROM " + cls.TABLE + whereclause + orderbyclause
     results = executeQuery(sql)
     return [cls(values) for values in results]
 
