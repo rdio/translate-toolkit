@@ -321,6 +321,7 @@ class pootlefile(po.pofile):
     thepo = self.transelements[item]
     thepo.msgstr = newmsgstr
     thepo.markfuzzy(False)
+    self.updateheader(PO_Revision_Date = time.strftime("%F %H:%M%z"))
     self.savepofile()
     self.reclassifyelement(item)
 
