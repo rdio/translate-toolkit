@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""manages projects and subprojects"""
+"""manages projects and files and translations"""
 
 from translate.storage import po
 from translate.misc import quote
@@ -39,12 +39,12 @@ class TranslationSession:
 
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
-  def __init__(self, subproject):
-    self.subproject = subproject
+  def __init__(self, project):
+    self.project = project
     self.pofilenames = []
     self.pofiles = {}
     self.stats = {}
-    os.path.walk(self.subproject.podir, self.addfiles, None)
+    os.path.walk(self.project.podir, self.addfiles, None)
     self.initstatscache()
 
   def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
@@ -138,15 +138,15 @@ class TranslationProject:
     """gets the user's translationsession"""
     if not hasattr(session, "translationsessions"):
       session.translationsessions = {}
-    if not self.subproject in session.translationsessions:
-      session.translationsessions[self.subproject] = TranslationSession(self, session)
-    return session.translationsessions[self.subproject]
+    if not self.project in session.translationsessions:
+      session.translationsessions[self.project] = TranslationSession(self, session)
+    return session.translationsessions[self.project]
 
   def initstatscache(self):
     """reads cached statistics from the disk"""
     for pofilename in self.pofilenames:
       if not pofilename in self.stats:
-        abspofilename = os.path.join(self.subproject.podir, pofilename)
+        abspofilename = os.path.join(self.project.podir, pofilename)
         pomtime = os.stat(abspofilename)[os.path.stat.ST_MTIME]
         statsfilename = abspofilename + os.extsep + "stats"
         if os.path.exists(statsfilename):
@@ -186,7 +186,7 @@ class TranslationProject:
     pofile = self.getpofile(pofilename)
     postats = dict([(name, len(items)) for name, items in pofile.classify.iteritems()])
     self.stats[pofilename] = postats
-    abspofilename = os.path.join(self.subproject.podir, pofilename)
+    abspofilename = os.path.join(self.project.podir, pofilename)
     pomtime = os.stat(abspofilename)[os.path.stat.ST_MTIME]
     statsfilename = abspofilename + os.extsep + "stats"
     try:
@@ -198,7 +198,7 @@ class TranslationProject:
 
   def addfiles(self, dummy, dirname, fnames):
     """adds the files to the set of files for this project"""
-    basedirname = dirname.replace(self.subproject.podir, "")
+    basedirname = dirname.replace(self.project.podir, "")
     while basedirname.startswith(os.sep):
       basedirname = basedirname.replace(os.sep, "", 1)
     ponames = [fname for fname in fnames if fname.endswith(os.extsep+"po")]
@@ -208,7 +208,7 @@ class TranslationProject:
     """parses the file into a pofile object and stores in self.pofiles"""
     if pofilename in self.pofiles:
       return self.pofiles[pofilename]
-    abspofilename = os.path.join(self.subproject.podir, pofilename)
+    abspofilename = os.path.join(self.project.podir, pofilename)
     inputfile = open(abspofilename, "r")
     pofile = po.pofile(inputfile)
     # we ignore all the headers by using this filtered set
@@ -245,7 +245,7 @@ class TranslationProject:
     """saves changes to disk..."""
     pofile = self.getpofile(pofilename)
     lines = pofile.tolines()
-    abspofilename = os.path.join(self.subproject.podir, pofilename)
+    abspofilename = os.path.join(self.project.podir, pofilename)
     open(abspofilename, "w").writelines(lines)
 
   def getsource(self, pofilename):
@@ -265,8 +265,8 @@ class TranslationProject:
 
 projects = {}
 
-def getproject(subproject):
-  if subproject not in projects:
-    projects[subproject] = TranslationProject(subproject)
-  return projects[subproject]
+def getproject(project):
+  if project not in projects:
+    projects[project] = TranslationProject(project)
+  return projects[project]
   
