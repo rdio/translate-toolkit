@@ -157,11 +157,21 @@ class TranslationProject:
     """gets the goals the given file is part of"""
     goals = getattr(self.prefs, "goals", {})
     filegoals = []
+    ancestry = []
+    parts = filename.split(os.path.sep)
+    for i in range(1, len(parts)):
+      ancestor = os.path.join(*parts[:i]) + os.path.sep
+      ancestry.append(ancestor)
     for goalname, goalnode in goals.iteritems():
       goalfiles = getattr(goalnode, "files", "")
       goalfiles = [goalfile.strip() for goalfile in goalfiles.split(",") if goalfile.strip()]
       if filename in goalfiles:
         filegoals.append(goalname)
+        continue
+      for ancestor in ancestry:
+        if ancestor in goalfiles:
+          filegoals.append(goalname)
+          continue
     return filegoals
 
   def addfiletogoal(self, goalname, filename, exclusive=False):

@@ -310,6 +310,8 @@ class ProjectIndex(pagelayout.PootlePage):
       if not goalfile:
         raise ValueError("cannot add goal, no filename given")
       # TODO: check that its a valid goalname (alphanumeric etc)
+      if self.dirname:
+        goalfile = os.path.join(self.dirname, goalfile)
       self.project.addfiletogoal(goalname.strip(), goalfile, True)
       del self.argdict["doeditgoal"]
 
@@ -431,11 +433,19 @@ class ProjectIndex(pagelayout.PootlePage):
     allitems = []
     goalchildren = {}
     allchildren = []
-    for childname in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=True):
+    for childname in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=False):
+      allchildren.append(childname+"/")
+    for childname in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=False, includefiles=True):
       allchildren.append(childname)
     for goalname in self.project.getgoalnames():
       goalfiles = self.project.getgoalfiles(goalname, dirfilter)
       if not goalfiles: continue
+      initial = dirfilter
+      if initial and not initial.endswith(os.path.extsep + "po"):
+        initial += os.path.sep
+      # TODO: fix the problem where the current directory in a goal displays as ""
+      if initial:
+        goalfiles = [goalfile.replace(initial, "", 1) for goalfile in goalfiles]
       goalitem = self.getgoalitem(goalname, goalfiles)
       allitems.append(goalitem)
       if self.argdict.get("goal", None) == goalname:
@@ -445,7 +455,8 @@ class ProjectIndex(pagelayout.PootlePage):
         goalchildren[goalfile] = True
     goalless = []
     for item in allchildren:
-      if item not in goalchildren:
+      itemgoals = self.project.getfilegoals(item)
+      if not itemgoals:
         goalless.append(item)
     goallessitems = self.getitems(goalless, linksrequired=["editgoal"])
     if goallessitems:
@@ -555,6 +566,10 @@ class ProjectIndex(pagelayout.PootlePage):
     addoptionlink("check", "translate", "showchecks", self.localize("Show Checks"), self.localize("Hide Checks"))
     addoptionlink("goal", "admin", "showgoals", self.localize("Show Goals"), self.localize("Hide Goals"))
     addoptionlink("assign", "translate", "showassigns", self.localize("Show Assigns"), self.localize("Hide Assigns"))
+    if self.showgoals and "admin" in self.rights:
+      goalfile = os.path.join(self.dirname, basename)
+      filegoals = self.project.getfilegoals(goalfile)
+      actionlinks.append(self.localize("Goals: %s" % (", ".join(filegoals))))
     if "editgoal" in linksrequired and "admin" in self.rights:
       goaloptions = [(goalname, goalname) for goalname in self.project.getgoalnames()]
       goalselect = widgets.Select({"name": "editgoal"}, goaloptions)
