@@ -21,6 +21,7 @@
 import sys
 import os.path
 import fnmatch
+import traceback
 try:
   import optparse
   if optparse.__version__ < "1.4.1+":
@@ -40,6 +41,7 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     """construct the specialized Option Parser"""
     optparse.OptionParser.__init__(self, version="%prog "+__version__.ver, description=description)
     self.setprogressoptions()
+    self.seterrorleveloptions()
     self.setformats(formats, usetemplates)
     self.setpsycooption()
     self.passthrough = []
@@ -57,9 +59,9 @@ class RecursiveOptionParser(optparse.OptionParser, object):
       return
     try:
       import psyco
-    except Exception, e:
+    except Exception:
       if options.psyco is not None:
-        self.warning("psyco unavailable: %s" % e)
+        self.warning("psyco unavailable", options, sys.exc_info())
       return
     if options.psyco is None:
       options.psyco = "full"
@@ -78,8 +80,19 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     else:
       super(RecursiveOptionParser, self).set_usage(usage)
 
-  def warning(self, msg):
+  def warning(self, msg, options=None, exc_info=None):
     """Print a warning message incorporating 'msg' to stderr and exit."""
+    if options:
+      if options.errorlevel == "traceback":
+        errorinfo = "\n".join(traceback.format_exception(exc_info[0], exc_info[1], exc_info[2]))
+      elif options.errorlevel == "exception":
+        errorinfo = "\n".join(traceback.format_exception_only(exc_info[0], exc_info[1]))
+      elif options.errorlevel == "message":
+        errorinfo = str(exc_info[1])
+      else:
+        errorinfo = ""
+      if errorinfo:
+        msg += ": " + errorinfo
     print >>sys.stderr, "\n%s: warning: %s" % (optparse.get_prog_name(), msg)
 
   def getusagestring(self, option):
@@ -166,6 +179,14 @@ class RecursiveOptionParser(optparse.OptionParser, object):
                       help="show progress as: %s" % (", ".join(self.progresstypes)))
     self.define_option(progressoption)
 
+  def seterrorleveloptions(self):
+    """sets the errorlevel options"""
+    self.errorleveltypes = ["none", "message", "exception", "traceback"]
+    errorleveloption = optparse.Option(None, "--errorlevel", dest="errorlevel", default="message",
+                      choices = self.errorleveltypes, metavar="ERRORLEVEL",
+                      help="show errorlevel as: %s" % (", ".join(self.errorleveltypes)))
+    self.define_option(errorleveloption)
+
   def getformathelp(self, formats):
     """make a nice help string for describing formats..."""
     if None in formats:
@@ -246,9 +267,12 @@ class RecursiveOptionParser(optparse.OptionParser, object):
       outputformat, fileprocessor = options.outputoptions[None, "*"]
     else:
       if self.usetemplates:
-        raise ValueError("could not find outputoptions for inputext %s, templateext %s" % (inputext, templateext))
+        if templateext is None:
+          raise ValueError("don't know what to do with input format %s, no template file" % (os.extsep + inputext))
+        else:
+          raise ValueError("don't know what to do with input format %s, template format %s" % (os.extsep + inputext, os.extsep + templateext))
       else:
-        raise ValueError("could not find outputoptions for inputext %s" % inputext)
+        raise ValueError("don't know what to do with input format %s" % os.extsep + inputext)
     if outputformat == "*":
       if inputext:
         outputformat = inputext
@@ -256,9 +280,12 @@ class RecursiveOptionParser(optparse.OptionParser, object):
         outputformat = templateext
       else:
         if self.usetemplates:
-          raise ValueError("could not find output format for inputext %s, templateext %s" % (inputext, templateext))
+          if templateext is None:
+            raise ValueError("don't know what to do with input format %s, no template file" % (os.extsep + inputext))
+          else:
+            raise ValueError("don't know what to do with input format %s, template format %s" % (os.extsep + inputext, os.extsep + templateext))
         else:
-          raise ValueError("could not find output format for inputext %s" % inputext)
+          raise ValueError("don't know what to do with input format %s" % os.extsep + inputext)
     return outputformat, fileprocessor
 
   def initprogressbar(self, allfiles, options):
@@ -324,19 +351,22 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     options.recursivetemplate = self.usetemplates and self.isrecursive(options.template)
     self.initprogressbar(inputfiles, options)
     for inputpath in inputfiles:
-      templatepath = self.gettemplatename(options, inputpath)
-      outputformat, fileprocessor = self.getoutputoptions(options, inputpath, templatepath)
-      fullinputpath = self.getfullinputpath(options, inputpath)
-      fulltemplatepath = self.getfulltemplatepath(options, templatepath)
-      outputpath = self.getoutputname(options, inputpath, outputformat)
-      fulloutputpath = self.getfulloutputpath(options, outputpath)
-      if options.recursiveoutput and outputpath:
-        self.checkoutputsubdir(options, os.path.dirname(outputpath))
+      try:
+        templatepath = self.gettemplatename(options, inputpath)
+        outputformat, fileprocessor = self.getoutputoptions(options, inputpath, templatepath)
+        fullinputpath = self.getfullinputpath(options, inputpath)
+        fulltemplatepath = self.getfulltemplatepath(options, templatepath)
+        outputpath = self.getoutputname(options, inputpath, outputformat)
+        fulloutputpath = self.getfulloutputpath(options, outputpath)
+        if options.recursiveoutput and outputpath:
+          self.checkoutputsubdir(options, os.path.dirname(outputpath))
+      except Exception:
+        self.warning("Couldn't handle input file %s" % inputpath, options, sys.exc_info())
+        continue
       try:
         success = self.processfile(fileprocessor, options, fullinputpath, fulloutputpath, fulltemplatepath)
       except Exception:
-        self.warning("Error processing: input %s, output %s, template %s" % (fullinputpath, fulloutputpath, fulltemplatepath))
-        raise
+        self.warning("Error processing: input %s, output %s, template %s" % (fullinputpath, fulloutputpath, fulltemplatepath), options, sys.exc_info())
       self.reportprogress(inputpath, success)
     del self.progressbar
 
