@@ -353,9 +353,7 @@ class pootlefile(po.pofile):
     self.reclassifyelement(item)
 
   def iteritems(self, search, lastitem=None):
-    """iterates through the items in this pofile starting after the given lastitem
-    if matchnames is given only returns items matching one of the given classifications
-    if assigncondition is given, as (username, action), only returns items assigned to username for action"""
+    """iterates through the items in this pofile starting after the given lastitem, using the given search"""
     # update stats if required
     self.getstats()
     if lastitem is None:
@@ -364,11 +362,23 @@ class pootlefile(po.pofile):
       minitem = lastitem + 1
     maxitem = len(self.transelements)
     validitems = range(minitem, maxitem)
-    if search.assigncondition is not None: 
+    if search.assignedto or search.assignedaction: 
+      # filter based on assign criteria
       self.getassigns()
-      username, action = search.assigncondition
-      assignitems = self.assigns.get(username, {}).get(action, {})
+      if search.assignedto:
+        usernames = [search.assignedto]
+      else:
+        usernames = self.assigns.iterkeys()
+      assignitems = []
+      for username in usernames:
+        if search.assignedaction:
+          actionitems = self.assigns[username].get(search.assignedaction, [])
+          assignitems.extend(actionitems)
+        else:
+          for actionitems in self.assigns[username].itervalues():
+            assignitems.extend(actionitems)
       validitems = [item for item in validitems if item in assignitems]
+    # loop through, filtering on matchnames if required
     for item in validitems:
       if not search.matchnames:
         yield item
@@ -378,10 +388,11 @@ class pootlefile(po.pofile):
 
 class Search:
   """an object containint all the searching information"""
-  def __init__(self, dirfilter=None, matchnames=None, assigncondition=None, searchtext=None):
+  def __init__(self, dirfilter=None, matchnames=None, assignedto=None, assignedaction=None, searchtext=None):
     self.dirfilter = dirfilter
     self.matchnames = matchnames
-    self.assigncondition = assigncondition
+    self.assignedto = assignedto
+    self.assignedaction = assignedaction
     self.searchtext = searchtext
 
 class TranslationProject:
@@ -443,21 +454,39 @@ class TranslationProject:
       yield self.pofilenames[index]
       index += 1
 
-  def searchpofilenames(self, lastpofilename, search, includelast=False):
-    """find the next pofilename that has items matching one of the given classification names"""
-    for pofilename in self.iterpofilenames(lastpofilename, includelast):
-      # TODO: handle assigncondition
-      if search.dirfilter is not None and not pofilename.startswith(search.dirfilter):
-        continue
-      if not search.matchnames:
-        yield pofilename
+  def matchessearch(self, pofilename, search):
+    """returns whether any items in the pofilename match the search (based on collected stats etc)"""
+    if search.dirfilter is not None and not pofilename.startswith(search.dirfilter):
+      return False
+    if search.assignedto or search.assignedaction:
+      assigns = self.pofiles[pofilename].getassigns()
+      if search.assignedto is not None:
+        if search.assignedto not in assigns:
+          return False
+        assigns = assigns[search.assignedto]
+      else:
+        assigns = reduce(lambda x, y: x+y, [userassigns.keys() for userassign in assigns.values()], [])
+      if search.assignedaction is not None:
+        if search.assignedaction not in assigns:
+          return False
+    if search.matchnames:
       postats = self.getpostats(pofilename)
+      matches = False
       for name in search.matchnames:
         if postats[name]:
-          yield pofilename
+          matches = True
+      if not matches:
+        return False
+    return True
+
+  def searchpofilenames(self, lastpofilename, search, includelast=False):
+    """find the next pofilename that has items matching the given search"""
+    for pofilename in self.iterpofilenames(lastpofilename, includelast):
+      if self.matchessearch(pofilename, search):
+        yield pofilename
 
   def searchpoitems(self, pofilename, item, search):
-    """finds the next item matching one of the given classification names"""
+    """finds the next item matching the given search"""
     if search.searchtext:
       pogrepfilter = pogrep.pogrepfilter(search.searchtext, None, ignorecase=True)
     for pofilename in self.searchpofilenames(pofilename, search, includelast=True):

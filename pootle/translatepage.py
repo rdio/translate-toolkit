@@ -159,12 +159,10 @@ class TranslatePage(pagelayout.PootlePage):
     item = self.argdict.get("item", None)
     if item is None:
       try:
-        # make an assign condition based on the username ...
+        search = projects.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext)
         if self.session.session.isopen:
-          assigncondition = (self.session.session.username, "suggest")
-        else:
-          assigncondition = None
-        search = projects.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext, assigncondition=assigncondition)
+          search.assignedto = self.session.session.username
+          search.assignedaction = "suggest"
         self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, search).next()
       except StopIteration:
         if self.lastitem is None:
