@@ -222,7 +222,7 @@ class TranslationProject:
     pofile.classify["translated"] = [item for item, poel in enumerate(pofile.transelements) if item not in pofile.classify["fuzzy"] and item not in pofile.classify["blank"]]
     pofile.classify["total"] = range(len(pofile.transelements))
     for checkname in self.checker.getfilters().keys():
-      pofile.classify[checkname] = []
+      pofile.classify["check-" + checkname] = []
     for item, poel in enumerate(pofile.transelements):
       unquotedid = po.getunquotedstr(poel.msgid, joinwithlinebreak=False)
       unquotedstr = po.getunquotedstr(poel.msgstr, joinwithlinebreak=False)

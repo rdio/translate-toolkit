@@ -112,7 +112,10 @@ class ProjectIndex(pagelayout.PootlePage):
     statssummary = "%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished)
     if self.showchecks:
       for checkname, checkcount in projectstats.iteritems():
-        if checkname.startswith("check-") and total and checkcount:
+        if not checkname.startswith("check-"):
+          continue
+        checkname = checkname.replace("check-", "", 1)
+        if total and checkcount:
           checksdetails = "%s: %d strings (%d%%) failed" % (checkname, checkcount, (checkcount * 100 / total))
           statssummary += "<br/>\n" + checksdetails
     stats = pagelayout.ItemStatistics(statssummary)
