@@ -23,6 +23,7 @@
 from translate.filters import helpers
 from translate.filters import decoration
 from translate.filters import prefilters
+import sre
 
 # actual test methods
 
@@ -291,6 +292,15 @@ class StandardChecker(TranslationChecker):
           return False
     return True
 
+  def xmltags(self, str1, str2):
+    """checks that XML/HTML tags have not been translated"""
+    str1 = prefilters.removekdecomments(str1)
+    tags = sre.findall("<[^>]+>", str1)
+    # TODO break down translatable tags eg <img alt="blah">
+    if len(tags) == 1 and len(tags[0]) == len(str1):
+      return True
+    return helpers.countsmatch(str1, str2, tags)
+
   def kdecomments(self, str1, str2):
     """checks to ensure that no KDE style comments appear in the translation"""
     return str2.find("\n_:") == -1 and not str2.startswith("_:")
@@ -302,7 +312,7 @@ class StandardChecker(TranslationChecker):
   preconditions = {"untranslated": ("escapes", "short", "long", "unchanged", "singlequoting", "doublequoting",
                                     "accelerators", "variables", "numbers",
                                     "doublespacing", "puncspacing", "startwhitespace", "endwhitespace",
-                                    "startpunc", "endpunc", "purepunc", "simplecaps", "acronyms", "brackets") }
+                                    "startpunc", "endpunc", "purepunc", "simplecaps", "acronyms", "brackets", "xmltags") }
 
 # code to actually run the tests (use unittest?)
 

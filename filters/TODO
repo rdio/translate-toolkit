@@ -15,7 +15,6 @@ other checks
   plural checks - check plural forms against the Gettext plural header
     fallback to list of valid plurals for KDE.
   Supper basic machine translation - en_GB changes color -> colour
-  tags - check XML/HTML tags to make sure that the counts are the same
   emails/URLs - checks emails and URLs to make sure they have not been altered
   punc count - .,: all add up.  Simple way to see if all sentences where
 	translated.
