@@ -17,7 +17,9 @@ class TranslationSession:
 
   def getnextitem(self):
     """gives the user the next item to be translated"""
-    self.pofilename, item = self.translationproject.getnextitem(self.pofilename, self.lastitem)
+    # matchtest = lambda thepo: thepo.isfuzzy() or thepo.isblankmsgstr()
+    matchtest = lambda thepo: thepo.isblankmsgstr()
+    self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchtest)
     self.pofile = self.translationproject.getpofile(self.pofilename)
     thepo = self.pofile.transelements[item]
     orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
@@ -50,6 +52,16 @@ class TranslationProject:
       index = self.pofilenames.index(pofilename)
       return self.pofilenames[index+1]
 
+  def findnextitem(self, pofilename, item, matchtest):
+    """finds the next item matching the given filter criteria"""
+    matches = False
+    while not matches:
+      pofilename, item = self.getnextitem(pofilename, item)
+      pofile = self.getpofile(pofilename)
+      thepo = pofile.transelements[item]
+      matches = matchtest(thepo)
+    return pofilename, item
+
   def getnextitem(self, pofilename, lastitem):
     """skips to the next item"""
     if lastitem is None:
@@ -60,7 +72,7 @@ class TranslationProject:
       pofile = None
     else:
       pofile = self.getpofile(pofilename)
-    while pofile is None or item > len(pofile.transelements):
+    while pofile is None or item >= len(pofile.transelements):
       pofilename = self.getnextpofilename(pofilename)
       pofile = self.getpofile(pofilename)
       item = 0
