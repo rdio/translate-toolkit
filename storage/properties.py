@@ -81,7 +81,7 @@ class propfile:
       # otherwise, this could be a comment
       elif line.strip()[:1] == '#':
         # add a comment
-        newpe.comments.append(line)
+        newpe.comments.append(quote.rstripeol(line)+"\n")
       elif not line.strip():
         # this is a blank line...
         self.propelements.append(newpe)
