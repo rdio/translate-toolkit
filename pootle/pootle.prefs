@@ -43,7 +43,7 @@ Pootle:
   languages:
     af:
       fullname = "Afrikaans"
+      specialchars = "ÄËÏÖÜäëïöü ÂÊÎÔÛâêîôû"
     de:
       fullname = "German"
-
 

@@ -316,6 +316,9 @@ class TranslatePage(pagelayout.PootlePage):
     if "translate" in desiredbuttons and "translate" in self.rights:
       submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
       buttons.append(submitbutton)
+    if "translate" in desiredbuttons or suggest in desiredbuttons:
+      specialchars = getattr(getattr(self.session.session.instance.languages, self.project.languagecode, None), "specialchars", "")
+      buttons.append(specialchars)
     return buttons
 
   def gettransedit(self, item, orig, trans):
