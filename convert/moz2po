@@ -33,10 +33,9 @@ from translate.storage import xpi
 from translate import __version__
 from translate.convert import convert
 
-class MozConvertOptionParser(convert.ConvertOptionParserExt):
-  def __init__(self, inputformats, outputformats, usetemplates=False, usepots=False, templateslikeinput=None):
-    convert.ConvertOptionParserExt.__init__(self, inputformats, outputformats,
-      usetemplates, usepots, templateslikeinput)
+class MozConvertOptionParser(convert.ConvertOptionParser):
+  def __init__(self, formats, usetemplates=False, usepots=False):
+    convert.ConvertOptionParser.__init__(self, formats, usetemplates, usepots)
 
   def isrecursive(self, fileoption):
     """checks if fileoption is a recursive file"""
@@ -102,10 +101,19 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
     else:
       return None
 
+  def templateexists(self, options, templatepath):
+    """returns whether the given template exists..."""
+    if templatepath is not None:
+      if self.isxpi(options.template):
+        # TODO: deal with different names in input/template xpis
+        jarfilename, filename = options.templatexpi.ostojarpath(templatepath)
+        return options.templatexpi.jarfileexists(jarfilename, filename)
+    return super(MozConvertOptionParser, self).templateexists(options, templatepath)
+
 if __name__ == '__main__':
-  inputformats = {"dtd": dtd2po.convertdtd, "properties": prop2po.convertprop}
-  outputformat = "po"
-  parser = MozConvertOptionParser(inputformats, outputformat, usetemplates=True, usepots=True)
+  formats = {("dtd", "dtd"): ("po", dtd2po.convertdtd), ("properties", "properties"): ("po", prop2po.convertprop),
+             "dtd": ("po", dtd2po.convertdtd), "properties": ("po", prop2po.convertprop)}
+  parser = MozConvertOptionParser(formats, usetemplates=True, usepots=True)
   parser.convertparameters.append("pot")
   parser.runconversion()
 
