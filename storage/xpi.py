@@ -299,6 +299,13 @@ if __name__ == '__main__':
         if not os.path.isdir(abspath):
           os.mkdir(abspath)
         continue
+      # check directories exist anyway - some zip files don't store them
+      currentpath = options.extractdir
+      subparts = os.path.dirname(name).split(os.sep)
+      for part in subparts:
+        currentpath = os.path.join(currentpath, part)
+        if not os.path.isdir(currentpath):
+          os.mkdir(currentpath)
       outputstream = open(abspath, 'w')
       jarfilename, filename = xpifile.ostojarpath(name)
       inputstream = xpifile.openinputstream(jarfilename, filename)
