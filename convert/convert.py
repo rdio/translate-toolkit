@@ -24,6 +24,7 @@ try:
   import optparse
 except ImportError:
   from translate.misc import optparse
+from translate.misc import progressbar
 from translate import __version__
 
 norecursion = 0
@@ -31,6 +32,7 @@ optionalrecursion = 1
 defaultrecursion = 2
 
 # TODO: work out how to support .po/.pot differences
+# TODO: handle input/output without needing -i/-o
 
 class ConvertOptionParser(optparse.OptionParser):
   """a specialized Option Parser for convertor tools..."""
@@ -41,6 +43,7 @@ class ConvertOptionParser(optparse.OptionParser):
     self.setrecursion(recursion)
     self.setinputformats(inputformats)
     self.setoutputformats(outputformats)
+    self.setprogressoptions()
     self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
 
   def getusagestring(self, option):
@@ -100,6 +103,14 @@ class ConvertOptionParser(optparse.OptionParser):
                     help="write to OUTPUT %s in %s" % (self.argumentdesc, outputformathelp))
     self.define_option(outputoption)
 
+  def setprogressoptions(self):
+    """sets the progress options depending on recursion etc"""
+    self.progresstypes = {"simple": progressbar.SimpleProgressBar, "console": progressbar.ConsoleProgressBar,
+                          "curses": progressbar.CursesProgressBar}
+    progressoption = optparse.Option(None, "--progress", dest="progress", default="console", metavar="PROGRESS",
+                      help="set progress type to one of %s" % (", ".join(self.progresstypes)))
+    self.define_option(progressoption)
+
   def getformathelp(self, formats):
     """make a nice help string for describing formats..."""
     if len(formats) == 0:
@@ -138,66 +149,130 @@ class ConvertOptionParser(optparse.OptionParser):
     else:
       convertmethod(self.getinputfile(options), self.getoutputfile(options))
 
+  def getconvertmethod(self, inputext, outputext):
+    """works out which conversion method to use..."""
+    if len(self.inputformats) > 1:
+      return self.inputformats[inputext]
+    elif len(self.outputformats) > 1:
+      return self.outputformats[outputext]
+    else:
+      raise ValueError("one of input/output formats must be > 1: %r, %r" % (self.inputformats, self.outputformats))
+
   def recurseconversion(self, options):
     """recurse through directories and convert files"""
-    # TODO: refactor this, it's too long...
+    join = os.path.join
+    allfiles = self.recursefiles(options)
+    if options.progress in ('console', 'curses'):
+      allfiles = [file for file in allfiles]
+      progressbar = self.progresstypes[options.progress](0, len(allfiles))
+      print "processing %d files..." % len(allfiles)
+    else:
+      progressbar = self.progresstypes[options.progress]()
+    for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
+      fullinputpath = join(options.input, inputpath)
+      inputfile = open(fullinputpath, 'r')
+      fulloutputpath = join(options.output, outputpath)
+      outputfile = open(fulloutputpath, 'w')
+      templatefile = None
+      if templatepath is not None:
+        fulltemplatepath = join(options.template, templatepath)
+        if os.path.isfile(fulltemplatepath):
+          templatefile = open(fulltemplatepath, 'r')
+        else:
+          print >>sys.stderr, "warning: missing template file %s" % fulltemplatepath
+      convertmethod = self.getconvertmethod(inputext, outputext)
+      if convertmethod(inputfile, outputfile, templatefile):
+        outputsubdir = os.path.dirname(outputpath)
+        self.usesubdir(outputsubdir)
+      else:
+        outputfile.close()
+        os.unlink(fulloutputpath)
+      progressbar.amount += 1
+      progressbar.show()
+    self.prunesubdirs()
+
+  def incrprogress(self):
+    """shows that we are progressing..."""
+    
+  def checksubdir(self, parent, subdir):
+    """checks to see if subdir under parent needs to be created, creates if neccessary"""
+    fullpath = os.path.join(parent, subdir)
+    if not os.path.isdir(fullpath):
+      os.mkdir(fullpath)
+      self.dirscreated[subdir] = 0
+      subparent = os.path.dirname(subdir)
+      if subparent in self.dirscreated:
+        self.dirscreated[subparent] = 1
+
+  def usesubdir(self, subdir):
+    """indicates that the given directory was used..."""
+    if subdir in self.dirscreated:
+      self.dirscreated[subdir] = 1
+
+  def prunesubdirs(self):
+    """prunes any directories that were created unneccessarily"""
+    # remove any directories we created unneccessarily
+    # note that if there is a tree of empty directories, only leaves will be removed...
+    for createddir, used in self.dirscreated.iteritems():
+      if not used:
+        os.rmdir(os.path.join(options.output, createddir))
+
+  def recursefiles(self, options):
+    """recurse through directories and return files to be converted..."""
     dirstack = ['']
     # discreated contains all the directories created, mapped to whether they've been used or not...
-    dirscreated = {}
+    self.dirscreated = {}
+    join = os.path.join
     while dirstack:
       top = dirstack.pop(-1)
-      names = os.listdir(os.path.join(options.input, top))
+      names = os.listdir(join(options.input, top))
       dirs = []
       for name in names:
-        inputname = os.path.join(options.input, top, name)
+        inputpath = join(top, name)
+        fullinputpath = join(options.input, inputpath)
         # handle directories...
-        if os.path.isdir(inputname):
-          dirs.append(os.path.join(top, name))
-          outputname = os.path.join(options.output, top, name)
-          if not os.path.isdir(outputname):
-            os.mkdir(outputname)
-            dirscreated[dirs[-1]] = 0
-            if top in dirscreated:
-              dirscreated[top] = 1
+        if os.path.isdir(fullinputpath):
+          dirs.append(inputpath)
+          self.checksubdir(options.output, inputpath)
           if self.usetemplates and options.template:
-            templatename = os.path.join(options.template, top, name)
-            if not os.path.isdir(templatename):
-              print >>sys.stderr, "warning: missing template directory %s" % templatename
-        elif os.path.isfile(inputname):
-          base, inputext = os.path.splitext(name)
+            fulltemplatepath = join(options.template, inputpath)
+            if not os.path.isdir(fulltemplatepath):
+              print >>sys.stderr, "warning: missing template directory %s" % fulltemplatepath
+        elif os.path.isfile(fullinputpath):
+          inputbase, inputext = os.path.splitext(name)
           inputext = inputext.replace(os.extsep, "", 1)
           if not inputext in self.inputformats:
             # only handle names that match recognized input file extensions
             continue
           # now we have split off .po, we split off the original extension
-          outputname = os.path.join(options.output, top, self.getoutputname(name))
-          inputfile = open(inputname, 'r')
-          outputfile = open(outputname, 'w')
-          templatefile = None
+          outputname = self.getoutputname(name)
+          outputbase, outputext = os.path.splitext(outputname)
+          outputext = outputext.replace(os.extsep, "", 1)
+          outputpath = join(top, outputname)
+          templatepath = None
           if self.usetemplates and options.template:
-            templatename = os.path.join(options.template, top, name)
-            if os.path.isfile(templatename):
-              templatefile = open(templatename, 'r')
-            else:
-              print >>sys.stderr, "warning: missing template file %s" % templatename
-          convertmethod = self.inputformats[inputext]
-          if convertmethod(inputfile, outputfile, templatefile):
-            if top in dirscreated:
-              dirscreated[top] = 1
-          else:
-            outputfile.close()
-            os.unlink(outputname)
+            templatename = self.gettemplatename(name)
+            templatepath = join(top, templatename)
+          yield (inputext, inputpath, outputext, outputpath, templatepath)
       # make sure the directories are processed next time round...
       dirs.reverse()
       dirstack.extend(dirs)
-    # remove any directories we created unneccessarily
-    # note that if there is a tree of empty directories, only leaves will be removed...
-    for createddir, used in dirscreated.iteritems():
-      if not used:
-        os.rmdir(os.path.join(options.output, createddir))
+
+  def gettemplatename(self, inputname):
+    """gets an output filename based on the input filename"""
+    if len(self.outputformats) == 1:
+      return inputname
+    else:
+      # if there is more than one outputformat, assume the template is like the output
+      inputbase, ext = os.path.splitext(inputname)
+      return inputbase
 
   def getoutputname(self, inputname):
     """gets an output filename based on the input filename"""
-    # TODO: handle replacing the input extension...
-    return inputname + os.extsep + self.outputformats[0]
+    if len(self.outputformats) == 1:
+      return inputname + os.extsep + self.outputformats[0]
+    else:
+      # if there is more than one outputformat, assume it is encoded in the inputname...
+      inputbase, ext = os.path.splitext(inputname)
+      return inputbase
 
