@@ -302,16 +302,16 @@ class ProjectIndex(pagelayout.PootlePage):
       # TODO: check that its a valid goalname (alphanumeric etc)
       self.project.setgoal(goalname.strip(), "")
       del self.argdict["doaddgoal"]
-    if "dosetgoal" in self.argdict:
-      goalname = self.argdict.pop("setgoal", None)
-      goalfile = self.argdict.pop("setgoalfile", None)
+    if "doeditgoal" in self.argdict:
+      goalname = self.argdict.pop("editgoal", None)
+      goalfile = self.argdict.pop("editgoalfile", None)
       if not goalname:
         raise ValueError("cannot add goal, no name given")
       if not goalfile:
         raise ValueError("cannot add goal, no filename given")
       # TODO: check that its a valid goalname (alphanumeric etc)
       self.project.addfiletogoal(goalname.strip(), goalfile, True)
-      del self.argdict["dosetgoal"]
+      del self.argdict["doeditgoal"]
 
   def getboolarg(self, argname, default=False):
     """gets a boolean argument from self.argdict"""
@@ -439,7 +439,7 @@ class ProjectIndex(pagelayout.PootlePage):
       goalitem = self.getgoalitem(goalname, goalfiles)
       allitems.append(goalitem)
       if self.argdict.get("goal", None) == goalname:
-        goalchilditems = self.getitems(goalfiles, linksrequired=["setgoal"])
+        goalchilditems = self.getitems(goalfiles, linksrequired=["editgoal"])
         allitems.extend(goalchilditems)
       for goalfile in goalfiles:
         goalchildren[goalfile] = True
@@ -447,7 +447,7 @@ class ProjectIndex(pagelayout.PootlePage):
     for item in allchildren:
       if item not in goalchildren:
         goalless.append(item)
-    goallessitems = self.getitems(goalless, linksrequired=["setgoal"])
+    goallessitems = self.getitems(goalless, linksrequired=["editgoal"])
     if goallessitems:
       goalicon = pagelayout.Icon("goal.png")
       goaltitle = pagelayout.Title(self.localize("No goal"))
@@ -555,11 +555,11 @@ class ProjectIndex(pagelayout.PootlePage):
     addoptionlink("check", "translate", "showchecks", self.localize("Show Checks"), self.localize("Hide Checks"))
     addoptionlink("goal", "admin", "showgoals", self.localize("Show Goals"), self.localize("Hide Goals"))
     addoptionlink("assign", "translate", "showassigns", self.localize("Show Assigns"), self.localize("Hide Assigns"))
-    if "setgoal" in linksrequired and "admin" in self.rights:
+    if "editgoal" in linksrequired and "admin" in self.rights:
       goaloptions = [(goalname, goalname) for goalname in self.project.getgoalnames()]
-      goalselect = widgets.Select({"name": "setgoal"}, goaloptions)
-      goalfile = widgets.HiddenFieldList({"setgoalfile": basename})
-      submitbutton = widgets.Input({"type": "submit", "name": "dosetgoal", "value": self.localize("Set Goal")})
+      goalselect = widgets.Select({"name": "editgoal"}, goaloptions)
+      goalfile = widgets.HiddenFieldList({"editgoalfile": basename})
+      submitbutton = widgets.Input({"type": "submit", "name": "doeditgoal", "value": self.localize("Set Goal")})
       goalform = widgets.Form([goalfile, goalselect, submitbutton], {"action": "", "name":"goalform-%s" % basename})
       actionlinks.append(goalform)
     if "review" in linksrequired and projectstats.get("has-suggestion", 0):
