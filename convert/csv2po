@@ -21,7 +21,6 @@
 """simple script to convert a comma-separated values (.csv) file to a gettext .po localization file"""
 
 import sys
-import translatepath
 from translate.misc import quote
 from translate.misc import sparse
 from translate.storage import po
@@ -179,7 +178,8 @@ def convertcsv(inputfile, outputfile, templatefile):
 if __name__ == '__main__':
  # handle command line options
   from translate.convert import convert
-  formats = {("csv", "po"): ("po", convertcsv), ("csv", "pot"): ("po", convertcsv)}
+  formats = {("csv", "po"): ("po", convertcsv), ("csv", "pot"): ("po", convertcsv), 
+             ("csv", None): ("po", convertcsv)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.run()
 
