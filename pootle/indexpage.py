@@ -187,7 +187,12 @@ class ProjectIndex(pagelayout.PootlePage):
       fileitem = self.getfileitem(childfile)
       fileitems.append((childfile, fileitem))
     fileitems.sort()
-    return [diritem for childdir, diritem in diritems] + [fileitem for childfile, fileitem in fileitems]
+    childitems = [diritem for childdir, diritem in diritems] + [fileitem for childfile, fileitem in fileitems]
+    polarity = False
+    for childitem in childitems:
+      childitem.setpolarity(polarity)
+      polarity = not polarity
+    return childitems
 
   def getdiritem(self, direntry):
     """returns an item showing a directory entry"""
@@ -203,13 +208,7 @@ class ProjectIndex(pagelayout.PootlePage):
     bodydescription = pagelayout.ActionLinks(actionlinks)
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(basename, projectstats, len(pofilenames))
-    return pagelayout.Item([body, stats], self.getitempolarity())
-
-  def getitempolarity(self):
-    """returns item class name and toggle between odd and even"""
-    polarity = getattr(self, "itempolarity", False)
-    self.itempolarity = not polarity
-    return self.itempolarity
+    return pagelayout.Item([body, stats])
 
   def getfileitem(self, fileentry):
     """returns an item showing a file entry"""
@@ -225,7 +224,7 @@ class ProjectIndex(pagelayout.PootlePage):
     bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink])
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(basename, projectstats, None)
-    return pagelayout.Item([body, stats], self.getitempolarity())
+    return pagelayout.Item([body, stats])
 
   def getbrowseurl(self, basename):
     """gets the link to browse the item"""

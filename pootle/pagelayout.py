@@ -17,12 +17,16 @@ class IntroText(widgets.Division):
 
 class Item(widgets.Division):
   def __init__(self, contents, polarity=False):
+    widgets.Division.__init__(self, contents)
+    self.setpolarity(polarity)
+
+  def setpolarity(self, polarity):
     cls = "item "
     if polarity:
       cls += "item-even"
     else:
       cls += "item-odd"
-    widgets.Division.__init__(self, contents, cls=cls)
+    self.attribs['class'] = cls
 
 class MainItem(widgets.Division):
   def __init__(self, contents):
