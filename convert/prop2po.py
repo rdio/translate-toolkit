@@ -112,7 +112,15 @@ class prop2po:
     if theprop.isblank():
       return None
     thepo.sourcecomments.append("#: "+theprop.name+eol)
-    thepo.msgid = [quote.quotestr(line, escapeescapes=1) for line in msgid.split("\n")]
+    thepo.msgid = []
+    # escape everything except \n, and make \n appear as appropriate for po files
+    lines = msgid.split("\n")
+    for linenum in range(len(lines)):
+      line = lines[linenum]
+      line = quote.escapequotes(line, escapeescapes=1)
+      if linenum != len(lines)-1:
+        line += "\\n"
+      thepo.msgid.append('"' + line + '"')
     thepo.msgstr = ['""']
     return thepo
 
