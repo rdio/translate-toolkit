@@ -94,22 +94,6 @@ class TranslatePage(pagelayout.PootlePage):
     matchnames.sort()
     return matchnames
 
-  def addtransrow(self, rownum, origcell, transcell):
-    self.transtable.setcell(rownum, 0, origcell)
-    self.transtable.setcell(rownum, 1, transcell)
-
-  def maketable(self, translations):
-    self.transtable = table.TableLayout({"class":"translate-table", "cellpadding":10})
-    origtitle = table.TableCell("original", {"class":"translate-table-title"})
-    transtitle = table.TableCell("translation", {"class":"translate-table-title"})
-    self.addtransrow(-1, origtitle, transtitle)
-    self.textcolors = ["#000000", "#000060"]
-    for row, (orig, trans) in enumerate(translations):
-      thisitem = self.firstitem + row
-      self.addtranslationrow(thisitem, orig, trans, thisitem in self.editable)
-    self.transtable.shrinkrange()
-    return self.transtable
-
   def finditem(self):
     """finds the focussed item for this page, searching as neccessary"""
     item = self.argdict.get("item", None)
@@ -141,6 +125,22 @@ class TranslatePage(pagelayout.PootlePage):
       self.firstitem = max(self.item - 3, 0)
       return self.project.getitems(self.pofilename, self.item-3, self.item+4)
 
+  def maketable(self, translations):
+    self.transtable = table.TableLayout({"class":"translate-table", "cellpadding":10})
+    origtitle = table.TableCell("original", {"class":"translate-table-title"})
+    transtitle = table.TableCell("translation", {"class":"translate-table-title"})
+    self.transtable.setcell(-1, 0, origtitle)
+    self.transtable.setcell(-1, 1, transtitle)
+    self.textcolors = ["#000000", "#000060"]
+    for row, (orig, trans) in enumerate(translations):
+      thisitem = self.firstitem + row
+      origcell = self.getorigcell(row, orig, thisitem in self.editable)
+      self.transtable.setcell(row, 0, origcell)
+      transcell = self.gettranscell(row, trans, thisitem in self.editable)
+      self.transtable.setcell(row, 1, transcell)
+    self.transtable.shrinkrange()
+    return self.transtable
+
   def getorigcell(self, row, orig, editable):
     origclass = "translate-original "
     if editable:
@@ -170,10 +170,4 @@ class TranslatePage(pagelayout.PootlePage):
       contents = [text, editlink]
     transdiv.addcontents(contents)
     return table.TableCell(transdiv, {"class":"translate-translation"})
-
-  def addtranslationrow(self, row, orig, trans, editable=False):
-    """returns an origcell and a transcell for displaying a translation"""
-    origcell = self.getorigcell(row, orig, editable)
-    transcell = self.gettranscell(row, trans, editable)
-    self.addtransrow(row, origcell, transcell)
 
