@@ -20,21 +20,129 @@
 
 """script that converts a set of .dtd and .properties files to a set of .po files"""
 
+import os.path
+try:
+  import optparse
+except ImportError:
+  from translate.misc import optparse
 from translate.convert import dtd2po
 from translate.convert import prop2po
 from translate.storage import dtd
 from translate.storage import properties
 from translate.storage import po
+from translate.storage import xpi
 from translate.misc import quote
 from translate import __version__
+from translate.convert import convert
+
+xpirecursion = 3
+
+class MozConvertOptionParser(convert.ConvertOptionParserExt):
+  def __init__(self, inputformats, outputformats, usetemplates=False, usepots=False, templateslikeinput=None):
+    convert.ConvertOptionParserExt.__init__(self, xpirecursion, inputformats, outputformats,
+      usetemplates, usepots, templateslikeinput)
+
+  def setrecursion(self, recursion):
+    self.argumentdesc = "xpi/dir"
+    if self.has_option("-x"):
+      self.remove_option("-x")
+    self.add_option("-x", "--xpi", action="store_const", dest="recursive", default=True, \
+      const="xpi", help="recurse inside an xpi file")
+    self.recursion = recursion
+
+  def runconversion(self, options, convertmethod):
+    """runs the conversion method using the given commandline options..."""
+    if options.recursive == "xpi":
+      if options.input is None:
+        self.error(optparse.OptionValueError("cannot use stdin for xpi run. please specify inputfile"))
+      if not os.path.isfile(options.input):
+        self.error(optparse.OptionValueError("inputfile must be file for xpi run."))
+      if options.output is None:
+        self.error(optparse.OptionValueError("must specify output directory for xpi run."))
+      if not os.path.isdir(options.output):
+        self.error(optparse.OptionValueError("output must be existing directory for xpi run."))
+      self.recurseconversion(options)
+    elif options.recursive:
+      if options.input is None:
+        self.error(optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile"))
+      if not os.path.isdir(options.input):
+        self.error(optparse.OptionValueError("inputfile must be directory for recursive run."))
+      if options.output is None:
+        self.error(optparse.OptionValueError("must specify output directory for recursive run."))
+      if not os.path.isdir(options.output):
+        self.error(optparse.OptionValueError("output must be existing directory for recursive run."))
+      self.recurseconversion(options)
+
+  def recursexpifiles(self, options):
+    """recurse through xpi files and convert files"""
+    options.inputxpi = xpi.XpiFile(options.input)
+    self.dirscreated = {}
+    for inputpath in options.inputxpi.iterextractnames(includedirs=True):
+      if inputpath.endswith(os.path.sep):
+        self.checksubdir(options.output, inputpath)
+        continue
+      top, name = os.path.split(inputpath)
+      if not self.isvalidinputname(options, name):
+        continue
+      outputname = self.getoutputname(options, name)
+      outputbase, outputext = os.path.splitext(outputname)
+      outputext = outputext.replace(os.extsep, "", 1)
+      outputpath = os.path.join(top, outputname)
+      templatepath = None
+      if self.usetemplates and options.template:
+        templatename = self.gettemplatename(options, name)
+        templatepath = os.path.join(top, templatename)
+      inputbase, inputext = os.path.splitext(name)
+      inputext = inputext.replace(os.extsep, "", 1)
+      yield (inputext, inputpath, outputext, outputpath, templatepath)
+
+  def convertxpifile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
+    """run an invidividual conversion"""
+    jarfilename, filename = options.inputxpi.ostojarpath(fullinputpath)
+    inputfile = options.inputxpi.openinputstream(jarfilename, filename)
+    outputfile = open(fulloutputpath, 'w')
+    templatefile = None
+    if fulltemplatepath is not None:
+      if os.path.isfile(fulltemplatepath):
+        templatefile = open(fulltemplatepath, 'r')
+      else:
+        print >>sys.stderr, "warning: missing template file %s" % fulltemplatepath
+    if convertmethod(inputfile, outputfile, templatefile):
+      return True
+    else:
+      outputfile.close()
+      os.unlink(fulloutputpath)
+      return False
+
+  def recurseconversion(self, options):
+    """recurse through directories and convert files"""
+    join = os.path.join
+    if options.recursive != 'xpi':
+      ConvertOptionsParserExt.recurseconversion(self, options)
+    allfiles = self.recursexpifiles(options)
+    allfiles = self.initprogressbar(allfiles, options)
+    for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
+      convertmethod = self.getconvertmethod(inputext, outputext)
+      fullinputpath = inputpath
+      fulloutputpath = join(options.output, outputpath)
+      if templatepath is  None:
+        fulltemplatepath = None
+      else:
+        fulltemplatepath = join(options.template, templatepath)
+      success = self.convertxpifile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
+      if success:
+        outputsubdir = os.path.dirname(outputpath)
+        self.usesubdir(outputsubdir)
+      self.reportprogress(inputpath, success)
+    self.prunesubdirs(options)
+    del self.progressbar
 
 if __name__ == '__main__':
-  # handle command line options
-  from translate.convert import convert
   # TODO: add ability to import translations from another directory
+  # TODO: add ability to use templates as xpi files...
   inputformats = {"dtd": dtd2po.convertdtd, "properties": prop2po.convertprop}
   outputformat = "po"
-  parser = convert.ConvertOptionParserExt(convert.defaultrecursion, inputformats, outputformat, usetemplates=True, usepots=True)
+  parser = MozConvertOptionParser(inputformats, outputformat, usetemplates=True, usepots=True)
   (options, args) = parser.parse_args()
   try:
     parser.runconversion(options, None)
