@@ -19,6 +19,21 @@ class TranslationProject:
     self.item = 0
     self.translations = []
 
+  def initstatscache(self):
+    for pofilename in self.pofiles:
+      if not pofilename in self.stats:
+        pomtime = os.stat(pofilename)[os.path.stat.ST_MTIME]
+        statsfilename = pofilename + os.extsep + "stats"
+        if os.path.exists():
+          try:
+            stats = open(statsfilename, "r").read()
+            statsmtime, translated, total = [int(n) for n in stats.split()[:3]]
+          except:
+            continue
+          if pomtime != statsmtime:
+            continue
+          self.stats[pofilename] = (translated, total)
+
   def calculatestats(self):
     translated, total = 0, 0
     for pofilename in self.pofilenames:
@@ -35,6 +50,12 @@ class TranslationProject:
     translated = len(filter(lambda poel: po.getunquotedstr(poel.msgstr).strip() and not poel.isfuzzy(), elements))
     total = len(elements)
     self.stats[pofilename] = (translated, total)
+    pomtime = os.stat(pofilename)[os.path.stat.ST_MTIME]
+    statsfilename = pofilename + os.extsep + "stats"
+    try:
+      open(statsfilename, "w").write("%d %d %d" % (pomtime, translated, total))
+    except:
+      pass
     return self.stats[pofilename]
 
   def addfiles(self, dummy, dirname, fnames):
