@@ -21,9 +21,7 @@
 
 from translate.storage import po
 from translate.misc import quote
-from translate.convert import convert
 from translate.misc import xmlwrapper
-import sre
 import zipfile
 
 class OpenOfficeDocument(xmlwrapper.XMLWrapper):
@@ -88,6 +86,7 @@ def convertsxw(inputfile, outputfile, templates):
   return 1
 
 def main():
+  from translate.convert import convert
   formats = {"sxw":("po",convertsxw)}
   parser = convert.ConvertOptionParser(formats, description=__doc__)
   parser.run()

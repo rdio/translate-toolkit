@@ -24,8 +24,6 @@ You can generate the po files using txt2po"""
 
 from translate.storage import po
 from translate.misc import quote
-from translate.convert import convert
-import os
 try:
   import textwrap
 except:
@@ -33,6 +31,9 @@ except:
 
 class po2txt:
   """po2txt can take a po file and generate txt. best to give it a template file otherwise will just concat msgstrs"""
+  def __init__(self, wrap=None):
+    self.wrap = wrap
+
   def convertmessage(self, message):
     """converts a po message to a string"""
     return po.getunquotedstr(message, includeescapes=False)
@@ -68,8 +69,7 @@ class po2txt:
 def converttxt(inputfile, outputfile, templatefile, wrap=None):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   inputpo = po.pofile(inputfile)
-  convertor = po2txt()
-  po2txt.wrap = wrap
+  convertor = po2txt(wrap=wrap)
   if templatefile is None:
     outputtxt = convertor.convertfile(inputpo)
   else:
@@ -80,6 +80,7 @@ def converttxt(inputfile, outputfile, templatefile, wrap=None):
   return 1
 
 def main():
+  from translate.convert import convert
   formats = {("po", "txt"):("txt",converttxt), ("po"):("txt",converttxt)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   if textwrap is not None:

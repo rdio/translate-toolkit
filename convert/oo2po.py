@@ -24,9 +24,7 @@
 from translate.storage import po
 from translate.storage import oo
 from translate.misc import quote
-from translate.convert import convert
 from translate import __version__
-import os
 
 # TODO: support using one GSI file as template, another as input (for when English is in one and translation in another)
 

@@ -24,7 +24,6 @@ You can generate the po files using nb2po"""
 
 from translate.storage import po
 from translate.misc import quote
-from translate.convert import convert
 from translate.storage import html
 try:
   import textwrap
@@ -34,6 +33,9 @@ except:
 class po2nb:
   """po2nb can take a po file and generate html. best to give it a template file otherwise will just concat msgstrs"""
   htmlfields = ["BODY"]
+
+  def __init__(self, wrap=None):
+    self.wrap = wrap
 
   def convertmessage(self, message):
     """converts a po message to a string"""
@@ -95,8 +97,7 @@ class po2nb:
 def convertnb(inputfile, outputfile, templatefile, wrap=None):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   inputpo = po.pofile(inputfile)
-  convertor = po2nb()
-  po2nb.wrap = wrap
+  convertor = po2nb(wrap=wrap)
   if templatefile is None:
     outputhtml = convertor.convertfile(inputpo)
   else:
@@ -107,6 +108,7 @@ def convertnb(inputfile, outputfile, templatefile, wrap=None):
   return 1
 
 def main():
+  from translate.convert import convert
   formats = {("po", "htm"):("htm",convertnb), ("po"):("htm",convertnb)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   if textwrap is not None:

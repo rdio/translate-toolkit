@@ -24,8 +24,6 @@ You can convert back to .txt using po2txt"""
 
 from translate.storage import po
 from translate.misc import quote
-from translate.convert import convert
-import os
 
 class txt2po:
   def convertblock(self, filename, block, linenum):
@@ -73,8 +71,8 @@ def converttxt(inputfile, outputfile, templates):
   outputfile.writelines(outputpolines)
   return 1
 
-if __name__ == '__main__':
-  # handle command line options
+def main():
+  from translate.convert import convert
   formats = {"txt":("po",converttxt), "*":("po",converttxt)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.run()

@@ -25,7 +25,6 @@ You can merge translated strings back using po2html"""
 from translate.storage import po
 from translate.storage import html
 from translate.misc import quote
-from translate.convert import convert
 
 class html2po:
   def convertfile(self, inputfile, filename, includeheader, includeuntagged=False):
@@ -60,6 +59,7 @@ def converthtml(inputfile, outputfile, templates, includeuntagged=False):
   return 1
 
 def main():
+  from translate.convert import convert
   formats = {"html":("po",converthtml), "htm":("po",converthtml)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.add_option("-u", "--untagged", dest="includeuntagged", default=False, action="store_true",

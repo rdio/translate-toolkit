@@ -25,7 +25,6 @@ from translate.misc import quote
 from translate.misc import sparse
 from translate.storage import po
 from translate.storage import csvl10n
-from translate.convert import convert
 
 def replacestrings(source, *pairs):
   for orig, new in pairs:
@@ -177,6 +176,7 @@ def convertcsv(inputfile, outputfile, templatefile):
   return 1
 
 def main():
+  from translate.convert import convert
   formats = {("csv", "po"): ("po", convertcsv), ("csv", "pot"): ("po", convertcsv), 
              ("csv", None): ("po", convertcsv)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)

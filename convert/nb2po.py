@@ -23,7 +23,6 @@
 
 from translate.storage import po
 from translate.misc import quote
-from translate.convert import convert
 from translate.storage import html
 
 class nb2po:
@@ -123,6 +122,7 @@ def convertnb(inputfile, outputfile, templates):
   return 1
 
 def main():
+  from translate.convert import convert
   formats = {"htm":("po",convertnb)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.run()

@@ -24,8 +24,6 @@ You can generate the po files using html2po"""
 
 from translate.storage import po
 from translate.misc import quote
-from translate.convert import convert
-import os
 try:
   import textwrap
 except:
@@ -33,6 +31,9 @@ except:
 
 class po2html:
   """po2html can take a po file and generate html. best to give it a template file otherwise will just concat msgstrs"""
+  def __init__(self, wrap=None):
+    self.wrap = wrap
+
   def convertmessage(self, message):
     """converts a po message to a string"""
     return po.getunquotedstr(message, includeescapes=False)
@@ -69,8 +70,7 @@ class po2html:
 def converthtml(inputfile, outputfile, templatefile, wrap=None):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   inputpo = po.pofile(inputfile)
-  convertor = po2html()
-  po2html.wrap = wrap
+  convertor = po2html(wrap=wrap)
   if templatefile is None:
     outputhtml = convertor.convertfile(inputpo)
   else:
@@ -81,6 +81,7 @@ def converthtml(inputfile, outputfile, templatefile, wrap=None):
   return 1
 
 def main():
+  from translate.convert import convert
   formats = {("po", "htm"):("htm",converthtml), ("po", "html"):("html",converthtml), ("po"):("html",converthtml)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   if textwrap is not None:
