@@ -30,6 +30,8 @@ class TranslatePage(pagelayout.PootlePage):
     translatediv = widgets.Division(translateform, None, {"style": divstyle})
     contents = widgets.Division([translatediv], "content")
     pagelayout.PootlePage.__init__(self, title, contents, session, bannerheight=81)
+    self.links.addcontents(widgets.Division("current file", None, {"class":"sidetitle"}))
+    self.links.addcontents(widgets.Division(self.pofilename, None, {"class":"side"}))
     autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
     self.headerwidgets.append(autoexpandscript)
 

@@ -17,8 +17,7 @@ class TranslationSession:
 
   def getnextitem(self):
     """gives the user the next item to be translated"""
-    # matchtest = lambda thepo: thepo.isfuzzy() or thepo.isblankmsgstr()
-    matchtest = lambda thepo: thepo.isblankmsgstr()
+    matchtest = lambda thepo: thepo.isfuzzy() or thepo.isblankmsgstr()
     self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchtest)
     self.pofile = self.translationproject.getpofile(self.pofilename)
     thepo = self.pofile.transelements[item]
@@ -115,7 +114,7 @@ class TranslationProject:
     if pofilename in self.stats:
       return self.stats[pofilename]
     pofile = self.getpofile(pofilename)
-    translated = len(filter(lambda poel: po.getunquotedstr(poel.msgstr).strip() and not poel.isfuzzy(), pofile.transelements))
+    translated = len(filter(lambda poel: not (poel.isfuzzy() or poel.isblankmsgstr()), pofile.transelements))
     total = len(pofile.transelements)
     self.stats[pofilename] = (translated, total)
     pomtime = os.stat(pofilename)[os.path.stat.ST_MTIME]

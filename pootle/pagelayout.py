@@ -43,7 +43,7 @@ class PootlePage(widgets.Page):
   """the main page"""
   def __init__(self, title, contents, session, bannerheight=135):
     stylesheets = [session.instance.baseurl + session.instance.stylesheet, session.instance.baseurl + "pootle.css"]
-    banner = PootleBanner(session.instance, bannerheight)
-    links = PootleSidebar(session)
-    widgets.Page.__init__(self, title, [banner, contents, links], {"includeheading":False}, stylesheets=stylesheets)
+    self.banner = PootleBanner(session.instance, bannerheight)
+    self.links = PootleSidebar(session)
+    widgets.Page.__init__(self, title, [self.banner, contents, self.links], {"includeheading":False}, stylesheets=stylesheets)
 
