@@ -208,11 +208,32 @@ if __name__ == '__main__':
   except ImportError:
     from translate.misc import optparse
   optparser = optparse.OptionParser(version="%prog "+__version__.ver)
+  optparser.usage = "%prog [-l|-x] [options] file.xpi"
+  optparser.add_option("-l", "--list", help="list files", \
+    action="store_true", dest="listfiles", default=False)
+  optparser.add_option("-x", "--extract", help="extract files", \
+    action="store_true", dest="extractfiles", default=False)
+  optparser.add_option("-d", "--extractdir", help="extract into EXTRACTDIR", \
+    default=None, metavar="EXTRACTDIR")
   (options, args) = optparser.parse_args()
   if len(args) < 1:
     optparser.error("need at least one argument")
-  else:
-    x = XpiFile(args[0])
-  for name in x.iterextractnames(True, True):
-    print name, x.ostojarpath(name)
+  xpifile = XpiFile(args[0])
+  if options.listfiles:
+    for name in xpifile.iterextractnames(includenonjars=True, includedirs=True):
+      print name, xpifile.ostojarpath(name)
+  if options.extractfiles:
+    if options.extractdir and not os.path.isdir(options.extractdir):
+      os.mkdir(options.extractdir)
+    for name in xpifile.iterextractnames(includenonjars=True, includedirs=True):
+      abspath = os.path.join(options.extractdir, name)
+      if abspath.endswith(os.path.sep):
+        if not os.path.isdir(abspath):
+          os.mkdir(abspath)
+        continue
+      outputstream = open(abspath, 'w')
+      jarfilename, filename = xpifile.ostojarpath(name)
+      inputstream = xpifile.openinputstream(jarfilename, filename)
+      outputstream.write(inputstream.read())
+      outputstream.close()
 
