@@ -116,14 +116,17 @@ td.translate-translation
 .translate-diff-replace
 {
 	background-color: #ffff00;
+	border: 1px solid #f0f000;
 }
 .translate-diff-delete
 {
 	background-color: #ff8000;
+	border: 1px solid #f07000;
 }
 .translate-diff-insert
 {
 	background-color: #80ff00;
+	border: 1px solid #70f000;
 }
 div.intro {
 	font-family: verdana, arial, sans-serif;
