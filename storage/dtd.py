@@ -26,12 +26,19 @@ from __future__ import generators
 from translate.misc import quote
 
 class dtdelement:
+  """this class represents an entity definition from a dtd file (and possibly associated comments)"""
   def __init__(self):
+    """construct the dtdelement, prepare it for parsing"""
     self.comments = []
     self.incomment = 0
     self.inentity = 0
 
+  def isnull(self):
+    """returns whether this dtdelement doesn't actually have an entity definition"""
+    return self.entity is None
+
   def fromlines(self,lines):
+    """read the first dtd element from the set of lines into this object, return linesprocessed"""
     self.comments = []
     # make all the lists the same
     self.locfilenotes = self.comments
@@ -43,7 +50,7 @@ class dtdelement:
     # self.locgroupends = []
     # self.locnotes = []
     # self.comments = []
-    self.entity = ''
+    self.entity = None
     self.definition = ''
     linesprocessed = 0
     comment = ""
@@ -136,7 +143,10 @@ class dtdelement:
     return linesprocessed
 
   def tolines(self):
+    """convert the dtd entity back to string form"""
     for commenttype,comment in self.comments: yield comment
+    if self.isnull():
+      raise StopIteration()
     # for f in self.locfilenotes: yield f
     # for ge in self.locgroupends: yield ge
     # for gs in self.locgroupstarts: yield gs
@@ -177,9 +187,8 @@ class dtdfile:
       while linesprocessed >= 1:
         newdtd = dtdelement()
         linesprocessed = newdtd.fromlines(lines[start:end])
-        # print "processed from %d to %d: %d" % (start,end,linesprocessed)
         start += linesprocessed
-        if linesprocessed >= 1:
+        if linesprocessed >= 1 and not newdtd.isnull():
           self.dtdelements.append(newdtd)
 
   def tolines(self):
