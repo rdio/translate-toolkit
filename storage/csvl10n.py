@@ -49,9 +49,13 @@ class csvelement:
     return {'source':self.source, 'msgid':self.msgid, 'msgstr':self.msgstr}
 
 class csvfile:
-  def __init__(self):
+  def __init__(self, inputfile=None):
     self.csvelements = []
     self.fieldnames = ['source', 'msgid', 'msgstr']
+    if inputfile is not None:
+      csvlines = inputfile.readlines()
+      inputfile.close()
+      self.fromlines(csvlines)
 
   def fromlines(self,lines):
     if type(lines) == list: lines = "\n".join(lines)

@@ -18,8 +18,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""simple script to convert a comma-separated values (.csv) file to a gettext .po localization file 
-reads from stdin, currently writes rows to stdout"""
+"""simple script to convert a comma-separated values (.csv) file to a gettext .po localization file"""
 
 import sys
 from translate.misc import quote
@@ -46,17 +45,15 @@ class csv2po:
         thepofile.poelements.append(thepo)
     return thepofile
 
-def convert(fromfileclass,convertorclass):
-  """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
-  filelines = sys.stdin.readlines()
-  fromfile = fromfileclass()
-  fromfile.fromlines(filelines)
-  convertor = convertorclass()
-  tofile = convertor.convertfile(fromfile)
-  tolines = tofile.tolines()
-  sys.stdout.writelines(tolines)
+def convertfile(inputfile, outputfile):
+  """reads in inputfile using csvl10n, converts using csv2po, writes to outputfile"""
+  inputcsv = csvl10n.csvfile(inputfile)
+  convertor = csv2po()
+  outputpo = convertor.convertfile(inputcsv)
+  outputpolines = outputpo.tolines()
+  outputfile.writelines(outputpolines)
 
 if __name__ == '__main__':
-  convert(csvl10n.csvfile,csv2po)
+  convertfile(sys.stdin, sys.stdout)
   
 
