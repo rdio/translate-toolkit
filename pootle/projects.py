@@ -5,8 +5,7 @@
 from translate.storage import po
 from translate.misc import quote
 from translate.filters import checks
-# TODO: po2csv needs to be made an importable module
-# from translate.convert import po2csv
+from translate.convert import po2csvmod
 import os
 
 class TranslationSession:
@@ -270,7 +269,7 @@ class TranslationProject:
     """returns pofile as csv"""
     pofilename = csvfilename.replace(".csv", ".po")
     pofile = self.getpofile(pofilename)
-    convertor = po2csv.po2csv()
+    convertor = po2csvmod.po2csv()
     csvfile = convertor.convertfile(pofile)
     lines = csvfile.tolines()
     return "".join(lines)
