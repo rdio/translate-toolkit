@@ -308,6 +308,16 @@ class LanguageSelectionWindow(wx.Frame):
     """Cancel without applying changes"""
     self.Close(1)
 
+# to build ooswitchlang exe: use Installer 6 alpha 2 (5b4 not compatible with python 2.3)
+# set tools=x:\path\to\translate\tools
+# wget http://davidf.sjsoft.com/mirrors/mcmillan-inc/dnld/installer_6a2.tar.gz
+# tar xzf installer_6a2.tar.gz
+# cd Installer
+# python Configure.py
+# python Makespec.py --onefile --noconsole --out ooswitchlang --icon %tools%\ooswitchlang.ico %tools%\ooswitchlang
+# python Build.py ooswitchlang\ooswitchlang.spec
+# this will produce ooswitchlang.exe in the Installer directory
+
 if __name__ == '__main__':
   app = wx.PySimpleApp()
   frame = LanguageSelectionWindow(None, -1, "Choose language")
