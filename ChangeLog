@@ -1,4 +1,9 @@
-2003-12-23: Moved into new package structure from old flat structure
-Renamed files
-Improved command line option consistency
-Renamed project from mozpotools to translate
+2004-03-30: David Fraser <david@translate.org.za>
+	* Read the CVS mails
+
+2003-12-23: David Fraser <david@translate.org.za>
+	* Moved into new package structure from old flat structure
+	* Renamed files
+	* Improved command line option consistency
+	* Renamed project from mozpotools to translate
+
