@@ -1,0 +1,4 @@
+pomerge
+	allow status of input PO to override destination ie if input is not fuzzy
+    and destination is fuzzy that is you corrected it then make merged message
+    not fuzzy
