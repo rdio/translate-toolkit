@@ -23,6 +23,7 @@ these are specific .oo files for localisation exported by OpenOffice - SDF forma
 See http://l10n.openoffice.org/L10N_Framework/Intermediate_file_format.html
 FIXME: add simple test which reads in a file and writes it out again"""
 
+import os
 import sys
 from translate.misc import quote
 from translate.misc import wStringIO
@@ -134,6 +135,8 @@ class oomultifile:
   """this takes a huge GSI file and represents it as multiple smaller files..."""
   def __init__(self, inputfile):
     """initialises oomultifile from a seekable inputfile"""
+    if isinstance(inputfile, (str, unicode)):
+      inputfile = open(inputfile, 'r')
     self.inputfile = inputfile
     self.subfilelines = {}
     linenum = 0
@@ -149,11 +152,22 @@ class oomultifile:
     lineparts = line.split("\t", 2)
     module, filename = lineparts[0], lineparts[1]
     filename = filename.replace("\\", "/")
-    return module+"/"+filename+".oo"
+    fileparts = [module] + filename.split("/")
+    ooname = os.path.join(*fileparts[:-1])
+    return ooname + os.extsep + "oo"
 
   def listsubfiles(self):
     """returns a list of subfiles in the file"""
     return self.subfilelines.keys()
+
+  def __iter__(self):
+   """iterates through the subfile names"""
+   for subfile in self.listsubfiles():
+     yield subfile
+
+  def __contains__(self, pathname):
+    """checks if this pathname is a valid subfile"""
+    return pathname in self.subfilelines
 
   def getlines(self, subfile):
     """returns the list of lines matching the subfile"""
@@ -167,7 +181,7 @@ class oomultifile:
       linenum += 1
     return lines
 
-  def openfile(self, subfile):
+  def openinputfile(self, subfile):
     """returns a pseudo-file object for the given subfile"""
     lines = self.getlines(subfile)
     return wStringIO.StringIO("".join(lines))
