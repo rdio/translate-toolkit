@@ -238,7 +238,7 @@ class LanguageSelectionWindow(wx.Frame):
 
     self.adminlabel = wx.StaticText(self.panel, wx.ID_ANY, "Change language for:")
     self.adminchoice = wx.Choice(self.panel, wx.ID_ANY, choices=["User", "System default"])
-    self.adminchoice.SetToolTipString("Changes the default setting or the user setting")
+    self.adminchoice.SetToolTipString("Select whether to set the default or the user setting")
     self.adminchoice.SetSelection(0)
     wx.EVT_CHOICE(self, self.adminchoice.GetId(), self.OnSetAdmin)
     self.forcelabel = wx.StaticText(self.panel, wx.ID_ANY, "Assume language is valid:")
