@@ -28,6 +28,7 @@ from translate import __version__
 
 # TODO: support single GSI file -> multiple po files (see it as an archive like an xpi)
 # TODO: support using one GSI file as template, another as input (for when English is in one and translation in another)
+# TODO: support multilang GSI file, pass languages as option
 
 class oo2po:
   def __init__(self, languages=None, blankmsgstr=False):
@@ -71,8 +72,13 @@ class oo2po:
         part1 = theoo.lines[0]
         part2 = theoo.lines[1]
       else:
-        part1 = theoo.languages[self.languages[0]]
-        part2 = theoo.languages[self.languages[1]]
+        try:
+          part1 = theoo.languages[self.languages[0]]
+          part2 = theoo.languages[self.languages[1]]
+        except KeyError, e:
+          # TODO: handle this more gracefully...
+          print theoo.lines[0].getkey(), "language not found: %s" % e
+          return []
     key = self.makekey(part1.getkey())
     textpo = self.makepo(part1, part2, key, 'text')
     quickhelppo = self.makepo(part1, part2, key, 'quickhelptext')
@@ -96,12 +102,14 @@ class oo2po:
     thepofile.removeduplicates()
     return thepofile
 
-def convertoo(inputfile, outputfile, templates, pot=False):
+def convertoo(inputfile, outputfile, templates, pot=False, languages=None):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   fromfile = oo.oofile()
   filelines = inputfile.readlines()
   fromfile.fromlines(filelines)
-  convertor = oo2po(blankmsgstr=pot)
+  if languages is not None:
+    languages = [language.strip() for language in languages.split(",") if language.strip()]
+  convertor = oo2po(blankmsgstr=pot, languages=languages)
   outputpo = convertor.convertfile(fromfile)
   if outputpo.isempty():
     return 0
@@ -114,6 +122,9 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {"oo":("po",convertoo)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
+  parser.add_option("-l", "--languages", dest="languages", default=None,
+    help="set languages to extract from oo file (comma-separated)", metavar="LANGUAGES")
   parser.passthrough.append("pot")
+  parser.passthrough.append("languages")
   parser.run()
 
