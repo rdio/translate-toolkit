@@ -77,7 +77,11 @@ class PootleServer(users.OptionalLoginAppServer):
     if language is None:
       return self.translation
     else:
-      return self.potree.getproject(language, 'pootle')
+      try:
+        return self.potree.getproject(language, 'pootle')
+      except:
+        self.errorhandler.logerror("Could not get translation for language %r" % language)
+        return self.translation
 
   def refreshstats(self):
     """refreshes all the available statistics..."""
