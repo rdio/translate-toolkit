@@ -178,6 +178,10 @@ class SetupIndex(SetupParser):
     SetupParser.parse(self, contents)
     self.languagename = sparse.stringeval(self.getfieldvalue('gid_Dir_Config_Language', 'HostName'))
     self.isocode = sparse.stringeval(self.getfieldvalue('gid_Dir_Share_Registry_Res_Lang', 'HostName'))
+    if self.isocode.find("-") == -1:
+      self.shortisocode = self.isocode
+    else:
+      self.shortisocode = self.isocode[:self.isocode.find("-")]
     self.dialingcode = sparse.stringeval(self.getfieldvalue('gid_Installation', 'DefaultLanguage'))
 
   def keymunge(self, keyname):
@@ -215,7 +219,7 @@ class SetupIndex(SetupParser):
       for directory in index.bytype["Directory"]:
         hostname = index.getfieldvalue(directory, 'HostName')
         hostname = sparse.stringeval(hostname)
-        if hostname == self.languagename or hostname == self.isocode:
+        if hostname in (index.languagename, index.isocode, index.shortisocode):
           directoriestorename[directory] = 1
         parentid = index.getfieldvalue(directory, 'ParentID')
         if parentid not in index.directorychildren:
