@@ -64,7 +64,6 @@ for elementclassname in dir(minidom):
   elementclass.writexml = writexml
 
 # TODO: handle comments
-# TODO: handle translation types
 
 class QtTsParser:
   def __init__(self, inputfile=None):
@@ -76,7 +75,7 @@ class QtTsParser:
       self.document = minidom.parse(inputfile)
       assert self.document.documentElement.tagName == "TS"
 
-  def addtranslation(self, contextname, source, translation, comment, type, createifmissing=False):
+  def addtranslation(self, contextname, source, translation, comment, transtype=None, createifmissing=False):
     """adds the given translation (will create the nodes required if asked). Returns success"""
     contextnode = self.getcontextnode(contextname)
     if contextnode is None:
@@ -112,14 +111,8 @@ class QtTsParser:
     translationnode = self.document.createElement("translation")
     translationtext = self.document.createTextNode(translation)
     translationnode.appendChild(translationtext)
-    if len(type) > 0 :
-      translationnode.setAttribute("type",type)
-    # TEST ONLY:
-    #typenode = self.document.createElement("type")
-    #typetext = self.document.createTextNode(type)
-    #typenode.appendChild(typetext)
-    #messagenode.appendChild(typenode)
-    #
+    if transtype:
+      translationnode.setAttribute("type",transtype)
     messagenode.appendChild(translationnode)
     contextnode.appendChild(messagenode)
     return True

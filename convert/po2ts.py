@@ -46,13 +46,12 @@ class po2ts:
         #comment = thepo.othercomments[0]
       else:
         comment = ""
+      transtype = None
       if thepo.isfuzzy():
-        type = "unfinished"
+        transtype = "unfinished"
       elif len(thepo.visiblecomments) > 0:
         if thepo.visiblecomments[0] == "#_ OBSOLETE\n":
-          type = "obsolete" 
-      else:
-        type = ""
+          transtype = "obsolete" 
       if isinstance(source, str):
         source = source.decode("utf-8")
       if isinstance(translation, str):
@@ -62,7 +61,7 @@ class po2ts:
           contextname = sourcelocation[:sourcelocation.find("#")]
         else:
           contextname = sourcelocation
-        tsfile.addtranslation(contextname, source, translation, comment, type, createifmissing=True)
+        tsfile.addtranslation(contextname, source, translation, comment, transtype, createifmissing=True)
     return tsfile.getxml()
 
 def convertpo(inputfile, outputfile, templatefile):
