@@ -566,9 +566,12 @@ class pofile:
   def encode(self, lines):
     """encode any unicode strings in lines in self.encoding"""
     newlines = []
+    encoding = self.encoding
+    if encoding is None:
+      encoding = 'UTF-8'
     for line in lines:
       if isinstance(line, unicode):
-        line = line.encode(self.encoding)
+        line = line.encode(encoding)
       newlines.append(line)
     return newlines
 
@@ -576,7 +579,7 @@ class pofile:
     """decode any non-unicode strings in lines with self.encoding"""
     newlines = []
     for line in lines:
-      if isinstance(line, str):
+      if isinstance(line, str) and self.encoding is not None:
         line = line.decode(self.encoding)
       newlines.append(line)
     return newlines
