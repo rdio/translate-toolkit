@@ -200,10 +200,8 @@ class ConvertOptionParser(optparse.OptionParser):
     else:
       raise ValueError("one of input/output formats must be a dict: %r, %r" % (self.inputformats, self.outputformats))
 
-  def recurseconversion(self, options):
-    """recurse through directories and convert files"""
-    join = os.path.join
-    allfiles = self.recursefiles(options)
+  def initprogressbar(self, allfiles, options):
+    """sets up a progress bar appropriate to the options and files"""
     if options.progress in ('console', 'curses', 'verbose'):
       # iterate through the files and produce a list so we can show progress...
       allfiles = [inputfile for inputfile in allfiles]
@@ -211,43 +209,57 @@ class ConvertOptionParser(optparse.OptionParser):
       print "processing %d files..." % len(allfiles)
     else:
       self.progressbar = self.progresstypes[options.progress]()
+
+  def recurseconversion(self, options):
+    """recurse through directories and convert files"""
+    join = os.path.join
+    allfiles = self.recursefiles(options)
+    self.initprogressbar(allfiles, options)
     for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
+      convertmethod = self.getconvertmethod(inputext, outputext)
       fullinputpath = join(options.input, inputpath)
       fulloutputpath = join(options.output, outputpath)
-      tempoutput = False
-      if fulloutputpath == fullinputpath:
-        tempoutput = True
-        origoutputpath = fulloutputpath
-        fulloutputpath += os.extsep + "tmp"
-      if templatepath is not None:
+      if templatepath is  None:
+        fulltemplatepath = None
+      else:
         fulltemplatepath = join(options.template, templatepath)
-        if fulloutputpath == fulltemplatepath:
-          tempoutput = True
-          origoutputpath = fulloutputpath
-          fulloutputpath += os.extsep + "tmp"
-      inputfile = open(fullinputpath, 'r')
-      outputfile = open(fulloutputpath, 'w')
-      templatefile = None
-      if templatepath is not None:
-        if os.path.isfile(fulltemplatepath):
-          templatefile = open(fulltemplatepath, 'r')
-        else:
-          print >>sys.stderr, "warning: missing template file %s" % fulltemplatepath
-      convertmethod = self.getconvertmethod(inputext, outputext)
-      if convertmethod(inputfile, outputfile, templatefile):
+      success = self.convertfile(convertmethod, fullinputpath, fulloutputpath, fulltemplatepath)
+      if success:
         outputsubdir = os.path.dirname(outputpath)
         self.usesubdir(outputsubdir)
-        self.reportprogress(inputpath, True)
-        if tempoutput:
-          outputfile.close()
-          os.unlink(origoutputpath)
-          os.rename(fulloutputpath, origoutputpath)
-      else:
-        outputfile.close()
-        os.unlink(fulloutputpath)
-        self.reportprogress(inputpath, False)
+      self.reportprogress(inputpath, success)
     self.prunesubdirs(options)
     del self.progressbar
+
+  def convertfile(self, convertmethod, fullinputpath, fulloutputpath, fulltemplatepath):
+    """run an invidividual conversion"""
+    tempoutput = False
+    if fulloutputpath == fullinputpath:
+      tempoutput = True
+      origoutputpath = fulloutputpath
+      fulloutputpath += os.extsep + "tmp"
+    if fulloutputpath == fulltemplatepath:
+      tempoutput = True
+      origoutputpath = fulloutputpath
+      fulloutputpath += os.extsep + "tmp"
+    inputfile = open(fullinputpath, 'r')
+    outputfile = open(fulloutputpath, 'w')
+    templatefile = None
+    if fulltemplatepath is not None:
+      if os.path.isfile(fulltemplatepath):
+        templatefile = open(fulltemplatepath, 'r')
+      else:
+        print >>sys.stderr, "warning: missing template file %s" % fulltemplatepath
+    if convertmethod(inputfile, outputfile, templatefile):
+      if tempoutput:
+        outputfile.close()
+        os.unlink(origoutputpath)
+        os.rename(fulloutputpath, origoutputpath)
+      return True
+    else:
+      outputfile.close()
+      os.unlink(fulloutputpath)
+      return False
 
   def reportprogress(self, filename, success):
     """shows that we are progressing..."""
