@@ -63,7 +63,6 @@ class ZipFileExt(ZipFile, object):
                     if self.filelist[j].file_offset > deleted_offset:
                         self.filelist[j].file_offset -= deleted_size
                 del self.NameToInfo[name]
-                self.writeendrec()
                 return
         if self.debug:
             print name, "not in archive"
