@@ -314,32 +314,16 @@ class SetupIndex(SetupParser):
     self.insertforeignsection(fileentry, fileentry + suffix, fileentrysection, index, tokenrange)
     if fileentry in self.filemodules:
       for modulename in self.filemodules[fileentry]:
-        self.addfiletomodule(index, fileentry, modulename)
+        self.addfiletomodule(modulename, fileentry + suffix, fileentry)
 
-  def addfiletomodule(self, index, fileentry, modulename):
+  def addfiletomodule(self, modulename, fileentry, afterfileentry):
     """adds the given fileentry to module modulename using the definition from the index"""
-    tokennum = self.getmoduleentrytokennum(modulename, fileentry)
-    indextokennum = index.getmoduleentrytokennum(modulename, fileentry)
-    if tokennum is None or indextokennum is None:
-      print >>sys.stderr, "could not find Files entry in index %s: module %s, file %s, token %r, indextoken %r" \
-        % (index.filename, modulename, fileentry, tokennum, indextokennum)
-      continue
-    commaafter = (self.tokens[tokennum + 1] == ',')
-    indexcommaafter = (index.tokens[indextokennum + 1] == ',')
-    commabefore = (self.tokens[tokennum - 1] == ',')
-    indexcommabefore = (index.tokens[indextokennum - 1] == ',')
-    if not (commaafter or commabefore) or not (indexcommaafter or indexcommabefore):
-      print >>sys.stderr, "could not insert into modules: not enough commas for module %s, fileentry %s" \
-        % (modulename, fileentry)
-    # cleverly combine the commas...
-    if commaafter and indexcommaafter:
-      insertion = (index, (indextokennum, indextokennum + 2))
-      tokennum += 1
-    elif indexcommabefore:
-      insertion = (index, (indextokennum - 1, indextokennum + 1))
-    elif commabefore and indexcommaafter:
-      insertion = (index, (indextokennum, indextokennum + 2))
-      tokennum -= 1
+    tokennum = self.getmoduleentrytokennum(modulename, afterfileentry)
+    dummysetuplines = ["Module %s" % modulename, "  Files = (dummy, %s);" % fileentry, "End", ""]
+    dummyparser = SetupParser()
+    dummyparser.parse("\r\n".join(dummysetuplines))
+    dummytokennum = dummyparser.getmoduleentrytokennum(modulename, fileentry)
+    insertion = (dummyparser, (dummytokennum - 1, dummytokennum + 1))
     if tokennum not in self.insertions:
       self.insertions[tokennum] = [insertion]
     else:
