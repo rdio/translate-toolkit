@@ -23,7 +23,6 @@
 from translate.filters import helpers
 from translate.filters import decoration
 from translate.filters import prefilters
-import sre
 
 # actual test methods
 
@@ -134,7 +133,7 @@ class TeeChecker:
     """run all the tests in the checker's suites"""
     failures = []
     for checker in self.checkers:
-      failures.extend(self.run_filters(str1, str2))
+      failures.extend(checker.run_filters(str1, str2))
     return failures
 
 class StandardChecker(TranslationChecker):

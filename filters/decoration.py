@@ -150,7 +150,6 @@ def getnumbers(str1):
   # TODO: handle locale-based periods e.g. 2,5 for Afrikaans
   numbers = []
   innumber = False
-  possibleprefix = ""
   lastnumber = ""
   carryperiod = ""
   for chr1 in str1:
