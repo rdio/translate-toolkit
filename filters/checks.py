@@ -151,19 +151,19 @@ class StandardChecker(TranslationChecker):
 
   def blank(self, str1, str2):
     """checks whether a translation is totally blank"""
-    len1 = len(prefilter.removekdecomments(str1).strip())
+    len1 = len(prefilters.removekdecomments(str1).strip())
     len2 = len(str2.strip())
     return not (len1 > 0 and len(str2) != 0 and len2 == 0)
 
   def short(self, str1, str2):
     """checks whether a translation is much shorter than the original string"""
-    len1 = len(prefilter.removekdecomments(str1).strip())
+    len1 = len(prefilters.removekdecomments(str1).strip())
     len2 = len(str2.strip())
     return not ((len1 > 0) and (0 < len2 < (len1 * 0.1)))
 
   def long(self, str1, str2):
     """checks whether a translation is much longer than the original string"""
-    len1 = len(prefilter.removekdecomments(str1).strip())
+    len1 = len(prefilters.removekdecomments(str1).strip())
     len2 = len(str2.strip())
     return not ((len1 > 0) and (0 < len1 < (len2 * 0.1)))
 
@@ -252,7 +252,7 @@ class StandardChecker(TranslationChecker):
 
   def brackets(self, str1, str2):
     """checks that the number of brackets in both strings match"""
-    str1 = self.filtervariables(str1)
+    str1 = self.filtervariables(prefilters.removekdecomments(str1))
     str2 = self.filtervariables(str2)
     return helpers.countsmatch(str1, str2, ("[", "]", "{", "}", "(", ")"))
 
