@@ -10,8 +10,6 @@ pomerge
 	  separate lines.
     - Allow merge without a template and thus us the output as a template.  Or
       at least don't complain when you don't find the templates.
-	BUGS:
-		- pomerge removed fuzzy markers from obsolete messages
 
 New tools
 	Some ideas for tools that would be helpful
@@ -31,5 +29,3 @@ New tools
 
 pocount
 	- Fix po class so that it handles KDE style plurals there not in pocount
-	- BUG: counts Obsolete messages as untranslated.  Should ignore them and maybe
-	  count them as we do messages marked as review.
