@@ -157,6 +157,8 @@ class XpiFile(zipfile.ZipFile):
       contents = jarfile.read(filename)
     inputstream = NamedStringInput(contents)
     inputstream.name = self.jartoospath(jarfilename, filename)
+    if hasattr(self.fp, 'name'):
+      inputstream.name = "%s:%s" % (self.fp.name, inputstream.name)
     return inputstream
 
   def iterextractnames(self, includenonjars=False, includedirs=False):
