@@ -70,5 +70,6 @@ def main():
   parser = MozConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.add_option("-l", "--locale", dest="locale", default=None,
     help="set output locale (required as this sets the directory names)", metavar="LOCALE")
+  parser.add_fuzzy_option()
   parser.run()
 

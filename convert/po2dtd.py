@@ -266,10 +266,6 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {"po": ("dtd", convertdtd), ("po", "dtd"): ("dtd", convertdtd)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
-  parser.add_option("", "--fuzzy", dest="includefuzzy", action="store_true", default=False,
-    help="use translations marked fuzzy")
-  parser.add_option("", "--nofuzzy", dest="includefuzzy", action="store_false", default=False,
-    help="don't use translations marked fuzzy (default)")
-  parser.passthrough.append("includefuzzy")
+  parser.add_fuzzy_option()
   parser.run()
 
