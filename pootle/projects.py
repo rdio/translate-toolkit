@@ -860,7 +860,7 @@ class POTree:
         projectcode = value.lower()
         if not projectcode:
           continue
-        if not (projectcode[:1].isalpha() and projectcode.isalphanum()):
+        if not (projectcode[:1].isalpha() and projectcode.replace("_","").isalnum()):
           raise ValueError("Project code must be alphanumeric and start with an alphabetic character (got %r)" % projectcode)
         if hasattr(self.projects, projectcode):
           raise ValueError("Already have project with the code %s" % projectcode)
