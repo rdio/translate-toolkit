@@ -21,8 +21,8 @@ class TranslatePage(pagelayout.PootlePage):
     self.matchnames = self.getmatchnames(self.project.checker)
     self.searchtext = self.argdict.get("searchtext", "")
     # TODO: fix this in jToolkit
-    if isinstance(self.searchtext, unicode):
-      self.searchtext = self.searchtext.encode("utf8")
+    if isinstance(self.searchtext, str):
+      self.searchtext = self.searchtext.decode("utf8")
     self.showassigns = self.argdict.get("showassigns", 0)
     if isinstance(self.showassigns, (str, unicode)) and self.showassigns.isdigit():
       self.showassigns = int(self.showassigns)
