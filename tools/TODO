@@ -5,3 +5,16 @@ pomerge
 	- Don't merge header.  If there is a header is should be merged as indicates 
       last translators info but should be allowed to specify that it not get
       merged.
+
+New tools
+	Some ideas for tools that would be helpfull
+	podiff - normal diff show too much spurious data.  We need something that
+		can ignore the location and just shaw the changes in text.  So you
+		could receive an updated PO file but the diff would not show spurious
+		changes in the header and could match strings in different location.
+		The output could then be smething like diff -u
+	glossary_creator - take input text or PO file and extract a) the most
+		frequent words and b) the most frequent word pairs.  So things like
+		"Proxy Server" are extracted. The idea being that you can create a
+		glossary for a single PO file or for the whole project like KDE.
+		Translators get to define important words before beginning to translate
