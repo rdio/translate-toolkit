@@ -17,18 +17,18 @@ def untranslatedwords(pair):
 
 def wordcount(postr):
   if isinstance(postr, dict):
-    unquotedstr = "\n".join([po.getunquotedstr(msgstr).strip() for msgstr in postr.itervalues()])
+    unquotedstr = " ".join([po.getunquotedstr(msgstr).strip() for msgstr in postr.itervalues()])
   else:
     unquotedstr = po.getunquotedstr(postr)
   return len(unquotedstr.split())
 
-def wordcountmsgid(msgid, msgid_plural = None):
-  if msgid_plural:
-    unquotedstr = po.getunquotedstr(msgid) + " " + po.getunquotedstr(msgid_plural)
-  else:
-    unquotedstr = po.getunquotedstr(msgid)
-    print msgid_plural
-  return len(unquotedstr.split())
+def wordsinpoel(poel):
+  """counts the words in the msgid, msgstr, taking plurals into account"""
+  msgidwords = wordcount(poel.msgid)
+  if poel.hasplural():
+    msgidwords += wordcount(poel.msgid_plural)
+  msgstrwords = wordcount(poel.msgstr)
+  return msgidwords, msgstrwords
 
 def summarize(elements):
   # ignore totally blank or header elements
@@ -36,10 +36,13 @@ def summarize(elements):
   translated = filter(lambda poel: not poel.isblankmsgstr() and not poel.isfuzzy(), elements)
   fuzzy = filter(lambda poel: poel.isfuzzy() and not poel.isblankmsgstr(), elements)
   untranslated = filter(lambda poel: poel.isblankmsgstr(), elements)
+  wordcounts = dict(map(lambda poel: (poel, wordsinpoel(poel)), elements))
+  msgidwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][0], elementlist))
+  msgstrwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][1], elementlist))
   print "type           strings words (source) words (translation)"
-  print "translated:   %5d %10d %15d" % (len(translated), sum(map(lambda poel: wordcountmsgid(poel.msgid, poel.msgid_plural), translated)), sum(map(lambda poel: wordcount(poel.msgstr), translated)))
-  print "fuzzy:        %5d %10d             n/a" % (len(fuzzy), sum(map(lambda poel: wordcountmsgid(poel.msgid, poel.msgid_plural), fuzzy)))
-  print "untranslated: %5d %10d             n/a" % (len(untranslated), sum(map(lambda poel: wordcountmsgid(poel.msgid, poel.msgid_plural), untranslated)))
+  print "translated:   %5d %10d %15d" % (len(translated), msgidwords(translated), msgstrwords(translated))
+  print "fuzzy:        %5d %10d             n/a" % (len(fuzzy), msgidwords(fuzzy))
+  print "untranslated: %5d %10d             n/a" % (len(untranslated), msgidwords(untranslated))
 
 class summarizer:
   def __init__(self, filenames):
