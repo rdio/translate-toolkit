@@ -12,4 +12,4 @@ other checks
   plural checks - check plural forms against the Gettext plural header
     fallback to list of valid plurals for KDE.
   Supper basic machine translation - en_GB changes color -> colour
-  accelerators
+
