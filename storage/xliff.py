@@ -103,9 +103,12 @@ class XliffParser(object):
     """returns the node's text by iterating through the child nodes"""
     return "".join([getattr(t, "data", "") for t in node.childNodes if t.nodeType == t.TEXT_NODE])
 
-  def getxml(self):
+  def getxml(self,pretty=True):
     """return the ts file as xml"""
-    xml = self.document.toprettyxml(indent="    ", encoding="utf-8")
+    if pretty:
+        xml = self.document.toprettyxml(indent="    ", encoding="utf-8")
+    else:
+        xml = self.document.toxml(encoding="utf-8")
     xml = "\n".join([line for line in xml.split("\n") if line.strip()])
     return xml
 
