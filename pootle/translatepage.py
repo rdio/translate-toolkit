@@ -7,21 +7,14 @@ from translate.pootle import projects
 
 class TranslatePage(pagelayout.PootlePage):
   """the page which lets people edit translations"""
-  def __init__(self, project, subproject, session, argdict):
+  def __init__(self, project, subproject, session, argdict, dirfilter=None):
     self.project = project
     self.subproject = subproject
+    self.dirfilter = dirfilter
     self.translationproject = projects.getproject(self.subproject)
     self.translationsession = self.translationproject.gettranslationsession(session)
-    for key, value in argdict.iteritems():
-      if key.startswith("trans"):
-        try:
-          item = int(key.replace("trans",""))
-        except:
-          continue
-        # submit the actual translation back to the project...
-        pofilename = argdict["pofilename"]
-        self.translationsession.receivetranslation(pofilename, item, value)
     self.instance = session.instance
+    self.receivetranslations(argdict)
     translations = self.gettranslations()
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     translateform = widgets.Form([translations, contextinfo], {"name": "translate", "action":""})
@@ -37,6 +30,22 @@ class TranslatePage(pagelayout.PootlePage):
     autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
     self.headerwidgets.append(autoexpandscript)
 
+  def receivetranslations(self, argdict):
+    """receive any translations submitted by the user"""
+    skip = "skip" in argdict
+    for key, value in argdict.iteritems():
+      if key.startswith("trans"):
+        try:
+          item = int(key.replace("trans",""))
+        except:
+          continue
+        # submit the actual translation back to the project...
+        pofilename = argdict["pofilename"]
+	if skip:
+          self.translationsession.skiptranslation(pofilename, item)
+	else:
+          self.translationsession.receivetranslation(pofilename, item, value)
+
   def addtransrow(self, rownum, origcell, transcell):
     self.transtable.setcell(rownum, 0, origcell)
     self.transtable.setcell(rownum, 1, transcell)
@@ -46,15 +55,14 @@ class TranslatePage(pagelayout.PootlePage):
     origtitle = table.TableCell("original", {"class":"translate-table-title"})
     transtitle = table.TableCell("translation", {"class":"translate-table-title"})
     self.addtransrow(-1, origtitle, transtitle)
-    self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem()
+    self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem(self.dirfilter)
     translationsbefore = self.translationproject.getitemsbefore(self.pofilename, item, 3)
     translationsafter = self.translationproject.getitemsafter(self.pofilename, item, 3)
+    self.translations = translationsbefore + [(theorig, thetrans)] + translationsafter
     self.textcolors = ["#000000", "#000060"]
-    for row, (orig, trans) in enumerate(translationsbefore):
-      self.addtranslationrow(item - len(translationsbefore) + row, orig, trans)
-    self.addtranslationrow(item, theorig, thetrans, True)
-    for row, (orig, trans) in enumerate(translationsafter):
-      self.addtranslationrow(item + 1 + row, orig, trans)
+    for row, (orig, trans) in enumerate(self.translations):
+      thisitem = item - len(translationsbefore) + row
+      self.addtranslationrow(thisitem, orig, trans, thisitem == item)
     self.transtable.shrinkrange()
     return self.transtable
 
@@ -78,8 +86,9 @@ class TranslatePage(pagelayout.PootlePage):
       if isinstance(trans, str):
         trans = trans.decode("utf8")
       textarea = widgets.TextArea({"name":"trans%d" % row, "rows":3, "cols":40}, contents=trans)
+      skipbutton = widgets.Input({"type":"submit", "name":"skip", "value":"skip"}, "skip")
       submitbutton = widgets.Input({"type":"submit", "name":"submit", "value":"submit"}, "submit")
-      contents = [textarea, submitbutton]
+      contents = [textarea, skipbutton, submitbutton]
     else:
       contents = widgets.Font(trans, {"color":self.textcolors[row % 2]})
     transdiv.addcontents(contents)
