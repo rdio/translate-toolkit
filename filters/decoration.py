@@ -158,27 +158,27 @@ def getnumbers(str1):
   # TODO: handle locale-based periods e.g. 2,5 for Afrikaans
   numbers = []
   innumber = False
-  inunicode = False
+  try:
+    wasstr = isinstance(str1, str)
+    if wasstr:
+      str1 = str1.decode('utf8')
+    degreesign = u'\xb0'
+  except:
+    degreesign = None
   lastnumber = ""
   carryperiod = ""
   for chr1 in str1:
-    if innumber and (chr1 == '.' or (chr1 == '\xc2' or inunicode)):
-      pass
-    elif chr1.isdigit():
+    if chr1.isdigit():
       innumber = True
     elif innumber:
-      innumber = False
-      if lastnumber:
-        numbers.append(lastnumber)
-      lastnumber = ""
+      if not (chr1 == '.' or chr1 == degreesign):
+        innumber = False
+        if lastnumber:
+          numbers.append(lastnumber)
+        lastnumber = ""
     if innumber:
-      if inunicode:
-        if chr1 == '\xb0':
-          lastnumber += '\xc2\xb0'
-        inunicode = False
-      elif chr1 == '\xc2':
-        inunicode = True
-        pass
+      if chr1 == degreesign:
+        lastnumber += chr1
       elif chr1 == '.':
         carryperiod += chr1
       else:
@@ -189,6 +189,8 @@ def getnumbers(str1):
   if innumber:
     if lastnumber:
       numbers.append(lastnumber)
+  if wasstr and degreesign:
+    numbers = [number.encode('utf8') for number in numbers]
   return numbers
 
 def countaccelerators(accelmarker, ignorelist=[]):
