@@ -546,7 +546,7 @@ class ProjectIndex(pagelayout.PootlePage):
       if not uploadfile:
         raise ValueError("cannot upload file, no file attached")
       if uploadfile.filename.endswith(".po"):
-        self.project.addnewpofile(self.dirname, uploadfile.filename, uploadfile.contents)
+        self.project.uploadpofile(self.dirname, uploadfile.filename, uploadfile.contents)
       elif uploadfile.filename.endswith(".zip"):
         self.project.uploadarchive(self.dirname, uploadfile.contents)
       else:

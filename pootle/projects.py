@@ -467,6 +467,55 @@ class pootlefile(po.pofile):
         if item in self.classify[name]:
           yield item
 
+  def mergefile(self, newpofile, username):
+    """make sure each msgid is unique ; merge comments etc from duplicates into original"""
+    self.makeindex()
+    def mergeitems(oldpo, newpo):
+      unchanged = po.unquotefrompo(oldpo.msgstr, False) == po.unquotefrompo(newpo.msgstr, False)
+      if oldpo.isblankmsgstr() or newpo.isblankmsgstr() or unchanged:
+        oldpo.merge(newpo)
+      else:
+        for matchitem, matchpo in enumerate(self.transelements):
+          if matchpo == oldpo:
+            self.addsuggestion(item, newpo.msgstr, username)
+            return
+        raise KeyError("Could not find item for merge")
+    def mergesources(oldpo, newsources):
+      for newsource in newsources:
+        oldpo.sourcecomments.append("#: %s\n" % newsource)
+    for newpo in newpofile.poelements:
+      unmergedsources = []
+      mergedsources = []
+      newsources = newpo.getsources()
+      for source in newsources:
+        if source in mergedsources:
+          continue
+        if source in self.sourceindex:
+          oldpo = self.sourceindex[source]
+          if oldpo is not None:
+            mergeitems(oldpo, newpo)
+            # even if there are multiple sources, we only want to merge once...
+            mergedsources.append(source)
+            for oldsource in oldpo.getsources():
+              if oldsource in newsources and oldsource not in mergedsources:
+                mergedsources.append(oldsource)
+            continue
+        unmergedsources.append(source)
+      if mergedsources and unmergedsources:
+        oldpo = self.sourceindex[mergedsources[0]]
+        mergesources(oldpo, unmergedsources)
+      elif unmergedsources:
+        msgid = po.getunquotedstr(newpo.msgid)
+        if msgid in self.msgidindex:
+          oldpo = self.msgidindex[msgid]
+          mergeitems(oldpo, newpo)
+          mergesources(oldpo, newpo.getsources())
+        else:
+          self.poelements.append(newpo)
+    self.savepofile()
+    # the easiest way to recalculate everythign
+    self.readpofile()
+
 class Search:
   """an object containint all the searching information"""
   def __init__(self, dirfilter=None, matchnames=[], assignedto=None, assignedaction=None, searchtext=None):
@@ -525,8 +574,8 @@ class TranslationProject:
       if not pofilename in self.pofilenames:
         del self.pofiles[pofilename]
 
-  def addnewpofile(self, dirname, pofilename, contents):
-    """creates a new po file with the given contents"""
+  def getuploadpath(self, dirname, pofilename):
+    """gets the path of a po file being uploaded securely, creating directories as neccessary"""
     if os.path.isabs(dirname) or dirname.startswith("."):
       raise ValueError("invalid/insecure file path: %s" % dirname)
     if os.path.basename(pofilename) != pofilename or pofilename.startswith("."):
@@ -539,13 +588,29 @@ class TranslationProject:
       dircheck = os.path.join(dircheck, part)
       if dircheck and not os.path.isdir(dircheck):
         os.mkdir(dircheck)
-    pathname = os.path.join(self.podir, dirname, pofilename)
+    return os.path.join(self.podir, dirname, pofilename)  
+
+  def addnewpofile(self, dirname, pofilename, contents):
+    """creates a new po file with the given contents"""
+    pathname = self.getuploadpath(dirname, pofilename)
     if os.path.exists(pathname):
       raise ValueError("that file already exists")
-    pofile = open(pathname, "wb")
-    pofile.write(contents)
-    pofile.close()
+    outfile = open(pathname, "wb")
+    outfile.write(contents)
+    outfile.close()
     self.scanpofiles()
+
+  def mergepofile(self, dirname, pofilename, contents):
+    """merges a new po file with the given contents with the existing one"""
+    pathname = self.getuploadpath(dirname, pofilename)
+    if not os.path.exists(pathname):
+      raise ValueError("cannot merge unless file exists")
+    origpofile = self.getpofile(os.path.join(dirname, pofilename))
+    newpofile = po.pofile()
+    infile = cStringIO.StringIO(contents)
+    newpofile.parse(infile)
+    # TODO: get the real username here
+    origpofile.mergefile(newpofile, "merged")
 
   def create(self):
     projectdir = os.path.join(self.potree.podirectory, self.projectcode)
@@ -574,7 +639,11 @@ class TranslationProject:
         pofilename = self.languagecode + os.extsep + "po"
       else:
         pofilename = potfilename[:-len(os.extsep+"pot")] + os.extsep + "po"
-      self.addnewpofile(dirname, pofilename, outputfile.getvalue())
+      # this should allow migrating to new templates
+      if os.path.exists(os.path.join(self.podir, dirname, pofilename)):
+        self.mergepofile(dirname, pofilename, outputfile.getvalue())
+      else:
+        self.addnewpofile(dirname, pofilename, outputfile.getvalue())
 
   def filtererrorhandler(self, functionname, str1, str2, e):
     print "error in filter %s: %r, %r, %s" % (functionname, str1, str2, e)
@@ -599,6 +668,13 @@ class TranslationProject:
       archive.write(pofile.filename, pofilename)
     archive.close()
     return archivecontents.getvalue()
+
+  def uploadpofile(self, dirname, pofilename, contents):
+    """uploads an individual PO files"""
+    if os.path.exists(os.path.join(self.podir, dirname, pofilename)):
+      self.mergepofile(dirname, pofilename, contents)
+    else:
+      self.addnewpofile(dirname, pofilename, contents)
 
   def uploadarchive(self, dirname, archivecontents):
     """uploads the files inside the archive"""
