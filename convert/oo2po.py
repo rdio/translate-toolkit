@@ -134,7 +134,7 @@ def main():
   from translate.convert import convert
   formats = {"oo":("po",convertoo)}
   # always treat the input as an archive unless it is a directory
-  archiveformats = {None: oo.oomultifile}
+  archiveformats = {(None, "input"): oo.oomultifile}
   parser = convert.ArchiveConvertOptionParser(formats, usepots=True, description=__doc__, archiveformats=archiveformats)
   parser.add_option("-l", "--languages", dest="languages", default=None,
     help="set languages to extract from oo file (comma-separated)", metavar="LANGUAGES")
