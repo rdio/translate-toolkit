@@ -23,6 +23,7 @@
 from translate.filters import helpers
 from translate.filters import decoration
 from translate.filters import prefilters
+import sre
 
 # actual test methods
 
@@ -264,10 +265,27 @@ class StandardChecker(TranslationChecker):
     else:
       return abs(capitals1 - capitals2) < (len(str1) + len(str2)) / 6 
 
+  def acronyms(self, str1, str2):
+    """checks that acronyms that appear are unchanged"""
+    for word in self.filteraccelerators(self.filtervariables(str1)).split():
+      word = word.strip(":;.,()'\"")
+      if word.isupper() and len(word) > 1:
+        if self.filteraccelerators(self.filtervariables(str2)).find(word) == -1:
+	  return False
+    return True
+
+  def kdecomments(self, str1, str2):
+    """checks to ensure that no KDE style comments appear in the translation"""
+    return str2.find("\n_:") == -1 and not str2.startswith("_:")
+
+  def compendiumconflicts(self, str1, str2):
+    """checks for Gettext compendium conflicts (#-#-#-#-#)"""
+    return str2.find("#-#-#-#-#") == -1
+
   preconditions = {"untranslated": ("escapes", "short", "long", "unchanged", "singlequoting", "doublequoting",
                                     "accelerators", "variables", "numbers",
                                     "doublespacing", "puncspacing", "startwhitespace", "endwhitespace",
-                                    "startpunc", "endpunc", "purepunc", "simplecaps") }
+                                    "startpunc", "endpunc", "purepunc", "simplecaps", "acronyms") }
 
 # code to actually run the tests (use unittest?)
 
