@@ -145,8 +145,9 @@ class AdminPage(pagelayout.PootlePage):
     self.instance = instance
     self.localize = session.localize
     if self.session.issiteadmin():
-      indexlink = pagelayout.IntroText(widgets.Link("../home/", self.localize("Home page")))
-      contents = [indexlink, self.getgeneral(), self.getlanguages(), self.getprojects()]
+      homelink = pagelayout.IntroText(widgets.Link("../home/", self.localize("Home page")))
+      userslink = pagelayout.IntroText(widgets.Link("users.html", self.localize("User Admin page")))
+      contents = [homelink, userslink, self.getgeneral(), self.getlanguages(), self.getprojects()]
     else:
       contents = pagelayout.IntroText(self.localize("You do not have the rights to administer pootle."))
     pagelayout.PootlePage.__init__(self, self.localize("Pootle Admin Page"), contents, session)
