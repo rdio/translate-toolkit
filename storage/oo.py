@@ -23,8 +23,8 @@ these are specific .oo files for localisation exported by OpenOffice - SDF forma
 See http://l10n.openoffice.org/L10N_Framework/Intermediate_file_format.html
 FIXME: add simple test which reads in a file and writes it out again"""
 
-import extract
 import sys
+from translate.misc import quote
 
 class ooline:
   """this represents one line, one translation in an .oo file"""
@@ -40,7 +40,6 @@ class ooline:
   def setparts(self, parts):
     """create a line from its tab-delimited parts"""
     if len(parts) != 15:
-      import sys
       print >>sys.stderr, "WRONG SIZE: %r" % parts
       newparts = list(parts)
       if len(newparts) < 15:
@@ -103,9 +102,8 @@ class oofile:
     
   def fromlines(self, lines):
     """parses lines and adds them to the file"""
-    allparts = []
     for line in lines:
-      parts = extract.rstripeol(line).split("\t")
+      parts = quote.rstripeol(line).split("\t")
       thisline = ooline(parts)
       self.addline(thisline)
 

@@ -135,7 +135,7 @@ class dtdelement:
     return linesprocessed
 
   def tolines(self):
-    for type,comment in self.comments: yield comment
+    for commenttype,comment in self.comments: yield comment
     # for f in self.locfilenotes: yield f
     # for ge in self.locgroupends: yield ge
     # for gs in self.locgroupstarts: yield gs

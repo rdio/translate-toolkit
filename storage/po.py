@@ -85,8 +85,7 @@ class poelement:
     if (len("".join(self.msgid).strip()) == 0) and (len("".join(self.msgstr).strip()) == 0):
       return 1
     unquotedid = [quote.extractwithoutquotes(line,'"','"','\\',includeescapes=0)[0] for line in self.msgid]
-    if len("".join(unquotedid).strip()) == 0:
-      return 1
+    return len("".join(unquotedid).strip()) == 0
 
   def hastypecomment(self, typecomment):
     return ("".join(self.typecomments)).find(typecomment) != -1
@@ -122,16 +121,16 @@ class poelement:
         elif line[:6] == 'msgstr':
           inmsgstr = 1
           inmsgid = 0
-      str = quote.extractstr(line)
-      if not str is None:
+      extracted = quote.extractstr(line)
+      if not extracted is None:
         if inmsgid:
-          # self.othercomments.append("# msgid=["+repr(str)+","+repr(str[:2])+"]\n")
-          if str.find('_:') != -1:
-            self.msgidcomments.append(str)
+          # self.othercomments.append("# msgid=["+repr(extracted)+","+repr(extracted[:2])+"]\n")
+          if extracted.find('_:') != -1:
+            self.msgidcomments.append(extracted)
           else:
-            self.msgid.append(str)
+            self.msgid.append(extracted)
         elif inmsgstr:
-          self.msgstr.append(str)
+          self.msgstr.append(extracted)
     return linesprocessed
 
   def tolines(self):
