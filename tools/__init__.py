@@ -18,5 +18,6 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""General tools modules used by Translate"""
+"""translate.tools is part of the translate package
+It contains code to perform various operations (mostly on po files)"""
 
