@@ -160,6 +160,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       return "%s formats" % (", ".join(formats))
 
+  # TODO: remove convertmethod option
   def runconversion(self, options, convertmethod):
     """runs the conversion method using the given commandline options..."""
     if (self.recursion == optionalrecursion and options.recursive) or (self.recursion == defaultrecursion):
@@ -174,8 +175,8 @@ class ConvertOptionParser(optparse.OptionParser, object):
       self.recurseconversion(options)
     else:
       inputfile = self.openinputfile(options, options.input)
-      outputfile = self.getoutputfile(options, options.output)
-      templatefile = self.gettemplatefile(options, options.template)
+      outputfile = self.openoutputfile(options, options.output)
+      templatefile = self.opentemplatefile(options, options.template)
       convertmethod(inputfile, outputfile, templatefile)
 
   def getconvertmethod(self, inputpath, outputpath):
