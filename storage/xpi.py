@@ -26,14 +26,17 @@ import os.path
 from translate import __version__
 try:
   import cStringIO
-  class NamedStringInput:
+  class NamedStringStream:
     def __init__(self, *args, **kwargs):
       self.__dict__["__i"] = cStringIO.StringIO(*args, **kwargs)
     def __getattr__(self, *args, **kwargs):
       return getattr(self.__dict__["__i"], *args, **kwargs)
+  NamedStringInput = NamedStringStream
+  NamedStringOutput = NamedStringStream
 except ImportError:
   import StringIO
   NamedStringInput = StringIO.StringIO
+  NamedStringOutput = StringIO.StringIO
 
 def _commonprefix(itemlist):
   def cp(a, b):
@@ -46,13 +49,39 @@ def _commonprefix(itemlist):
   else:
     return ''
 
-class XpiFile(zipfile.ZipFile):
+class CatchStringOutput(NamedStringOutput):
+  """catches the output before it is written and sends it to an onclose method"""
+  def __init__(self, onclose):
+    NamedStringOutput.__init__(self)
+    self.onclose = onclose
+  def close(self):
+    value = self.getvalue()
+    self.onclose(value)
+    self.__dict__["__i"].close()
+  def slam(self):
+    if not self.closed:
+      self.close()
+
+class ZipFileCatcher(zipfile.ZipFile, object):
+  def addcatcher(self, pendingsave):
+    if hasattr(self, "pendingsaves"):
+      self.pendingsaves.append(pendingsave)
+    else:
+      self.pendingsaves = [pendingsave]
+  def close(self):
+    if hasattr(self, "pendingsaves"):
+      for pendingsave in self.pendingsaves:
+        pendingsave()
+    super(ZipFileCatcher, self).close()
+
+
+class XpiFile(ZipFileCatcher):
   def __init__(self, *args, **kwargs):
     """sets up the xpi file"""
     self.includenonloc = kwargs.get("includenonloc", True)
     if "includenonloc" in kwargs:
       del kwargs["includenonloc"]
-    zipfile.ZipFile.__init__(self, *args, **kwargs)
+    super(XpiFile, self).__init__(*args, **kwargs)
     self.jarfiles = {}
     self.commonprefix = self.findcommonprefix()
     self.jarprefixes = self.findjarprefixes()
@@ -65,7 +94,7 @@ class XpiFile(zipfile.ZipFile):
       if filename.lower().endswith('.jar'):
         if filename not in self.jarfiles:
           jarstream = self.openinputstream(None, filename)
-          jarfile = zipfile.ZipFile(jarstream)
+          jarfile = ZipFileCatcher(jarstream)
           self.jarfiles[filename] = jarfile
         else:
           jarfile = self.jarfiles[filename]
@@ -187,6 +216,35 @@ class XpiFile(zipfile.ZipFile):
     if hasattr(self.fp, 'name'):
       inputstream.name = "%s:%s" % (self.fp.name, inputstream.name)
     return inputstream
+
+  def openoutputstream(self, jarfilename, filename):
+    """opens a file for writing (possibly inside a jarfile as a StringIO"""
+    if jarfilename is None:
+      def onclose(contents):
+        self.writestr(filename, contents)
+    else:
+      if jarfilename in self.jarfiles:
+        jarfile = self.jarfiles[jarfilename]
+      else:
+        jarstream = self.openoutputstream(None, jarfilename)
+        jarfile = ZipFileCatcher(jarstream, "w")
+        self.jarfiles[jarfilename] = jarfile
+        self.addcatcher(jarstream.slam)
+      def onclose(contents):
+        jarfile.writestr(filename, contents)
+    outputstream = CatchStringOutput(onclose)
+    outputstream.name = "%s %s" % (jarfilename, filename)
+    if jarfilename is None:
+      self.addcatcher(outputstream.slam)
+    else:
+      jarfile.addcatcher(outputstream.slam)
+    return outputstream
+
+  def close(self):
+    """Close the file, and for mode "w" and "a" write the ending records."""
+    for jarfile in self.jarfiles.itervalues():
+      jarfile.close()
+    super(XpiFile, self).close()
 
   def iterextractnames(self, includenonjars=False, includedirs=False):
     """iterates through all the localization files with the common prefix stripped and a jarfile name added if neccessary"""
