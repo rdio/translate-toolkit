@@ -239,6 +239,9 @@ class SetupIndex(sparse.SimpleParser):
             self.addforeignfile(index, fileentry, suffix)
       for configitem in index.bytype["ConfigurationItem"]:
         key = sparse.stringeval(index.getfieldvalue(configitem, 'Key'))
+        if configitem == "gid_Configurationitem_Setup_Office_Locales":
+          isocodes = ",".join([eachindex.isocode for eachindex in indexes])
+          index.setfieldvalue(configitem, "Value", '"%s"' % isocodes)
         if key == index.isocode:
           suffix = "_" + index.isocode
           index.rename(configitem, configitem + suffix)
