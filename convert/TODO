@@ -1,5 +1,11 @@
 --update option
   make recursive methods only run if input is newer than output
+--force option
+  only overwrite files if this is given (work out which tools its applicable to)
+handle encodings correctly (currently default to iso-8859-1 which is bad)
+detect whether producing a .po or a .pot (make -P / --pot unneccessary)
+handle non-dtd/properties files in mozilla tools
+
 mozilla - automate
   repackxpi
 mozilla - migrate from one version to another
