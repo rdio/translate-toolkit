@@ -37,11 +37,19 @@ class SimpleDictReader:
     self.contents = fileobj.read()
     self.parser = sparse.SimpleParser(defaulttokenlist=[",", "\n"],whitespacechars="\r")
     self.parser.stringescaping = 0
+    self.parser.quotechars = '"'
     self.tokens = self.parser.tokenize(self.contents)
     self.tokenpos = 0
 
   def __iter__(self):
     return self
+
+  def getvalue(self, value):
+    """returns a value, evaluating strings as neccessary"""
+    if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+      return sparse.stringeval(value).replace("\r","").replace("\n","")
+    else:
+      return value
 
   def next(self):
     while self.tokenpos < len(self.tokens) and self.tokens[self.tokenpos] == "\n":
@@ -54,15 +62,32 @@ class SimpleDictReader:
       self.tokenpos += 1
     while self.tokenpos < len(self.tokens) and self.tokens[self.tokenpos] == "\n":
       self.tokenpos += 1
-    fields = [token for token in thistokens if token != ","]
+    fields = []
+    # patch together fields since we can have quotes inside a field
+    currentfield = ''
+    fieldparts = 0
+    for token in thistokens:
+      if token == ',':
+        # a field is only quoted if the whole thing is quoted
+        if fieldparts == 1:
+          currentfield = self.getvalue(currentfield)
+        fields.append(currentfield)
+        currentfield = ''
+        fieldparts = 0
+      else:
+        currentfield += token
+        fieldparts += 1
+    # things after the last comma...
+    if fieldparts:
+      if fieldparts == 1:
+        currentfield = self.getvalue(currentfield)
+      fields.append(currentfield)
     values = {}
     printout = 0
     for fieldnum in range(len(self.fieldnames)):
       if fieldnum >= len(fields):
         values[self.fieldnames[fieldnum]] = ""
         printout = 1
-      elif fields[fieldnum].startswith("'") or fields[fieldnum].startswith('"'):
-        values[self.fieldnames[fieldnum]] = sparse.stringeval(fields[fieldnum]).replace("\r","").replace("\n","")
       else:
         values[self.fieldnames[fieldnum]] = fields[fieldnum]
     return values
