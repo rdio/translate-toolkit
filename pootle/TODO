@@ -19,6 +19,8 @@ other:
   display results of checks for each string on submission
   handle language subtypes (regions)
   handle project versions
+  have clickable characters to add for a language (mostly useful for diacritics)
+  allow user to copy original to translation
 
 requirements for translatathon:
   assigning stuff to people (with permissions)
