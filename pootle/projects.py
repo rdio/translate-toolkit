@@ -331,6 +331,7 @@ class TranslationProject:
     pendingfile = self.getpendingfile(pofilename)
     pendingfile.poelements.append(newpo)
     self.savependingfile(pofilename)
+    self.reclassifyelement(pofile, item)
 
   def getsuggestions(self, pofile, item):
     """find all the suggestions submitted for the given (pofile or pofilename) and item"""
@@ -355,9 +356,10 @@ class TranslationProject:
       pendingfile = self.getpendingfile(pofilename)
     else:
       pendingfile = self.getpendingfile(pofile.filename)
-    self.updatetranslation(pofilename, item, newtrans)
     # TODO: remove the suggestion in a less brutal manner
     del pendingfile.poelements[suggitem]
+    self.savependingfile(pofilename)
+    self.updatetranslation(pofilename, item, newtrans)
 
   def rejectsuggestion(self, pofile, item, suggitem, newtrans):
     """rejects the suggestion and removes it from the pending file"""
@@ -369,6 +371,8 @@ class TranslationProject:
       pendingfile = self.getpendingfile(pofile.filename)
     # TODO: remove the suggestion in a less brutal manner
     del pendingfile.poelements[suggitem]
+    self.savependingfile(pofilename)
+    self.reclassifyelement(pofile, item)
 
   def savepofile(self, pofilename):
     """saves changes to disk..."""
