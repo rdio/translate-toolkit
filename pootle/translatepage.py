@@ -53,7 +53,7 @@ class TranslatePage(pagelayout.PootlePage):
       currentfolder = "/".join(dirfilter.split("/")[:-1])
     else:
       currentfolder = dirfilter
-    self.addfolderlinks("current folder", currentfolder, "index.html")
+    self.addfolderlinks(self.localize("current folder"), currentfolder, "index.html")
     autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
     self.headerwidgets.append(autoexpandscript)
 
