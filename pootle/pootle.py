@@ -80,14 +80,16 @@ class PootleServer(users.OptionalLoginAppServer):
         top = pathwords[0]
       else:
         top = ""
+      if not session.isopen:
+        redirecttext = pagelayout.IntroText("Redirecting to login...")
+        redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
+        return server.Redirect("../login.html", withpage=redirectpage)
       if not top or top == "index.html":
-        if not session.isopen:
-          redirecttext = pagelayout.IntroText("Redirecting to login...")
-          redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
-          return server.Redirect("../login.html", withpage=redirectpage)
+        return indexpage.UserIndex(self.potree, session)
+      elif top == "options.html":
         if "changeoptions" in argdict:
           session.setoptions(argdict)
-        return indexpage.UserIndex(self.potree, session)
+        return indexpage.UserOptions(self.potree, session)
     elif self.potree.haslanguage(top):
       languagecode = top
       pathwords = pathwords[1:]

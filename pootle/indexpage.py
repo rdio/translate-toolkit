@@ -65,20 +65,16 @@ class PootleIndex(pagelayout.PootlePage):
     return pagelayout.Contents([projectstitle, bodydescription])
 
 class UserIndex(pagelayout.PootlePage):
+  """home page for a given user"""
   def __init__(self, potree, session):
     self.potree = potree
     self.session = session
     self.localize = session.localize
-    submitbutton = widgets.Input({"type":"submit", "name":"changeoptions", "value":"Submit"})
-    hiddenfields = widgets.HiddenFieldList([("allowmultikey","languages"), ("allowmultikey","projects")])
-    formmembers = [self.getprojectoptions(), self.getlanguageoptions(), hiddenfields, submitbutton]
-    useroptions = widgets.Form(formmembers, {"name": "useroptions", "action":""})
-    contents = [self.getquicklinks(), useroptions]
+    optionslink = pagelayout.IntroText(widgets.Link("options.html", self.localize("Change options")))
+    contents = [self.getquicklinks(), optionslink]
     if session.issiteadmin():
-      admintitle = pagelayout.Title(self.localize('Pootle Administration'))
-      admintext = pagelayout.IntroText(self.localize("You have the rights to administer this Pootle installation."))
       adminlink = pagelayout.IntroText(widgets.Link("admin.html", self.localize("Admin page")))
-      contents.append(pagelayout.Contents([admintitle, admintext, adminlink]))
+      contents.append(adminlink)
     pagelayout.PootlePage.__init__(self, self.localize("User Page for: %s") % session.username, contents, session)
 
   def getquicklinks(self):
@@ -98,6 +94,20 @@ class UserIndex(pagelayout.PootlePage):
           languagelinks.append([widgets.Link(projecturl, projecttitle), "<br/>"])
       quicklinks.append(pagelayout.ItemDescription(languagelinks))
     return pagelayout.Contents([quicklinkstitle, quicklinks])
+
+class UserOptions(pagelayout.PootlePage):
+  """page for user to change their options"""
+  def __init__(self, potree, session):
+    self.potree = potree
+    self.session = session
+    self.localize = session.localize
+    submitbutton = widgets.Input({"type":"submit", "name":"changeoptions", "value":"Submit"})
+    hiddenfields = widgets.HiddenFieldList([("allowmultikey","languages"), ("allowmultikey","projects")])
+    formmembers = [self.getprojectoptions(), self.getlanguageoptions(), hiddenfields, submitbutton]
+    useroptions = widgets.Form(formmembers, {"name": "useroptions", "action":""})
+    homelink = pagelayout.IntroText(widgets.Link("index.html", self.localize("Home page")))
+    contents = [useroptions, homelink]
+    pagelayout.PootlePage.__init__(self, self.localize("Options for: %s") % session.username, contents, session)
 
   def getprojectoptions(self):
     """gets the options box to change the user's projects"""
