@@ -500,8 +500,23 @@ class ProjectIndex(pagelayout.PootlePage):
     self.showtracks = self.getboolarg("showtracks")
     self.showchecks = self.getboolarg("showchecks")
     self.showassigns = self.getboolarg("showassigns")
-    bodytitle = pagelayout.Title(dirfilter or self.project.projectname)
-    bodytitle = widgets.Link(self.getbrowseurl(""), bodytitle)
+    if dirfilter:
+      bodytitle = []
+      dirs = self.dirfilter.split("/")
+      count = len(dirs)
+      for dir in dirs:
+        backlinks = ""
+        for i in range(count):
+          backlinks = backlinks + "../"
+        count = count - 1
+        dirlink = widgets.Link(self.getbrowseurl(backlinks + dir + "/"), dir)
+        bodytitle.append(dirlink)
+        if count != 0:
+          bodytitle.append("/ ")
+      bodytitle = pagelayout.Title(bodytitle)
+    else:
+      bodytitle = pagelayout.Title(dirfilter or self.project.projectname)
+      bodytitle = widgets.Link(self.getbrowseurl(""), bodytitle)
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []
