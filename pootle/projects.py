@@ -19,15 +19,7 @@ class TranslationSession:
   def getnextitem(self, dirfilter=None, matchnames=[]):
     """gives the user the next item to be translated"""
     self.pofilename, item = self.project.searchpoitems(self.pofilename, self.lastitem, matchnames, dirfilter).next()
-    orig, trans = self.getitem(self.pofilename, item)
-    return self.pofilename, item, orig, trans
-
-  def getitem(self, pofilename, item):
-    """returns a particular item from a particular po file's orig, trans strings as a tuple"""
-    pofile = self.project.getpofile(pofilename)
-    thepo = pofile.transelements[item]
-    orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
-    return orig, trans
+    return self.pofilename, item
 
   def receivetranslation(self, pofilename, item, trans):
     """submits a new/changed translation from the user"""
@@ -236,16 +228,17 @@ class TranslationProject:
     pofile = self.getpofile(pofilename)
     return len(pofile.transelements)
 
-  def getitemsbefore(self, pofilename, item, num=3):
+  def getitem(self, pofilename, item):
+    """returns a particular item from a particular po file's orig, trans strings as a tuple"""
+    pofile = self.project.getpofile(pofilename)
+    thepo = pofile.transelements[item]
+    orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
+    return orig, trans
+
+  def getitems(self, pofilename, itemstart, itemstop):
     """returns num items before the given item, as context"""
     pofile = self.getpofile(pofilename)
-    elements = pofile.transelements[max(item-num,0):item]
-    return [(po.getunquotedstr(poel.msgid), po.getunquotedstr(poel.msgstr)) for poel in elements]
-
-  def getitemsafter(self, pofilename, item, num=3):
-    """returns num items after the given item, as context"""
-    pofile = self.getpofile(pofilename)
-    elements = pofile.transelements[item+1:item+1+num]
+    elements = pofile.transelements[max(itemstart,0):itemstop]
     return [(po.getunquotedstr(poel.msgid), po.getunquotedstr(poel.msgstr)) for poel in elements]
 
   def receivetranslation(self, pofilename, item, trans):

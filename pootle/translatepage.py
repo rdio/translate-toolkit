@@ -16,6 +16,7 @@ class TranslatePage(pagelayout.PootlePage):
     self.instance = session.instance
     self.receivetranslations()
     self.viewmode = self.argdict.get("view", 0)
+    self.finditem()
     translations = self.gettranslations()
     self.maketable(translations)
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
@@ -96,11 +97,12 @@ class TranslatePage(pagelayout.PootlePage):
     self.transtable.shrinkrange()
     return self.transtable
 
-  def gettranslations(self):
+  def finditem(self):
+    """finds the focussed item for this page, searching as neccessary"""
     item = self.argdict.get("item", None)
     if item is None:
       try:
-        self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem(self.dirfilter, self.matchnames)
+        self.pofilename, self.item = self.translationsession.getnextitem(self.dirfilter, self.matchnames)
       except StopIteration:
         if self.translationsession.lastitem is None:
           raise StopIteration("There are no items matching that search")
@@ -109,19 +111,19 @@ class TranslatePage(pagelayout.PootlePage):
     else:
       if not item.isdigit():
         raise ValueError("Invalid item given")
-      item = int(item)
+      self.item = int(item)
       self.pofilename = self.argdict.get("pofilename", self.dirfilter)
-      theorig, thetrans = self.translationsession.getitem(self.pofilename, item)
+
+  def gettranslations(self):
+    """gets the list of translations desired for the view, and sets editable and firstitem parameters"""
     if self.viewmode:
       self.editable = []
-      self.firstitem = item
-      return [(theorig, thetrans)] + self.project.getitemsafter(self.pofilename, item, 9)
+      self.firstitem = self.item
+      return self.project.getitems(self.pofilename, self.item, self.item+10)
     else:
-      translationsbefore = self.project.getitemsbefore(self.pofilename, item, 3)
-      translationsafter = self.project.getitemsafter(self.pofilename, item, 3)
-      self.editable = [item]
-      self.firstitem = item - len(translationsbefore)
-      return translationsbefore + [(theorig, thetrans)] + translationsafter
+      self.editable = [self.item]
+      self.firstitem = max(self.item - 3, 0)
+      return self.project.getitems(self.pofilename, self.item-3, self.item+4)
 
   def getorigcell(self, row, orig, editable):
     origclass = "translate-original "
