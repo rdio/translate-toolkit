@@ -1,4 +1,4 @@
-#!/usr/bin/python2.2
+#!/usr/bin/env python
 #
 # Copyright 2002-2004 Zuza Software Foundation
 # 
