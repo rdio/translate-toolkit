@@ -4,6 +4,7 @@ from jToolkit.web import server
 from jToolkit.web import session
 from jToolkit.widgets import widgets
 from jToolkit.widgets import form
+from jToolkit.widgets import table
 from jToolkit import mailer
 from translate.pootle import pagelayout
 
@@ -61,6 +62,61 @@ class ActivatePage(pagelayout.PootlePage):
     extrawidgets = [widgets.Input({'type': 'submit', 'name':'activate', 'value':self.localize('Activate Account')})]
     record = dict([(column[0], self.argdict.get(column[0], "")) for column in columnlist])
     return form.SimpleForm(record, "activate", columnlist, formlayout, {}, extrawidgets)
+
+class UserOptions(pagelayout.PootlePage):
+  """page for user to change their options"""
+  def __init__(self, potree, session):
+    self.potree = potree
+    self.session = session
+    self.localize = session.localize
+    submitbutton = widgets.Input({"type":"submit", "name":"changeoptions", "value": self.localize("Save changes")})
+    hiddenfields = widgets.HiddenFieldList([("allowmultikey","languages"), ("allowmultikey","projects")])
+    formmembers = [self.getprojectoptions(), self.getlanguageoptions(), hiddenfields, submitbutton]
+    useroptions = widgets.Form(formmembers, {"name": "useroptions", "action":""})
+    homelink = pagelayout.IntroText(widgets.Link("index.html", self.localize("Home page")))
+    contents = [self.getpersonaloptions(), useroptions, homelink]
+    pagelayout.PootlePage.__init__(self, self.localize("Options for: %s") % session.username, contents, session)
+
+  def getprojectoptions(self):
+    """gets the options box to change the user's projects"""
+    projectstitle = pagelayout.Title(self.localize("My Projects"))
+    projectoptions = []
+    userprojects = self.session.getprojects()
+    for projectcode in self.potree.getprojectcodes():
+      projectname = self.potree.getprojectname(projectcode)
+      projectoptions.append((projectcode, projectname))
+    projectselect = widgets.MultiSelect({"value": userprojects, "name": "projects"}, projectoptions)
+    bodydescription = pagelayout.ItemDescription([projectselect, widgets.HiddenFieldList({"allowmultikey":"projects"})])
+    return pagelayout.Contents([projectstitle, bodydescription])
+
+  def getlanguageoptions(self):
+    """gets the options box to change the user's languages"""
+    languagestitle = pagelayout.Title(self.localize("My Languages"))
+    languageoptions = []
+    userlanguages = self.session.getlanguages()
+    for languagecode in self.potree.getlanguagecodes():
+      languagename = self.potree.getlanguagename(languagecode)
+      languageoptions.append((languagecode, languagename))
+    languageselect = widgets.MultiSelect({"value": userlanguages, "name": "languages"}, languageoptions)
+    bodydescription = pagelayout.ItemDescription(languageselect)
+    return pagelayout.Contents([languagestitle, bodydescription])
+
+  def getpersonaloptions(self):
+    """get the options fields to change the user's personal details"""
+    personaltitle = pagelayout.Title(self.localize("Personal Details"))
+    personal = table.TableLayout()
+    personal.setcell(0, 0, table.TableCell(pagelayout.Title(self.localize("Option"))))
+    personal.setcell(0, 1, table.TableCell(pagelayout.Title(self.localize("Current value"))))
+    for optionname in ("name", "email"):
+      optionvalue = getattr(self.session.prefs, optionname, "")
+      valuetextbox = widgets.Input({"name": "option-%s" % optionname, "value": optionvalue})
+      rownum = personal.maxrownum()+1
+      personal.setcell(rownum, 0, table.TableCell(optionname))
+      personal.setcell(rownum, 1, table.TableCell(valuetextbox))
+    rownum = personal.maxrownum()+1
+    submitbutton = widgets.Input({"type":"submit", "name":"changepersonal", "value":self.localize("Save changes")})
+    personalform = widgets.Form([personal, submitbutton], {"name": "personal", "action":""})
+    return pagelayout.Contents([personaltitle, personalform])
 
 class OptionalLoginAppServer(server.LoginAppServer):
   """a server that enables login but doesn't require it except for specified pages"""

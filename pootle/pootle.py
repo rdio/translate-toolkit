@@ -6,6 +6,7 @@ from jToolkit import prefs
 from jToolkit import localize
 from jToolkit.widgets import widgets
 from translate.pootle import indexpage
+from translate.pootle import adminpages
 from translate.pootle import translatepage
 from translate.pootle import pagelayout
 from translate.pootle import projects
@@ -139,7 +140,7 @@ class PootleServer(users.OptionalLoginAppServer):
         if not top or top == "index.html":
           return indexpage.ProjectLanguageIndex(self.potree, projectcode, session)
         elif top == "admin.html":
-          return indexpage.ProjectAdminPage(self.potree, projectcode, session, argdict)
+          return adminpages.ProjectAdminPage(self.potree, projectcode, session, argdict)
     elif top == "home":
       pathwords = pathwords[1:]
       if pathwords:
@@ -157,7 +158,7 @@ class PootleServer(users.OptionalLoginAppServer):
           session.setoptions(argdict)
         if "changepersonal" in argdict:
           session.setpersonaloptions(argdict)
-        return indexpage.UserOptions(self.potree, session)
+        return users.UserOptions(self.potree, session)
     elif top == "admin":
       pathwords = pathwords[1:]
       if pathwords:
@@ -175,19 +176,19 @@ class PootleServer(users.OptionalLoginAppServer):
       if not top or top == "index.html":
         if "changegeneral" in argdict:
           self.changeoptions(argdict)
-        return indexpage.AdminPage(self.potree, session, self.instance)
+        return adminpages.AdminPage(self.potree, session, self.instance)
       elif top == "users.html":
         if "changeusers" in argdict:
           self.changeusers(session, argdict)
-        return indexpage.UsersAdminPage(self, session.loginchecker.users, session, self.instance)
+        return adminpages.UsersAdminPage(self, session.loginchecker.users, session, self.instance)
       elif top == "languages.html":
         if "changelanguages" in argdict:
           self.potree.changelanguages(argdict)
-        return indexpage.LanguagesAdminPage(self.potree, session, self.instance)
+        return adminpages.LanguagesAdminPage(self.potree, session, self.instance)
       elif top == "projects.html":
         if "changeprojects" in argdict:
           self.potree.changeprojects(argdict)
-        return indexpage.ProjectsAdminPage(self.potree, session, self.instance)
+        return adminpages.ProjectsAdminPage(self.potree, session, self.instance)
     elif self.potree.haslanguage(top):
       languagecode = top
       pathwords = pathwords[1:]
@@ -210,7 +211,7 @@ class PootleServer(users.OptionalLoginAppServer):
         if not top or top == "index.html":
 	  return indexpage.ProjectIndex(project, session, argdict)
         elif top == "admin.html":
-          return indexpage.TranslationProjectAdminPage(self.potree, project, session, argdict)
+          return adminpages.TranslationProjectAdminPage(self.potree, project, session, argdict)
 	elif bottom == "translate.html":
 	  if len(pathwords) > 1:
             dirfilter = os.path.join(*pathwords[:-1])
