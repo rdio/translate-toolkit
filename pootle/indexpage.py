@@ -762,7 +762,7 @@ class ProjectIndex(pagelayout.PootlePage):
       moname = basename.replace(".po", ".mo")
       molink = widgets.Link(moname, self.localize('MO file'))
       actionlinks.append(molink)
-    if "admin" in self.rights():
+    if "admin" in self.rights:
       if versioncontrol.hasversioning(os.path.join(self.project.podir, self.dirname)):
         updatelink = widgets.Link("index.html?doupdate=1&updatefile=%s" % basename, self.localize('Update'))
         actionlinks.append(updatelink)
