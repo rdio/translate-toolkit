@@ -79,14 +79,14 @@ test-moz2po-notemplate: output=test-moz2po-notemplate
 test-moz2po-notemplate:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./moz2po --progress=$(progress) -P -i $(input) -o $(output)
+	./moz2po --progress=$(progress) -P $(input) $(output)
 
 test-moz2po-xpinotemplate: input=$(xpidir)/mozilla-1.6-langenus.xpi
 test-moz2po-xpinotemplate: output=test-moz2po-xpinotemplate
 test-moz2po-xpinotemplate:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./moz2po --progress=$(progress) -P -i $(input) -o $(output)
+	./moz2po --progress=$(progress) -P $(input) $(output)
 
 test-moz2po-withtemplate: input=$(dtddir)/de-AT-1.6
 test-moz2po-withtemplate: output=test-moz2po-withtemplate
@@ -94,7 +94,7 @@ test-moz2po-withtemplate: template=$(dtddir)/en-US-1.6
 test-moz2po-withtemplate: 
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./moz2po --progress=$(progress) -i $(input) -o $(output) -t $(template)
+	./moz2po --progress=$(progress) $(input) $(output) -t $(template)
 
 test-moz2po-xpiwithtemplate: input=$(xpidir)/mozilla-1.6-langenus.xpi
 test-moz2po-xpiwithtemplate: output=test-moz2po-xpiwithtemplate
@@ -102,7 +102,7 @@ test-moz2po-xpiwithtemplate: template=$(xpidir)/mozilla-1.6-langenus.xpi
 test-moz2po-xpiwithtemplate: 
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./moz2po --progress=$(progress) -i $(input) -o $(output) -t $(template)
+	./moz2po --progress=$(progress) $(input) $(output) -t $(template)
 
 test-po2moz: input=test-moz2po-withtemplate
 test-po2moz: output=test-po2moz
@@ -110,14 +110,14 @@ test-po2moz: template=$(dtddir)/en-US-1.6
 test-po2moz: test-moz2po-withtemplate
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./po2moz --progress=$(progress) -i $(input) -o $(output) -t $(template)
+	./po2moz --progress=$(progress) $(input) $(output) -t $(template)
 
 test-oo2po: input=$(oodir)/1.1/en
 test-oo2po: output=test-oo2po
 test-oo2po:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./oo2po --progress=$(progress) -P -i $(input) -o $(output)
+	./oo2po --progress=$(progress) -P $(input) $(output)
 
 test-po2oo: input=$(oopodir)/af
 test-po2oo: output=test-po2oo
@@ -126,14 +126,14 @@ test-po2oo: languagecode=27
 test-po2oo:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./po2oo --progress=$(progress) -l $(languagecode) -i $(input) -o $(output) -t $(template)
+	./po2oo --progress=$(progress) -l $(languagecode) $(input) $(output) -t $(template)
 
 test-po2csv: input=$(oopodir)/af
 test-po2csv: output=test-po2csv
 test-po2csv:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./po2csv --progress=$(progress) -i $(input) -o $(output)
+	./po2csv --progress=$(progress) $(input) $(output)
 
 test-csv2po: input=test-po2csv
 test-csv2po: output=test-csv2po
@@ -142,6 +142,6 @@ test-csv2po: test-po2csv
 test-csv2po: test-oo2po
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./csv2po --progress=$(progress) -i $(input) -o $(output) -t $(template)
+	./csv2po --progress=$(progress) $(input) $(output) -t $(template)
 
 

@@ -32,7 +32,6 @@ try:
 except ImportError:
   from StringIO import StringIO
 
-# TODO: handle input/output without needing -i/-o
 # TODO: refactor this and filters.filtercmd so they share code
 
 class ConvertOptionParser(optparse.OptionParser, object):
@@ -145,14 +144,31 @@ class ConvertOptionParser(optparse.OptionParser, object):
     """checks if fileoption is a recursive file"""
     if fileoption is None:
       return False
+    elif isinstance(fileoption, list):
+      return True
     else:
       return os.path.isdir(fileoption)
 
   def runconversion(self):
     """parses the command line options and runs the conversion"""
     (options, args) = self.parse_args()
+    # some intelligent as to what reasonable people might give on the command line
+    if args and not options.input:
+      if len(args) > 1:
+        options.input = args[:-1]
+        args = args[-1:]
+      else:
+        options.input = args[0]
+        args = []
+    if args and not options.output:
+      options.output = args[-1]
+      args = args[:-1]
+    if args:
+      self.error("You have used an invalid combination of --input, --output and freestanding args")
+    if isinstance(options.input, list) and len(options.input) == 1:
+      options.input = options.input[0]
     try:
-      self.recurseconversion(options, args)
+      self.recurseconversion(options)
     except optparse.OptParseError, message:
       self.error(message)
 
@@ -223,7 +239,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       return None
 
-  def recurseconversion(self, options, args):
+  def recurseconversion(self, options):
     """recurse through directories and convert files"""
     if self.isrecursive(options.input):
       if not self.isrecursive(options.output):
