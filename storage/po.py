@@ -108,7 +108,7 @@ class poelement:
   def isnotblank(self):
     return not self.isblank()
 
-  def hasplurals(self):
+  def hasplural(self):
     """returns whether this poelement contains plural strings..."""
     return len(self.msgid_plural) > 0
 
@@ -316,20 +316,15 @@ class pofile:
     self.sourceindex = {}
     self.msgidindex = {}
     for thepo in self.poelements:
-      sources = thepo.getsources()
-      if len(sources) == 0:
-        msgid = getunquotedstr(thepo.msgid)
-        self.msgidindex[msgid] = thepo
+      msgid = getunquotedstr(thepo.msgid)
+      self.msgidindex[msgid] = thepo
+      if thepo.hasplural():
+        msgid_plural = getunquotedstr(thepo.msgid_plural)
+        self.msgidindex[msgid_plural] = thepo
       for source in thepo.getsources():
         if source in self.sourceindex:
           # if sources aren't unique, don't use them
-          if self.sourceindex[source] is not None:
-            previouspo = self.sourceindex[source]
-            previousmsgid = getunquotedstr(previouspo.msgid)
-            self.msgidindex[previousmsgid] = previouspo
-            self.sourceindex[source] = None
-          msgid = getunquotedstr(thepo.msgid)
-          self.msgidindex[msgid] = thepo
+          self.sourceindex[source] = None
         else:
           self.sourceindex[source] = thepo
 
