@@ -239,7 +239,7 @@ class TranslatePage(pagelayout.PootlePage):
       origclass += "translate-original-focus "
     else:
       origclass += "autoexpand "
-    origdiv = widgets.Division(orig, "orig%d" % item, cls=origclass)
+    origdiv = widgets.Division(self.escape(orig), "orig%d" % item, cls=origclass)
     return origdiv
 
   def geteditlink(self, item):
@@ -265,10 +265,9 @@ class TranslatePage(pagelayout.PootlePage):
 
   def gettransedit(self, item, trans):
     """returns a widget for editing the given item and translation"""
-    if isinstance(trans, str):
-      trans = trans.decode("utf8")
+    trans = self.escape(trans).decode("utf8")
     if "translate" in self.rights or "suggest" in self.rights:
-      text= widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
+      text = widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
     else:
       text = pagelayout.TranslationText(trans)
     buttons = self.gettransbuttons(item)
@@ -278,7 +277,8 @@ class TranslatePage(pagelayout.PootlePage):
   def highlightdiffs(self, text, diffs, issrc=True):
     """highlights the differences in diffs in the text.
     diffs should be list of diff opcodes
-    issrc specifies whether to use the src or destination positions in reconstructing the text"""
+    issrc specifies whether to use the src or destination positions in reconstructing the text
+    this escapes the text on the fly to prevent confusion in escaping the highlighting"""
     if issrc:
       diffstart = [(i1, 'start', tag) for (tag, i1, i2, j1, j2) in diffs if tag != 'equal']
       diffstop = [(i2, 'stop', tag) for (tag, i1, i2, j1, j2) in diffs if tag != 'equal']
@@ -291,7 +291,7 @@ class TranslatePage(pagelayout.PootlePage):
     textnest = 0
     textpos = 0
     for i, switch, tag in diffswitches:
-      textdiff += text[textpos:i]
+      textdiff += self.escape(text[textpos:i])
       if switch == 'start':
         textnest += 1
       elif switch == 'stop':
@@ -303,7 +303,7 @@ class TranslatePage(pagelayout.PootlePage):
         # start of an equals block
         textdiff += "</span>"
       textpos = i
-    textdiff += text[textpos:]
+    textdiff += self.escape(text[textpos:])
     return textdiff
 
   def gettransreview(self, item, trans, suggestions):
@@ -355,7 +355,7 @@ class TranslatePage(pagelayout.PootlePage):
   def gettransview(self, item, trans):
     """returns a widget for viewing the given item's translation"""
     editlink = self.geteditlink(item)
-    text = pagelayout.TranslationText([editlink, trans])
+    text = pagelayout.TranslationText([editlink, self.escape(trans)])
     transdiv = widgets.Division(text, "trans%d" % item, cls="translate-translation autoexpand")
     return transdiv
 
