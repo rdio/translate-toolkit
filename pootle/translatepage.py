@@ -302,7 +302,7 @@ class TranslatePage(pagelayout.PootlePage):
         textnest -= 1
       if switch == 'start' and textnest == 1:
         # start of a textition
-        textdiff += "<span style='background-color: #ffff00'>"
+        textdiff += "<span class='translate-diff-%s'>" % tag
       elif switch == 'stop' and textnest == 0:
         # start of an equals block
         textdiff += "</span>"
