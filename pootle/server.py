@@ -170,7 +170,7 @@ if __name__ == '__main__':
   prefsfile = os.path.join(pootledir, "pootle.prefs")
   parser.set_default('prefsfile', prefsfile)
   parser.set_default('instance', 'Pootle')
-  htmldir = os.path.join(os.path.dirname(pootledir), "html")
+  htmldir = os.path.join(pootledir, "html")
   parser.set_default('htmldir', htmldir)
   options, args = parser.parse_args()
   server = parser.getserver(options)
