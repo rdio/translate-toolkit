@@ -20,7 +20,7 @@
 #
 
 """Converts Qt .ts localization files to Gettext .po files
-You can convert back to .ts using po2ts (you need to write it, too)"""
+You can convert back to .ts using po2ts"""
 
 from translate.storage import po
 from translate.storage import ts
@@ -37,13 +37,12 @@ class ts2po:
     thepo.msgstr = [quote.quotestr(quote.rstripeol(line)) for line in msgstr.split("\n")]
     return thepo
 
-  def convertfile(self, inputfile, filename, includeheader):
+  def convertfile(self, inputfile):
     """converts a .ts file to .po format"""
     tsfile = ts.QtTsParser(inputfile)
     thepofile = po.pofile()
-    if includeheader:
-      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-      thepofile.poelements.append(headerpo)
+    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
+    thepofile.poelements.append(headerpo)
     for contextname, messages in tsfile.iteritems():
       messagenum = 0
       for message in messages:
@@ -57,9 +56,7 @@ class ts2po:
 def convertts(inputfile, outputfile, templates):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   convertor = ts2po()
-  outputfilepos = outputfile.tell()
-  includeheader = outputfilepos == 0
-  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader)
+  outputpo = convertor.convertfile(inputfile)
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
   return 1

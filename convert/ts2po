@@ -20,7 +20,7 @@
 #
 
 """Converts Qt .ts localization files to Gettext .po files
-You can convert back to .ts using po2ts (you need to write it, too)"""
+You can convert back to .ts using po2ts"""
 
 from translate.convert import ts2po
 
