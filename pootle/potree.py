@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""manages projects and files and translations"""
+"""manages the whole set of projects and languages for a pootle installation"""
 
 from translate.pootle import projects
 from translate.pootle import pootlefile
