@@ -68,8 +68,8 @@ def getElementsByTagName(parent, name, dummy=None):
         if node.nodeType == minidom.Node.ELEMENT_NODE and \
             (name == "*" or node.tagName == name):
             yield node
-        for node in node.getElementsByTagName(name):
-            yield node
+        for othernode in node.getElementsByTagName(name):
+            yield othernode
 
 def searchElementsByTagName(parent, name, onlysearch):
     """limits the search to within tags occuring in onlysearch"""
@@ -81,18 +81,13 @@ def searchElementsByTagName(parent, name, onlysearch):
             for node in node.searchElementsByTagName(name, onlysearch):
                 yield node
 
-minidom._get_elements_by_tagName_helper = getElementsByTagName
-minidom.Document.getElementsByTagName = getElementsByTagName
-minidom.Node.getElementsByTagName = getElementsByTagName
-minidom.Document.searchElementsByTagName = searchElementsByTagName
-minidom.Element.searchElementsByTagName = searchElementsByTagName
-
 def getFirstElementByTagName(node, name):
   results = node.getElementsByTagName(name)
   if isinstance(results, list):
     return results[0]
   try:
-    return results.next()
+    result = results.next()
+    return result
   except StopIteration:
     return None
 
@@ -100,6 +95,12 @@ def getnodetext(node):
   """returns the node's text by iterating through the child nodes"""
   if node is None: return ""
   return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
+
+minidom._get_elements_by_tagName_helper = getElementsByTagName
+minidom.Document.getElementsByTagName = getElementsByTagName
+minidom.Node.getElementsByTagName = getElementsByTagName
+minidom.Document.searchElementsByTagName = searchElementsByTagName
+minidom.Element.searchElementsByTagName = searchElementsByTagName
 
 class QtTsParser:
   contextancestors = dict.fromkeys(["TS"])
@@ -208,7 +209,7 @@ class QtTsParser:
 
   def getmessagetranslation(self, message):
     """returns the message translation for a given node"""
-    translationnode = message.getElementsByTagName("translation")
+    translationnode = getFirstElementByTagName(message, "translation")
     return getnodetext(translationnode)
 
   def getmessagetype(self, message):
