@@ -60,11 +60,13 @@ class reoo:
   def makekey(self, ookey):
     """converts an oo key tuple into a key identifier for the po file"""
     project, sourcefile, resourcetype, groupid, localid, platform = ookey
+    sourcefile = sourcefile.replace('\\','/')
     if len(groupid) == 0 or len(localid) == 0:
       fullid = groupid + localid
     else:
       fullid = groupid + "." + localid
-    key = "%s/%s:%s" % (project, sourcefile, fullid)
+    key = "%s/%s#%s" % (project, sourcefile, fullid)
+    # TODO: replace any unexpected characters with _, not just " "
     return key.replace(" ","_")
 
   def makeindex(self):
@@ -90,6 +92,11 @@ class reoo:
       subkeypos = source.rfind('.')
       subkey = source[subkeypos+1:]
       key = source[:subkeypos]
+      # this is just to handle our old system of using %s/%s:%s instead of %s/%s#%s
+      key = key.replace(':', '#')
+      # this is to handle using / instead of \ in the sourcefile...
+      key = key.replace('\\', '/')
+      # TODO: replace any unexpected characters with _ here...
       if self.index.has_key(key):
         # now we need to replace the definition of entity with msgstr
         theoo = self.index[key] # find the oo

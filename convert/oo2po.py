@@ -50,11 +50,13 @@ class oo2po:
   def makekey(self, ookey):
     """converts an oo key tuple into a key identifier for the po file"""
     project, sourcefile, resourcetype, groupid, localid, platform = ookey
+    sourcefile = sourcefile.replace('\\','/')
     if len(groupid) == 0 or len(localid) == 0:
       id = groupid + localid
     else:
       id = groupid + "." + localid
-    key = "%s/%s:%s" % (project, sourcefile, id)
+    key = "%s/%s#%s" % (project, sourcefile, id)
+    # TODO: replace any unexpected characters with _, not just " "
     return key.replace(" ","_")
 
   def convertelement(self, theoo):
