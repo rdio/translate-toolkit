@@ -448,6 +448,7 @@ class TranslationProject:
     self.potree = potree
     self.languagename = self.potree.getlanguagename(self.languagecode)
     self.projectname = self.potree.getprojectname(self.projectcode)
+    self.projectdescription = self.potree.getprojectdescription(self.projectcode)
     self.podir = potree.getpodir(languagecode, projectcode)
     self.pofilenames = potree.getpofiles(languagecode, projectcode)
     checkerclasses = [checks.projectcheckers.get(projectcode, checks.StandardChecker), pofilter.StandardPOChecker]
