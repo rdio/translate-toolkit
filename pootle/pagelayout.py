@@ -83,14 +83,17 @@ class PootleSidebar(widgets.Division):
     if session.isopen:
       loginlinks = widgets.Link(baseurl+"?islogout=1", session.localize("Log Out"))
       homelink = [" | ", widgets.Link(baseurl+"home/", session.localize("Home"))]
+      if session.issiteadmin():
+        adminlink = [" | ", widgets.Link(baseurl+"admin/", session.localize("Admin"))]
     else:
       loginlinks = [widgets.Link(baseurl+"login.html?returnurl="+returnurl, session.localize("Log In")), " / ", widgets.Link(baseurl+"register.html", session.localize("Register")), " / ", widgets.Link(baseurl+"activate.html", session.localize("Activate"))]
       homelink = []
+      adminlink = []
     loginimage = Icon("person.png")
     loginstatus = SidebarText([loginimage, loginstatus])
-    doclink = SidebarText([doclink, homelink])
+    quicklinks = SidebarText([doclink, homelink, adminlink])
     loginlink = SidebarText(loginlinks)
-    widgets.Division.__init__(self, [title, doclink, loginstatus, loginlink], "links")
+    widgets.Division.__init__(self, [title, quicklinks, loginstatus, loginlink], "links")
 
 class Icon(widgets.Image):
   """an icon image"""
