@@ -292,6 +292,6 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {"dtd": ("po", convertdtd), ("dtd", "dtd"): ("po", convertdtd)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, usepots=True, description=__doc__)
-  parser.convertparameters.append("pot")
-  parser.runconversion()
+  parser.passthrough.append("pot")
+  parser.run()
 

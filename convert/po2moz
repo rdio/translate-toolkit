@@ -43,7 +43,7 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
     """returns whether the file option is an xpi file"""
     return isinstance(fileoption, (str, unicode)) and fileoption.endswith(os.extsep + "xpi") and os.path.isfile(fileoption)
 
-  def recurseconversion(self, options):
+  def recursiveprocess(self, options):
     """recurse through directories and convert files"""
     if options.template and self.isxpi(options.template):
       options.templatexpi = xpi.XpiFile(options.template, includenonloc=True)
@@ -52,7 +52,7 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
         options.outputxpi = options.templatexpi.clone(options.output, "a")
       else:
         options.outputxpi = xpi.XpiFile(options.output)
-    result = super(MozConvertOptionParser, self).recurseconversion(options)
+    result = super(MozConvertOptionParser, self).recursiveprocess(options)
     if self.isxpi(options.output):
       options.outputxpi.close()
     return result
@@ -81,22 +81,22 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
     else:
       return super(MozConvertOptionParser, self).openoutputfile(options, fulloutputpath)
 
-  def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
+  def processfile(self, fileprocessor, options, fullinputpath, fulloutputpath, fulltemplatepath):
     """run an invidividual conversion"""
     if self.isxpi(options.output):
       inputfile = self.openinputfile(options, fullinputpath)
       # TODO: handle writing back to same xpi as input/template
       templatefile = self.opentemplatefile(options, fulltemplatepath)
       outputfile = self.openoutputfile(options, fulloutputpath)
-      requiredoptions = self.getrequiredoptions(options)
-      if convertmethod(inputfile, outputfile, templatefile, **requiredoptions):
+      passthroughoptions = self.getpassthroughoptions(options)
+      if fileprocessor(inputfile, outputfile, templatefile, **passthroughoptions):
         return True
       else:
         outputfile.close()
         os.unlink(fulloutputpath)
         return False
     else:
-      return super(MozConvertOptionParser, self).convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
+      return super(MozConvertOptionParser, self).processfile(fileprocessor, options, fullinputpath, fulloutputpath, fulltemplatepath)
 
   def opentemplatefile(self, options, fulltemplatepath):
     """opens the template file (if required)"""
@@ -150,5 +150,5 @@ if __name__ == '__main__':
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}
   parser = MozConvertOptionParser(formats, usetemplates=True, description=__doc__)
-  parser.runconversion()
+  parser.run()
 

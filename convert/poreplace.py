@@ -52,7 +52,7 @@ def main(converterclass):
   replacer = converterclass()
   formats = {"po":("po",replacer.convertpo), "pot":("pot", replacer.convertpo)}
   parser = convert.ConvertOptionParser(formats, usepots=True)
-  parser.runconversion()
+  parser.run()
 
 if __name__ == '__main__':
   main(poreplace)

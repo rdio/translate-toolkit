@@ -112,6 +112,6 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {"oo":("po",convertoo)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
-  parser.convertparameters.append("pot")
-  parser.runconversion()
+  parser.passthrough.append("pot")
+  parser.run()
 

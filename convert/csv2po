@@ -180,5 +180,5 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {("csv", "po"): ("po", convertcsv), ("csv", "pot"): ("po", convertcsv)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
-  parser.runconversion()
+  parser.run()
 

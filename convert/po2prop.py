@@ -116,5 +116,5 @@ if __name__ == '__main__':
   from translate.convert import convert
   formats = {("po", "properties"): ("properties", convertprop)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
-  parser.runconversion()
+  parser.run()
 
