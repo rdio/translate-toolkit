@@ -176,7 +176,10 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       inputfile = self.openinputfile(options, options.input)
       outputfile = self.openoutputfile(options, options.output)
-      templatefile = self.opentemplatefile(options, options.template)
+      if self.usetemplates:
+        templatefile = self.opentemplatefile(options, options.template)
+      else:
+        templatefile = None
       convertmethod(inputfile, outputfile, templatefile)
 
   def getconvertmethod(self, inputpath, outputpath):
