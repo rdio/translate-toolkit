@@ -32,20 +32,15 @@ try:
 except ImportError:
   from StringIO import StringIO
 
-norecursion = 0
-optionalrecursion = 1
-defaultrecursion = 2
-
 # TODO: handle input/output without needing -i/-o
 # TODO: refactor this and filters.filtercmd so they share code
 
 class ConvertOptionParser(optparse.OptionParser, object):
   """a specialized Option Parser for convertor tools..."""
-  def __init__(self, recursion, inputformats, outputformats, usetemplates=False, usepots=False, templateslikeinput=None):
+  def __init__(self, inputformats, outputformats, usetemplates=False, usepots=False, templateslikeinput=None):
     """construct the specialized Option Parser"""
     optparse.OptionParser.__init__(self, version="%prog "+__version__.ver)
     self.usepots = usepots
-    self.setrecursion(recursion)
     self.setinputformats(inputformats)
     self.setoutputformats(outputformats)
     self.settemplatehandling(usetemplates, templateslikeinput)
@@ -61,22 +56,6 @@ class ConvertOptionParser(optparse.OptionParser, object):
     if option.metavar:
       optionstring += " " + option.metavar
     return "[%s]" % optionstring
-
-  def setrecursion(self, recursion):
-    """sets the level of recursion supported by the parser..."""
-    if recursion == defaultrecursion:
-      self.argumentdesc = "dir"
-    elif recursion == optionalrecursion:
-      if self.has_option("-R"):
-        self.remove_option("-R")
-      self.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False, \
-        help="recurse subdirectories")
-      self.argumentdesc = "file/dir"
-    elif not recursion:
-      self.argumentdesc = "file"
-    else:
-      raise ValueError("invalid recursion argument: %r" % recursion)
-    self.recursion = recursion
 
   def define_option(self, option):
     """defines the given option, replacing an existing one of the same short name if neccessary..."""
@@ -95,7 +74,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     self.inputformats = inputformats
     inputformathelp = self.getformathelp(inputformats)
     inputoption = optparse.Option("-i", "--input", dest="input", default=None, metavar="INPUT",
-                    help="read from INPUT %s in %s" % (self.argumentdesc, inputformathelp))
+                    help="read from INPUT in %s" % (inputformathelp))
     self.define_option(inputoption)
 
   def setoutputformats(self, outputformats):
@@ -105,7 +84,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     self.outputformats = outputformats
     outputformathelp = self.getformathelp(outputformats)
     outputoption = optparse.Option("-o", "--output", dest="output", default=None, metavar="OUTPUT",
-                    help="write to OUTPUT %s in %s" % (self.argumentdesc, outputformathelp))
+                    help="write to OUTPUT in %s" % (outputformathelp))
     self.define_option(outputoption)
 
   def settemplatehandling(self, usetemplates, templateslikeinput):
@@ -121,11 +100,11 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       templateformathelp = self.getformathelp(self.outputformats)
     templateoption = optparse.Option("-t", "--template", dest="template", default=None, metavar="TEMPLATE",
-                  help="read from TEMPLATE %s in %s" % (self.argumentdesc, templateformathelp))
+                  help="read from TEMPLATE in %s" % (templateformathelp))
     self.define_option(templateoption)
 
   def setprogressoptions(self):
-    """sets the progress options depending on recursion etc"""
+    """sets the progress options"""
     self.progresstypes = {"none": progressbar.NoProgressBar, "simple": progressbar.SimpleProgressBar,
                           "console": progressbar.ConsoleProgressBar, "curses": progressbar.CursesProgressBar,
                           "verbose": progressbar.VerboseProgressBar}

@@ -52,7 +52,7 @@ def main(converterclass):
   from translate.convert import convert
   inputformat = {"po":converterclass().convertpo}
   outputformat = "po"
-  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformat, outputformat, usepots=True)
+  parser = convert.ConvertOptionParser(inputformat, outputformat, usepots=True)
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:

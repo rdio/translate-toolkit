@@ -163,7 +163,7 @@ if __name__ == '__main__':
   inputformats = {"po":convertoo}
   outputformat = "oo"
   templateformat = "oo"
-  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformats, outputformat, usetemplates=True, templateslikeinput=False)
+  parser = convert.ConvertOptionParser(inputformats, outputformat, usetemplates=True, templateslikeinput=False)
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
   (options, args) = parser.parse_args()

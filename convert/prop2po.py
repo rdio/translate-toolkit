@@ -130,7 +130,7 @@ if __name__ == '__main__':
   from translate.convert import convert
   inputformats = {"properties": convertprop}
   outputformat = "po"
-  parser = convert.ConvertOptionParserExt(convert.defaultrecursion, inputformats, outputformat, usetemplates=True, usepots=True)
+  parser = convert.ConvertOptionParserExt(inputformats, outputformat, usetemplates=True, usepots=True)
   (options, args) = parser.parse_args()
   try:
     parser.runconversion(options)

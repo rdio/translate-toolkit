@@ -117,7 +117,7 @@ if __name__ == '__main__':
   from translate.convert import convert
   inputformat = {"oo":convertoo}
   outputformat = "po"
-  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformat, outputformat, usepots=True)
+  parser = convert.ConvertOptionParser(inputformat, outputformat, usepots=True)
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:

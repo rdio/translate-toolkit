@@ -39,12 +39,8 @@ from translate.convert import convert
 
 class MozConvertOptionParser(convert.ConvertOptionParserExt):
   def __init__(self, inputformats, outputformats, usetemplates=False, usepots=False, templateslikeinput=None):
-    convert.ConvertOptionParserExt.__init__(self, convert.defaultrecursion, inputformats, outputformats,
+    convert.ConvertOptionParserExt.__init__(self, inputformats, outputformats,
       usetemplates, usepots, templateslikeinput)
-
-  def setrecursion(self, recursion):
-    super(MozConvertOptionParser, self).setrecursion(recursion)
-    self.argumentdesc = "xpi file/dir"
 
   def isrecursive(self, fileoption):
     """checks if fileoption is a recursive file"""

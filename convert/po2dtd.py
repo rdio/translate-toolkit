@@ -287,7 +287,7 @@ if __name__ == '__main__':
   from translate.convert import convert
   inputformat = "po"
   outputformats = {"dtd": convertdtd}
-  parser = convert.ConvertOptionParserExt(convert.defaultrecursion, inputformat, outputformats, usetemplates=True)
+  parser = convert.ConvertOptionParserExt(inputformat, outputformats, usetemplates=True)
   (options, args) = parser.parse_args()
   try:
     parser.runconversion(options)
