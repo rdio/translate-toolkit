@@ -228,10 +228,11 @@ funnycharacters = {chr(133): "...",  # horizontal ellipsis
                    chr(154): 0x161,  # s with an upside down ^
                    chr(138): 0x160}  # S with an upside down ^
 
+# FIXME: we shouldn't be doing wierd things like this
 def doencode(unencoded):
   # return encodewithdict(unencoded, funnycharacters)
   # TODO: change this from utf8 to unicode_escaped for .properties files
-  return unencoded.decode('cp1250').encode('utf8')
+  return unencoded.decode('iso-8859-1').encode('utf8')
 
 def testcase():
   x = ' "this" " is " "a" " test!" '
