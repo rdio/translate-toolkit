@@ -118,6 +118,8 @@ class reoo:
     # check there aren't missing entities...
     if len(unquotedstr.strip()) == 0:
       return
+    if isinstance(unquotedstr, unicode):
+      unquotedstr = unquotedstr.encode("UTF-8")
     # finally set the new definition in the oo, but not if its empty
     if len(unquotedstr) > 0:
       setattr(part2, subkey, unquotedstr)
