@@ -475,7 +475,7 @@ class pootlefile(po.pofile):
         if item in self.classify[name]:
           yield item
 
-  def matchitems(self, newpofile):
+  def matchitems(self, newpofile, usesources=False):
     """matches up corresponding items in this pofile with the given newpofile, and returns tuples of matching poitems (None if no match found)"""
     if not hasattr(self, "msgidindex"):
       self.makeindex()
@@ -484,18 +484,19 @@ class pootlefile(po.pofile):
     matches = []
     for newpo in newpofile.poelements:
       foundsource = False
-      newsources = newpo.getsources()
-      mergedsources = []
-      for source in newsources:
-        if source in mergedsources:
-          continue
-        if source in self.sourceindex:
-          oldpo = self.sourceindex[source]
-          if oldpo is not None:
-            foundsource = True
-            matches.append((oldpo, newpo))
-            mergedsources.append(source)
+      if usesources:
+        newsources = newpo.getsources()
+        mergedsources = []
+        for source in newsources:
+          if source in mergedsources:
             continue
+          if source in self.sourceindex:
+            oldpo = self.sourceindex[source]
+            if oldpo is not None:
+              foundsource = True
+              matches.append((oldpo, newpo))
+              mergedsources.append(source)
+              continue
       if not foundsource:
         msgid = po.getunquotedstr(newpo.msgid)
         if msgid in self.msgidindex:
@@ -637,13 +638,14 @@ class TranslationProject:
     if os.path.exists(pathname):
       popath = os.path.join(dirname, pofilename)
       currentpofile = self.getpofile(popath)
-      # reading BASE version of file""
+      # reading BASE version of file
       origcontents = versioncontrol.getcleanfile(pathname, "BASE")
       origpofile = pootlefile(self, popath)
       originfile = cStringIO.StringIO(origcontents)
       origpofile.parse(originfile)
-      # matching current file with BASE version""
-      matches = origpofile.matchitems(currentpofile)
+      # matching current file with BASE version
+      usesources = False
+      matches = origpofile.matchitems(currentpofile, usesources)
       # TODO: add some locking here...
       # reading new version of file
       versioncontrol.updatefile(pathname)
@@ -666,13 +668,14 @@ class TranslationProject:
           if origmsgstr == localmsgstr:
             continue
         foundsource = False
-        for source in origpo.getsources():
-          if source in newpofile.sourceindex:
-            newpo = newpofile.sourceindex[source]
-            if newpo is not None:
-              foundsource = True
-              newmatches.append((newpo, localpo))
-              continue
+        if usesources:
+          for source in origpo.getsources():
+            if source in newpofile.sourceindex:
+              newpo = newpofile.sourceindex[source]
+              if newpo is not None:
+                foundsource = True
+                newmatches.append((newpo, localpo))
+                continue
         if not foundsource:
           msgid = po.getunquotedstr(origpo.msgid)
           if msgid in newpofile.msgidindex:
