@@ -4,6 +4,8 @@ mozilla - automate
   repackxpi
 mozilla - migrate from one version to another
 don't need -R switch - make it detect based on file/dir (see moz2po)
+moz2po
+  make strings fuzzy if original == translation
 
 make po files of all existing translations
 take over the world
