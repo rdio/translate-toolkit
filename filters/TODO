@@ -21,4 +21,3 @@ other checks
   punc count - .,: all add up.  Simple way to see if all sentences where
 	translated.
   detect french style end punc ie [space][!?]
-  simple sentence count - count the number of fullstops

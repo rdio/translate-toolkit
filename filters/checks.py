@@ -255,6 +255,10 @@ class StandardChecker(TranslationChecker):
     str2 = self.filtervariables(str2)
     return helpers.countsmatch(str1, str2, ("[", "]", "{", "}", "(", ")"))
 
+  def sentencecount(self, str1, str2):
+    """checks that the number of sentences in both strings match"""
+    return helpers.countsmatch(prefilters.removekdecomments(str1), str2, ".")
+
   def simplecaps(self, str1, str2):
     """checks the capitalisation of two strings isn't wildly different"""
     capitals1, capitals2 = helpers.filtercount(str1, type(str1).isupper), helpers.filtercount(str2, type(str2).isupper)
