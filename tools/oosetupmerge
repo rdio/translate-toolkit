@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 
-"""tool for editing openoffice.org setup files"""
+"""tool for building multilingual openoffice.org setup files"""
 
 try:
   from translate.misc import sparse
 except ImportError:
   import sparse
+try:
+  from translate import __version__
+except ImportError:
+  class __version__:
+    ver = "standalone"
 import sys
 import operator
 import os
@@ -334,13 +339,16 @@ if __name__ == '__main__':
     psyco.full()
   except:
     pass
+  import optparse
   setupfiles = {}
-  if len(sys.argv) < 3:
-    print >>sys.stderr, "usage: oosetupmerge maindir dir2 dir3 ... outputdir"
-    sys.exit()
-  maindir = sys.argv[1]
-  otherdirs = sys.argv[2:-1]
-  outputdir = sys.argv[-1]
+  optparser = optparse.OptionParser(version="%prog "+__version__.ver, description=__doc__)
+  optparser.set_usage("%prog maindir [otherdirs] outputdir")
+  options, args = optparser.parse_args()
+  if len(args) < 2:
+    optparser.error("need at least one inputdir and an outputdir")
+  maindir = args[1]
+  otherdirs = args[2:-1]
+  outputdir = args[-1]
   if os.path.isfile(os.path.join(maindir, 'setup.ins')):
     setupname = 'setup.ins'
   elif os.path.isfile(os.path.join(maindir, 'setup.inf')):
