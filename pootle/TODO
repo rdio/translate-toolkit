@@ -64,3 +64,16 @@ bugs:
   when checks are on and you browse into one when you return checks are off
     (confusing)
   searching does not work when in the translation interface
+
+assignment:
+  assign to a group
+  lock at the user level - only one person per file
+  translatathon:
+    30 people
+    time-consuming:
+      signing everyone on - add users over the web
+      choosing who does what
+      wordcounts would help
+    deleting assignments
+    at the end, not sure what to assign...
+
