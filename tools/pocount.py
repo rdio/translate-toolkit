@@ -31,7 +31,7 @@ def wordsinpoel(poel):
 
 def summarize(elements):
   # ignore totally blank or header elements
-  elements = filter(lambda poel: not poel.isheader()), elements)
+  elements = filter(lambda poel: not poel.isheader(), elements)
   translated = filter(lambda poel: not poel.isblankmsgstr() and not poel.isfuzzy(), elements)
   fuzzy = filter(lambda poel: poel.isfuzzy() and not poel.isblankmsgstr(), elements)
   untranslated = filter(lambda poel: poel.isblankmsgstr(), elements)
