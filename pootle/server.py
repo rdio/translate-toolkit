@@ -163,3 +163,11 @@ class PootleServer(OptionalLoginAppServer):
 	  return indexpage.ProjectIndex(project, session, os.path.join(*pathwords))
     return None
 
+if __name__ == '__main__':
+  # run the web server
+  from jToolkit.web import simplewebserver
+  parser = simplewebserver.WebOptionParser()
+  options, args = parser.parse_args()
+  server = parser.getserver(options)
+  simplewebserver.run(server, options)
+
