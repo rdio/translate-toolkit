@@ -36,7 +36,7 @@ class TranslatePage(pagelayout.PootlePage):
       pagelinks = self.getpagelinks("?translate=1&view=1", 10)
     else:
       pagelinks = []
-    translatediv = pagelayout.TranslateForm([pagelinks, translateform])
+    translatediv = pagelayout.TranslateForm([pagelinks, translateform, pagelinks])
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
     self.addfilelinks(self.pofilename, self.matchnames)
     if dirfilter and dirfilter.endswith(".po"):
@@ -55,7 +55,7 @@ class TranslatePage(pagelayout.PootlePage):
       pagelinks.append(widgets.Link(baselink + "&item=%d" % linkitem, "Previous %d" % (self.firstitem - linkitem)))
     pofilelen = self.project.getpofilelen(self.pofilename)
     lastitem = min(pofilelen, self.firstitem + pagesize - 1)
-    pagelinks.append("Items %d to %d" % (self.firstitem, lastitem))
+    pagelinks.append("Items %d to %d" % (self.firstitem+1, lastitem+1))
     if self.firstitem + len(self.translations) < self.project.getpofilelen(self.pofilename):
       linkitem = self.firstitem + pagesize
       itemcount = min(pofilelen - linkitem, pagesize)
