@@ -38,19 +38,20 @@ class prop2po:
     headerpo = self.makeheader(thepropfile.filename)
     # we try and merge the header po with any comments at the start of the properties file
     appendedheader = 0
+    waitingcomments = []
     for theprop in thepropfile.propelements:
       thepo = self.convertelement(theprop)
+      if thepo is None:
+        waitingcomments.extend(theprop.comments)
       if not appendedheader:
         if theprop.isblank():
-          if thepo is None:
-            headerpo.othercomments = theprop.comments + headerpo.othercomments
-          else:
-            headerpo.merge(thepo)
           thepo = headerpo
         else:
           thepofile.poelements.append(headerpo)
         appendedheader = 1
       if thepo is not None:
+        thepo.othercomments = waitingcomments + thepo.othercomments
+        waitingcomments = []
         thepofile.poelements.append(thepo)
     thepofile.removeduplicates()
     outputfile.writelines(thepofile.tolines())
@@ -86,7 +87,7 @@ class prop2po:
     thepo = po.poelement()
     thepo.othercomments.extend(theprop.comments)
     # TODO: handle multiline msgid
-    if len(msgid) == 0:
+    if theprop.isblank():
       return None
     thepo.sourcecomments.extend("#: "+theprop.name+eol)
     thepo.msgid = [quote.quotestr(msgid, escapeescapes=1)]
