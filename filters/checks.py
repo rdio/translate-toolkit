@@ -279,6 +279,14 @@ class StandardChecker(TranslationChecker):
 	  return False
     return True
 
+  def filepaths(self, str1, str2):
+    """checks that file paths have not been translated"""
+    for word1 in self.filteraccelerators(str1).split():
+      if word1.startswith("/"):
+        if not helpers.countsmatch(str1, str2, (word1,)):
+          return False
+    return True
+
   def kdecomments(self, str1, str2):
     """checks to ensure that no KDE style comments appear in the translation"""
     return str2.find("\n_:") == -1 and not str2.startswith("_:")
