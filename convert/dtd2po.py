@@ -277,11 +277,15 @@ class dtd2po:
     thepofile.removeduplicates()
     return thepofile
 
-def main(inputfile, outputfile):
+def main(inputfile, outputfile, templatefile):
   """reads in inputfile using dtd, converts using dtd2po, writes to outputfile"""
   inputdtd = dtd.dtdfile(inputfile)
   convertor = dtd2po()
-  outputpo = convertor.convertfile(inputdtd)
+  if templatefile is None:
+    outputpo = convertor.convertfile(inputdtd)
+  else:
+    templatedtd = dtd.dtdfile(templatefile)
+    outputpo = convertor.mergefiles(templatedtd, inputdtd)
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
 
@@ -293,11 +297,14 @@ if __name__ == '__main__':
     from translate.misc import optparse
   inputformat = "dtd"
   outputformat = "po"
+  templateformat = "dtd"
   parser = optparse.OptionParser(usage="%prog [-i|--input-file inputfile] [-o|--output-file outputfile]")
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")
   parser.add_option("-o", "--output-file", dest="outputfile", default=None,
                     help="write to outputfile in "+outputformat+" format", metavar="outputfile")
+  parser.add_option("-t", "--template", dest="templatefile", default=None,
+                    help="read from template in "+templateformat+" format", metavar="template")
   (options, args) = parser.parse_args()
   # open the appropriate files
   if options.inputfile is None:
@@ -308,5 +315,9 @@ if __name__ == '__main__':
     outputfile = sys.stdout
   else:
     outputfile = open(options.outputfile, 'w')
-  main(inputfile, outputfile)
+  if options.templatefile is None:
+    templatefile = None
+  else:
+    templatefile = open(options.templatefile, 'r')
+  main(inputfile, outputfile, templatefile)
 
