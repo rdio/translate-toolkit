@@ -23,6 +23,7 @@ gettext .pot format for translation.
 does a line-by-line conversion..."""
 
 import sys
+import translatepath
 from translate.misc import quote
 from translate.storage import po
 from translate.storage import properties

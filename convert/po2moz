@@ -23,6 +23,7 @@ either done using a template or just using the .po file"""
 
 import os.path
 import sys
+import translatepath
 from translate.convert import po2dtd
 from translate.convert import po2prop
 from translate.storage import xpi

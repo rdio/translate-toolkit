@@ -4,6 +4,7 @@
 
 import sys
 import os
+import translatepath
 from translate.storage import po
 
 def sum(parts):

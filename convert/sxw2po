@@ -19,6 +19,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
+import translatepath
 from translate.storage import po
 from translate.misc import quote
 from translate.convert import convert

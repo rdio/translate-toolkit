@@ -24,6 +24,7 @@ generated from a Mozilla localization .properties back to the .properties (but t
 Uses the original .properties to do the conversion as this makes sure we don't
 leave out any unexpected stuff..."""
 
+import translatepath
 from translate.misc import quote
 from translate.storage import po
 from translate import __version__

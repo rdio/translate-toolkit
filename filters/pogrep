@@ -20,6 +20,7 @@
 
 """grep for gettext .po localization files"""
 
+import translatepath
 from translate.storage import po
 from translate.misc import optrecurse
 import sre

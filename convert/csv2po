@@ -21,6 +21,7 @@
 """simple script to convert a comma-separated values (.csv) file to a gettext .po localization file"""
 
 import sys
+import translatepath
 from translate.misc import quote
 from translate.misc import sparse
 from translate.storage import po
