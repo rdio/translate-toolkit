@@ -99,7 +99,7 @@ def recurse(inputdir, outputdir, templatedir):
     dirstack.extend(dirs)
 
 def handleoptions(options):
-  """handles the options, allocates s, and runs the neccessary functions..."""
+  """handles the options, and runs the neccessary functions..."""
   if options.inputdir is None:
     raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputdir")
   if not os.path.isdir(options.inputdir):
