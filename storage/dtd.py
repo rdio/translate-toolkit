@@ -111,24 +111,35 @@ class dtdelement:
         if self.entitypart == "start":
           # the entity definition
           e = quote.findend(line,'<!ENTITY')
-          while (line[e].isspace() and e < len(line)): e += 1
+          while (e < len(line) and line[e].isspace()): e += 1
           self.entity = ''
-          while (not line[e].isspace() and e < len(line)):
+          while (e < len(line) and not line[e].isspace()):
             self.entity += line[e]
             e += 1
-          while (line[e].isspace() and e < len(line)): e += 1
+          while (e < len(line) and line[e].isspace()): e += 1
           self.entitypart = "definition"
           # remember the start position and the quote character
+          if e == len(line):
+            self.entityhelp = None
+            continue
           self.entityhelp = (e,line[e])
           self.instring = 0
         if self.entitypart == "definition":
+          if self.entityhelp is None:
+            e = 0
+            while (e < len(line) and line[e].isspace()): e += 1
+            if e == len(line):
+              continue
+            self.entityhelp = (e,line[e])
+            self.instring = 0
           # actually the lines below should remember instring, rather than using it as dummy
           e = self.entityhelp[0]
-          # FIXME: should we handle single quotes here? should only be double quotes
           if (self.entityhelp[1] == "'"):
             (defpart,self.instring) = quote.extract(line[e:],"'","'",None,startinstring=self.instring)
-          else: # if (self.entityhelp[1] == '"'):
+          elif (self.entityhelp[1] == '"'):
             (defpart,self.instring) = quote.extract(line[e:],'"','"',None,startinstring=self.instring)
+          else:
+            raise ValueError("Unexpected quote character... %r" % (self.entityhelp[1]))
           # for any following lines, start at the beginning of the line. remember the quote character
           self.entityhelp = (0,self.entityhelp[1])
           self.definition += defpart
