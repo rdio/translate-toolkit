@@ -26,10 +26,6 @@ class TranslatePage(pagelayout.PootlePage):
     # TODO: clean up modes to be one variable
     self.viewmode = self.argdict.get("view", 0) and "view" in self.rights
     self.reviewmode = self.argdict.get("review", 0)
-    if not self.viewmode and not self.reviewmode:
-      if not "translate" in self.rights:
-        if "view" in self.rights:
-          self.viewmode = True
     self.finditem()
     self.maketable()
     searchcontextinfo = widgets.HiddenFieldList({"searchtext": self.searchtext})

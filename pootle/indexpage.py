@@ -253,11 +253,19 @@ class ProjectIndex(pagelayout.PootlePage):
       else:
         checkslink = widgets.Link(baseindexlink + "&showchecks=1", "Show Checks")
       actionlinks.append(checkslink)
-    if "review" in linksrequired and "review" in self.rights and projectstats.get("has-suggestion", 0):
-      reviewlink = widgets.Link(baseactionlink + "&review=1&has-suggestion=1", "Review Suggestions")
+    if "review" in linksrequired and projectstats.get("has-suggestion", 0):
+      if "review" in self.rights:
+        reviewlink = "Review Suggestions"
+      else:
+        reviewlink = "View Suggestions"
+      reviewlink = widgets.Link(baseactionlink + "&review=1&has-suggestion=1", reviewlink)
       actionlinks.append(reviewlink)
-    if "quick" in linksrequired and "translate" in self.rights and projectstats.get("translated", 0) < projectstats.get("total", 0):
-      quicklink = widgets.Link(baseactionlink + "&fuzzy=1&blank=1", "Quick Translate")
+    if "quick" in linksrequired and projectstats.get("translated", 0) < projectstats.get("total", 0):
+      if "translate" in self.rights:
+        quicklink = "Quick Translate"
+      else:
+        quicklink = "View Untranslated"
+      quicklink = widgets.Link(baseactionlink + "&fuzzy=1&blank=1", quicklink)
       actionlinks.append(quicklink)
     if "all" in linksrequired and "translate" in self.rights:
       translatelink = widgets.Link(baseactionlink, 'Translate All')
