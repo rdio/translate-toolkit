@@ -41,11 +41,8 @@ class TranslateForm(widgets.Division):
 
 class ActionLinks(widgets.Division):
   def __init__(self, contents):
-    widgets.Division.__init__(self, [], cls="item-description")
-    for num, item in enumerate(contents):
-      self.addcontents(item)
-      if num < len(contents)-1:
-        self.addcontents("| ")
+    linkedcontents = widgets.SeparatedList(contents, " | ")
+    widgets.Division.__init__(self, linkedcontents, cls="item-description")
 
 class TranslationText(widgets.Span):
   def __init__(self, contents):
