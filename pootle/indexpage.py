@@ -146,8 +146,10 @@ class AdminPage(pagelayout.PootlePage):
     self.localize = session.localize
     if self.session.issiteadmin():
       homelink = pagelayout.IntroText(widgets.Link("../home/", self.localize("Home page")))
-      userslink = pagelayout.IntroText(widgets.Link("users.html", self.localize("User Admin page")))
-      contents = [homelink, userslink, self.getgeneral(), self.getlanguages(), self.getprojects()]
+      userslink = pagelayout.IntroText(widgets.Link("users.html", self.localize("Users")))
+      langlink = pagelayout.IntroText(widgets.Link("languages.html", self.localize("Languages")))
+      projlink = pagelayout.IntroText(widgets.Link("projects.html", self.localize("Projects")))
+      contents = [homelink, userslink, langlink, projlink, self.getgeneral()]
     else:
       contents = pagelayout.IntroText(self.localize("You do not have the rights to administer pootle."))
     pagelayout.PootlePage.__init__(self, self.localize("Pootle Admin Page"), contents, session)
@@ -168,6 +170,21 @@ class AdminPage(pagelayout.PootlePage):
     submitbutton = widgets.Input({"type":"submit", "name":"changegeneral", "value":self.localize("Save changes")})
     generalform = widgets.Form([general, submitbutton], {"name": "general", "action":""})
     return pagelayout.Contents([generaltitle, generalform])
+
+class LanguagesAdminPage(pagelayout.PootlePage):
+  """page for administering pootle..."""
+  def __init__(self, potree, session, instance):
+    self.potree = potree
+    self.session = session
+    self.instance = instance
+    self.localize = session.localize
+    if self.session.issiteadmin():
+      homelink = pagelayout.IntroText(widgets.Link("../home/", self.localize("Home page")))
+      indexlink = pagelayout.IntroText(widgets.Link("index.html", self.localize("Main Admin page")))
+      contents = [homelink, indexlink, self.getlanguages()]
+    else:
+      contents = pagelayout.IntroText(self.localize("You do not have the rights to administer pootle."))
+    pagelayout.PootlePage.__init__(self, self.localize("Pootle Languages Admin Page"), contents, session)
 
   def getlanguages(self):
     """gets the links to the languages"""
@@ -192,6 +209,21 @@ class AdminPage(pagelayout.PootlePage):
     submitbutton = widgets.Input({"type":"submit", "name":"changelanguages", "value":self.localize("Save changes")})
     languageform = widgets.Form([languages, submitbutton], {"name": "languages", "action":""})
     return pagelayout.Contents([languagestitle, languageform])
+
+class ProjectsAdminPage(pagelayout.PootlePage):
+  """page for administering pootle..."""
+  def __init__(self, potree, session, instance):
+    self.potree = potree
+    self.session = session
+    self.instance = instance
+    self.localize = session.localize
+    if self.session.issiteadmin():
+      homelink = pagelayout.IntroText(widgets.Link("../home/", self.localize("Home page")))
+      indexlink = pagelayout.IntroText(widgets.Link("index.html", self.localize("Main Admin page")))
+      contents = [homelink, indexlink, self.getprojects()]
+    else:
+      contents = pagelayout.IntroText(self.localize("You do not have the rights to administer pootle."))
+    pagelayout.PootlePage.__init__(self, self.localize("Pootle Projects Admin Page"), contents, session)
 
   def getprojects(self):
     """gets the links to the projects"""
@@ -230,7 +262,7 @@ class AdminPage(pagelayout.PootlePage):
     projectform = widgets.Form([projects, submitbutton], {"name": "projects", "action":""})
     return pagelayout.Contents([projectstitle, projectform])
 
-class UserAdminPage(pagelayout.PootlePage):
+class UsersAdminPage(pagelayout.PootlePage):
   """page for administering pootle..."""
   def __init__(self, server, users, session, instance):
     self.server = server
@@ -258,7 +290,7 @@ class UserAdminPage(pagelayout.PootlePage):
     # users.setcell(0, 3, table.TableCell(pagelayout.Title(self.localize("Projects"))))
     # users.setcell(0, 4, table.TableCell(pagelayout.Title(self.localize("Languages"))))
     for username, usernode in self.users.iteritems():
-      fullnametextbox = widgets.Input({"name": "userfullname-%s" % username, "value": usernode.name})
+      fullnametextbox = widgets.Input({"name": "userfullname-%s" % username, "value": getattr(usernode, "name", "")})
       emailtextbox = widgets.Input({"name": "useremail-%s" % username, "value": usernode.email})
       removecheckbox = widgets.Input({"name": "userremove-%s" % username, "type": "checkbox"})
       rownum = users.maxrownum()+1
