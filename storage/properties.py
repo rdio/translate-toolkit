@@ -36,9 +36,16 @@ class propelement:
     self.msgid = ""
     self.comments = []
 
+  def isblank(self):
+    """returns whether this is a blank element, containing only comments..."""
+    return not (self.name or self.msgid)
+
   def tolines(self):
     """convert the element back into formatted lines for a .properties file"""
-    return self.comments + ["%s=%s\n" % (self.name, self.msgid)]
+    if self.isblank():
+      return self.comments + ["\n"]
+    else:
+      return self.comments + ["%s=%s\n" % (self.name, self.msgid)]
 
 class propfile:
   """this class represents a .properties file, made up of propelements"""
@@ -74,6 +81,10 @@ class propfile:
       elif line.strip()[:1] == '#':
         # add a comment
         newpe.comments.append(line)
+      elif not line.strip():
+        # this is a blank line...
+        self.propelements.append(newpe)
+        newpe = propelement()
       else:
         equalspos = line.find('=')
         # if no equals, just ignore it
