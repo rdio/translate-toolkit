@@ -213,12 +213,22 @@ class ConvertOptionParser(optparse.OptionParser):
       self.progressbar = self.progresstypes[options.progress]()
     for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
       fullinputpath = join(options.input, inputpath)
-      inputfile = open(fullinputpath, 'r')
       fulloutputpath = join(options.output, outputpath)
+      tempoutput = False
+      if fulloutputpath == fullinputpath:
+        tempoutput = True
+        origoutputpath = fulloutputpath
+        fulloutputpath += os.extsep + "tmp"
+      if templatepath is not None:
+        fulltemplatepath = join(options.template, templatepath)
+        if fulloutputpath == fulltemplatepath:
+          tempoutput = True
+          origoutputpath = fulloutputpath
+          fulloutputpath += os.extsep + "tmp"
+      inputfile = open(fullinputpath, 'r')
       outputfile = open(fulloutputpath, 'w')
       templatefile = None
       if templatepath is not None:
-        fulltemplatepath = join(options.template, templatepath)
         if os.path.isfile(fulltemplatepath):
           templatefile = open(fulltemplatepath, 'r')
         else:
@@ -228,6 +238,10 @@ class ConvertOptionParser(optparse.OptionParser):
         outputsubdir = os.path.dirname(outputpath)
         self.usesubdir(outputsubdir)
         self.reportprogress(inputpath, True)
+        if tempoutput:
+          outputfile.close()
+          os.unlink(origoutputpath)
+          os.rename(fulloutputpath, origoutputpath)
       else:
         outputfile.close()
         os.unlink(fulloutputpath)
