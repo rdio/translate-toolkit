@@ -34,13 +34,13 @@ defaultrecursion = 2
 
 class ConvertOptionParser(optparse.OptionParser):
   """a specialized Option Parser for convertor tools..."""
-  def __init__(self, recursion, inputformats, outputformats, usetemplates=False):
+  def __init__(self, recursion, inputformats, outputformat, usetemplates=False):
     """construct the specialized Option Parser"""
     optparse.OptionParser.__init__(self, version="%prog "+__version__.ver)
     self.usetemplates = usetemplates
     self.setrecursion(recursion)
     self.setinputformats(inputformats)
-    self.setoutputformats(outputformats)
+    self.setoutputformat(outputformat)
     self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
 
   def getusagestring(self, option):
@@ -90,12 +90,10 @@ class ConvertOptionParser(optparse.OptionParser):
                     help="read from TEMPLATE %s in %s" % (self.argumentdesc, inputformathelp))
       self.define_option(templateoption)
 
-  def setoutputformats(self, outputformats):
-    """sets the output formats to the given list/single string"""
-    if isinstance(outputformats, basestring):
-      outputformats = [outputformats]
-    self.outputformats = outputformats
-    outputformathelp = self.getformathelp(outputformats)
+  def setoutputformat(self, outputformat):
+    """sets the output format to the given list/single string"""
+    self.outputformat = outputformat
+    outputformathelp = self.getformathelp([outputformat])
     outputoption = optparse.Option("-o", "--output", dest="output", default=None, metavar="OUTPUT",
                     help="write to OUTPUT %s in %s" % (self.argumentdesc, outputformathelp))
     self.define_option(outputoption)
@@ -109,33 +107,95 @@ class ConvertOptionParser(optparse.OptionParser):
     else:
       return "%s formats" % (", ".join(formats))
 
-  def getinputfile(self):
+  def getinputfile(self, options):
     """gets the input file defined by the options"""
-    if self.input is None:
+    if options.input is None:
       return sys.stdin
     else:
-      return open(self.input, 'r')
+      return open(options.input, 'r')
 
-  def getoutputfile(self):
+  def getoutputfile(self, options):
     """gets the output file defined by the options"""
-    if self.output is None:
+    if options.output is None:
       return sys.stdout
     else:
-      return open(self.output, 'w')
+      return open(options.output, 'w')
 
-  def runconversion(self, convertmethod):
+  def runconversion(self, options, convertmethod):
     """runs the conversion method using the given commandline options..."""
-    if self.recursion:
-      if self.input is None:
-        raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile")
-      if not os.path.isdir(self.input):
-        raise optparse.OptionValueError("inputfile must be directory for recursive run.")
-      if self.output is None:
-        raise optparse.OptionValueError("must specify output directory for recursive run.")
-      if not os.path.isdir(self.output):
-        raise optparse.OptionValueError("output must be existing directory for recursive run.")
-      # TODO: add recurseconversion method...
-      self.recurseconversion(convertmethod)
+    if (self.recursion == optionalrecursion and options.recursion) or (self.recursion == defaultrecursion):
+      if options.input is None:
+        self.error(optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile"))
+      if not os.path.isdir(options.input):
+        self.error(optparse.OptionValueError("inputfile must be directory for recursive run."))
+      if options.output is None:
+        self.error(optparse.OptionValueError("must specify output directory for recursive run."))
+      if not os.path.isdir(options.output):
+        self.error(optparse.OptionValueError("output must be existing directory for recursive run."))
+      self.recurseconversion(options)
     else:
-      convertmethod(self.getinputfile(), self.getoutputfile())
+      convertmethod(self.getinputfile(options), self.getoutputfile(options))
+
+  def recurseconversion(self, options):
+    """recurse through directories and convert files"""
+    # TODO: refactor this, it's too long...
+    dirstack = ['']
+    # discreated contains all the directories created, mapped to whether they've been used or not...
+    dirscreated = {}
+    while dirstack:
+      top = dirstack.pop(-1)
+      names = os.listdir(os.path.join(options.input, top))
+      dirs = []
+      for name in names:
+        inputname = os.path.join(options.input, top, name)
+        # handle directories...
+        if os.path.isdir(inputname):
+          dirs.append(os.path.join(top, name))
+          outputname = os.path.join(options.output, top, name)
+          if not os.path.isdir(outputname):
+            os.mkdir(outputname)
+            dirscreated[dirs[-1]] = 0
+            if top in dirscreated:
+              dirscreated[top] = 1
+          if self.usetemplates and options.template:
+            templatename = os.path.join(options.template, top, name)
+            if not os.path.isdir(templatename):
+              print >>sys.stderr, "warning: missing template directory %s" % templatename
+        elif os.path.isfile(inputname):
+          base, inputext = os.path.splitext(name)
+          inputext = inputext.replace(os.extsep, "", 1)
+          if not inputext in self.inputformats:
+            # only handle names that match recognized input file extensions
+            continue
+          # now we have split off .po, we split off the original extension
+          outputname = os.path.join(options.output, top, self.getoutputname(name))
+          inputfile = open(inputname, 'r')
+          outputfile = open(outputname, 'w')
+          templatefile = None
+          if self.usetemplates and options.template:
+            templatename = os.path.join(options.template, top, name)
+            if os.path.isfile(templatename):
+              templatefile = open(templatename, 'r')
+            else:
+              print >>sys.stderr, "warning: missing template file %s" % templatename
+          convertmethod = self.inputformats[inputext]
+          if convertmethod(inputfile, outputfile, templatefile):
+            if top in dirscreated:
+              dirscreated[top] = 1
+          else:
+            outputfile.close()
+            os.unlink(outputname)
+      # make sure the directories are processed next time round...
+      dirs.reverse()
+      dirstack.extend(dirs)
+    # remove any directories we created unneccessarily
+    # note that if there is a tree of empty directories, only leaves will be removed...
+    for createddir, used in dirscreated.iteritems():
+      if not used:
+        os.rmdir(os.path.join(options.output, createddir))
+
+  def getoutputname(self, inputname):
+    """gets an output filename based on the input filename"""
+    # TODO: handle replacing the input extension...
+    return inputname + os.extsep + self.outputformat
 

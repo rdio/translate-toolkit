@@ -60,80 +60,6 @@ def convertprop(inputfile, outputfile, templatefile):
   outputfile.writelines(outputpolines)
   return 1
 
-def recurse(inputdir, outputdir, templatedir, inputformats, outputformat):
-  """convert files in input/template dirs to files in outputformat in outputdir using inputformats"""
-  dirstack = ['']
-  # discreated contains all the directories created, mapped to whether they've been used or not...
-  dirscreated = {}
-  while dirstack:
-    top = dirstack.pop(-1)
-    names = os.listdir(os.path.join(inputdir, top))
-    dirs = []
-    for name in names:
-      inputname = os.path.join(inputdir, top, name)
-      # handle directories...
-      if os.path.isdir(inputname):
-        dirs.append(os.path.join(top, name))
-        outputname = os.path.join(outputdir, top, name)
-        if not os.path.isdir(outputname):
-          os.mkdir(outputname)
-          dirscreated[dirs[-1]] = 0
-          if top in dirscreated:
-            dirscreated[top] = 1
-        if templatedir is not None:
-          templatename = os.path.join(templatedir, top, name)
-          if not os.path.isdir(templatename):
-            print >>sys.stderr, "warning: missing template directory %s" % templatename
-      elif os.path.isfile(inputname):
-        base, inputext = os.path.splitext(name)
-        inputext = inputext.replace(os.extsep, "", 1)
-        if not inputext in inputformats:
-          # only handle names that match recognized input file extensions
-          continue
-        # now we have split off .po, we split off the original extension
-        outputname = os.path.join(outputdir, top, name + os.extsep + outputformat)
-        inputfile = open(inputname, 'r')
-        outputfile = open(outputname, 'w')
-        templatefile = None
-        if templatedir is not None:
-          templatename = os.path.join(templatedir, top, name)
-          if os.path.isfile(templatename):
-            templatefile = open(templatename, 'r')
-          else:
-            print >>sys.stderr, "warning: missing template file %s" % templatename
-        convertfile = inputformats[inputext]
-        if convertfile(inputfile, outputfile, templatefile):
-          if top in dirscreated:
-            dirscreated[top] = 1
-        else:
-          outputfile.close()
-          os.unlink(outputname)
-    # make sure the directories are processed next time round...
-    dirs.reverse()
-    dirstack.extend(dirs)
-  # remove any directories we created unneccessarily
-  # note that if there is a tree of empty directories, only leaves will be removed...
-  for createddir, used in dirscreated.iteritems():
-    if not used:
-      os.rmdir(os.path.join(outputdir, createddir))
-
-def handleoptions(options, inputformats, outputformat):
-  """handles the options, and runs the neccessary functions..."""
-  if options.input is None:
-    raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputdir")
-  if not os.path.isdir(options.input):
-    raise optparse.OptionValueError("inputdir must be directory for recursive run.")
-  if options.output is None:
-    raise optparse.OptionValueError("must specify output directory for recursive run.")
-  if not os.path.isdir(options.output):
-    raise optparse.OptionValueError("output must be existing directory for recursive run.")
-  if options.template is not None:
-    if not os.path.isdir(options.template):
-      raise optparse.OptionValueError("template must be existing directory for recursive run.")
-  if options.pot:
-    outputformat = "pot"
-  recurse(options.input, options.output, options.template, inputformats, outputformat)
-
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
@@ -146,7 +72,7 @@ if __name__ == '__main__':
   (options, args) = parser.parse_args()
   # recurse the appropriate directories...
   try:
-    handleoptions(options, inputformats, outputformat)
-  except optparse.OptParseError, message:
+    parser.runconversion(options, None)
+  except convert.optparse.OptParseError, message:
     parser.error(message)
 
