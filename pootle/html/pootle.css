@@ -33,14 +33,14 @@ div.item
 {
 	margin-bottom:5px;
 }
-.item-odd
+.item-even
 {
 	background-color: #f4f4f4;
 }
 div.mainitem 
 {
 	margin-bottom:10px;
-	background-color: #e8f0f0;
+	background-color: #cfd1d3;
 	padding: 5px;
 }
 div.contentsitem
@@ -91,9 +91,25 @@ td.translate-focus
 {
 	background-color: #f0f0f0;
 }
+.translate-original-odd
+{
+	color: #000000;
+}
+.translate-original-even
+{
+	color: #000060;
+}
 td.translate-translation
 {
 	width: 50%;
+}
+.translate-translation-odd
+{
+	color: #000000;
+}
+.translate-translation-even
+{
+	color: #000060;
 }
 div.intro {
 	font-family: verdana, arial, sans-serif;

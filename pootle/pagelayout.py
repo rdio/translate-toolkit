@@ -58,8 +58,13 @@ class ActionLinks(widgets.Division):
     widgets.Division.__init__(self, linkedcontents, cls="item-description")
 
 class TranslationText(widgets.Span):
-  def __init__(self, contents):
-    widgets.Span.__init__(self, contents, cls="translation-text")
+  def __init__(self, contents, polarity=None):
+    textclass = "translation-text "
+    if polarity == 0:
+      textclass += "translate-translation-even "
+    elif polarity == 1:
+      textclass += "translate-translation-odd "
+    widgets.Span.__init__(self, contents, cls=textclass)
 
 class TranslateActionLink(widgets.Span):
   def __init__(self, href, contents, id=None):

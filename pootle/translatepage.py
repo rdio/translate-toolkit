@@ -204,7 +204,6 @@ class TranslatePage(pagelayout.PootlePage):
     transtitle = table.TableCell("translation", {"class":"translate-table-title"})
     self.transtable.setcell(-1, 0, origtitle)
     self.transtable.setcell(-1, 1, transtitle)
-    self.textcolors = ["#000000", "#000060"]
     for row, (orig, trans) in enumerate(self.translations):
       item = self.firstitem + row
       itemclasses = self.project.getitemclasses(self.pofilename, item)
@@ -232,11 +231,12 @@ class TranslatePage(pagelayout.PootlePage):
       origclass += "translate-original-focus "
     else:
       origclass += "autoexpand "
-    origdiv = widgets.Division([], "orig%d" % item, cls=origclass)
-    origtext = widgets.Font(orig, {"color":self.textcolors[item % 2]})
-    if itemclasses:
-      origtext = widgets.Tooltip(" ".join(itemclasses), origtext)
-    origdiv.addcontents(origtext)
+    if item % 2:
+      textclass = "translate-original-odd "
+    else:
+      textclass = "translate-original-even "
+    origtext = widgets.Span(orig, cls=textclass)
+    origdiv = widgets.Division(origtext, "orig%d" % item, cls=origclass)
     return origdiv
 
   def geteditlink(self, item):
@@ -267,7 +267,7 @@ class TranslatePage(pagelayout.PootlePage):
     if "translate" in self.rights or "suggest" in self.rights:
       text= widgets.TextArea({"name":"trans%d" % item, "rows":3, "cols":40}, contents=trans)
     else:
-      text = pagelayout.TranslationText(widgets.Font(trans, {"color":self.textcolors[item % 2]}))
+      text = pagelayout.TranslationText(trans, item % 2)
     buttons = self.gettransbuttons(item)
     transdiv = widgets.Division([text, buttons], "trans%d" % item, cls="translate-translation")
     return transdiv
@@ -312,7 +312,7 @@ class TranslatePage(pagelayout.PootlePage):
     combineddiffs = reduce(list.__add__, diffcodes)
     transdiff = self.highlightdiffs(trans, combineddiffs, issrc=True)
     editlink = self.geteditlink(item)
-    currenttext = pagelayout.TranslationText([editlink, widgets.Font(transdiff, {"color":self.textcolors[item % 2]})])
+    currenttext = pagelayout.TranslationText([editlink, transdiff], item % 2)
     suggdivs = []
     for suggid, suggestion in enumerate(suggestions):
       suggdiffcodes = diffcodes[suggid]
@@ -331,7 +331,7 @@ class TranslatePage(pagelayout.PootlePage):
         else:
           suggtitle = "Suggestion:"
       suggtitle = widgets.Division("<b>%s</b>" % suggtitle)
-      suggestiontext = pagelayout.TranslationText(widgets.Font(suggdiff, {"color":self.textcolors[item % 2]}))
+      suggestiontext = pagelayout.TranslationText(suggdiff, item % 2)
       suggestionhidden = widgets.Input({'type': 'hidden', "name": "sugg%d.%d" % (item, suggid), 'value': suggestion})
       if "review" in self.rights:
         acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
@@ -352,7 +352,7 @@ class TranslatePage(pagelayout.PootlePage):
   def gettransview(self, item, trans):
     """returns a widget for viewing the given item's translation"""
     editlink = self.geteditlink(item)
-    text = pagelayout.TranslationText([editlink, widgets.Font(trans, {"color":self.textcolors[item % 2]})])
+    text = pagelayout.TranslationText([editlink, trans], item % 2)
     transdiv = widgets.Division(text, "trans%d" % item, cls="translate-translation autoexpand")
     return transdiv
 
