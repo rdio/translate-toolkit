@@ -64,3 +64,4 @@ bugs:
   quotes aren't handled properly (display with escapes but submission changes)
   when checks are on and you browse into one when you return checks are off
     (confusing)
+  searching does not work when in the translation interface
