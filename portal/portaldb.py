@@ -71,10 +71,10 @@ class portaldb:
 
   def addsourcefile(self, filename):
     """adds the source file, if it does not exist, returns the fileid"""
-    filter = "where filename='%s'" % filename
-    filenameexists = self.sourcefiles.filtermatchessome(filter)
+    filefilter = "where filename='%s'" % filename
+    filenameexists = self.sourcefiles.filtermatchessome(filefilter)
     if filenameexists:
-      fileid = self.sourcefiles.getsomerecord(filter){'fileid'}
+      fileid = self.sourcefiles.getsomerecord(filefilter)['fileid']
     else:
       fileid = 78
       self.sourcefiles.addrow({'fileid':fileid, 'filename':filename})
