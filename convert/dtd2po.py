@@ -73,16 +73,21 @@ class dtd2po:
     # escape backslashes...
     unquoted = unquoted.replace("\\", "\\\\")
     if not unquoted:
-      if not thepo.msgidcomments:
-        thepo.msgidcomments.append(quote.quotestr("_: %s is blank in the original\\n" % thedtd.entity))
+      # don't include this element if the msgid is empty
+      return 0
     # now split the string into lines and quote them
     msgid = [quote.quotestr(line) for line in unquoted.split('\n')]
     thepo.msgid = msgid
     thepo.msgstr = ['""']
+    return 1
 
   def convertmixedelement(self,labeldtd,accesskeydtd):
     labelpo = self.convertelement(labeldtd)
     accesskeypo = self.convertelement(accesskeydtd)
+    if labelpo is None:
+      return accesskeypo
+    if accesskeypo is None:
+      return labelpo
     thepo = po.poelement()
     thepo.sourcecomments += labelpo.sourcecomments
     thepo.sourcecomments += accesskeypo.sourcecomments
@@ -176,7 +181,8 @@ class dtd2po:
 
     # do a standard translation
     self.convertcomments(thedtd,thepo)
-    self.convertstrings(thedtd,thepo)
+    if not self.convertstrings(thedtd,thepo):
+      return None
 
     return thepo
 
