@@ -428,7 +428,6 @@ class pootlefile(po.pofile):
     # TODO: remove the suggestion in a less brutal manner
     pendingitems = [pendingitem for pendingitem, suggestpo in enumerate(self.pendingfile.poelements) if suggestpo.getsources() == sources]
     pendingitem = pendingitems[suggitem]
-    print "finding %d.%d in %r: %d" % (item, suggitem, pendingitems, pendingitem)
     del self.pendingfile.poelements[pendingitem]
     self.savependingfile()
     self.reclassifyelement(item)
@@ -554,7 +553,7 @@ class TranslationProject:
     checkerclasses = [checks.projectcheckers.get(self.projectcheckerstyle, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses, errorhandler=self.filtererrorhandler)
     if create:
-      self.create()
+      self.converttemplates()
     self.podir = potree.getpodir(languagecode, projectcode)
     if self.potree.hasgnufiles(self.podir, self.languagecode):
       self.filestyle = "gnu"
@@ -606,7 +605,7 @@ class TranslationProject:
       outfile.close()
       self.scanpofiles()
 
-  def create(self):
+  def converttemplates(self):
     """creates PO files from the templates"""
     projectdir = os.path.join(self.potree.podirectory, self.projectcode)
     templatesdir = os.path.join(projectdir, "templates")
@@ -634,11 +633,7 @@ class TranslationProject:
         pofilename = self.languagecode + os.extsep + "po"
       else:
         pofilename = potfilename[:-len(os.extsep+"pot")] + os.extsep + "po"
-      # this should allow migrating to new templates
-      if os.path.exists(os.path.join(self.podir, dirname, pofilename)):
-        self.mergepofile(dirname, pofilename, outputfile.getvalue())
-      else:
-        self.addnewpofile(dirname, pofilename, outputfile.getvalue())
+      self.uploadpofile(dirname, pofilename, outputfile.getvalue())
 
   def filtererrorhandler(self, functionname, str1, str2, e):
     print "error in filter %s: %r, %r, %s" % (functionname, str1, str2, e)

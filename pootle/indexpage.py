@@ -438,6 +438,12 @@ class ProjectAdminPage(pagelayout.PootlePage):
         if not newlanguage:
           raise ValueError("You must select a new language")
         self.potree.addtranslationproject(newlanguage, self.projectcode)
+      if "doupdatelanguage" in argdict:
+        languagecode = argdict.get("updatelanguage", None)
+        if not languagecode:
+          raise ValueError("No languagecode given in doupdatelanguage")
+        translationproject = self.potree.getproject(languagecode, self.projectcode)
+        translationproject.converttemplates()
       languagestitle = pagelayout.Title(self.localize("Existing languages"))
       languagelinks = self.getlanguagelinks()
       existing = pagelayout.ContentsItem([languagestitle, languagelinks])
@@ -456,7 +462,8 @@ class ProjectAdminPage(pagelayout.PootlePage):
   def getlanguageitem(self, languagecode):
     languagename = self.potree.getlanguagename(languagecode)
     adminlink = widgets.Link("../../%s/%s/" % (languagecode, self.projectcode), languagename)
-    return pagelayout.ItemDescription(adminlink)
+    updatelink = widgets.Link("?doupdatelanguage=1&updatelanguage=%s" % languagecode, self.localize("Update from templates"))
+    return pagelayout.ItemDescription([adminlink, updatelink])
 
   def getnewlangform(self):
     """returns a box that lets the user add new languages"""
