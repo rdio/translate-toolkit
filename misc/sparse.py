@@ -1,6 +1,11 @@
 #!/usr/bin/env python
-# 
-# Copyright 2002, 2003 Zuza Software Foundation
+
+"""simple parser / string tokenizer
+rather than returning a list of token types etc, we simple return a list of tokens...
+each tokenizing function takes a string as input and returns a list of tokens
+"""
+
+# Copyright 2002, 2003 St James Software
 # 
 # This file is part of translate.
 #
@@ -18,127 +23,160 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""simple parser / string tokenizer"""
-
-# the approach is: rather than returning a list of token types etc,
-# we simple return a list of tokens...
-
 def stringeval(input):
   """takes away repeated quotes (escapes) and returns the string represented by the input"""
   stringchar = input[0]
   if input[-1] != stringchar or stringchar not in ("'",'"'):
     # scratch your head
-    raise ValueError, "error parsing escaped string"
+    raise ValueError, "error parsing escaped string: %r" % input
   return input[1:-1].replace(stringchar+stringchar,stringchar)
 
-class stringstring(str):
-  """this is used to intelligently keep track of strings that are actually quoted strings, internally"""
-  def __init__(self, s):
-    self.s = s
-
-def destringstring(str1):
-  return getattr(str1, 's', str1)
-
-def stringtokenize(input):
-  """makes strings in input into tokens..."""
-  tokens = []
-  laststart = 0
-  instring = 0
-  stringchar = ''
-  gotclose = 0
-  for pos in range(len(input)):
-    char = input[pos]
-    if instring:
-      if char == stringchar:
-        gotclose = not gotclose
-      elif gotclose:
-        tokens.append(input[laststart:pos])
-        instring, laststart, stringchar = 0, pos, ''
-    if not instring:
-      if char in ("'",'"'):
-        if pos > laststart: tokens.append(input[laststart:pos])
-        instring, laststart, stringchar, gotclose = 1, pos, char, 0
-  if laststart < len(input): tokens.append(input[laststart:])
-  return [stringstring(token) for token in tokens]
-
-defaulttokenlist = ['<=', '>=', '==', '!=', '+=', '-=', '*=', '/=', '<>']
-defaulttokenlist.extend('(),[]:=+-')
-
-def separatetokens(input, tokenlist = defaulttokenlist):
-  """this separates out tokens in tokenlist from whitespace etc"""
-  # don't retokenize strings
-  if type(input) == stringstring and input[0] in ("'",'"'): return [input]
-  # loop through and put tokens into a list
-  tokens = []
-  pos = 0
-  laststart = 0
-  while pos < len(input):
-    foundtoken = 0
-    for token in tokenlist:
-      if input[pos:pos+len(token)] == token:
-        if laststart < pos: tokens.append(input[laststart:pos])
-        tokens.append(token)
-        pos += len(token)
-        foundtoken, laststart = 1, pos
-        break
-    if not foundtoken: pos += 1
-  if laststart < len(input): tokens.append(input[laststart:])
-  return tokens
-
-def separategiventokensfn(tokenlist):
-  def separategiventokens(input):
-    """this separates out the given tokens from whitespace etc"""
-    return separatetokens(input, tokenlist)
-  return separategiventokens
-
-def removewhitespace(input, whitespacechars=" \t\r\n", includewhitespacetokens=0):
-  """this removes whitespace but lets it separate things out into separate tokens"""
-  # don't retokenize strings
-  if type(input) == stringstring and input[0] in ("'",'"'): return [input]
-  # loop through and put tokens into a list
-  tokens = []
-  pos = 0
-  inwhitespace = 0
-  laststart = 0
-  for pos in range(len(input)):
-    char = input[pos]
-    if inwhitespace:
-      if char not in whitespacechars:
-        if laststart < pos and includewhitespacetokens: tokens.append(input[laststart:pos])
-        inwhitespace, laststart = 0, pos
+def stringquote(input):
+  """escapes quotes as neccessary and returns a string representing the input"""
+  if "'" in input:
+    if '"' in input:
+      return '"' + input.replace('"', '""') + '"'
     else:
-      if char in whitespacechars:
-        if laststart < pos: tokens.append(input[laststart:pos])
-        inwhitespace, laststart = 1, pos
-  if laststart < len(input) and (not inwhitespace or includewhitespacetokens):
-    tokens.append(input[laststart:])
-  return tokens
+      return '"' + input + '"'
+  else:
+    return "'" + input + "'"
 
-def applytokenizer(inputlist, tokenizer, destringstringthem=1):
-  """apply a tokenizer to a set of input, flattening the result"""
-  tokenizedlists = [tokenizer(inputstr) for inputstr in inputlist]
-  joined = []
-  map(joined.extend, tokenizedlists)
-  if destringstringthem:
-    return [destringstring(token) for token in joined]
-  return joined
+class ParserError(ValueError):
+  """Intelligent parser error"""
+  def __init__(self, parser, message, tokennum):
+    """takes a message and the number of the token that caused the error"""
+    tokenpos = parser.findtokenpos(tokennum)
+    line, charpos = parser.getlinepos(tokenpos)
+    ValueError.__init__(self, "%s at line %d, char %d (token %r)" % \
+        (message, line, charpos, parser.tokens[tokennum]))
+    self.parser = parser
+    self.tokennum = tokennum
 
-def applytokenizers(inputlist, tokenizers, destringstringthem=1):
-  """apply a set of tokenizers to a set of input, flattening each time"""
-  for tokenizer in tokenizers:
-    inputlist = applytokenizer(inputlist, tokenizer, 0)
-  if destringstringthem:
-    return [destringstring(token) for token in inputlist]
-  return inputlist
+class SimpleParser:
+  """this is a simple parser"""
+  def __init__(self, defaulttokenlist=None, whitespacechars=" \t\r\n", includewhitespacetokens=0):
+    if defaulttokenlist is None:
+      self.defaulttokenlist = ['<=', '>=', '==', '!=', '+=', '-=', '*=', '/=', '<>']
+      self.defaulttokenlist.extend('(),[]:=+-')
+    else:
+      self.defaulttokenlist = defaulttokenlist
+    self.whitespacechars = whitespacechars
+    self.includewhitespacetokens = includewhitespacetokens
+    self.standardtokenizers = [self.stringtokenize, self.removewhitespace, self.separatetokens]
+    self.quotechars = ('"', "'")
+    self.stringescaping = 1
 
-def tokenize(input):
-  """tokenize the input string with the standard tokenizers"""
-  return applytokenizers([input], [stringtokenize, removewhitespace, separatetokens])
-  
-def findtokenpos(input, tokens, tokennum):
-  """finds the position of the given token in the input"""
-  currenttokenpos = 0
-  for currenttokennum in range(tokennum+1):
-    currenttokenpos = input.find(tokens[currenttokennum], currenttokenpos)
-  return currenttokenpos
+  def stringtokenize(self, input):
+    """makes strings in input into tokens..."""
+    tokens = []
+    laststart = 0
+    instring = 0
+    stringchar, escapechar = '', '\\'
+    gotclose, gotescape = 0, 0
+    for pos in range(len(input)):
+      char = input[pos]
+      if instring:
+        if self.stringescaping and (gotescape or char == escapechar) and not gotclose:
+          gotescape = not gotescape
+        elif char == stringchar:
+          gotclose = not gotclose
+        elif gotclose:
+          tokens.append(input[laststart:pos])
+          instring, laststart, stringchar = 0, pos, ''
+      if not instring:
+        if char in self.quotechars:
+          if pos > laststart: tokens.append(input[laststart:pos])
+          instring, laststart, stringchar, gotclose = 1, pos, char, 0
+    if laststart < len(input): tokens.append(input[laststart:])
+    return tokens
+
+  def keeptogether(self, input):
+    """checks whether a token should be kept together"""
+    return self.isstringtoken(input)
+
+  def isstringtoken(self, input):
+    """checks whether a token is a string token"""
+    return input[:1] in ("'",'"')
+
+  def separatetokens(self, input, tokenlist = None):
+    """this separates out tokens in tokenlist from whitespace etc"""
+    if self.keeptogether(input): return [input]
+    if tokenlist is None:
+      tokenlist = self.defaulttokenlist
+    # loop through and put tokens into a list
+    tokens = []
+    pos = 0
+    laststart = 0
+    while pos < len(input):
+      foundtoken = 0
+      for token in tokenlist:
+        if input[pos:pos+len(token)] == token:
+          if laststart < pos: tokens.append(input[laststart:pos])
+          tokens.append(token)
+          pos += len(token)
+          foundtoken, laststart = 1, pos
+          break
+      if not foundtoken: pos += 1
+    if laststart < len(input): tokens.append(input[laststart:])
+    return tokens
+
+  def removewhitespace(self, input):
+    """this removes whitespace but lets it separate things out into separate tokens"""
+    if self.keeptogether(input): return [input]
+    # loop through and put tokens into a list
+    tokens = []
+    pos = 0
+    inwhitespace = 0
+    laststart = 0
+    for pos in range(len(input)):
+      char = input[pos]
+      if inwhitespace:
+        if char not in self.whitespacechars:
+          if laststart < pos and self.includewhitespacetokens: tokens.append(input[laststart:pos])
+          inwhitespace, laststart = 0, pos
+      else:
+        if char in self.whitespacechars:
+          if laststart < pos: tokens.append(input[laststart:pos])
+          inwhitespace, laststart = 1, pos
+    if laststart < len(input) and (not inwhitespace or self.includewhitespacetokens):
+      tokens.append(input[laststart:])
+    return tokens
+
+  def applytokenizer(self, inputlist, tokenizer):
+    """apply a tokenizer to a set of input, flattening the result"""
+    tokenizedlists = [tokenizer(input) for input in inputlist]
+    joined = []
+    map(joined.extend, tokenizedlists)
+    return joined
+
+  def applytokenizers(self, inputlist, tokenizers):
+    """apply a set of tokenizers to a set of input, flattening each time"""
+    for tokenizer in tokenizers:
+      inputlist = self.applytokenizer(inputlist, tokenizer)
+    return inputlist
+
+  def tokenize(self, source):
+    """tokenize the input string with the standard tokenizers"""
+    self.source = source
+    self.tokens = self.applytokenizers([self.source], self.standardtokenizers)
+    return self.tokens
+
+  def findtokenpos(self, tokennum):
+    """finds the position of the given token in the input"""
+    currenttokenpos = 0
+    for currenttokennum in range(tokennum+1):
+      currenttokenpos = self.source.find(self.tokens[currenttokennum], currenttokenpos)
+    return currenttokenpos
+
+  def getlinepos(self, tokenpos):
+    """finds the line and character position of the given character"""
+    sourcecut = self.source[:tokenpos]
+    line = sourcecut.count("\n")+1
+    charpos = tokenpos - sourcecut.rfind("\n")
+    return line, charpos
+
+  def raiseerror(self, message, tokennum):
+    """raises a ParserError"""
+    raise ParserError(self, message, tokennum)
+
 
