@@ -52,7 +52,8 @@ class PootleServer(OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage, cachetables=None):
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
-    for languagecode, language in self.instance.languages.iteritems():
+    self.potree = projects.POTree(self.instance)
+    for languagecode, language in self.potree.languages.iteritems():
       if not hasattr(language, "fullname"):
         language.fullname = languagecode
       for projectcode, project in language.projects.iteritems():
@@ -105,8 +106,8 @@ class PootleServer(OptionalLoginAppServer):
         return redirectpage
       else:
         return RegisterPage(session)
-    elif hasattr(session.instance.languages, top):
-      language = getattr(session.instance.languages, top)
+    elif hasattr(self.potree.languages, top):
+      language = getattr(self.potree.languages, top)
       pathwords = pathwords[1:]
       if pathwords:
         top = pathwords[0]
@@ -163,6 +164,12 @@ if __name__ == '__main__':
   # run the web server
   from jToolkit.web import simplewebserver
   parser = simplewebserver.WebOptionParser()
+  pootledir = os.path.abspath(os.path.dirname(__file__))
+  prefsfile = os.path.join(pootledir, "pootle.prefs")
+  parser.set_default('prefsfile', prefsfile)
+  parser.set_default('instance', 'Pootle')
+  htmldir = os.path.join(os.path.dirname(pootledir), "html")
+  parser.set_default('htmldir', htmldir)
   options, args = parser.parse_args()
   server = parser.getserver(options)
   simplewebserver.run(server, options)

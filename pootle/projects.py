@@ -278,6 +278,13 @@ class TranslationProject:
     lines = csvfile.tolines()
     return "".join(lines)
 
+class POTree:
+  """Manages the tree of projects and languages"""
+  def __init__(self, instance):
+    self.languages = instance.languages
+
+
+
 projects = {}
 
 def getproject(project):
