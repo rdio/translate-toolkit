@@ -18,7 +18,7 @@ class TranslationSession:
 
   def getnextitem(self, dirfilter=None, matchnames=[]):
     """gives the user the next item to be translated"""
-    self.pofilename, item = self.project.findnextitem(self.pofilename, self.lastitem, matchnames, dirfilter)
+    self.pofilename, item = self.project.searchpoitems(self.pofilename, self.lastitem, matchnames, dirfilter).next()
     orig, trans = self.getitem(self.pofilename, item)
     return self.pofilename, item, orig, trans
 
@@ -88,60 +88,50 @@ class TranslationProject:
       podirs = [podir for podir in podirs if podir.count(os.path.sep) == depth]
     return pofilenames + podirs
 
-  def getnextpofilename(self, pofilename):
-    """gets the pofilename that comes after the given one (or the first if pofilename is None)"""
-    if pofilename is None:
-      return self.pofilenames[0]
+  def iterpofilenames(self, lastpofilename=None, includelast=False):
+    """iterates through the pofilenames starting after the given pofilename"""
+    if lastpofilename is None:
+      index = 0
     else:
-      index = self.pofilenames.index(pofilename)
-      return self.pofilenames[index+1]
+      index = self.pofilenames.index(lastpofilename)
+      if not includelast:
+        index += 1
+    while index < len(self.pofilenames):
+      yield self.pofilenames[index]
+      index += 1
 
-  def findnextpofilename(self, pofilename, matchnames, dirfilter):
+  def searchpofilenames(self, lastpofilename, matchnames, dirfilter, includelast=False):
     """find the next pofilename that has items matching one of the given classification names"""
-    matches = False
-    while not matches:
-      pofilename = self.getnextpofilename(pofilename)
+    for pofilename in self.iterpofilenames(lastpofilename, includelast):
       if dirfilter is not None and not pofilename.startswith(dirfilter):
         continue
       if not matchnames:
-        return pofilename
+        yield pofilename
       postats = self.getpostats(pofilename)
       for name in matchnames:
         if postats[name]:
-          return pofilename
-    raise IndexError("no more pofilenames could be found")
+          yield pofilename
 
-  def findnextitem(self, pofilename, item, matchnames, dirfilter):
-    """finds the next item matching one of the given classification names"""
-    matches = False
-    while not matches:
-      pofilename, item = self.getnextitem(pofilename, item, matchnames, dirfilter)
-      pofile = self.getpofile(pofilename)
-      matches = False
-      if not matchnames:
-        matches = True
-        continue
-      for name in matchnames:
-        if item in pofile.classify[name]:
-          matches = True
-          continue
-    return pofilename, item
-
-  def getnextitem(self, pofilename, lastitem, matchnames, dirfilter):
-    """skips to the next item. uses matchnames to filter next pofile if required"""
+  def iterpoitems(self, pofile, lastitem=None, matchnames=None):
+    """iterates through the items in the given pofile starting after the given lastitem"""
     if lastitem is None:
       item = 0
     else:
       item = lastitem + 1
-    if pofilename is None:
-      pofile = None
-    else:
+    while item < len(pofile.transelements):
+      if not matchnames:
+        yield item
+      for name in matchnames:
+        if item in pofile.classify[name]:
+          yield item
+      item += 1
+
+  def searchpoitems(self, pofilename, item, matchnames, dirfilter):
+    """finds the next item matching one of the given classification names"""
+    for pofilename in self.searchpofilenames(pofilename, matchnames, dirfilter, includelast=True):
       pofile = self.getpofile(pofilename)
-    while pofile is None or item >= len(pofile.transelements):
-      pofilename = self.findnextpofilename(pofilename, matchnames, dirfilter)
-      pofile = self.getpofile(pofilename)
-      item = 0
-    return pofilename, item
+      for item in self.iterpoitems(pofile, item, matchnames):
+        yield pofilename, item
 
   def gettranslationsession(self, session):
     """gets the user's translationsession"""
