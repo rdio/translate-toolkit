@@ -32,9 +32,14 @@ from translate.misc import quote
 import time
 from translate import __version__
 
+def includewhichescapes(escape):
+  if escape == "\\n":
+    return True
+  return False
+
 def extractpoline(line):
   backslash = '\\'
-  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=0)[0]
+  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=includewhichescapes)[0]
   return extracted # .replace('\\"', '"')
 
 def dounquotepo(thepo):
