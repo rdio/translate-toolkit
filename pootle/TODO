@@ -17,6 +17,8 @@ other:
   store a history file
   maybe have a separate file to track who translated each string
   display results of checks for each string on submission
+  handle language subtypes (regions)
+  handle project versions
 
 requirements for translatathon:
   * only show review if there are suggestion
