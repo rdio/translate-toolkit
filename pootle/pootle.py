@@ -240,6 +240,8 @@ class PootleServer(users.OptionalLoginAppServer):
 	  page.content_type = "text/plain; charset=UTF-8"
 	  return page
 	elif bottom.endswith(".mo"):
+          if not "pocompile" in translationsession.getrights():
+            return None
 	  mofilename = os.path.join(*pathwords)
 	  contents = project.getmo(mofilename)
 	  page = widgets.PlainContents(contents)

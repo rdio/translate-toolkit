@@ -43,7 +43,7 @@ class TranslationSession:
   def getrights(self):
     """gets the current users rights"""
     if self.session.isopen:
-      return ["view", "review", "translate", "archive"]
+      return ["view", "review", "translate", "archive", "pocompile"]
     else:
       return ["view"]
 

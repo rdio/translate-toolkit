@@ -683,7 +683,7 @@ class ProjectIndex(pagelayout.PootlePage):
     downloadlink = widgets.Link(basename, self.localize('PO file'))
     csvname = basename.replace(".po", ".csv")
     csvlink = widgets.Link(csvname, self.localize('CSV file'))
-    if self.project.hascreatemofiles(self.project.projectcode):
+    if self.project.hascreatemofiles(self.project.projectcode) and "pocompile" in self.rights:
       moname = basename.replace(".po", ".mo")
       molink = widgets.Link(moname, self.localize('MO file'))
       bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink, molink])
