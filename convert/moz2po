@@ -41,6 +41,7 @@ def convertdtd(inputfile, outputfile):
 def convertprop(inputfile, outputfile):
   convertor = prop2po.prop2po()
   outputpo = convertor.convertfile(inputfile, outputfile)
+  return 1
 
 inputformats = {"dtd": convertdtd, "properties": convertprop}
 outputformat = "po"
