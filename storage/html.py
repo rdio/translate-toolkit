@@ -25,13 +25,14 @@ from HTMLParser import HTMLParser
 
 
 class POHTMLParser(HTMLParser):
-  markingtags = ["p", "title", "h1", "h2", "h3", "td", "div"]
+  markingtags = ["p", "title", "h1", "h2", "h3", "td", "div", "li"]
   markingattrs = ["lang"]
   includeattrs = ["alt"]
-  def __init__(self):
+  def __init__(self, includeuntaggeddata):
     self.blocks = []
     self.currentblock = ""
     self.currenttag = None
+    self.includeuntaggeddata = includeuntaggeddata
     HTMLParser.__init__(self)
 
   def startblock(self, tag):
@@ -75,5 +76,8 @@ class POHTMLParser(HTMLParser):
 
   def handle_data(self, data):
     if self.currenttag is not None:
+      self.currentblock += data
+    elif self.includeuntaggeddata:
+      self.startblock(None)
       self.currentblock += data
 
