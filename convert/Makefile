@@ -24,9 +24,26 @@ csvtests=test-po2csv test-csv2po
 maintests=$(mozillatests) $(openofficetests) $(csvtests)
 alltests=$(maintests)
 
-.PHONY: all clean test $(alltests)
+.PHONY: all help clean test $(alltests)
 
 all:
+
+help:
+	@echo Makefile for translate.convert tests
+	@echo
+	@echo you can run any of the following testgroups
+	@echo \  test-mozilla test-openoffice test-csv
+	@echo or any of the following tests
+	@echo \  $(alltests)
+	@echo by running make testname
+	@echo
+	@echo make test will run all tests, make clean will clean up
+	@echo clean-mozilla, clean-openoffice, clean-csv also available
+	@echo
+	@echo set progress indicator with
+	@echo \  progress=verbose make ...
+	@echo
+	@echo currently need to edit dir/filenames in Makefile
 
 test: test-mozilla test-openoffice test-csv
 
