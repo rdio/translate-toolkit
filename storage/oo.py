@@ -129,6 +129,43 @@ class oofile:
       lines.append(oeline)
     return lines
 
+class oomultifile:
+  """this takes a huge GSI file and represents it as multiple smaller files..."""
+  def __init__(self, inputfile):
+    """initialises oomultifile from a seekable inputfile"""
+    self.inputfile = inputfile
+    self.modulelines = {}
+    linenum = 0
+    for line in self.inputfile:
+      module = self.getmodule(line)
+      if not module in self.modulelines:
+        self.modulelines[module] = []
+      self.modulelines[module].append(linenum)
+      linenum += 1
+
+  def getmodule(self, line):
+    """looks up the module name for the line"""
+    return line[:line.find("\t")]
+
+  def getlines(self, module):
+    """returns the list of lines matching the module"""
+    lines = []
+    requiredlines = dict.fromkeys(self.modulelines[module])
+    linenum = 0
+    self.inputfile.seek(0)
+    for line in self.inputfile:
+      if linenum in requiredlines:
+        lines.append(line)
+      linenum += 1
+    return lines
+
+  def getoofile(self, module):
+    """returns an oofile built up from the given module's lines"""
+    lines = self.getlines(module)
+    oofilefromlines = oofile()
+    oofilefromlines.fromlines(lines)
+    return oofilefromlines
+
 if __name__ == '__main__':
   of = oofile()
   of.fromlines(sys.stdin.readlines())
