@@ -146,7 +146,10 @@ class oomultifile:
 
   def getsubfile(self, line):
     """looks up the subfile name for the line"""
-    return line[:line.find("\t")]+".oo"
+    lineparts = line.split("\t", 2)
+    module, filename = lineparts[0], lineparts[1]
+    filename = filename.replace("\\", "/")
+    return module+"/"+filename+".oo"
 
   def listsubfiles(self):
     """returns a list of subfiles in the file"""
