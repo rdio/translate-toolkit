@@ -16,7 +16,12 @@ def untranslatedwords(pair):
   return original.words
 
 def wordcount(postr):
-  return len(po.getunquotedstr(postr).split())
+  if isinstance(postr, dict):
+    unquotedstr = "\n".join([po.getunquotedstr(msgstr).strip() for msgstr in postr.itervalues()])
+    print >> sys.stderr, "wordcount.plural", repr(unquotedstr)
+  else:
+    unquotedstr = po.getunquotedstr(postr)
+  return len(unquotedstr.split())
 
 def summarize(elements):
   # ignore totally blank or header elements
