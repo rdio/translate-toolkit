@@ -336,10 +336,12 @@ class poelement:
 
 class pofile:
   """this represents a .po file containing various poelements"""
-  def __init__(self, inputfile=None):
-    """construct a pofile, optionally reading in from inputfile"""
+  def __init__(self, inputfile=None, encoding=None):
+    """construct a pofile, optionally reading in from inputfile.
+    encoding can be specified but otherwise will be read from the PO header"""
     self.poelements = []
     self.filename = ''
+    self.encoding = encoding
     if inputfile is not None:
       self.parse(inputfile)
 
@@ -411,17 +413,46 @@ class pofile:
     lineitem = ""
     for line in header.msgstr:
       line = getunquotedstr([line]).strip()
-      if not ":" in line:
-        continue
       if line.endswith("\\n"):
         lineitem += line[:-2]
       else:
         lineitem += line
         continue
+      if not ":" in lineitem:
+        continue
       key, value = lineitem.split(":", 1)
       headervalues[key.strip()] = value.strip()
       lineitem = ""
     return headervalues
+
+  def changeencoding(self, newencoding):
+    """changes the encoding on the file"""
+    self.encoding = newencoding
+    if not self.poelements:
+      return
+    header = self.poelements[0]
+    if not (header.isheader() or header.isblank()):
+      return
+    charsetline = None
+    headerstr = unquotefrompo(header.msgstr, True)
+    for line in headerstr.split("\\n"):
+      if not ":" in line: continue
+      key, value = line.strip().split(":", 1)
+      if key.strip() != "Content-Type": continue
+      charsetline = line
+    if charsetline is None:
+      headerstr += "Content-Type: text/plain; charset=%s" % self.encoding
+    else:
+      charset = sre.search("charset=([^ ]*)", charsetline)
+      if charset is None:
+        if not charsetline.strip().endswith(";"):
+          newcharsetline += ";"
+        newcharsetline += " charset=%s" % self.encoding
+      else:
+        charset = charset.group(1)
+        newcharsetline = charsetline.replace("charset=%s" % charset, "charset=%s" % self.encoding, 1)
+      headerstr = headerstr.replace(charsetline, newcharsetline, 1)
+    header.msgstr = quoteforpo(headerstr)
 
   def isempty(self):
     """returns whether the po file doesn't contain any definitions..."""
@@ -452,6 +483,15 @@ class pofile:
           start += linesprocessed
           if linesprocessed > 1:
             self.poelements.append(newpe)
+            if self.encoding is None and newpe.isheader():
+              headervalues = self.parseheader()
+              contenttype = headervalues.get("Content-Type", None)
+              if contenttype is not None:
+                charsetmatch = sre.search("charset=([^ ]*)", contenttype)
+                self.encoding = charsetmatch and charsetmatch.group(1)
+                # now that we know the encoding, decode the whole file
+                if self.encoding is not None:
+                  lines = self.decode(lines)
           else:
             finished = 1
       end = end+1
@@ -521,14 +561,23 @@ class pofile:
       lines.extend(pelines)
       # add a line break
       lines.append('\n')
-    return self.utf8encode(lines)
+    return self.encode(lines)
 
-  def utf8encode(self, lines):
-    """encode any unicode strings in lines as utf8"""
+  def encode(self, lines):
+    """encode any unicode strings in lines in self.encoding"""
     newlines = []
     for line in lines:
       if isinstance(line, unicode):
-        line = line.encode("utf8")
+        line = line.encode(self.encoding)
+      newlines.append(line)
+    return newlines
+
+  def decode(self, lines):
+    """decode any non-unicode strings in lines with self.encoding"""
+    newlines = []
+    for line in lines:
+      if isinstance(line, str):
+        line = line.decode(self.encoding)
       newlines.append(line)
     return newlines
 
