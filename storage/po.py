@@ -490,7 +490,7 @@ class pofile:
                 charsetmatch = sre.search("charset=([^ ]*)", contenttype)
                 self.encoding = charsetmatch and charsetmatch.group(1)
                 # now that we know the encoding, decode the whole file
-                if self.encoding is not None:
+                if self.encoding is not None and self.encoding.lower() != 'charset':
                   lines = self.decode(lines)
           else:
             finished = 1
@@ -567,7 +567,7 @@ class pofile:
     """encode any unicode strings in lines in self.encoding"""
     newlines = []
     encoding = self.encoding
-    if encoding is None:
+    if encoding is None or encoding.lower() == "charset":
       encoding = 'UTF-8'
     for line in lines:
       if isinstance(line, unicode):
@@ -579,7 +579,7 @@ class pofile:
     """decode any non-unicode strings in lines with self.encoding"""
     newlines = []
     for line in lines:
-      if isinstance(line, str) and self.encoding is not None:
+      if isinstance(line, str) and self.encoding is not None and self.encoding.lower() != "charset":
         line = line.decode(self.encoding)
       newlines.append(line)
     return newlines
