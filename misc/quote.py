@@ -165,8 +165,77 @@ def mozillapropertiesencode(source):
 
 def mozillapropertiesdecode(source):
   """decodes source from the escaped-unicode encoding used by mozilla .properties files"""
-  # TODO: work out if anything other than \\n needs this special treatment
-  return "\\n".join([line.decode("unicode-escape") for line in source.split("\\n")])
+  # since the .decode("unicode-escape") routine decodes everything, and we don't want to
+  # we reimplemented the algorithm from Python Objects/unicode.c in Python here
+  # and modified it to retain escaped control characters
+  output = u""
+  s = 0
+  starts = 0
+  escapes = {
+    # escapes that are self-escaping
+    "\\": "\\", "'": "'", '"': '"',
+    # control characters that we keep
+    "b": "\b", "f": "\f", "t": "\t", "n": "\n", "v": "\v", "a": "\a"
+    }
+  def unichr2(i):
+    """Returns a Unicode string of one character with ordinal 32 <= i, otherwise an escaped control character"""
+    if 32 <= i:
+      return unichr(i)
+    elif unichr(i) in "\b\f\t\n\v\a":
+      return unichr(i)
+    else:
+      return "\\u%04x" % i
+  while s < len(source):
+    c = source[s]
+    if c != '\\':
+      output += c
+      s += 1
+      continue
+    startinpos = s
+    s += 1
+    c = source[s]
+    s += 1
+    if c == '\n': pass
+    # escapes lookups
+    elif c in escapes: output += escapes[c]
+    # \000 (octal) escapes
+    elif c in "01234567":
+      x = ord(c) - ord('0')
+      c = source[s]
+      if c in "01234567":
+        x = (x << 3) + ord(c) - ord('0')
+        s += 1
+        c = source[s]
+        if c in "01234567":
+          x = (x << 3) + ord(c) - ord('0')
+          s += 1
+      output += unichr2(x)
+    # \xXX (hex) escapes
+    # \uXXXX escapes
+    # \UXXXXXXXX escapes
+    elif c in "xuU":
+      digits = {'x': 2, 'u': 4, 'U':8}[c]
+      if s + digits > len(source):
+        raise ValueError("End of string in Unicode escape sequence")
+      x = 0
+      for digit in range(digits):
+        x <<= 4
+        c = source[s+digit].lower()
+        if c.isdigit():
+          x += ord(c) - ord('0')
+        elif c in "abcdef":
+          x += ord(c) - ord('a') + 10
+        else:
+          raise ValueError("Invalid digit in Unicode escape sequence")
+      s += digits
+      output += unichr2(x)
+    elif c == "N":
+      raise NotImplementedError("Can't handle \N{name} yet")
+    elif s >= len(source):
+      raise ValueError("\\ at end of string")
+    else:
+      output += "\\" + c
+  return output
 
 def quotestr(source, escapeescapes=0):
   "Returns a doublequote-delimited quoted string, escaping double quotes with backslash"
