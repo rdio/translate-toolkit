@@ -31,23 +31,23 @@ class pocheckfilter:
     else:
       self.checker = checker
 
-  def filterelement(self, thepo, includereview=1):
+  def filterelement(self, thepo, includereview=1, excludefilters={}, limitfilters=None):
     """runs filters on an element"""
     if thepo.isheader(): return []
     unquotedid = po.getunquotedstr(thepo.msgid)
     unquotedstr = po.getunquotedstr(thepo.msgstr)
     if thepo.isfuzzy():
       return []
-    failures = self.checker.run_filters(unquotedid, unquotedstr)
+    failures = self.checker.run_filters(unquotedid, unquotedstr, excludefilters, limitfilters)
     if includereview and not failures and thepo.hastypecomment("review"):
       failures.append("marked for review")
     return failures
 
-  def filterfile(self, thepofile, includereview=1):
+  def filterfile(self, thepofile, includereview=1, excludefilters={}, limitfilters=None):
     """runs filters on a file"""
     thenewpofile = po.pofile()
     for thepo in thepofile.poelements:
-      failures = self.filterelement(thepo, includereview)
+      failures = self.filterelement(thepo, includereview, excludefilters, limitfilters)
       if failures:
         thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in failures])
         if ("".join(thepo.typecomments)).find("fuzzy") == -1:
@@ -55,11 +55,12 @@ class pocheckfilter:
         thenewpofile.poelements.append(thepo)
     return thenewpofile
 
-def runpofilter(inputfile, outputfile, includereview=1, filterobject=None):
+# TODO: refactor to set the filter list once, and use every time, rather than recreating for each file
+def runpofilter(inputfile, outputfile, includereview=1, filterobject=None, excludefilters={}, limitfilters=None):
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
   fromfile = po.pofile(inputfile)
   checkfilter = pocheckfilter(filterobject)
-  tofile = checkfilter.filterfile(fromfile, includereview)
+  tofile = checkfilter.filterfile(fromfile, includereview, excludefilters, limitfilters)
   if tofile.isempty():
     return 0
   tolines = tofile.tolines()
@@ -70,15 +71,26 @@ if __name__ == '__main__':
   from translate.filters import filtercmd
   inputformats = {"po":runpofilter, "pot":runpofilter}
   parser = filtercmd.FilterOptionParser(filtercmd.optionalrecursion, inputformats)
-  parser.add_option("", "--review", dest="includereview", default=False, action="store_true",
+  parser.add_option("", "--review", dest="includereview",
+    action="store_true", default=False,
     help="include elements marked for review...")
-  parser.add_option("", "--ignorereview", dest="includereview", default=False, action="store_false",
+  parser.add_option("", "--ignorereview", dest="includereview",
+    action="store_false", default=False,
     help="don't include elements marked for review...")
-  parser.add_option("", "--openoffice", dest="filterobject", default=None, action="store_const",
-    const=checks.OpenOfficeChecker())
-  parser.add_option("", "--mozilla", dest="filterobject", default=None, action="store_const",
-    const=checks.MozillaChecker())
-  requiredoptions = {'includereview':True, 'filterobject':True}
+  parser.add_option("", "--openoffice", dest="filterobject",
+    action="store_const", default=None, const=checks.OpenOfficeChecker(),
+    help="use the standard checks for OpenOffice translations")
+  parser.add_option("", "--mozilla", dest="filterobject",
+    action="store_const", default=None, const=checks.MozillaChecker(),
+    help="use the standard checks for Mozilla translations")
+  parser.add_option("-x", "--exclude", dest="excludefilters",
+    action="append", default=[], type="string", metavar="FILTER",
+    help="don't use FILTER when filtering")
+  parser.add_option("-t", "--test", dest="limitfilters",
+    action="append", default=None, type="string", metavar="FILTER",
+    help="only use test FILTERs specified with this option when filtering")
+  requiredoptions = dict([(key, True) for key in 
+    ('includereview', 'filterobject', 'excludefilters', 'limitfilters')])
   options, args = parser.parse_args()
   # TODO: move this code into filtercmd...
   if options.input is None:
