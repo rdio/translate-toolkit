@@ -43,6 +43,12 @@ div.mainitem
 	background-color: #cfd1d3;
 	padding: 5px;
 }
+div.goalitem 
+{
+	margin-bottom:6px;
+	background-color: #ADBFD3;
+	padding: 5px;
+}
 div.contentsitem
 {
 	font-family: verdana, arial, sans-serif;
