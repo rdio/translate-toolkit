@@ -15,8 +15,8 @@ def summarizestats(statslist, totalstats=None):
 
 class PootleIndex(pagelayout.PootlePage):
   """the main page"""
-  def __init__(self, session):
-    self.instance = session.instance
+  def __init__(self, potree, session):
+    self.potree = potree
     introtext = pagelayout.IntroText("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>!")
     nametext = pagelayout.IntroText('The name stands for <b>PO</b>-based <b>O</b>nline <b>T</b>ranslation / <b>L</b>ocalization <b>E</b>ngine, but you may need to read <a href="http://www.thechestnut.com/flumps.htm">this</a>.')
     languagelinks = self.getlanguagelinks()
@@ -25,7 +25,7 @@ class PootleIndex(pagelayout.PootlePage):
 
   def getlanguagelinks(self):
     """gets the links to the languages"""
-    languageitems = [self.getlanguageitem(languagecode, language) for languagecode, language in self.instance.languages.iteritems()]
+    languageitems = [self.getlanguageitem(languagecode, language) for languagecode, language in self.potree.getlanguages().iteritems()]
     return pagelayout.Contents(languageitems)
 
   def getlanguageitem(self, languagecode, language):
@@ -34,7 +34,8 @@ class PootleIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % language.fullname
     bodydescription = pagelayout.ItemDescription(widgets.Link(languagecode+"/", language.fullname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    projectlist = [projects.getproject(project) for (projectcode, project) in language.projects.iteritems()]
+    languageprojects = self.potree.getprojects(languagecode)
+    projectlist = [projects.getproject(project) for (projectcode, project) in languageprojects.iteritems()]
     projectcount = len(projectlist)
     projectstats = [project.calculatestats() for project in projectlist]
     totalstats = summarizestats(projectstats, {"translated":0, "total":0})
@@ -46,15 +47,17 @@ class PootleIndex(pagelayout.PootlePage):
 
 class LanguageIndex(pagelayout.PootlePage):
   """the main page"""
-  def __init__(self, language, session):
-    self.language = language
-    self.instance = session.instance
+  def __init__(self, potree, languagecode, session):
+    self.potree = potree
+    self.languagecode = languagecode
+    self.language = self.potree.getlanguage(self.languagecode)
     projectlinks = self.getprojectlinks()
     pagelayout.PootlePage.__init__(self, "Pootle: "+self.language.fullname, projectlinks, session, bannerheight=81)
 
   def getprojectlinks(self):
     """gets the links to the projects"""
-    projectitems = [self.getprojectitem(projectcode, project) for projectcode, project in self.language.projects.iteritems()]
+    languageprojects = self.potree.getprojects(self.languagecode)
+    projectitems = [self.getprojectitem(projectcode, project) for projectcode, project in languageprojects.iteritems()]
     return pagelayout.Contents(projectitems)
 
   def getprojectitem(self, projectcode, project):
@@ -74,7 +77,6 @@ class ProjectIndex(pagelayout.PootlePage):
   """the main page"""
   def __init__(self, project, session, argdict, dirfilter=None):
     self.project = project
-    self.instance = session.instance
     self.translationproject = projects.getproject(self.project)
     self.showchecks = argdict.get("showchecks", 0)
     if isinstance(self.showchecks, str) and self.showchecks.isdigit():

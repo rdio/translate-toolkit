@@ -50,7 +50,7 @@ class OptionalLoginAppServer(server.LoginAppServer):
 
 class PootleServer(OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
-  def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage, cachetables=None):
+  def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage):
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.potree = projects.POTree(self.instance)
     for languagecode, language in self.potree.getlanguages().iteritems():
@@ -76,7 +76,7 @@ class PootleServer(OptionalLoginAppServer):
     else:
       top = ""
     if not top or top == "index.html":
-      return indexpage.PootleIndex(session)
+      return indexpage.PootleIndex(self.potree, session)
     elif top == "login.html":
       if session.isopen:
         redirecttext = pagelayout.IntroText("Redirecting to index...")
@@ -117,7 +117,7 @@ class PootleServer(OptionalLoginAppServer):
         top = ""
 	bottom = ""
       if not top or top == "index.html":
-        return indexpage.LanguageIndex(language, session)
+        return indexpage.LanguageIndex(self.potree, languagecode, session)
       if self.potree.hasproject(languagecode, top):
         projectcode = top
         project = self.potree.getproject(languagecode, projectcode)
