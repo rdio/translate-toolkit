@@ -452,9 +452,13 @@ class TranslationProject:
     self.podir = potree.getpodir(languagecode, projectcode)
     self.pofilenames = potree.getpofiles(languagecode, projectcode)
     checkerclasses = [checks.projectcheckers.get(projectcode, checks.StandardChecker), pofilter.StandardPOChecker]
-    self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses)
+    self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses, errorhandler=self.filtererrorhandler)
     self.pofiles = potimecache(15*60, self)
     self.initpootlefiles()
+
+  def filtererrorhandler(self, functionname, str1, str2, e):
+    print "error in filter %s: %r, %r, %s" % (functionname, str1, str2, e)
+    return False
 
   def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
     """gets a list of pofilenames, optionally filtering with the parent directory"""
