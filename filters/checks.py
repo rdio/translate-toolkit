@@ -227,7 +227,7 @@ class StandardChecker(TranslationChecker):
 
   preconditions = {"untranslated": ("escapes", "short", "long", "unchanged", "singlequoting", "doublequoting",
                                     "accelerators", "variables", "numbers",
-                                    "doublespacing", "puncspacing", "startwhitespace", "endwhitespace"
+                                    "doublespacing", "puncspacing", "startwhitespace", "endwhitespace",
                                     "startpunc", "endpunc", "purepunc", "simplecaps") }
 
 # code to actually run the tests (use unittest?)
