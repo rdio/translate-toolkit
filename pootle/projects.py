@@ -331,8 +331,13 @@ class TranslationProject:
     self.savependingfile(pofilename)
 
   def getsuggestions(self, pofile, item):
-    """find all the suggestions submitted for the given item"""
-    pendingfile = self.getpendingfile(pofile.filename)
+    """find all the suggestions submitted for the given (pofile or pofilename) and item"""
+    if isinstance(pofile, str):
+      pofilename = pofile
+      pofile = self.getpofile(pofilename)
+      pendingfile = self.getpendingfile(pofilename)
+    else:
+      pendingfile = self.getpendingfile(pofile.filename)
     thepo = pofile.transelements[item]
     sources = thepo.getsources()
     # TODO: review the matching method
