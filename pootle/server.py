@@ -13,13 +13,13 @@ class LoginPage(server.LoginPage, pagelayout.PootlePage):
   def __init__(self, session, extraargs={}, confirmlogin=0, specialmessage=None, languagenames=None):
     server.LoginPage.__init__(self, session, extraargs, confirmlogin, specialmessage, languagenames)
     loginform = self.contents
-    contents = widgets.Division(pagelayout.IntroText(loginform), "content")
+    contents = pagelayout.IntroText(loginform)
     pagelayout.PootlePage.__init__(self, "Login to Pootle", contents, session)
 
 class RegisterPage(pagelayout.PootlePage):
   """page for new registrations"""
   def __init__(self, session):
-    contents = widgets.Division(self.getform(), "content")
+    contents = self.getform()
     pagelayout.PootlePage.__init__(self, "Pootle Registration", contents, session)
 
   def getform(self):
@@ -88,10 +88,5 @@ class PootleServer(OptionalLoginAppServer):
           top = ""
         if not top or top == "index.html":
           return translatepage.TranslatePage(project, subproject, session, argdict)
-    elif top == "test.html":
-      contents = repr(session.status)
-      page = widgets.PlainContents(contents)
-      page.content_type = "text/plain"
-      return page
     return None
 

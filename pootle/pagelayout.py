@@ -87,5 +87,10 @@ class PootlePage(widgets.Page):
     stylesheets = [session.instance.baseurl + session.instance.stylesheet, session.instance.baseurl + "pootle.css"]
     self.banner = PootleBanner(session.instance, bannerheight)
     self.links = PootleSidebar(session)
-    widgets.Page.__init__(self, title, [self.banner, contents, self.links], {"includeheading":False}, stylesheets=stylesheets)
+    widgets.Page.__init__(self, title, contents, {"includeheading":False}, stylesheets=stylesheets)
+
+  def getcontents(self):
+    """returns the actual contents of the page, wrapped appropriately"""
+    contents = widgets.Division(self.contents, "content")
+    return self.getcontentshtml([self.banner, contents, self.links])
 

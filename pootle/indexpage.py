@@ -11,7 +11,7 @@ class PootleIndex(pagelayout.PootlePage):
     introtext = pagelayout.IntroText("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>!")
     nametext = pagelayout.IntroText('The name stands for <b>PO</b>-based <b>O</b>nline <b>T</b>ranslation / <b>L</b>ocalization <b>E</b>ngine, but you may need to read <a href="http://www.thechestnut.com/flumps.htm">this</a>.')
     projectlinks = self.getprojectlinks()
-    contents = widgets.Division([introtext, nametext, projectlinks], "content")
+    contents = [introtext, nametext, projectlinks]
     pagelayout.PootlePage.__init__(self, "Pootle", contents, session)
 
   def getprojectlinks(self):
@@ -42,8 +42,7 @@ class ProjectIndex(pagelayout.PootlePage):
     self.project = project
     self.instance = session.instance
     subprojectlinks = self.getsubprojectlinks()
-    contents = widgets.Division([subprojectlinks], "content")
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.fullname, contents, session)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.fullname, subprojectlinks, session)
 
   def getsubprojectlinks(self):
     """gets the links to the projects"""
