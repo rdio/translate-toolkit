@@ -21,6 +21,8 @@
 import sys
 import os.path
 from translate.misc import optrecurse
+# don't import optparse ourselves, get the version from optrecurse
+optparse = optrecurse.optparse
 from translate import __version__
 try:
   from cStringIO import StringIO
@@ -81,7 +83,7 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
   def setpotoption(self):
     """sets the -P/--pot option depending on input/output formats etc"""
     if self.usepots:
-      potoption = optrecurse.optparse.Option("-P", "--pot", \
+      potoption = optparse.Option("-P", "--pot", \
                       action="store_true", dest="pot", default=False, \
                       help="use PO template files (.pot) rather than PO files (.po)")
       self.define_option(potoption)
