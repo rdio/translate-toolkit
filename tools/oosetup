@@ -94,7 +94,9 @@ class SetupIndex(sparse.SimpleParser):
         self.tokens[tokennum] = newname
 
   def insertforeignsection(self, aftersection, sectionname, section, index, tokenrange):
-    tokennum = self.getsectionendtokennum(aftersection) + 1
+    tokennum = self.getsectionendtokennum(aftersection)
+    while self.tokens[tokennum+1] == '\n':
+      tokennum += 1
     self.definitions[sectionname] = section.copy()
     self.definitions[sectionname]['tokennums']['start'] = tokennum
     if tokennum in self.insertions:
@@ -109,7 +111,9 @@ class SetupIndex(sparse.SimpleParser):
       start = 0
     if end is None:
       end = len(self.tokens)
-    tokenpos = self.findtokenpos(start)
+    tokenpos = 0
+    for tokennum in range(start+1):
+      tokenpos = self.source.find(self.originaltokens[tokennum], tokenpos)
     for tokennum in range(start, end):
       originaltoken = self.originaltokens[tokennum]
       nexttokenpos = self.source.find(originaltoken, tokenpos)
@@ -141,6 +145,13 @@ class SetupIndex(sparse.SimpleParser):
     fieldtokennum = self.getfieldtokennum(sectionname, fieldname)
     self.tokens[fieldtokennum] = fieldvalue
 
+  def getsectiontokenrange(self, sectionname):
+    section = self.definitions[sectionname]
+    start, end = section['tokennums']['start'], section['tokennums']['end']+1
+    while self.tokens[start+end] == '\n':
+      end += 1
+    return (start, start+end)
+
   def merge(self, otherindexes):
     """merges this with another index... hmmm ...."""
     indexes = [self] + otherindexes
@@ -170,16 +181,35 @@ class SetupIndex(sparse.SimpleParser):
           index.directoryfiles[directory] = [fileentry]
         else:
           index.directoryfiles[directory].append(fileentry)
-    for directory in directoriestorename:
-      hostname = sparse.stringeval(self.getfieldvalue(directory, "HostName"))
-      newname = directory.replace("_Language", "_%s" % hostname)
-      self.renamedirectory(directory, newname, "_%s" % hostname)
+    for index in indexes:
+      for directory in directoriestorename:
+        suffix = "_" + sparse.stringeval(index.getfieldvalue(directory, "HostName"))
+        if directory.find('_Language') != -1:
+          newname = directory.replace("_Language", suffix)
+        elif directory.find('_Isolanguage') != -1:
+          newname = directory.replace("_Isolanguage", suffix)
+        else: newname = directory + "_" + suffix
+        index.renamedirectory(directory, newname, suffix)
+        if index != self:
+          if directory in index.directoryfiles:
+            for fileentry in index.directoryfiles[directory]:
+              tokenrange = index.getsectiontokenrange(fileentry)
+              fileentrysection = index.definitions[fileentry]
+              # the file will already have been renamed by the index.renamedirectory
+              self.insertforeignsection(fileentry, fileentry + suffix, fileentrysection, index, tokenrange)
+    # TODO: handle changing the module list of items...
 
   def renamedirectory(self, directory, newname, suffix):
     self.rename(directory, newname)
     if directory in self.directorychildren:
       for child in self.directorychildren[directory]:
         self.renamedirectory(child, child + suffix, suffix)
+    if directory in self.directoryfiles:
+      for fileentry in self.directoryfiles[directory]:
+        self.rename(fileentry, fileentry + suffix)
+        # TODO: actually move the packed files...
+        packedname = sparse.stringeval(self.getfieldvalue(fileentry, "PackedName"))
+        self.setfieldvalue(fileentry, "PackedName", '"%s"' % (packedname+suffix))
 
 if __name__ == '__main__':
   import sys
@@ -194,16 +224,6 @@ if __name__ == '__main__':
   for arg in sys.argv[2:-1]:
     othersetupfiles.append(SetupIndex(arg))
   mainsetupfile.merge(othersetupfiles)
-  # demonstration of inserting foreign sections
-  for index in othersetupfiles:
-    language = index.getfieldvalue('gid_Installation', 'DefaultLanguage')
-    language = sparse.stringeval(language)
-    section = index.definitions['gid_Installation']
-    sectionname = 'gid_Installation_%s' % language
-    index.rename('gid_Installation', sectionname)
-    start, end = section['tokennums']['start'], section['tokennums']['end']
-    tokenrange = (start, start+end+2)
-    mainsetupfile.insertforeignsection('gid_Installation', sectionname, section, index, tokenrange)
   open(sys.argv[-1], 'w').write(mainsetupfile.getsource())
 
 
