@@ -618,11 +618,8 @@ class ProjectIndex(pagelayout.PootlePage):
       rootlink = "index.html"
     roottext = self.localize("%s (%s)") % (self.project.projectname, self.project.languagename)
     self.addfolderlinks(self.localize("project root"), roottext, rootlink, self.project.projectdescription)
-    self.addfolderlinks(self.localize("current folder"), currentfolder, "index.html")
     if dirfilter is not None:
       parentfolder = "/".join(currentfolder.split("/")[:-1])
-      if parentfolder:
-        self.addfolderlinks(self.localize("parent folder"), parentfolder, "../index.html")
     if "archive" in self.rights:
       if currentfolder:
         archivename = "%s-%s-%s.zip" % (self.project.projectcode, self.project.languagecode, currentfolder.replace("/", "-"))
