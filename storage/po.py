@@ -61,6 +61,15 @@ class poelement:
     self.msgid_plural = []
     self.msgstr = []
 
+  def msgidlen(self):
+    return len(getunquotedstr(self.msgid).strip())
+
+  def msgstrlen(self):
+    if isinstance(self.msgstr, dict):
+      return len(getunquotedstr("\n".join(self.msgstr)).strip())
+    else:
+      return len(getunquotedstr(self.msgstr).strip())
+
   def merge(self, otherpo):
     """merges the otherpo (with the same msgid) into this one"""
     self.othercomments.extend(otherpo.othercomments)
@@ -68,30 +77,27 @@ class poelement:
     self.typecomments.extend(otherpo.typecomments)
     self.visiblecomments.extend(otherpo.visiblecomments)
     self.msgidcomments.extend(otherpo.msgidcomments)
-    if len("".join(self.msgstr).strip()) == 0:
+    if self.isblankmsgstr():
       self.msgstr = otherpo.msgstr
-    elif len("".join(otherpo.msgstr).strip()) <> 0:
+    elif not other.isblankmsgstr():
       if self.msgstr != otherpo.msgstr:
         if not self.isfuzzy():
           self.typecomments.append("#, fuzzy\n")
 
   def isheader(self):
-    msgidlen = len(getunquotedstr(self.msgid).strip())
-    msgstrlen = len(getunquotedstr(self.msgstr).strip())
-    return (msgidlen == 0) and (msgstrlen > 0)
+    return (self.msgidlen() == 0) and (self.msgstrlen() > 0)
 
   def isblank(self):
     if self.isheader():
-      return 0
-    if (len("".join(self.msgid).strip()) == 0) and (len("".join(self.msgstr).strip()) == 0):
-      return 1
+      return False
+    if (self.msgidlen() == 0) and (self.msgstrlen() == 0):
+      return True
     unquotedid = [quote.extractwithoutquotes(line,'"','"','\\',includeescapes=0)[0] for line in self.msgid]
     return len("".join(unquotedid).strip()) == 0
 
   def isblankmsgstr(self):
     """checks whether the msgstr is blank"""
-    msgstrlen = len(getunquotedstr(self.msgstr).strip())
-    return msgstrlen == 0
+    return self.msgstrlen() == 0
 
   def hastypecomment(self, typecomment):
     return ("".join(self.typecomments)).find(typecomment) != -1
@@ -101,6 +107,10 @@ class poelement:
 
   def isnotblank(self):
     return not self.isblank()
+
+  def hasplurals(self):
+    """returns whether this poelement contains plural strings..."""
+    return len(self.msgid_plural) > 0
 
   def fromlines(self,lines):
     inmsgid = 0
