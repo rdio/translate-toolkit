@@ -59,7 +59,6 @@ other:
 
 bugs:
   when returned to the indexpage from the translatepage (finished search etc) the project root is one level out
-  check that rejecting suggestions always gets the right id
   suggestion msgid comments get incorporated into main po file! this *totally* confuses things, item numbers seem to get messed up too...
   when checks are on and you browse into one when you return checks are off
     (confusing)
