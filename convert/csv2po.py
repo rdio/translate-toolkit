@@ -95,10 +95,30 @@ class csv2po:
         return
       thepo = thepolist[0]
     else:
-      print >>sys.stderr, "could not find csv entry in po: %r, %r, %r" % (thecsv.source, thecsv.msgid, thecsv.msgstr)
+      print >>sys.stderr, "could not find csv entry in po: %r, %r, %r" % \
+        (thecsv.source, thecsv.msgid, thecsv.msgstr)
       self.unmatched += 1
       return
-    thepo.msgstr = [quotecsvstr(line) for line in thecsv.msgstr.split('\n')]
+    csvmsgstr = [quotecsvstr(line) for line in thecsv.msgstr.split('\n')]
+    if thepo.hasplural():
+      # we need to work out whether we matched the singular or the plural
+      singularid = po.getunquotedstr(thepo.msgid)
+      pluralid = po.getunquotedstr(thepo.msgid_plural)
+      if thecsv.msgid == singularid:
+        thepo.msgstr[0] = csvmsgstr
+      elif thecsv.msgid == pluralid:
+        thepo.msgstr[1] = csvmsgstr
+      elif simplify(thecsv.msgid) == simplify(singularid):
+        thepo.msgstr[0] = csvmsgstr
+      elif simplify(thecsv.msgid) == simplify(pluralid):
+        thepo.msgstr[1] = csvmsgstr
+      else:
+        print >>sys.stderr, "couldn't work out singular or plural: %r, %r, %r" %  \
+          (thecsv.msgid, singularid, pluralid)
+        self.unmatched += 1
+        return
+    else:
+      thepo.msgstr = csvmsgstr
 
   def convertfile(self, thecsvfile):
     """converts a csvfile to a pofile, and returns it. uses templatepo if given at construction"""
