@@ -2,6 +2,7 @@
 
 from jToolkit.web import server
 from jToolkit.web.session import md5hexdigest
+from jToolkit import prefs
 from jToolkit.widgets import widgets
 from jToolkit.widgets import form
 from jToolkit import mailer
@@ -9,6 +10,8 @@ from jToolkit import passwordgen
 from translate.pootle import indexpage
 from translate.pootle import translatepage
 from translate.pootle import pagelayout
+from translate.pootle import projects
+import os
 
 class LoginPage(server.LoginPage, pagelayout.PootlePage):
   """wraps the normal login page in a PootlePage layout"""
@@ -48,7 +51,19 @@ class OptionalLoginAppServer(server.LoginAppServer):
 class PootleServer(OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage, cachetables=None):
-    super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass, cachetables)
+    super(PootleServer, self).__init__(instance, sessioncache, errorhandler)
+    for projectcode, project in self.instance.projects.iteritems():
+      if not hasattr(project, "fullname"):
+        project.fullname = projectcode
+      for subprojectcode, subproject in project.subprojects.iteritems():
+        if not hasattr(subproject, "fullname"):
+          subproject.fullname = subprojectcode
+
+  def saveprefs(self):
+    """saves changed preferences back to disk"""
+    # TODO: this is a hack, fix it up nicely :-)
+    prefsfile = self.instance.__root__.__dict__["_setvalue"].im_self
+    prefsfile.savefile()
 
   def getpage(self, pathwords, session, argdict):
     """return a page that will be sent to the user"""
@@ -71,16 +86,23 @@ class PootleServer(OptionalLoginAppServer):
       if "username" in argdict:
         username = argdict["username"]
         password = passwordgen.createpassword()
-        userexists = session.db.singlevalue("select count(*) from users where username='%s'" % username.replace("'", "''"))
+        userexists = session.userexists(username)
         if userexists:
-          session.db.update("users", "username", username, {"passwdhash":md5hexdigest(password)})
+	  getattr(self.instance.users, username).passwdhash = md5hexdigest(password)
           message = "your password has been updated\n"
         else:
-          session.db.insert("users", {"username":username, "passwdhash":md5hexdigest(password)})
+	  setattr(self.instance.users, username + ".passwdhash", md5hexdigest(password))
           message = "an account has been created for you\n"
+	self.saveprefs()
         message += "username: %s\npassword: %s\n" % (username, password)
-        mailer.dosendmessage(self.instance.registration.fromaddress, [username], message)
-        return LoginPage(session)
+        # TODO: handle emailing properly, but printing now to make it easier
+	print message
+        # mailer.dosendmessage(self.instance.registration.fromaddress, [username], message)
+        redirecttext = pagelayout.IntroText(message + "Redirecting to login...")
+        redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
+	redirectpage.attribs["refresh"] = 10
+	redirectpage.attribs["refreshurl"] = "login.html"
+        return redirectpage
       else:
         return RegisterPage(session)
     elif hasattr(session.instance.projects, top):
@@ -88,8 +110,10 @@ class PootleServer(OptionalLoginAppServer):
       pathwords = pathwords[1:]
       if pathwords:
         top = pathwords[0]
+	bottom = pathwords[-1]
       else:
         top = ""
+	bottom = ""
       if not top or top == "index.html":
         return indexpage.ProjectIndex(project, session)
       if hasattr(project.subprojects, top):
@@ -100,6 +124,31 @@ class PootleServer(OptionalLoginAppServer):
         else:
           top = ""
         if not top or top == "index.html":
-          return translatepage.TranslatePage(project, subproject, session, argdict)
+	  return indexpage.SubprojectIndex(subproject, session)
+	elif bottom == "translate.html":
+	  if len(pathwords) > 1:
+            dirfilter = os.path.join(*pathwords[:-1])
+	  else:
+	    dirfilter = ""
+          return translatepage.TranslatePage(project, subproject, session, argdict, dirfilter)
+	elif bottom.endswith(".po"):
+	  pofilename = os.path.join(*pathwords)
+	  if argdict.get("translate", 0):
+            return translatepage.TranslatePage(project, subproject, session, argdict, dirfilter=pofilename)
+	  else:
+	    translationproject = projects.getproject(subproject)
+	    contents = translationproject.getsource(pofilename)
+	    page = widgets.PlainContents(contents)
+	    page.content_type = "text/plain"
+	    return page
+	elif bottom.endswith(".csv"):
+	  csvfilename = os.path.join(*pathwords)
+	  translationproject = projects.getproject(subproject)
+	  contents = translationproject.getcsv(csvfilename)
+	  page = widgets.PlainContents(contents)
+	  page.content_type = "text/plain"
+	  return page
+	else:
+	  return indexpage.SubprojectIndex(subproject, session, os.path.join(*pathwords))
     return None
 
