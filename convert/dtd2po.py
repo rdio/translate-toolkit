@@ -18,7 +18,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""script to convert a mozilla .dtd localization format to a
+"""script to convert a mozilla .dtd UTF-8 localization format to a
 gettext .po localization file using the po and dtd modules, and the 
 dtd2po convertor class which is in this module
 You can convert back to .dtd using po2dtd.py"""

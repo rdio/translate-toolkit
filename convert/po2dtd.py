@@ -18,7 +18,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""script that converts a .po file to a .dtd file
+"""script that converts a .po file to a UTF-8 encoded .dtd file as used by mozilla
 either done using a template or just using the .po file"""
 
 import sys
