@@ -45,7 +45,7 @@ class ConvertOptionParser(optparse.OptionParser):
     self.setoutputformats(outputformats)
     self.setprogressoptions()
     if self.usepots:
-      self.setpotsoptions()
+      self.setpotoption()
     self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
 
   def getusagestring(self, option):
@@ -181,7 +181,8 @@ class ConvertOptionParser(optparse.OptionParser):
     join = os.path.join
     allfiles = self.recursefiles(options)
     if options.progress in ('console', 'curses', 'verbose'):
-      allfiles = [file for file in allfiles]
+      # iterate through the files and produce a list so we can show progress...
+      allfiles = [inputfile for inputfile in allfiles]
       self.progressbar = self.progresstypes[options.progress](0, len(allfiles))
       print "processing %d files..." % len(allfiles)
     else:
@@ -293,7 +294,7 @@ class ConvertOptionParser(optparse.OptionParser):
       outputformat = self.outputformats[0]
       if self.usepots and options.pot and outputformat == "po":
         outputformat = "pot"
-      return inputname + os.extsep + self.outputformat
+      return inputname + os.extsep + outputformat
     else:
       # if there is more than one outputformat, assume it is encoded in the inputname...
       inputbase, ext = os.path.splitext(inputname)
