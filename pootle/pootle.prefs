@@ -9,11 +9,12 @@ Pootle:
   serverclass = pootleserver.PootleServer
   sessionkey='p00tl3'
   # set this to the URL people will access pootle from
-  baseurl = "http://localhost:8080/"
+  baseurl = "/"
   title = "Pootle"
   description = "this is a demo installation of pootle"
   registration:
     fromaddress = "pootle-registration@localhost"
+    smtpserver = "localhost"
   users:
     # store user details here
     __dummy__ = 0
