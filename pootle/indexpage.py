@@ -11,22 +11,22 @@ class PootleIndex(pagelayout.PootlePage):
     self.instance = session.instance
     introtext = pagelayout.IntroText("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>!")
     nametext = pagelayout.IntroText('The name stands for <b>PO</b>-based <b>O</b>nline <b>T</b>ranslation / <b>L</b>ocalization <b>E</b>ngine, but you may need to read <a href="http://www.thechestnut.com/flumps.htm">this</a>.')
-    projectlinks = self.getprojectlinks()
-    contents = [introtext, nametext, projectlinks]
+    languagelinks = self.getlanguagelinks()
+    contents = [introtext, nametext, languagelinks]
     pagelayout.PootlePage.__init__(self, "Pootle", contents, session)
 
-  def getprojectlinks(self):
-    """gets the links to the projects"""
-    projectitems = [self.getprojectitem(projectcode, project) for projectcode, project in self.instance.projects.iteritems()]
-    return pagelayout.Contents(projectitems)
+  def getlanguagelinks(self):
+    """gets the links to the languages"""
+    languageitems = [self.getlanguageitem(languagecode, language) for languagecode, language in self.instance.languages.iteritems()]
+    return pagelayout.Contents(languageitems)
 
-  def getprojectitem(self, projectcode, project):
-    if not hasattr(project, "fullname"):
-      project.fullname = projectcode
-    bodytitle = '<h3 class="title">%s</h3>' % project.fullname
-    bodydescription = pagelayout.ItemDescription('<a href="%s/">%s projects</a>' % (projectcode, project.fullname))
+  def getlanguageitem(self, languagecode, language):
+    if not hasattr(language, "fullname"):
+      language.fullname = languagecode
+    bodytitle = '<h3 class="title">%s</h3>' % language.fullname
+    bodydescription = pagelayout.ItemDescription('<a href="%s/">%s languages</a>' % (languagecode, language.fullname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    subprojects = [projects.getproject(subproject) for (subprojectcode, subproject) in project.subprojects.iteritems()]
+    subprojects = [projects.getlanguage(subproject) for (subprojectcode, subproject) in language.subprojects.iteritems()]
     subprojectcount = len(subprojects)
     totalstats = {"translated":0, "total":0}
     for subproject in subprojects:
@@ -39,17 +39,17 @@ class PootleIndex(pagelayout.PootlePage):
     stats = pagelayout.ItemStatistics("%d subprojects, %d%% translated" % (subprojectcount, percentfinished))
     return pagelayout.Item([body, stats])
 
-class ProjectIndex(pagelayout.PootlePage):
+class LanguageIndex(pagelayout.PootlePage):
   """the main page"""
-  def __init__(self, project, session):
-    self.project = project
+  def __init__(self, language, session):
+    self.language = language
     self.instance = session.instance
     subprojectlinks = self.getsubprojectlinks()
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.fullname, subprojectlinks, session)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.language.fullname, subprojectlinks, session)
 
   def getsubprojectlinks(self):
     """gets the links to the projects"""
-    subprojectitems = [self.getsubprojectitem(subprojectcode, subproject) for subprojectcode, subproject in self.project.subprojects.iteritems()]
+    subprojectitems = [self.getsubprojectitem(subprojectcode, subproject) for subprojectcode, subproject in self.language.subprojects.iteritems()]
     return pagelayout.Contents(subprojectitems)
 
   def getsubprojectitem(self, subprojectcode, subproject):

@@ -52,10 +52,10 @@ class PootleServer(OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage, cachetables=None):
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
-    for projectcode, project in self.instance.projects.iteritems():
-      if not hasattr(project, "fullname"):
-        project.fullname = projectcode
-      for subprojectcode, subproject in project.subprojects.iteritems():
+    for languagecode, language in self.instance.languages.iteritems():
+      if not hasattr(language, "fullname"):
+        language.fullname = languagecode
+      for subprojectcode, subproject in language.subprojects.iteritems():
         if not hasattr(subproject, "fullname"):
           subproject.fullname = subprojectcode
 
@@ -105,8 +105,8 @@ class PootleServer(OptionalLoginAppServer):
         return redirectpage
       else:
         return RegisterPage(session)
-    elif hasattr(session.instance.projects, top):
-      project = getattr(session.instance.projects, top)
+    elif hasattr(session.instance.languages, top):
+      language = getattr(session.instance.languages, top)
       pathwords = pathwords[1:]
       if pathwords:
         top = pathwords[0]
@@ -115,9 +115,9 @@ class PootleServer(OptionalLoginAppServer):
         top = ""
 	bottom = ""
       if not top or top == "index.html":
-        return indexpage.ProjectIndex(project, session)
-      if hasattr(project.subprojects, top):
-        subproject = getattr(project.subprojects, top)
+        return indexpage.LanguageIndex(language, session)
+      if hasattr(language.subprojects, top):
+        subproject = getattr(language.subprojects, top)
         pathwords = pathwords[1:]
         if pathwords:
           top = pathwords[0]
@@ -130,11 +130,11 @@ class PootleServer(OptionalLoginAppServer):
             dirfilter = os.path.join(*pathwords[:-1])
 	  else:
 	    dirfilter = ""
-          return translatepage.TranslatePage(project, subproject, session, argdict, dirfilter)
+          return translatepage.TranslatePage(language, subproject, session, argdict, dirfilter)
 	elif bottom.endswith(".po"):
 	  pofilename = os.path.join(*pathwords)
 	  if argdict.get("translate", 0):
-            return translatepage.TranslatePage(project, subproject, session, argdict, dirfilter=pofilename)
+            return translatepage.TranslatePage(language, subproject, session, argdict, dirfilter=pofilename)
 	  else:
 	    translationproject = projects.getproject(subproject)
 	    contents = translationproject.getsource(pofilename)
