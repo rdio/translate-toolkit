@@ -44,6 +44,10 @@ other:
   create XPI files automatically when updates are made
   Add X-Poedit style tags in the header when you download so that people using
     this PO editor don't have to configure everything
+  stats:
+    percentage change.  So you can see if a language/project is active or not.
+  if there is only one .PO firl for a project then merge the header bar and the
+    PO file bar to make it less clutered and more logical.
 
 bugs:
   when returned to the indexpage from the translatepage (finished search etc) the project root is one level out
@@ -51,4 +55,5 @@ bugs:
   suggestion msgid comments get incorporated into main po file! this *totally* confuses things, item numbers seem to get messed up too...
   HTML gets incorporated into HTML rather than escaped
   quotes aren't handled properly (display with escapes but submission changes)
-
+  when checks are on and you browse into one when you return checks are off
+    (confusing)
