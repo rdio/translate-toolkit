@@ -53,6 +53,7 @@ class csv2po:
     self.sourceindex = {}
     self.msgidindex = {}
     self.simpleindex = {}
+    self.duplicatesources = []
     for thepo in self.pofile.poelements:
       sourceparts = []
       for sourcecomment in thepo.sourcecomments:
@@ -60,7 +61,11 @@ class csv2po:
       source = " ".join(sourceparts)
       unquotedid = po.getunquotedstr(thepo.msgid)
       # the definitive way to match is by source
-      self.sourceindex[source] = thepo
+      if source in self.sourceindex:
+        # unless more than one thing matches...
+        self.duplicatesources.append(source)
+      else:
+        self.sourceindex[source] = thepo
       # do simpler matching in case things have been mangled...
       simpleid = simplify(unquotedid)
       # but check for duplicates
@@ -71,6 +76,9 @@ class csv2po:
         self.simpleindex[simpleid] = [thepo]
       # also match by standard msgid
       self.msgidindex[unquotedid] = thepo
+    for source in self.duplicatesources:
+      if source in self.sourceindex:
+        del self.sourceindex[source]
 
   def convertelement(self,thecsv):
     """converts csv element to po element"""
