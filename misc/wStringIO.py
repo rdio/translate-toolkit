@@ -106,11 +106,13 @@ class StringIO:
     def write(self, s):
         if self.closed:
             raise ValueError, "I/O operation on closed file"
+        origpos = self.buf.tell()
         self.buf.write(s)
         self.pos = self.buf.tell()
-        self.buf.seek(0, 2)
-        self.len = self.buf.tell()
-        self.buf.seek(self.pos)
+        if origpos + len(s) > self.len:
+          self.buf.seek(0, 2)
+          self.len = self.buf.tell()
+          self.buf.seek(self.pos)
 
     def writelines(self, lines):
         if self.closed:
