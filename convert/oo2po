@@ -24,11 +24,85 @@
 from translate.storage import po
 from translate.storage import oo
 from translate.misc import quote
+from translate.convert import convert
 from translate import __version__
+import os
 
-# TODO: support single GSI file -> multiple po files (see it as an archive like an xpi)
 # TODO: support using one GSI file as template, another as input (for when English is in one and translation in another)
-# TODO: support multilang GSI file, pass languages as option
+
+class GSIConvertOptionParser(convert.ConvertOptionParser):
+  def __init__(self, formats, usetemplates=False, usepots=False, description=None):
+    convert.ConvertOptionParser.__init__(self, formats, usetemplates, usepots, description=description)
+
+  def isrecursive(self, fileoption):
+    """checks if fileoption is a recursive file"""
+    if self.isgsi(fileoption): return True
+    return super(GSIConvertOptionParser, self).isrecursive(fileoption)
+
+  def isgsi(self, fileoption):
+    """returns whether the file option is a multi-module gsi file"""
+    return isinstance(fileoption, (str, unicode)) and fileoption.endswith(os.extsep + "gsi") and os.path.isfile(fileoption)
+
+  def recurseinputfiles(self, options):
+    """recurse through gsi file / directories and return files to be converted"""
+    if self.usetemplates and options.template and self.isgsi(options.template):
+      options.templategsi = oo.oomultifile(open(options.template, 'r'))
+    if self.isgsi(options.input):
+      options.inputgsi = oo.oomultifile(open(options.input, 'r'))
+      return self.recursegsifiles(options)
+    else:
+      return super(GSIConvertOptionParser, self).recurseinputfiles(options)
+
+  def recursegsifiles(self, options):
+    """recurse through gsi files and convert files"""
+    inputfiles = []
+    for inputpath in options.inputgsi.listsubfiles():
+      top, name = os.path.split(inputpath)
+      if not self.isvalidinputname(options, name):
+        continue
+      inputfiles.append(inputpath)
+    return inputfiles
+
+  def openinputfile(self, options, fullinputpath):
+    """opens the input file"""
+    if self.isgsi(options.input):
+      return options.inputgsi.openfile(fullinputpath)
+    else:
+      return super(GSIConvertOptionParser, self).openinputfile(options, fullinputpath)
+
+  def getfullinputpath(self, options, inputpath):
+    """gets the absolute path to an input file"""
+    if self.isgsi(options.input):
+      return inputpath
+    else:
+      return os.path.join(options.input, inputpath)
+
+  def opentemplatefile(self, options, fulltemplatepath):
+    """opens the template file (if required)"""
+    if fulltemplatepath is not None:
+      if self.isgsi(options.template):
+        if fulltemplatepath in options.templategsi.listmodules():
+          return options.templategsi.openfile(fulltemplatepath)
+        else:
+          self.warning("missing template file %s" % fulltemplatepath)
+    return super(GSIConvertOptionParser, self).opentemplatefile(options, fulltemplatepath)
+
+  def getfulltemplatepath(self, options, templatepath):
+    """gets the absolute path to a template file"""
+    if templatepath is not None and self.usetemplates and options.template:
+      if self.isgsi(options.template):
+        return templatepath
+      else:
+        return os.path.join(options.template, templatepath)
+    else:
+      return None
+
+  def templateexists(self, options, templatepath):
+    """returns whether the given template exists..."""
+    if templatepath is not None:
+      if self.isgsi(options.template):
+        return templatepath in options.templategsi.listmodules()
+    return super(GSIConvertOptionParser, self).templateexists(options, templatepath)
 
 class oo2po:
   def __init__(self, languages=None, blankmsgstr=False):
@@ -121,7 +195,7 @@ if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
   formats = {"oo":("po",convertoo)}
-  parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
+  parser = GSIConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.add_option("-l", "--languages", dest="languages", default=None,
     help="set languages to extract from oo file (comma-separated)", metavar="LANGUAGES")
   parser.passthrough.append("pot")
