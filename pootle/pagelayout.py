@@ -43,8 +43,8 @@ class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
   def __init__(self, session):
     baseurl = session.instance.baseurl
-    title = SidebarTitle(session.instance.title)
-    description = SidebarText(session.instance.description)
+    title = SidebarTitle(getattr(session.instance, "title", "pootle"))
+    description = SidebarText(getattr(session.instance, "description", "translation web server"))
     logintitle = SidebarTitle("login status")
     if session.status:
       loginstatus = session.status
@@ -84,7 +84,12 @@ class PootleBanner(widgets.Division):
 class PootlePage(widgets.Page):
   """the main page"""
   def __init__(self, title, contents, session, bannerheight=135):
-    stylesheets = [session.instance.baseurl + session.instance.stylesheet, session.instance.baseurl + "pootle.css"]
+    if not hasattr(session.instance, "baseurl"):
+      session.instance.baseurl = "/"
+    stylesheets = [session.instance.baseurl + "pootle.css"]
+    if hasattr(session.instance, "stylesheet"):
+      stylesheets.append(session.instance.baseurl + session.instance.stylesheet)
+      
     self.banner = PootleBanner(session.instance, bannerheight)
     self.links = PootleSidebar(session)
     widgets.Page.__init__(self, title, contents, {"includeheading":False}, stylesheets=stylesheets)
