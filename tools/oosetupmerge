@@ -184,6 +184,18 @@ class SetupIndex(SetupParser):
     """munges a keyname and removes invalid entries"""
     return keyname.replace("-", "_")
 
+  def islocalizefile(self, filename):
+    """returns whether a file is part of localization"""
+    # handle resource files
+    if filename.endswith("%s.res" % self.dialingcode):
+      return True
+    # handle README and LICENSE files
+    if filename in [(template % self.dialingcode) for template in \
+                    ("README%s", "LICENSE%s", "README%s.html", "LICENSE%s.html")]:
+      return True
+    # everything else is normal...
+    return False
+
   def merge(self, otherindexes):
     """merges this with another index... hmmm ...."""
     indexes = [self] + otherindexes
@@ -251,8 +263,7 @@ class SetupIndex(SetupParser):
               self.addforeignfile(index, fileentry, suffix)
       for fileentry in index.bytype["File"]:
         filename = sparse.stringeval(index.getfieldvalue(fileentry, 'Name'))
-        # handle resource files
-        if filename.endswith("%s.res" % index.dialingcode):
+        if index.islocalizefile(filename):
           suffix = self.keymunge("_" + index.isocode)
           index.rename(fileentry, fileentry + suffix)
           packedname = sparse.stringeval(index.getfieldvalue(fileentry, "PackedName"))
