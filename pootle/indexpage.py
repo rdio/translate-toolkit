@@ -4,6 +4,7 @@ from jToolkit.widgets import widgets
 from jToolkit.widgets import table
 from translate.pootle import pagelayout
 from translate.pootle import projects
+from translate.pootle import versioncontrol
 import os
 
 def summarizestats(statslist, totalstats=None):
@@ -702,8 +703,9 @@ class ProjectIndex(pagelayout.PootlePage):
       molink = widgets.Link(moname, self.localize('MO file'))
       actionlinks.append(molink)
     if self.session.session.issiteadmin():
-      updatelink = widgets.Link("index.html?doupdate=1&updatefile=%s" % basename, self.localize('Update'))
-      actionlinks.append(updatelink)
+      if versioncontrol.hasversioning(os.path.join(self.project.podir, self.dirname)):
+        updatelink = widgets.Link("index.html?doupdate=1&updatefile=%s" % basename, self.localize('Update'))
+        actionlinks.append(updatelink)
     bodydescription = pagelayout.ActionLinks(actionlinks)
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(basename, projectstats, None)

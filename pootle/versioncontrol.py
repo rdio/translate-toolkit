@@ -119,6 +119,9 @@ def hassvn(parentdir):
   svndir = os.path.join(parentdir, ".svn")
   return os.path.isdir(svndir)
 
+def hasversioning(parentdir):
+  return hascvs(parentdir) or hassvn(parentdir)
+
 def getcleanfile(filename, revision=None):
   parentdir = os.path.dirname(filename)
   if hascvs(parentdir):
