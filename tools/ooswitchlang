@@ -51,17 +51,49 @@ class ooconfigurator:
     self.adminsetupfile = oosetupfile(adminsetupfilename)
     self.usersetupfile = oosetupfile(usersetupfilename)
 
+  def getadminlanguage(self):
+    """gets the language set for this user"""
+    return self.adminsetupfile.getcurrentlanguage()
+
   def getuserlanguage(self):
     """gets the language set for this user"""
     try:
       return self.usersetupfile.getcurrentlanguage()
     except ValueError:
-      return self.adminsetupfile.getcurrentlanguage()
+      return self.getadminlanguage()
+
+  def setofficelang(self, newisocode, admin=False, force=False):
+    """sets the language using the setofficelang program"""
+    programdir = os.path.join(self.installdir, "program")
+    cmdline = []
+    for ext in 'bin', 'exe':
+      binname = os.path.join(programdir, 'setofficelang' + os.path.extsep + ext)
+      if os.path.exists(binname):
+        cmdline.append(binname)
+        break
+    if not cmdline:
+      raise IOError("Could not find setofficelang executable in %s" % programdir)
+    if admin: cmdline.append("-a")
+    if force: cmdline.append("-f")
+    cmdline.append(newisocode)
+    retcode = os.system(" ".join(cmdline))
+    if retcode == 1:
+      raise ValueError("The language is not supported by this office installation")
+    elif retcode == 2:
+      raise ValueError("Invalid arguments")
+    elif retcode == 3:
+      raise ValueError("An internal error occurred")
+    elif retcode:
+      raise ValueError("Unknown error: %d" % retcode)
+    wx.MessageBox("Setting language successful", "ooswitchlang")
 
   def setuserlanguage(self, newisocode):
     """sets the language for the user"""
-    self.usersetupfile.setcurrentlanguage(newisocode)
-    self.usersetupfile.savetofile()
+    self.setofficelang(newisocode)
+
+  def setadminlanguage(self, newisocode):
+    """sets the language for the user"""
+    self.setofficelang(newisocode, admin=True)
 
 class LanguageSelectionWindow(wx.Frame):
   """Window for selecting language"""
