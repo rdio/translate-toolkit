@@ -63,6 +63,10 @@ class PootleServer(OptionalLoginAppServer):
     prefsfile = self.instance.__root__.__dict__["_setvalue"].im_self
     prefsfile.savefile()
 
+  def refreshstats(self):
+    """refreshes all the available statistics..."""
+    self.potree.refreshstats()
+
   def getpage(self, pathwords, session, argdict):
     """return a page that will be sent to the user"""
     # TODO: strip off the initial path properly
@@ -210,7 +214,12 @@ if __name__ == '__main__':
   parser.set_default('instance', 'Pootle')
   htmldir = os.path.join(pootledir, "html")
   parser.set_default('htmldir', htmldir)
+  parser.add_option('', "--refreshstats", dest="action", action="store_const", const="refreshstats", default="runwebserver", help="refresh the stats files instead of running the webserver")
   options, args = parser.parse_args()
   server = parser.getserver(options)
-  simplewebserver.run(server, options)
+  if options.action == "runwebserver":
+    simplewebserver.run(server, options)
+  elif options.action == "refreshstats":
+    server.refreshstats()
+
 

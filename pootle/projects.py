@@ -482,3 +482,16 @@ class POTree:
         return directoryname
     raise IndexError("directory not found for language %s, project %s" % (languagecode, projectcode))
 
+  def refreshstats(self):
+    """manually refreshes all the stats files"""
+    for projectcode in self.getprojectcodes():
+      print "Project %s:" % (projectcode)
+      for languagecode in self.getlanguagecodes(projectcode):
+        print "Project %s, Language %s:" % (projectcode, languagecode)
+        translationproject = self.getproject(languagecode, projectcode)
+        translationproject.stats = {}
+        for pofilename in translationproject.pofilenames:
+          translationproject.getpostats(pofilename)
+          print ".",
+        print
+
