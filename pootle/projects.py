@@ -40,7 +40,7 @@ class TranslationSession:
     """submits a new/changed translation from the user"""
     if issuggestion:
       if "suggest" not in self.rights:
-        raise RightsError(session.localize("you do not have rights to suggest changes here"))
+        raise RightsError(self.session.localize("you do not have rights to suggest changes here"))
       if self.session.isopen:
         username = self.session.username
       else:
@@ -48,7 +48,7 @@ class TranslationSession:
       self.project.suggesttranslation(pofilename, item, trans, username)
     else:
       if "translate" not in self.rights:
-        raise RightsError(session.localize("you do not have rights to change translations here"))
+        raise RightsError(self.session.localize("you do not have rights to change translations here"))
       self.project.updatetranslation(pofilename, item, trans)
 
   def skiptranslation(self, pofilename, item):
@@ -463,7 +463,6 @@ class TranslationProject:
 
   def getarchive(self, pofilenames):
     """returns an archive of the given filenames"""
-    import os
     tempzipfile = os.tmpnam()
     try:
       # using zip command line is fast
@@ -537,7 +536,7 @@ class TranslationProject:
           return False
         assigns = assigns[search.assignedto]
       else:
-        assigns = reduce(lambda x, y: x+y, [userassigns.keys() for userassign in assigns.values()], [])
+        assigns = reduce(lambda x, y: x+y, [userassigns.keys() for userassigns in assigns.values()], [])
       if search.assignedaction is not None:
         if search.assignedaction not in assigns:
           return False
@@ -889,7 +888,6 @@ class POTree:
         if os.path.exists(directoryname):
           return directoryname
       else:
-        directorypattern = search.directory
         if hasattr(search, "projectcode"):
           if search.projectcode != projectcode:
             continue
