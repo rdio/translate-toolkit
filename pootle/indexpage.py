@@ -131,29 +131,15 @@ class ProjectIndex(pagelayout.PootlePage):
     self.showchecks = argdict.get("showchecks", 0)
     if isinstance(self.showchecks, str) and self.showchecks.isdigit():
       self.showchecks = int(self.showchecks)
-    browselink = widgets.Link("index.html", "Browse")
-    checkslink = widgets.Link("index.html?showchecks=1", "Checks")
-    quicklink = widgets.Link("translate.html?fuzzy=1&blank=1", "Quick Translate")
-    reviewlink = widgets.Link("translate.html?review=1&has-suggestion=1", "Review Suggestions")
-    message = argdict.get("message", [])
+    pofilenames = self.project.browsefiles(dirfilter)
+    projectstats = self.project.calculatestats(pofilenames)
+    actionlinks = self.getactionlinks("", projectstats)
+    message = argdict.get("message", "")
     if message:
       message = pagelayout.IntroText(message)
-    processlinks = pagelayout.IntroText([browselink, checkslink, quicklink, reviewlink])
-    if dirfilter is None:
-      depth = 0
-    else:
-      depth = dirfilter.count(os.path.sep)
-      if not dirfilter.endswith(os.path.extsep + "po"):
-        depth += 1
-    direntries = []
-    fileentries = []
-    for childdir in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=False):
-      direntry = self.getdiritem(childdir)
-      direntries.append(direntry)
-    for childfile in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
-      fileentry = self.getfileitem(childfile)
-      fileentries.append(fileentry)
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, processlinks, direntries, fileentries], session, bannerheight=81)
+    processlinks = pagelayout.IntroText(actionlinks)
+    childitems = self.getchilditems(dirfilter)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, processlinks, childitems], session, bannerheight=81)
     self.addsearchbox(searchtext="", action="translate.html")
     if dirfilter and dirfilter.endswith(".po"):
       currentfolder = "/".join(dirfilter.split("/")[:-1])
@@ -166,6 +152,23 @@ class ProjectIndex(pagelayout.PootlePage):
         self.addfolderlinks("parent folder", parentfolder, "../index.html")
       depth = currentfolder.count("/") + 1
       self.addfolderlinks("project root", "/", "/".join([".."] * depth) + "/index.html")
+
+  def getchilditems(self, dirfilter):
+    """get all the items for directories and files viewable at this level"""
+    if dirfilter is None:
+      depth = 0
+    else:
+      depth = dirfilter.count(os.path.sep)
+      if not dirfilter.endswith(os.path.extsep + "po"):
+        depth += 1
+    childitems = []
+    for childdir in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=False):
+      diritem = self.getdiritem(childdir)
+      childitems.append(diritem)
+    for childfile in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
+      fileitem = self.getfileitem(childfile)
+      childitems.append(fileitem)
+    return childitems
 
   def getdiritem(self, direntry):
     """returns an item showing a directory entry"""
@@ -196,10 +199,10 @@ class ProjectIndex(pagelayout.PootlePage):
   def getactionlinks(self, basename, projectstats):
     """get links to the actions that can be taken on an item (directory / file)"""
     actionlinks = []
-    if basename.endswith("/"):
+    if not basename or basename.endswith("/"):
       baseactionlink = basename + "translate.html?"
       baseindexlink = basename + "index.html?"
-      browselink = widgets.Link(basename, 'Browse')
+      browselink = widgets.Link(basename or "index.html", 'Browse')
       actionlinks.append(browselink)
     else:
       baseactionlink = "%s?translate=1" % basename
@@ -207,6 +210,7 @@ class ProjectIndex(pagelayout.PootlePage):
       viewlink = widgets.Link('%s&view=1' % baseactionlink, 'View')
       actionlinks.append(viewlink)
     checkslink = widgets.Link(baseindexlink + "&showchecks=1", "Checks")
+    actionlinks.append(checkslink)
     if projectstats.get("has-suggestion", 0):
       reviewlink = widgets.Link(baseactionlink + "&review=1&has-suggestion=1", "Review Suggestions")
       actionlinks.append(reviewlink)
