@@ -29,6 +29,10 @@ from xml.dom import minidom
 
 class PoXliffParser(xliff.XliffParser):
   """a parser for the po variant of Xliff files"""
+  def __init__(self,*args,**kwargs):
+    xliff.XliffParser.__init__(self,*args,**kwargs)
+    self._filename = None
+    
   def createfilenode(self, filename):
     """creates a filenode with the given filename"""
     filenode = super(PoXliffParser, self).createfilenode(filename)
@@ -36,23 +40,40 @@ class PoXliffParser(xliff.XliffParser):
     filenode.setAttribute("source-language", "en-US")
     return filenode
 
+
   def addtransunit(self, filename, transunitnode, createifmissing=False):
+    """adds the given trans-unit to the last used body node if the filename has changed it uses the slow method instead (will create the nodes required if asked). Returns success"""
+    if self._filename != filename:
+      return self.slow_addtransunit(filename, transunitnode, createifmissing)
+    self._bodynode.appendChild(transunitnode)
+    transunitnode.ownerDocument = self.document
+    self._messagenum += 1
+    transunitnode.setAttribute("id", "messages_%d" % self._messagenum)
+    return True
+
+  def slow_addtransunit(self, filename, transunitnode, createifmissing=False):
     """adds the given trans-unit (will create the nodes required if asked). Returns success"""
+    self._filename = filename
+    
     filenode = self.getfilenode(filename)
     if filenode is None:
       if not createifmissing:
         return False
       filenode = self.createfilenode(filename)
       self.document.documentElement.appendChild(filenode)
-    for transunit in self.gettransunitnodes(filenode):
-      pass
+
+    
     if not createifmissing:
       return False
     bodynode = self.getbodynode(filenode, createifmissing=createifmissing)
+    self._bodynode = bodynode
     if bodynode is None: return False
     bodynode.appendChild(transunitnode)
     transunitnode.ownerDocument = self.document
     messagenum = len(bodynode.getElementsByTagName("trans-unit"))
+
+    self._messagenum = messagenum
+
     transunitnode.setAttribute("id", "messages_%d" % messagenum)
     return True
 
@@ -78,6 +99,35 @@ class PoXliffParser(xliff.XliffParser):
     filenode.appendChild(bodynode)
     return bodynode
 
+#------------
+
+def _findAllMatches(text,re_obj):
+  'generate match objects for all @re_obj matches in @text'
+  start = 0
+  max = len(text)
+  while start < max:
+    m = re_obj.search(text, start)
+    if not m: break
+    yield m
+    start = m.end()
+
+import re
+placeholders = ['(%[diouxXeEfFgGcrs])',r'(\\+.?)','(%[0-9]$lx)','(%[0-9]\$[a-z])','(<.+?>)']
+re_placeholders = [re.compile(ph) for ph in placeholders]
+def _getPhMatches(text):
+  'return list of regexp matchobjects for with all place holders in the @text'
+  matches = []
+  for re_ph in re_placeholders:
+    matches.extend(list(_findAllMatches(text,re_ph)))
+
+  # sort them so they come sequentially
+  matches.sort(lambda a,b: cmp(a.start(),b.start()))
+  return matches
+
+  
+#------------
+
+
 class po2xliff:
   def createtransunit(self, thepo):
     """creates a transunit node"""
@@ -88,16 +138,17 @@ class po2xliff:
     if isinstance(translation, str):
       translation = translation.decode("utf-8")
     transunitnode = minidom.Element("trans-unit")
-    sourcenode = minidom.Element("source")
-    sourcetext = minidom.Text()
-    sourcetext.data = source
-    sourcenode.appendChild(sourcetext)
+    sourcenode = self.createXliffNode("source",source)
     transunitnode.appendChild(sourcenode)
-    targetnode = minidom.Element("target")
-    targettext = minidom.Text()
-    targettext.data = translation
-    targetnode.appendChild(targettext)
-    transunitnode.appendChild(targetnode)
+    if translation:
+      targetnode = self.createXliffNode("target",translation)
+      transunitnode.appendChild(targetnode)
+      if thepo.isfuzzy():
+        targetnode.setAttribute("state", "needs-review-translation")
+        targetnode.setAttribute("state-qualifier", "fuzzy-match")
+      else:
+        targetnode.setAttribute("state", "translated")
+        
     for sourcelocation in thepo.getsources():
       transunitnode.appendChild(self.createcontextgroup(sourcelocation))
     return transunitnode
@@ -106,6 +157,29 @@ class po2xliff:
     textnode = minidom.Text()
     textnode.data = text
     return textnode
+
+  def createXliffNode(self,nodename,text):
+    '''
+    Create a Xliff Source/Target node with placeholder tags
+    @nodename: 'target' or 'source'
+    @text: text to add to node
+    returns the node created
+    '''
+    node = minidom.Element(nodename)
+
+    start = 0
+    for i,m in enumerate(_getPhMatches(text)):
+      #pretext
+      node.appendChild(self.maketextnode(text[start:m.start()]))
+      #ph node 
+      phnode = minidom.Element("ph")
+      phnode.setAttribute("id", str(i+1))
+      phnode.appendChild(self.maketextnode(m.group()))
+      node.appendChild(phnode)
+      start = m.end()
+    #post text
+    node.appendChild(self.maketextnode(text[start:]))
+    return node
 
   def createcontextgroup(self, sourcelocation):
     """creates an xliff context group for the given po sourcelocation"""
@@ -140,7 +214,7 @@ class po2xliff:
         continue
       transunitnode = self.createtransunit(thepo)
       xlifffile.addtransunit(filename, transunitnode, True)
-    return xlifffile.getxml()
+    return xlifffile.getxml(pretty=False)
 
 def convertpo(inputfile, outputfile, templatefile):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
