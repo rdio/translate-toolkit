@@ -29,6 +29,44 @@ except:
   # if it doesn't work, use our local copy of it...
   from translate.misc import csv
 
+from translate.misc import sparse
+
+class SimpleDictReader:
+  def __init__(self, fileobj, fieldnames):
+    self.fieldnames = fieldnames
+    self.contents = fileobj.read()
+    self.parser = sparse.SimpleParser(defaulttokenlist=[",", "\n"],whitespacechars="\r")
+    self.parser.stringescaping = 0
+    self.tokens = self.parser.tokenize(self.contents)
+    self.tokenpos = 0
+
+  def __iter__(self):
+    return self
+
+  def next(self):
+    while self.tokenpos < len(self.tokens) and self.tokens[self.tokenpos] == "\n":
+      self.tokenpos += 1
+    if self.tokenpos >= len(self.tokens):
+      raise StopIteration()
+    thistokens = []
+    while self.tokenpos < len(self.tokens) and self.tokens[self.tokenpos] != "\n":
+      thistokens.append(self.tokens[self.tokenpos])
+      self.tokenpos += 1
+    while self.tokenpos < len(self.tokens) and self.tokens[self.tokenpos] == "\n":
+      self.tokenpos += 1
+    fields = [token for token in thistokens if token != ","]
+    values = {}
+    printout = 0
+    for fieldnum in range(len(self.fieldnames)):
+      if fieldnum >= len(fields):
+        values[self.fieldnames[fieldnum]] = ""
+        printout = 1
+      elif fields[fieldnum].startswith("'") or fields[fieldnum].startswith('"'):
+        values[self.fieldnames[fieldnum]] = sparse.stringeval(fields[fieldnum]).replace("\r","").replace("\n","")
+      else:
+        values[self.fieldnames[fieldnum]] = fields[fieldnum]
+    return values
+
 class csvelement:
   def __init__(self):
     self.source = ""
@@ -60,7 +98,7 @@ class csvfile:
   def fromlines(self,lines):
     if type(lines) == list: lines = "".join(lines)
     csvfile = csv.StringIO(lines)
-    reader = csv.DictReader(csvfile, self.fieldnames)
+    reader = SimpleDictReader(csvfile, self.fieldnames)
     for row in reader:
       newce = csvelement()
       newce.fromdict(row)
