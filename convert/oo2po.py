@@ -72,7 +72,10 @@ class oo2po:
     else:
       if self.languages is None:
         part1 = theoo.lines[0]
-        part2 = theoo.lines[1]
+        if len(theoo.lines) > 1:
+          part2 = theoo.lines[1]
+        else:
+          part2 = oo.ooline()
       else:
         try:
           part1 = theoo.languages[self.languages[0]]
