@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
 from jToolkit.web import server
-from jToolkit.web.session import md5hexdigest
+from jToolkit.web import session
 from jToolkit import prefs
 from jToolkit.widgets import widgets
 from jToolkit.widgets import form
 from jToolkit import mailer
-from jToolkit import passwordgen
 from translate.pootle import indexpage
 from translate.pootle import translatepage
 from translate.pootle import pagelayout
 from translate.pootle import projects
+import sys
 import os
+import random
 
 class LoginPage(server.LoginPage, pagelayout.PootlePage):
   """wraps the normal login page in a PootlePage layout"""
@@ -34,11 +35,29 @@ class RegisterPage(pagelayout.PootlePage):
 
   def getform(self):
     columnlist = [("email", "Email Address", "Must be a valid email address"),
-                  ("username", "Username", "Your requested username")]
-    formlayout = {1:("email", ), 2:("username", )}
+                  ("username", "Username", "Your requested username"),
+                  ("password", "Password", "Your desired password")]
+    formlayout = {1:("email", ), 2:("username", ), 3:("password", )}
     extrawidgets = [widgets.Input({'type': 'submit', 'name':'register', 'value':'Register'})]
     record = dict([(column[0], self.argdict.get(column[0], "")) for column in columnlist])
     return form.SimpleForm(record, "register", columnlist, formlayout, {}, extrawidgets)
+
+class ActivatePage(pagelayout.PootlePage):
+  """page for new registrations"""
+  def __init__(self, session, argdict):
+    introtext = [pagelayout.IntroText("Please enter your activation details"),
+                 pagelayout.IntroText("Current Status: %s" % session.status)]
+    self.argdict = argdict
+    contents = [introtext, self.getform()]
+    pagelayout.PootlePage.__init__(self, "Pootle Account Activation", contents, session)
+
+  def getform(self):
+    columnlist = [("username", "Username", "Your requested username"),
+                  ("activationcode", "Activation Code", "The activation code you received")]
+    formlayout = {1:("username", ), 2:("activationcode", )}
+    extrawidgets = [widgets.Input({'type': 'submit', 'name':'activate', 'value':'Activate Account'})]
+    record = dict([(column[0], self.argdict.get(column[0], "")) for column in columnlist])
+    return form.SimpleForm(record, "activate", columnlist, formlayout, {}, extrawidgets)
 
 class OptionalLoginAppServer(server.LoginAppServer):
   """a server that enables login but doesn't require it except for specified pages"""
@@ -51,9 +70,21 @@ class OptionalLoginAppServer(server.LoginAppServer):
       session.remote_ip = self.getremoteip(req)
     return self.getpage(pathwords, session, argdict)
 
+class ActivateSession(session.LoginSession):
+  def validate(self):
+    """checks if this session is valid"""
+    if not super(ActivateSession, self).validate():
+      return False
+    if not getattr(getattr(self.instance.users, self.username, None), "activated", 0):
+      self.isvalid = False
+      self.status = "username has not yet been activated"
+    return self.isvalid
+
 class PootleServer(OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage):
+    if sessioncache is None:
+      sessioncache = session.SessionCache(sessionclass=ActivateSession)
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.potree = projects.POTree(self.instance)
 
@@ -66,6 +97,10 @@ class PootleServer(OptionalLoginAppServer):
   def refreshstats(self):
     """refreshes all the available statistics..."""
     self.potree.refreshstats()
+
+  def generateactivationcode(self):
+    """generates a unique activation code"""
+    return "".join(["%02x" % int(random.random()*0x100) for i in range(16)])
 
   def getpage(self, pathwords, session, argdict):
     """return a page that will be sent to the user"""
@@ -86,6 +121,8 @@ class PootleServer(OptionalLoginAppServer):
       return LoginPage(session)
     elif top == "register.html":
       return self.registerpage(session, argdict)
+    elif top == "activate.html":
+      return self.activatepage(session, argdict)
     elif top == "projects":
       pathwords = pathwords[1:]
       if pathwords:
@@ -171,44 +208,89 @@ class PootleServer(OptionalLoginAppServer):
     if not username or not username.isalnum() or not username[0].isalpha():
       raise ValueError("username must be alphanumeric")
     email = argdict.get("email", "")
+    password = argdict.get("password", "")
     if not email:
       raise ValueError("must supply a valid email address")
-    password = passwordgen.createpassword()
+    minpasswordlen = 6
+    if not password or len(password) < minpasswordlen:
+      raise ValueError("must supply a valid password of at least %d characters" % minpasswordlen)
     userexists = session.userexists(username)
     if userexists:
-      getattr(self.instance.users, username).passwdhash = md5hexdigest(password)
-      message = "your password has been updated\n"
+      usernode = getattr(self.instance.users, username)
+      # use the email address on file
+      email = getattr(usernode, "email", email)
+      message = "you (or someone else) requested your password...\n"
+      displaymessage = "that username already exists. emailing the password to the username's email address...\n"
+      redirecturl = "login.html"
     else:
-      setattr(self.instance.users, username + ".passwdhash", md5hexdigest(password))
+      setattr(self.instance.users, username + ".passwdhash", session.md5hexdigest(password))
       message = "an account has been created for you\n"
+      setattr(self.instance.users, username + ".activated", 0)
+      activationcode = self.generateactivationcode()
+      setattr(self.instance.users, username + ".activationcode", activationcode)
+      message = "to activate it, enter the following activation code:\n%s\n" % activationcode
+      displaymessage = "account created. will be emailed login details. enter activation code on the next page"
+      redirecturl = "activate.html"
     self.saveprefs()
     message += "username: %s\npassword: %s\n" % (username, password)
-    # TODO: handle emailing properly, but printing now to make it easier
-    print message
-    return message
+    smtpserver = self.instance.registration.smtpserver
+    errmsg = mailer.dosendmessage(fromemail=self.instance.registration.fromaddress, recipientemails=[username], message=message, smtpserver=smtpserver)
+    if errmsg:
+      raise ValueError(errmsg)
+    return displaymessage, redirecturl
 
   def registerpage(self, session, argdict):
     """handle registration or return the Register page"""
     if "username" in argdict:
       try:
-        message = self.handleregistration(session, argdict)
+        displaymessage, redirecturl = self.handleregistration(session, argdict)
       except ValueError, message:
         session.status = str(message)
         return RegisterPage(session, argdict)
-      # mailer.dosendmessage(self.instance.registration.fromaddress, [username], message)
-      redirecttext = pagelayout.IntroText(message + "Redirecting to login...")
-      redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
+      message = pagelayout.IntroText(displaymessage)
+      redirectpage = pagelayout.PootlePage("Redirecting...", [message], session)
       redirectpage.attribs["refresh"] = 10
-      redirectpage.attribs["refreshurl"] = "login.html"
+      redirectpage.attribs["refreshurl"] = redirecturl
       return redirectpage
     else:
       return RegisterPage(session, argdict)
+
+  def activatepage(self, session, argdict):
+    """handle activation or return the Register page"""
+    if "username" in argdict and "activationcode" in argdict:
+      username = argdict["username"]
+      activationcode = argdict["activationcode"]
+      usernode = getattr(self.instance.users, username, None)
+      if usernode is not None:
+        correctcode = getattr(usernode, "activationcode", "")
+        if correctcode and correctcode.strip().lower() == activationcode.strip().lower():
+          setattr(usernode, "activated", 1)
+          self.saveprefs()
+          redirecttext = pagelayout.IntroText("Your account has been activated! Redirecting to login...")
+          redirectpage = pagelayout.PootlePage("Redirecting to login...", redirecttext, session)
+          redirectpage.attribs["refresh"] = 10
+          redirectpage.attribs["refreshurl"] = "login.html"
+          return redirectpage
+      failedtext = pagelayout.IntroText("The activation link you have entered was not valid")
+      failedpage = pagelayout.PootlePage("Activation Failed", failedtext, session)
+      return failedpage
+    else:
+      return ActivatePage(session, argdict)
+
+def main_is_frozen():
+  import imp
+  return (hasattr(sys, "frozen") or # new py2exe
+          hasattr(sys, "importers") # old py2exe
+          or imp.is_frozen("__main__")) # tools/freeze
 
 if __name__ == '__main__':
   # run the web server
   from jToolkit.web import simplewebserver
   parser = simplewebserver.WebOptionParser()
-  pootledir = os.path.abspath(os.path.dirname(__file__))
+  if main_is_frozen():
+    pootledir = os.path.dirname(sys.executable)
+  else:
+    pootledir = os.path.abspath(os.path.dirname(__file__))
   prefsfile = os.path.join(pootledir, "pootle.prefs")
   parser.set_default('prefsfile', prefsfile)
   parser.set_default('instance', 'Pootle')
