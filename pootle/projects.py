@@ -487,12 +487,22 @@ class TranslationProject:
     self.projectdescription = self.potree.getprojectdescription(self.projectcode)
     self.projectcheckerstyle = self.potree.getprojectcheckerstyle(self.projectcode)
     self.podir = potree.getpodir(languagecode, projectcode)
-    self.pofilenames = potree.getpofiles(languagecode, projectcode)
+    self.pofiles = potimecache(15*60, self)
     checkerclasses = [checks.projectcheckers.get(self.projectcheckerstyle, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses, errorhandler=self.filtererrorhandler)
-    self.pofiles = potimecache(15*60, self)
-    self.initpootlefiles()
+    self.scanpofiles()
     self.initindex()
+
+  def scanpofiles(self):
+    """sets the list of pofilenames by scanning the project directory"""
+    self.pofilenames = self.potree.getpofiles(self.languagecode, self.projectcode)
+    for pofilename in self.pofilenames:
+      if not pofilename in self.pofiles:
+        self.pofiles[pofilename] = pootlefile(self, pofilename)
+    # remove any files that have been deleted since initialization
+    for pofilename in self.pofiles.keys():
+      if not pofilename in self.pofilenames:
+        del self.pofiles[pofilename]
 
   def filtererrorhandler(self, functionname, str1, str2, e):
     print "error in filter %s: %r, %r, %s" % (functionname, str1, str2, e)
@@ -732,11 +742,6 @@ class TranslationProject:
     if not (self.languagecode, self.projectcode) in session.translationsessions:
       session.translationsessions[self.languagecode, self.projectcode] = TranslationSession(self, session)
     return session.translationsessions[self.languagecode, self.projectcode]
-
-  def initpootlefiles(self):
-    """sets up pootle files (without neccessarily parsing them)"""
-    for pofilename in self.pofilenames:
-      self.pofiles[pofilename] = pootlefile(self, pofilename)
 
   def calculatestats(self, pofilenames=None):
     """calculates translation statistics for the given po files (or all if None given)"""

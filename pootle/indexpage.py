@@ -416,7 +416,11 @@ class ProjectIndex(pagelayout.PootlePage):
     if dirfilter == "":
       dirfilter = None
     self.dirfilter = dirfilter
-    if self.getboolarg("doassign"):
+    if dirfilter and dirfilter.endswith(".po"):
+      self.dirname = "/".join(dirfilter.split("/")[:-1])
+    else:
+      self.dirname = dirfilter or ""
+    if "doassign" in argdict:
       assignto = argdict.get("assignto", None)
       action = argdict.get("action", None)
       if not assignto and action:
@@ -436,6 +440,18 @@ class ProjectIndex(pagelayout.PootlePage):
       search.assignedto = assignedto
       assigncount = self.project.unassignpoitems(search, assignedto)
       print "removed %d assigns from %s" % (assigncount, assignedto)
+    if "doupload" in argdict:
+      uploadfile = argdict.get("uploadfile", None)
+      if not uploadfile:
+        raise ValueError("cannot upload file, no file attached")
+      if not uploadfile.filename.endswith(".po"):
+        raise ValueError("can only upload PO files")
+      pathname = os.path.join(self.project.podir, self.dirname, uploadfile.filename)
+      if os.path.exists(pathname):
+        raise ValueError("that file already exists")
+      uploadfile.setstoragepath(os.path.join(self.project.podir, self.dirname))
+      uploadfile.savecontents(uploadfile.filename)
+      self.project.scanpofiles()
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []
@@ -453,6 +469,8 @@ class ProjectIndex(pagelayout.PootlePage):
     self.addsearchbox(searchtext="", action="translate.html")
     if session.issiteadmin() and self.showassigns:
       self.addassignbox()
+    if session.issiteadmin():
+      self.adduploadbox()
     self.addnavlinks(dirfilter)
 
   def getboolarg(self, argname, default=False):
@@ -523,6 +541,14 @@ class ProjectIndex(pagelayout.PootlePage):
     submitbutton = widgets.Input({"type": "submit", "name": "doassign", "value": self.localize("Assign Strings")})
     assignform = widgets.Form([assigntobox, actionbox, submitbutton], {"action": "", "name":"assignform"})
     self.links.addcontents(assignform)
+
+  def adduploadbox(self):
+    """adds a box that lets the user assign strings"""
+    self.links.addcontents(pagelayout.SidebarTitle(self.localize("Upload File")))
+    filebox = widgets.Input({"type": "file", "name": "uploadfile", "title": self.localize("Select file to upload")})
+    submitbutton = widgets.Input({"type": "submit", "name": "doupload", "value": self.localize("Upload File")})
+    uploadform = widgets.Form([filebox, submitbutton], {"action": "", "name":"uploadform", "enctype": "multipart/form-data"})
+    self.links.addcontents(uploadform)
 
   def getchilditems(self, dirfilter):
     """get all the items for directories and files viewable at this level"""
