@@ -16,11 +16,11 @@ import random
 
 class PootleServer(users.OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
-  def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=users.LoginPage):
+  def __init__(self, instance, webserver, sessioncache=None, errorhandler=None, loginpageclass=users.LoginPage):
     if sessioncache is None:
       sessioncache = session.SessionCache(sessionclass=users.PootleSession)
     self.potree = projects.POTree(instance)
-    super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
+    super(PootleServer, self).__init__(instance, webserver, sessioncache, errorhandler, loginpageclass)
     self.setdefaultoptions()
 
   def saveprefs(self):
