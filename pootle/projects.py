@@ -216,19 +216,33 @@ class TranslationProject:
   def classifyelements(self, pofile):
     # we always want to have the classifications available
     pofile.classify = {}
-    pofile.classify["fuzzy"] = [item for item, poel in enumerate(pofile.transelements) if poel.isfuzzy()]
-    pofile.classify["blank"] = [item for item, poel in enumerate(pofile.transelements) if poel.isblankmsgstr()]
-    pofile.classify["translated"] = [item for item, poel in enumerate(pofile.transelements) if item not in pofile.classify["fuzzy"] and item not in pofile.classify["blank"]]
-    pofile.classify["total"] = range(len(pofile.transelements))
+    pofile.classify["fuzzy"] = []
+    pofile.classify["blank"] = []
+    pofile.classify["translated"] = []
+    pofile.classify["total"] = []
     for checkname in self.checker.getfilters().keys():
       pofile.classify["check-" + checkname] = []
     for item, poel in enumerate(pofile.transelements):
-      unquotedid = po.getunquotedstr(poel.msgid, joinwithlinebreak=False)
-      unquotedstr = po.getunquotedstr(poel.msgstr, joinwithlinebreak=False)
-      failures = self.checker.run_filters(poel, unquotedid, unquotedstr)
-      for failure in failures:
-        functionname = failure.split(":",2)[0]
-        pofile.classify["check-" + functionname].append(item)
+      classes = self.classifyelement(poel)
+      for classname in classes:
+        pofile.classify[classname].append(item)
+
+  def classifyelement(self, poel):
+    """returns all classify keys that this element should match"""
+    classes = ["total"]
+    if poel.isfuzzy():
+      classes.append("fuzzy")
+    if poel.isblankmsgstr():
+      classes.append("blank")
+    if not ("fuzzy" in classes or "blank" in classes):
+      classes.append("translated")
+    unquotedid = po.getunquotedstr(poel.msgid, joinwithlinebreak=False)
+    unquotedstr = po.getunquotedstr(poel.msgstr, joinwithlinebreak=False)
+    failures = self.checker.run_filters(poel, unquotedid, unquotedstr)
+    for failure in failures:
+      functionname = failure.split(":",2)[0]
+      classes.append("check-" + functionname)
+    return classes
 
   def getpofilelen(self, pofilename):
     """returns number of items in the given pofilename"""
