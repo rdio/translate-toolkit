@@ -4,6 +4,8 @@
 
 from translate.storage import po
 from translate.misc import quote
+# TODO: po2csv needs to be made an importable module
+# from translate.convert import po2csv
 import os
 
 class TranslationSession:
@@ -15,10 +17,10 @@ class TranslationSession:
     self.pofile = None
     self.lastitem = None
 
-  def getnextitem(self):
+  def getnextitem(self, dirfilter=None):
     """gives the user the next item to be translated"""
     matchnames = ["fuzzy", "blank"]
-    self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchnames)
+    self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchnames, dirfilter)
     self.pofile = self.translationproject.getpofile(self.pofilename)
     thepo = self.pofile.transelements[item]
     orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
@@ -27,6 +29,11 @@ class TranslationSession:
   def receivetranslation(self, pofilename, item, trans):
     """submits a new/changed translation from the user"""
     self.translationproject.receivetranslation(pofilename, item, trans)
+    self.pofilename = pofilename
+    self.lastitem = item
+
+  def skiptranslation(self, pofilename, item):
+    """skips a declined translation from the user"""
     self.pofilename = pofilename
     self.lastitem = item
 
@@ -40,6 +47,38 @@ class TranslationProject:
     os.path.walk(self.subproject.podir, self.addfiles, None)
     self.initstatscache()
 
+  def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
+    """gets a list of pofilenames, optionally filtering with the parent directory"""
+    if dirfilter is None:
+      pofilenames = self.pofilenames
+    else:
+      if not dirfilter.endswith(os.path.sep):
+        dirfilter += os.path.sep
+      pofilenames = [pofilename for pofilename in self.pofilenames if pofilename.startswith(dirfilter)]
+    if includedirs:
+      podirs = {}
+      for pofilename in pofilenames:
+        dirname = os.path.dirname(pofilename)
+	if not dirname:
+	  continue
+        podirs[dirname] = True
+	while dirname:
+	  dirname = os.path.dirname(dirname)
+	  if dirname:
+	    podirs[dirname] = True
+      podirs = podirs.keys()
+    else:
+      podirs = []
+    if not includefiles:
+      pofilenames = []
+    if maxdepth is not None:
+      pofilenames = [pofilename for pofilename in pofilenames if pofilename.count(os.path.sep) <= maxdepth]
+      podirs = [podir for podir in podirs if podir.count(os.path.sep) <= maxdepth]
+    if depth is not None:
+      pofilenames = [pofilename for pofilename in pofilenames if pofilename.count(os.path.sep) == depth]
+      podirs = [podir for podir in podirs if podir.count(os.path.sep) == depth]
+    return pofilenames + podirs
+
   def getnextpofilename(self, pofilename):
     """gets the pofilename that comes after the given one (or the first if pofilename is None)"""
     if pofilename is None:
@@ -48,22 +87,26 @@ class TranslationProject:
       index = self.pofilenames.index(pofilename)
       return self.pofilenames[index+1]
 
-  def findnextpofilename(self, pofilename, matchnames):
+  def findnextpofilename(self, pofilename, matchnames, dirfilter):
     """find the next pofilename that has items matching one of the given classification names"""
     matches = False
     while not matches:
       pofilename = self.getnextpofilename(pofilename)
+      if dirfilter is not None and not pofilename.startswith(dirfilter):
+        continue
+      if matchnames is None:
+        return pofilename
       postats = self.getpostats(pofilename)
       for name in matchnames:
         if postats[name]:
           return pofilename
     raise IndexError("no more pofilenames could be found")
 
-  def findnextitem(self, pofilename, item, matchnames):
+  def findnextitem(self, pofilename, item, matchnames, dirfilter):
     """finds the next item matching one of the given classification names"""
     matches = False
     while not matches:
-      pofilename, item = self.getnextitem(pofilename, item, matchnames)
+      pofilename, item = self.getnextitem(pofilename, item, matchnames, dirfilter)
       pofile = self.getpofile(pofilename)
       matches = False
       for name in matchnames:
@@ -72,7 +115,7 @@ class TranslationProject:
           continue
     return pofilename, item
 
-  def getnextitem(self, pofilename, lastitem, matchnames):
+  def getnextitem(self, pofilename, lastitem, matchnames, dirfilter):
     """skips to the next item. uses matchnames to filter next pofile if required"""
     if lastitem is None:
       item = 0
@@ -84,9 +127,9 @@ class TranslationProject:
       pofile = self.getpofile(pofilename)
     while pofile is None or item >= len(pofile.transelements):
       if matchnames:
-        pofilename = self.findnextpofilename(pofilename, matchnames)
+        pofilename = self.findnextpofilename(pofilename, matchnames, dirfilter)
       else:
-        pofilename = self.getnextpofilename(pofilename)
+        pofilename = self.findnextpofilename(pofilename, None, dirfilter)
       pofile = self.getpofile(pofilename)
       item = 0
     return pofilename, item
@@ -123,10 +166,14 @@ class TranslationProject:
             continue
           self.stats[pofilename] = postats
 
-  def calculatestats(self):
-    """calculates translation statistics for all the po files"""
+  def calculatestats(self, pofilenames=None):
+    """calculates translation statistics for the given po files (or all if None given)"""
     totalstats = {}
-    for pofilename in self.pofilenames:
+    if pofilenames is None:
+      pofilenames = self.pofilenames
+    for pofilename in pofilenames:
+      if not pofilename or os.path.isdir(pofilename):
+        continue
       postats = self.getpostats(pofilename)
       for name, count in postats.iteritems():
         totalstats[name] = totalstats.get(name, 0) + count
@@ -200,6 +247,21 @@ class TranslationProject:
     lines = pofile.tolines()
     abspofilename = os.path.join(self.subproject.podir, pofilename)
     open(abspofilename, "w").writelines(lines)
+
+  def getsource(self, pofilename):
+    """returns pofile source"""
+    pofile = self.getpofile(pofilename)
+    lines = pofile.tolines()
+    return "".join(lines)
+
+  def getcsv(self, csvfilename):
+    """returns pofile as csv"""
+    pofilename = csvfilename.replace(".csv", ".po")
+    pofile = self.getpofile(pofilename)
+    convertor = po2csv.po2csv()
+    csvfile = convertor.convertfile(pofile)
+    lines = csvfile.tolines()
+    return "".join(lines)
 
 projects = {}
 
