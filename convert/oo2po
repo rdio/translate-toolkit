@@ -173,6 +173,7 @@ class oo2po:
       for thepo in polist:
         thepofile.poelements.append(thepo)
     thepofile.removeblanks()
+    # TODO: add a switch for duplicates...
     thepofile.removeduplicates()
     return thepofile
 
