@@ -20,6 +20,7 @@ Pootle:
     dummy:
       passwdhash = ''
       activated = 0
+      email = ''
   projects:
     openoffice:
       fullname = "OpenOffice.org"
