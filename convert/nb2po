@@ -33,7 +33,14 @@ class nb2po:
     """makes a poelement"""
     thepo = po.poelement()
     thepo.sourcecomments.append("#: %s#%s\n" % (filename,fieldname))
-    thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in fieldvalue.split("\n")]
+    thepo.msgid = []
+    lines = fieldvalue.split("\n")
+    for linenum in range(len(lines)):
+      line = lines[linenum]
+      line = quote.escapequotes(line, escapeescapes=1)
+      if linenum != len(lines)-1:
+        line += "\\n"
+      thepo.msgid.append('"' + line + '"')
     if len(thepo.msgid) > 1:
       thepo.msgid = [quote.quotestr("")] + thepo.msgid
     thepo.msgstr = []

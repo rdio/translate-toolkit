@@ -37,7 +37,8 @@ class po2nb:
 
   def convertmessage(self, message):
     """converts a po message to a string"""
-    return po.getunquotedstr(message, includeescapes=False)
+    unquotedmessage = po.getunquotedstr(message, joinwithlinebreak=False, includeescapes=True)
+    return unquotedmessage.replace("\\n", "\n")
 
   def wrapmessage(self, message):
     """rewraps text as required"""
@@ -88,7 +89,7 @@ class po2nb:
       msgid = self.convertmessage(thepo.msgid)
       msgstr = self.wrapmessage(self.convertmessage(thepo.msgstr))
       if msgstr.strip():
-        nbresult = nbresult.replace(msgid, msgstr)
+        nbresult = nbresult.replace(msgid, msgstr, 1)
     return nbresult
 
 def convertnb(inputfile, outputfile, templatefile, wrap=None):
