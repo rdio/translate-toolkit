@@ -25,23 +25,36 @@ does a line-by-line conversion..."""
 from __future__ import generators
 import sys
 from translate.misc import quote
+from translate.storage import po
 
 # the rstripeols convert dos <-> unix nicely as well
 # output will be appropriate for the platform
+
+# TODO: make a translate.storage.properties class
+# TODO: convert to using that and the translate.storage.po class
 
 eol = "\n"
 
 class prop2po:
   def convertfile(self, inputfile, outputfile):
     self.inmultilinemsgid = 0
-    self.outputheader(outputfile)
+    alloutputlines = [self.getheader()]
     for line in inputfile.xreadlines():
       outputlines = self.convertline(line)
-      outputfile.writelines(outputlines)
+      alloutputlines.extend(outputlines)
+    # this code generates munged lines, so we reconstruct them here...
+    redolines = [line+'\n' for line in "".join(alloutputlines).split('\n')]
+    # this is all so we can remove duplicates.
+    # when the po class is used instead of line-by-line processing, this will be easier
+    p = po.pofile()
+    p.fromlines(redolines)
+    p.removeduplicates()
+    alloutputlines = p.tolines()
+    outputfile.writelines(alloutputlines)
 
-  def outputheader(self, outputfile):
+  def getheader(self):
     # TODO: handle this properly in the pofile class
-    outputfile.write('''# extracted from unknown file
+    return '''# extracted from unknown file
 #, fuzzy
 msgid ""
 msgstr ""
@@ -53,7 +66,7 @@ msgstr ""
 "MIME-Version: 1.0\\n"
 "Content-Type: text/plain; charset=CHARSET\\n"
 "Content-Transfer-Encoding: ENCODING\\n"
-'''+eol)
+'''+eol
 
   def convertline(self, line):
     """converts a line from properties format..."""

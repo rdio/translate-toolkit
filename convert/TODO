@@ -1,6 +1,5 @@
 --update option
   make recursive methods only run if input is newer than output
-handle duplicates in moz2pot and oo2pot
 mozilla - automate
   unpackxpi
   convert to .po files
@@ -8,6 +7,7 @@ mozilla - automate
   convert back
   repackxpi
 mozilla - migrate from one version to another
+improve prop2po, po2prop by creating a translate.storage.properties class
 
 make po files of all existing translations
 take over the world
