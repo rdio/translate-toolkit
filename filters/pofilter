@@ -65,6 +65,8 @@ class pocheckfilter:
     """runs filters on a file"""
     thenewpofile = po.pofile()
     for thepo in thepofile.poelements:
+      if (not self.includefuzzy and thepo.isfuzzy()) or (not self.includereview and thepo.hastypecomment("review")):
+        continue
       failures = self.filterelement(thepo)
       if failures:
         thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in failures])
@@ -115,11 +117,17 @@ if __name__ == '__main__':
   formats = {"po":("po", runpofilter), "pot":("pot", runpofilter), None:("po", runpofilter)}
   parser = FilterOptionParser(formats)
   parser.add_option("", "--review", dest="includereview",
-    action="store_true", default=False,
-    help="include elements marked for review")
+    action="store_true", default=True,
+    help="include elements marked for review (default)")
+  parser.add_option("", "--noreview", dest="includereview",
+    action="store_false", default=True,
+    help="exclude elements marked for review")
   parser.add_option("", "--fuzzy", dest="includefuzzy",
-    action="store_true", default=False,
-    help="include elements marked fuzzy")
+    action="store_true", default=True,
+    help="include elements marked fuzzy (default)")
+  parser.add_option("", "--nofuzzy", dest="includefuzzy",
+    action="store_false", default=True,
+    help="exclude elements marked fuzzy")
   parser.add_option("", "--openoffice", dest="filterclass",
     action="store_const", default=None, const=checks.OpenOfficeChecker,
     help="use the standard checks for OpenOffice translations")
