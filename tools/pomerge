@@ -122,8 +122,8 @@ if __name__ == '__main__':
     action="store", default="yes", help="whether to merge comments as well as translations (yes/no)")
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.add_option(mergeblanksoption)
-  parser.convertparameters.append("mergeblanks")
+  parser.passthrough.append("mergeblanks")
   parser.add_option(mergecommentsoption)
-  parser.convertparameters.append("mergecomments")
-  parser.runconversion()
+  parser.passthrough.append("mergecomments")
+  parser.run()
 
