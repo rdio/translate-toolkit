@@ -23,3 +23,11 @@ New tools
 		"Proxy Server" are extracted. The idea being that you can create a
 		glossary for a single PO file or for the whole project like KDE.
 		Translators get to define important words before beginning to translate
+
+pocount
+	- Only provide total if more than one file processed
+	- Count blank "   " messages seperately - currently does not count them but
+	  then figure is different to msgfmt --statistics.
+	- Handle Gettext plurals
+	- Optionally count items marked for review
+	- Provide Grand Total per item ie fuzzy+translated+untranslated
