@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""manages projects and files and translations"""
+"""manages po files and their associated files"""
 
 from translate.storage import po
 from translate.misc import quote
