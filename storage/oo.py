@@ -160,6 +160,8 @@ class oomultifile:
 
   def getsubfile(self, line):
     """looks up the subfile name for the line"""
+    if line.count("\t") < 2:
+      raise ValueError("invalid tab-delimited line: %r" % line)
     lineparts = line.split("\t", 2)
     module, filename = lineparts[0], lineparts[1]
     filename = filename.replace("\\", "/")
