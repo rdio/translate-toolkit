@@ -61,7 +61,11 @@ software.
 
 System Requirements
 -------------------
-Python 2.2 or higher, but often only tested with Python 2.3 :-)
+Python 2.3 recommended.
+
+The Toolkit may still work using Python 2.2 but is now most extensively tested 
+using Python 2.3.  If you experience any errors and are using Python 2.2 then 
+please first check that the error also occurs in 2.3 before reporting it as a bug.
 
 The programs have been tested on Linux and Windows.
 
