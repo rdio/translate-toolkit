@@ -8,7 +8,7 @@ current tasks:
   - create / review goals
   localize pootle
   - create po files
-  - set language on login
+  - set language on login (and detect languages from browser)
   priorities (directory/file order)
   process (administrators/translators/reviewers)
   locking
