@@ -137,7 +137,7 @@ class OptionalLoginAppServer(server.LoginAppServer):
     fullname = argdict.get("name", "")
     email = argdict.get("email", "")
     password = argdict.get("password", "")
-    if not (email and "@" in email and "." in email):
+    if " " in email or not (email and "@" in email and "." in email)):
       raise RegistrationError("You must supply a valid email address")
     userexists = session.loginchecker.userexists(username)
     users = session.loginchecker.users
