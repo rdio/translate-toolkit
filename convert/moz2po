@@ -28,6 +28,7 @@ from translate.storage import dtd
 from translate.storage import properties
 from translate.storage import po
 from translate.misc import quote
+from translate import __version__
 
 def convertdtd(inputfile, outputfile, templatefile):
   """reads in inputfile and templatefile using dtd, converts using dtd2po, writes to outputfile"""
@@ -142,7 +143,8 @@ if __name__ == '__main__':
   # TODO: add ability to import translations from another directory
   inputformats = {"dtd": convertdtd, "properties": convertprop}
   outputformat = "po"
-  parser = optparse.OptionParser(usage="%prog [-P|--pot] [-i|--input-dir inputdir] [-o|--output-dir outputdir] [-t|--template-dir templatedir]")
+  parser = optparse.OptionParser(usage="%prog [-P|--pot] [-i|--input-dir inputdir] [-o|--output-dir outputdir] [-t|--template-dir templatedir]",
+                                 version="%prog "+__version__.ver)
   parser.add_option("-i", "--input-dir", dest="inputdir", default=None,
                     help="read from inputdir in "+", ".join(inputformats)+" formats", metavar="inputdir")
   parser.add_option("-o", "--output-dir", dest="outputdir", default=None,

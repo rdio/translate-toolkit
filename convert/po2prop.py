@@ -27,6 +27,7 @@ leave out any unexpected stuff..."""
 import sys
 from translate.misc import quote
 from translate.storage import po
+from translate import __version__
 
 eol = "\n"
 
@@ -119,7 +120,8 @@ if __name__ == '__main__':
   inputformat = "po"
   outputformat = "properties"
   templateformat = "properties"
-  parser = optparse.OptionParser(usage="%prog [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]")
+  parser = optparse.OptionParser(usage="%prog [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]",
+                                 version="%prog "+__version__.ver)
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")
   parser.add_option("-o", "--output-file", dest="outputfile", default=None,

@@ -29,6 +29,7 @@ import os
 from translate.storage import po
 from translate.storage import oo
 from translate.misc import quote
+from translate import __version__
 
 class oo2po:
   def __init__(self, languages=None, blankmsgstr=0):
@@ -184,7 +185,8 @@ if __name__ == '__main__':
     from translate.misc import optparse
   inputformat = "oo"
   outputformat = "po"
-  parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile]")
+  parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile]",
+                                 version="%prog "+__version__.ver)
   parser.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False, \
                     help="recurse subdirectories")
   parser.add_option("-P", "--pot", action="store_true", dest="pot", default=False, \

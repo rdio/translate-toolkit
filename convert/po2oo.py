@@ -30,6 +30,7 @@ from translate.storage import oo
 from translate.storage import po
 from translate.misc import quote
 import time
+from translate import __version__
 
 def extractpoline(line):
   backslash = '\\'
@@ -227,7 +228,8 @@ if __name__ == '__main__':
     import optparse
   except ImportError:
     from translate.misc import optparse
-  parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]")
+  parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]",
+                                 version="%prog "+__version__.ver)
   parser.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False,
                     help="recurse subdirectories")
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 

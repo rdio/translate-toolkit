@@ -26,6 +26,7 @@ import os
 from translate.storage import dtd
 from translate.storage import po
 from translate.misc import quote
+from translate import __version__
 
 def findentities(definition):
   entities = {}
@@ -360,7 +361,8 @@ if __name__ == '__main__':
     import optparse
   except ImportError:
     from translate.misc import optparse
-  parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]")
+  parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile] [-t|--template templatefile]",
+                                 version="%prog "+__version__.ver)
   parser.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False, help="recurse subdirectories")
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")

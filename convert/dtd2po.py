@@ -27,6 +27,7 @@ import sys
 from translate.storage import po
 from translate.storage import dtd
 from translate.misc import quote
+from translate import __version__
 
 class dtd2po:
   def __init__(self):
@@ -299,7 +300,8 @@ if __name__ == '__main__':
   inputformat = "dtd"
   outputformat = "po"
   templateformat = "dtd"
-  parser = optparse.OptionParser(usage="%prog [-i|--input-file inputfile] [-o|--output-file outputfile]")
+  parser = optparse.OptionParser(usage="%prog [-i|--input-file inputfile] [-o|--output-file outputfile]",
+                                 version="%prog "+__version__.ver)
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")
   parser.add_option("-o", "--output-file", dest="outputfile", default=None,

@@ -28,6 +28,7 @@ from translate.convert import po2prop
 from translate.storage import dtd
 from translate.storage import po
 from translate.misc import quote
+from translate import __version__
 
 def convertdtd(inputfile, outputfile, templatefile):
   inputpo = po.pofile(inputfile)
@@ -119,7 +120,8 @@ if __name__ == '__main__':
     import optparse
   except ImportError:
     from translate.misc import optparse
-  parser = optparse.OptionParser(usage="%prog [-i|--input-dir inputdir] [-o|--output-dir outputdir] [-t|--template templatedir]")
+  parser = optparse.OptionParser(usage="%prog [-i|--input-dir inputdir] [-o|--output-dir outputdir] [-t|--template templatedir]",
+                                 version="%prog "+__version__.ver)
   parser.add_option("-i", "--input-dir", dest="inputdir", default=None,
                     help="read from inputdir in "+inputformat+" format", metavar="inputdir")
   parser.add_option("-o", "--output-dir", dest="outputdir", default=None,
