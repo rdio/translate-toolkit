@@ -51,11 +51,13 @@ class oo2po:
     """converts an oo key tuple into a key identifier for the po file"""
     project, sourcefile, resourcetype, groupid, localid, platform = ookey
     sourcefile = sourcefile.replace('\\','/')
+    sourceparts = sourcefile.split('/')
+    sourcebase = "".join(sourceparts[-1:])
     if (groupid) == 0 or len(localid) == 0:
       ooid = groupid + localid
     else:
       ooid = groupid + "." + localid
-    key = "%s/%s#%s" % (project, sourcefile, ooid)
+    key = "%s#%s" % (sourcebase, ooid)
     return oo.normalizefilename(key)
 
   def convertelement(self, theoo):

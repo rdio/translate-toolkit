@@ -58,11 +58,13 @@ class reoo:
     """converts an oo key tuple into a key identifier for the po file"""
     project, sourcefile, resourcetype, groupid, localid, platform = ookey
     sourcefile = sourcefile.replace('\\','/')
+    sourceparts = sourcefile.split('/')
+    sourcebase = "".join(sourceparts[-1:])
     if len(groupid) == 0 or len(localid) == 0:
       fullid = groupid + localid
     else:
       fullid = groupid + "." + localid
-    key = "%s/%s#%s" % (project, sourcefile, fullid)
+    key = "%s#%s" % (sourcebase, fullid)
     return oo.normalizefilename(key)
 
   def makeindex(self):
