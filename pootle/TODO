@@ -29,7 +29,6 @@ requirements for translatathon:
 
 other:
   handle plurals properly (currently ignored)
-  be able to add new projects / reconfigure without restarting the service
   add ability to mark/unmark things as fuzzy
   move the sidebar to be like distributed proofreaders (at the top, small)
   test with apache multiprocess
