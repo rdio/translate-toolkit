@@ -108,6 +108,9 @@ if __name__ == '__main__':
   parser.add_option("", "--gnome", dest="filterobject",
     action="store_const", default=None, const=checks.GnomeChecker(),
     help="use the standard checks for Gnome translations")
+  parser.add_option("", "--kde", dest="filterobject",
+    action="store_const", default=None, const=checks.KdeChecker(),
+    help="use the standard checks for KDE translations")
   parser.add_option("-x", "--exclude", dest="excludefilters",
     action="append", default=[], type="string", metavar="FILTER",
     help="don't use FILTER when filtering")

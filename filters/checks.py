@@ -203,6 +203,15 @@ class GnomeChecker(StandardChecker):
       varmatches = (("%", 1),)
       )
 
+class KdeChecker(StandardChecker):
+  def __init__(self):
+	# TODO allow setup of KDE plural and translator comments so that they do
+	# not create false postives
+    StandardChecker.__init__(self,
+      accelerators = ("&"),
+      varmatches = (("%", 1),)
+      )
+
 def runtests(str1, str2, ignorelist=()):
   """verifies that the tests pass for a pair of strings"""
   checker = StandardChecker()
