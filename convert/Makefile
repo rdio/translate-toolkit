@@ -45,7 +45,7 @@ help:
 	@echo
 	@echo currently need to edit dir/filenames in Makefile
 
-test: test-mozilla test-openoffice test-csv
+test: $(mozillatests) $(openofficetests) $(csvtests) clean
 
 clean: clean-mozilla clean-openoffice clean-csv
 
