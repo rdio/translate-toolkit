@@ -10,12 +10,13 @@ class TranslatePage(pagelayout.PootlePage):
   def __init__(self, project, subproject, session, argdict, dirfilter=None):
     self.project = project
     self.subproject = subproject
+    self.argdict = argdict
     self.dirfilter = dirfilter
     self.translationproject = projects.getproject(self.subproject)
-    self.matchnames = self.getmatchnames(argdict, self.translationproject.checker)
+    self.matchnames = self.getmatchnames(self.translationproject.checker)
     self.translationsession = self.translationproject.gettranslationsession(session)
     self.instance = session.instance
-    self.receivetranslations(argdict)
+    self.receivetranslations()
     translations = self.gettranslations()
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     translateform = widgets.Form([translations, contextinfo], {"name": "translate", "action":""})
@@ -40,26 +41,26 @@ class TranslatePage(pagelayout.PootlePage):
     autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
     self.headerwidgets.append(autoexpandscript)
 
-  def receivetranslations(self, argdict):
+  def receivetranslations(self):
     """receive any translations submitted by the user"""
-    skip = "skip" in argdict
-    for key, value in argdict.iteritems():
+    skip = "skip" in self.argdict
+    for key, value in self.argdict.iteritems():
       if key.startswith("trans"):
         try:
           item = int(key.replace("trans",""))
         except:
           continue
         # submit the actual translation back to the project...
-        pofilename = argdict["pofilename"]
+        pofilename = self.argdict["pofilename"]
 	if skip:
           self.translationsession.skiptranslation(pofilename, item)
 	else:
           self.translationsession.receivetranslation(pofilename, item, value)
 
-  def getmatchnames(self, argdict, checker): 
+  def getmatchnames(self, checker): 
     """returns any checker filters the user has asked to match..."""
     matchnames = []
-    for checkname in argdict:
+    for checkname in self.argdict:
       if checkname in checker.getfilters():
         matchnames.append("check-" + checkname)
       if checkname in ["fuzzy", "blank", "translated"]:
@@ -75,7 +76,15 @@ class TranslatePage(pagelayout.PootlePage):
     origtitle = table.TableCell("original", {"class":"translate-table-title"})
     transtitle = table.TableCell("translation", {"class":"translate-table-title"})
     self.addtransrow(-1, origtitle, transtitle)
-    self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem(self.dirfilter, self.matchnames)
+    item = self.argdict.get("item", None)
+    if item is None:
+      self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem(self.dirfilter, self.matchnames)
+    else:
+      if not item.isdigit():
+        raise ValueError("Invalid item given")
+      item = int(item)
+      self.pofilename = self.argdict.get("pofilename", None)
+      theorig, thetrans = self.translationsession.getitem(self.pofilename, item)
     translationsbefore = self.translationproject.getitemsbefore(self.pofilename, item, 3)
     translationsafter = self.translationproject.getitemsafter(self.pofilename, item, 3)
     self.translations = translationsbefore + [(theorig, thetrans)] + translationsafter
@@ -110,7 +119,10 @@ class TranslatePage(pagelayout.PootlePage):
       submitbutton = widgets.Input({"type":"submit", "name":"submit", "value":"submit"}, "submit")
       contents = [textarea, skipbutton, submitbutton]
     else:
-      contents = widgets.Font(trans, {"color":self.textcolors[row % 2]})
+      text = widgets.Font(trans, {"color":self.textcolors[row % 2]})
+      
+      editlink = widgets.Link("?translate=1&item=%d&pofilename=%s" % (row, self.pofilename), "Edit")
+      contents = [text, editlink]
     transdiv.addcontents(contents)
     return table.TableCell(transdiv, {"class":"translate-translation"})
 

@@ -14,16 +14,20 @@ class TranslationSession:
     self.session = session
     self.translationproject = translationproject
     self.pofilename = None
-    self.pofile = None
     self.lastitem = None
 
   def getnextitem(self, dirfilter=None, matchnames=[]):
     """gives the user the next item to be translated"""
     self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchnames, dirfilter)
-    self.pofile = self.translationproject.getpofile(self.pofilename)
-    thepo = self.pofile.transelements[item]
-    orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
+    orig, trans = self.getitem(self.pofilename, item)
     return self.pofilename, item, orig, trans
+
+  def getitem(self, pofilename, item):
+    """returns a particular item from a particular po file's orig, trans strings as a tuple"""
+    pofile = self.translationproject.getpofile(pofilename)
+    thepo = pofile.transelements[item]
+    orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
+    return orig, trans
 
   def receivetranslation(self, pofilename, item, trans):
     """submits a new/changed translation from the user"""
