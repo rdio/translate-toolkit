@@ -156,11 +156,17 @@ class TranslationProject:
             statsmtime = int(statsmtime)
             postats = {}
             for line in postatsstring.split("\n"):
+              if not line.strip():
+                continue
+              if not ":" in line:
+                print "invalid stats line in", statsfilename,line
+                continue
               name, count = line.split(":", 1)
               count = int(count.strip())
               postats[name.strip()] = count
-          except:
+          except Exception, e:
             # TODO: provide some logging here for debugging...
+            print "error processing stats for %s: %s" % (pofilename, e)
             continue
           if pomtime != statsmtime:
             continue
@@ -211,6 +217,7 @@ class TranslationProject:
     abspofilename = os.path.join(self.podir, pofilename)
     inputfile = open(abspofilename, "r")
     pofile = po.pofile(inputfile)
+    pofile.filename = pofilename
     # we ignore all the headers by using this filtered set
     pofile.transelements = [poel for poel in pofile.poelements if not (poel.isheader() or poel.isblank())]
     self.classifyelements(pofile)
@@ -237,11 +244,14 @@ class TranslationProject:
     pofile.classify["fuzzy"] = []
     pofile.classify["blank"] = []
     pofile.classify["translated"] = []
+    pofile.classify["has-suggestion"] = []
     pofile.classify["total"] = []
     for checkname in self.checker.getfilters().keys():
       pofile.classify["check-" + checkname] = []
     for item, poel in enumerate(pofile.transelements):
       classes = self.classifyelement(poel)
+      if self.getsuggestions(pofile, item):
+        classes.append("has-suggestion")
       for classname in classes:
         pofile.classify[classname].append(item)
 
@@ -249,6 +259,8 @@ class TranslationProject:
     """updates the classification of poel in pofile.classify"""
     poel = pofile.transelements[item]
     classes = self.classifyelement(poel)
+    if self.getsuggestions(pofile, item):
+      classes.append("has-suggestion")
     for classname, matchingitems in pofile.classify.items():
       if (classname in classes) != (item in matchingitems):
         if classname in classes:
@@ -317,6 +329,16 @@ class TranslationProject:
     pendingfile = self.getpendingfile(pofilename)
     pendingfile.poelements.append(newpo)
     self.savependingfile(pofilename)
+
+  def getsuggestions(self, pofile, item):
+    """find all the suggestions submitted for the given item"""
+    pendingfile = self.getpendingfile(pofile.filename)
+    thepo = pofile.transelements[item]
+    sources = thepo.getsources()
+    # TODO: review the matching method
+    suggestpos = [suggestpo for suggestpo in pendingfile.poelements if suggestpo.getsources() == sources]
+    suggestions = [po.getunquotedstr(suggestpo.msgstr) for suggestpo in suggestpos]
+    return suggestions
 
   def savepofile(self, pofilename):
     """saves changes to disk..."""
