@@ -170,6 +170,12 @@ class ConvertOptionParser(optparse.OptionParser):
     else:
       return open(options.output, 'w')
 
+  def gettemplatefile(self, options):
+    """gets the template file defined by the options"""
+    if self.usetemplates and options.template:
+      return open(options.template, 'r')
+    return None
+
   def runconversion(self, options, convertmethod):
     """runs the conversion method using the given commandline options..."""
     if (self.recursion == optionalrecursion and options.recursive) or (self.recursion == defaultrecursion):
@@ -183,7 +189,7 @@ class ConvertOptionParser(optparse.OptionParser):
         self.error(optparse.OptionValueError("output must be existing directory for recursive run."))
       self.recurseconversion(options)
     else:
-      convertmethod(self.getinputfile(options), self.getoutputfile(options), None)
+      convertmethod(self.getinputfile(options), self.getoutputfile(options), self.gettemplatefile(options))
 
   def getconvertmethod(self, inputext, outputext):
     """works out which conversion method to use..."""
