@@ -137,12 +137,14 @@ class ProjectIndex(pagelayout.PootlePage):
     bodytitle = '<h2 class="title">%s</h3>' % (dirfilter or self.project.projectname)
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
+      mainstats = []
     else:
       pofilenames = self.project.browsefiles(dirfilter)
       projectstats = self.project.calculatestats(pofilenames)
       actionlinks = self.getactionlinks("", projectstats)
       actionlinks = pagelayout.ActionLinks(actionlinks)
-    mainitem = pagelayout.MainItem([bodytitle, actionlinks])
+      mainstats = self.getitemstats((dirfilter or "") + "/", projectstats, len(pofilenames))
+    mainitem = pagelayout.MainItem([bodytitle, actionlinks, mainstats])
     childitems = self.getchilditems(dirfilter)
     pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, mainitem, childitems], session, bannerheight=81)
     self.addsearchbox(searchtext="", action="translate.html")
@@ -255,7 +257,7 @@ class ProjectIndex(pagelayout.PootlePage):
         continue
       checkname = checkname.replace("check-", "", 1)
       if total and checkcount:
-        checklink = "<a href='%s%s=1'>%s</a>" % (checklinkbase, checkname, checkname)
+        checklink = "<a href='%s&%s=1'>%s</a>" % (checklinkbase, checkname, checkname)
         stats = "%d strings (%d%%) failed" % (checkcount, (checkcount * 100 / total))
         yield "%s: %s" % (checklink, stats)
 
