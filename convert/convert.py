@@ -282,7 +282,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
       outputpath = self.getoutputname(options, inputpath, outputformat)
       fulloutputpath = self.getfulloutputpath(options, outputpath)
       if options.recursiveoutput and outputpath:
-        self.checksubdir(options.output, os.path.dirname(outputpath))
+        self.checkoutputsubdir(options, os.path.dirname(outputpath))
       success = self.convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
       self.reportprogress(inputpath, success)
     del self.progressbar
@@ -357,11 +357,11 @@ class ConvertOptionParser(optparse.OptionParser, object):
       if not os.path.isdir(currentpath):
         os.mkdir(currentpath)
 
-  def checksubdir(self, parent, subdir):
-    """checks to see if subdir under parent needs to be created, creates if neccessary"""
-    fullpath = os.path.join(parent, subdir)
+  def checkoutputsubdir(self, options, subdir):
+    """checks to see if subdir under options.output needs to be created, creates if neccessary"""
+    fullpath = os.path.join(options.output, subdir)
     if not os.path.isdir(fullpath):
-      self.mkdir(parent, subdir)
+      self.mkdir(options.output, subdir)
 
   def recurseinputfilelist(self, options):
     """use a list of files, and find a common base directory for them"""
@@ -420,6 +420,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def gettemplatename(self, options, inputname):
     """gets an output filename based on the input filename""" 
+    if not inputname or not options.recursivetemplate: return options.template
     inputbase, inputext = self.splitinputext(inputname)
     if self.usetemplates and options.template:
       for inputext1, templateext1 in self.outputoptions:

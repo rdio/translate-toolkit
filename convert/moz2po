@@ -102,7 +102,10 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
     if templatepath is not None:
       if self.isxpi(options.template):
         # TODO: deal with different names in input/template xpis
-        jarfilename, filename = options.templatexpi.ostojarpath(templatepath)
+        try:
+          jarfilename, filename = options.templatexpi.ostojarpath(templatepath)
+        except IndexError:
+          return False
         return options.templatexpi.jarfileexists(jarfilename, filename)
     return super(MozConvertOptionParser, self).templateexists(options, templatepath)
 

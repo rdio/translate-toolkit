@@ -42,11 +42,40 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
     """returns whether the file option is an xpi file"""
     return isinstance(fileoption, (str, unicode)) and fileoption.endswith(os.extsep + "xpi") and os.path.isfile(fileoption)
 
-  def recurseinputfiles(self, options):
-    """recurse through xpi file / directories and return files to be converted"""
+  def recurseconversion(self, options):
+    """recurse through directories and convert files"""
     if options.template and self.isxpi(options.template):
-      options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
-    return super(MozConvertOptionParser, self).recurseinputfiles(options)
+      options.templatexpi = xpi.XpiFile(options.template, includenonloc=True)
+    if options.output and options.output.endswith(os.extsep + "xpi"):
+      if self.isxpi(options.template):
+        options.outputxpi = options.templatexpi.clone(options.output, "a")
+      else:
+        options.outputxpi = xpi.XpiFile(options.output)
+    return super(MozConvertOptionParser, self).recurseconversion(options)
+
+  def getfulloutputpath(self, options, outputpath):
+    """gets the absolute path to an output file"""
+    if self.isxpi(options.output):
+      return outputpath
+    else:
+      return os.path.join(options.output, outputpath)
+
+  def checkoutputsubdir(self, options, subdir):
+    """checks to see if subdir under options.output needs to be created, creates if neccessary"""
+    if not self.isxpi(options.output):
+      super(MozConvertOptionParser, self).checkoutputsubdir(options, subdir)
+
+  def openoutputfile(self, options, fulloutputpath):
+    """opens the output file"""
+    if self.isxpi(options.output):
+      try:
+        jarfilename, filename = options.outputxpi.ostojarpath(fulloutputpath)
+      except IndexError:
+        self.warning("Could not find where to put %s in output xpi; writing to stdout" % fulloutputpath)
+        return sys.stdout
+      return options.outputxpi.openoutputstream(jarfilename, filename)
+    else:
+      return super(MozConvertOptionParser, self).openoutputfile(options, fulloutputpath)
 
   def opentemplatefile(self, options, fulltemplatepath):
     """opens the template file (if required)"""
@@ -85,13 +114,15 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
     if templatepath is not None:
       if self.isxpi(options.template):
         # TODO: deal with different names in input/template xpis
-        jarfilename, filename = options.templatexpi.ostojarpath(templatepath)
+        try:
+          jarfilename, filename = options.templatexpi.ostojarpath(templatepath)
+        except IndexError:
+          return False
         return options.templatexpi.jarfileexists(jarfilename, filename)
     return super(MozConvertOptionParser, self).templateexists(options, templatepath)
 
 if __name__ == '__main__':
   # handle command line options
-  from translate.convert import convert
   formats = {("dtd.po", "dtd"): ("dtd", po2dtd.convertdtd),
              ("properties.po", "properties"): ("properties", po2prop.convertprop),
              (None, "*"): ("*", convert.copytemplate),

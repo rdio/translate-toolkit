@@ -18,7 +18,7 @@
 
 # this Makefile currently just contains tests that we can run to check against major errors...
 
-mozillatests=test-moz2po-notemplate test-moz2po-xpinotemplate test-moz2po-withtemplate test-moz2po-xpiwithtemplate test-po2moz test-po2moz-xpitemplate
+mozillatests=test-moz2po-notemplate test-moz2po-xpinotemplate test-moz2po-withtemplate test-moz2po-xpiwithtemplate test-po2moz test-po2moz-xpitemplate test-po2moz.xpi
 openofficetests=test-oo2po test-po2oo
 csvtests=test-po2csv test-csv2po
 maintests=$(mozillatests) $(openofficetests) $(csvtests)
@@ -118,6 +118,13 @@ test-po2moz-xpitemplate: template=$(xpidir)/mozilla-1.6-langenus.xpi
 test-po2moz-xpitemplate: test-moz2po-xpiwithtemplate
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
+	./po2moz --progress=$(progress) $(input) $(output) -t $(template)
+
+test-po2moz.xpi: input=test-moz2po-xpiwithtemplate
+test-po2moz.xpi: output=test-po2moz.xpi
+test-po2moz.xpi: template=$(xpidir)/mozilla-1.6-langenus.xpi
+test-po2moz.xpi: test-moz2po-xpiwithtemplate
+	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	./po2moz --progress=$(progress) $(input) $(output) -t $(template)
 
 test-oo2po: input=$(oodir)/1.1/en

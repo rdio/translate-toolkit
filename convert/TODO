@@ -5,7 +5,6 @@
 handle encodings correctly (currently default to iso-8859-1 which is bad)
 allow .properties to be edited in UTF instead of escaped Unicode
 detect whether producing a .po or a .pot (make -P / --pot unneccessary)
-handle non-dtd/properties files in mozilla tools
 
 mozilla - automate
   repackxpi
