@@ -8,7 +8,7 @@ import urllib
 import operator
 from translate.misc import xmlwrapper
 
-availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'zu': 'Zulu'}
+availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'tn': 'Tswana', 'zu': 'Zulu'}
 
 class oosetupfile(xmlwrapper.XMLWrapper):
   def __init__(self, setupfile):
@@ -149,7 +149,7 @@ class ooinstallmanager(ConfigParser.RawConfigParser):
 class LanguageSelectionWindow(wx.Frame):
   """Window for selecting language"""
   def __init__(self, parent, id, title):
-    wx.Frame.__init__(self, parent, id, title, size=(400,260))
+    wx.Frame.__init__(self, parent, id, title, size=(420,280))
     self.panel = wx.Panel(self, wx.ID_ANY)
     self.versionlabel = wx.StaticText(self.panel, wx.ID_ANY, "Select version:")
     versions = ooinstallmanager().versions()
