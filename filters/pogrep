@@ -124,6 +124,7 @@ class GrepOptionParser(optrecurse.RecursiveOptionParser):
     options.inputformats = self.inputformats
     options.outputoptions = self.outputoptions
     options.checkfilter = pogrepfilter(options.searchstring, options.searchparts, options.ignorecase, options.useregexp, options.invertmatch)
+    self.usepsyco(options)
     self.recursiveprocess(options)
 
 def runpogrep(inputfile, outputfile, templatefile, checkfilter):
