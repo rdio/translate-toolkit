@@ -4,11 +4,9 @@
   only overwrite files if this is given (work out which tools its applicable to)
 detect whether producing a .po or a .pot (make -P / --pot unneccessary)
 
-mozilla - automate
-  repackxpi
-mozilla - migrate from one version to another
 moz2po
   make strings fuzzy if original == translation
+  currently breaks if entity string starts on separate line (see firefox official l10ns)
 headers
 	charset=UTF-8
 	correct POT generation dates
