@@ -1,3 +1,1140 @@
+2004-10-04 16:39  davidfraser
+
+	* __version__.py: version 0.8 RC1
+
+2004-10-04 16:37  davidfraser
+
+	* storage/oo.py: refactored oomultifile to work both as input file
+	  and as output file added 'mode' argument ('w' for writing, also
+	  done if file doesn't exist and mode is None) uses
+	  wStringIO.CatchStringOutput to write output file contents...
+
+2004-10-04 16:32  davidfraser
+
+	* convert/: convert.py, po2moz: added support for excluding files
+	  to convert.py (with -x/--exclude switch) added direct support for
+	  output archives to convert.py, moved some code out of po2moz /
+	  refactored (this will be used in po2oo too) close output files in
+	  processfile for ArchiveConvertOptionParser, since they may be
+	  subfiles...  also added support for passing kwargs through
+	  openarchive (so far just mode='w' is needed)
+
+2004-10-04 16:29  davidfraser
+
+	* storage/xpi.py, misc/wStringIO.py: moved CatchStringOutput from
+	  xpi to wStringIO
+
+2004-10-04 09:21  davidfraser
+
+	* misc/optrecurse.py: added an --exclude (or -x) option, so that
+	  for example you can ignore CVS directories.  Supports pattern
+	  matching e.g. *.bak
+
+2004-10-01 16:14  davidfraser
+
+	* storage/oo.py, convert/oo2po: made it so oo2po po files now
+	  contain the original oo pseudo-filename in the comment at the top
+
+2004-10-01 15:41  davidfraser
+
+	* convert/: oo2po, po2oo: include the resourcetype in the key to
+	  prevent overlapping keys made escaping consistent and workable so
+	  that the round trip is always correct
+
+2004-10-01 15:35  davidfraser
+
+	* misc/quote.py: took out odd method of not using escapes, do it
+	  sensibly
+
+2004-10-01 12:12  davidfraser
+
+	* convert/: oo2po, po2oo: reduce the keys so it only contains the
+	  base filename (the project and  directory are in the po file
+	  name)
+
+2004-10-01 11:44  davidfraser
+
+	* storage/oo.py: updated to work with
+	  convert.ArchiveConvertOptionParser made it able to handle input
+	  file name more cross-platform path generation iterator, in
+	  operator, openfile renamed to openinputfile
+
+2004-10-01 11:41  davidfraser
+
+	* convert/: oo2po, po2oo: added .txt as extension for oomultifiles
+
+2004-09-30 17:22  davidfraser
+
+	* convert/oo2po: support gsi and sdf extensions as archives
+
+2004-09-30 17:20  davidfraser
+
+	* convert/convert.py: check if templates are used before trying to
+	  access options.templates, to prevent error...
+
+2004-09-30 16:58  davidfraser
+
+	* convert/oo2po: switched to use convert.ArchiveConvertOptionParser
+	  (since it is the revamped MozCOP that GSICOP was based on)
+
+2004-09-30 12:47  davidfraser
+
+	* convert/oo2po: added a TODO
+
+2004-09-30 11:52  davidfraser
+
+	* convert/: convert.py, moz2po, po2moz: refactored as much as
+	  possible from MozConvertOptionParser classes in moz2po and po2moz
+	  the new class is convert.ArchiveConvertOptionParser, should be
+	  able to use for OO GSI files too...  moz2po now just uses the
+	  class directly, po2moz adds one method this required some changes
+	  to the xpi.XpiFile class, basically it uses a few methods and
+	  iterators/in operator so should be simple to implement other
+	  archive classes...
+
+2004-09-30 11:36  davidfraser
+
+	* misc/optrecurse.py: since splitinputext and splittemplateext are
+	  the same in the baseclass, and useful, made splitext that does
+	  that, and call it from them (splitinputext is overridden
+	  sometimes for some reason)
+
+2004-09-30 11:30  davidfraser
+
+	* storage/xpi.py: added __iter__, __contains__, openinputfile,
+	  openoutputfile methods used by convert  - that means it doesn't
+	  have to know much about XpiFiles if no region is found, try and
+	  get it automatically from the locale name only add dirmap entries
+	  for valid locale and region took out unused code for renaming
+	  (done in clone now)
+
+2004-09-30 09:17  davidfraser
+
+	* storage/oo.py: modified to produce lots of small files rather
+	  than one per module...
+
+2004-09-30 09:07  davidfraser
+
+	* storage/oo.py: renamed "module" variables to "subfile" in
+	  oomultifile added openfile method that uses wStringIO to create a
+	  pseudo-file for a subfile
+
+2004-09-29 17:57  davidfraser
+
+	* convert/oo2po: added GSIConvertOptionParser, analogous to
+	  XpiConvertOptionParser (and based on it) This allows treating a
+	  GSI file as multiple files, using oo.oomultifile similar support
+	  needed for the reverse process...
+
+2004-09-29 17:20  davidfraser
+
+	* storage/oo.py: added oomultifile class that can be used to treat
+	  smaller sections of a file as individual oofiles
+
+2004-09-29 16:32  davidfraser
+
+	* convert/oo2po: added support for passing language parameters on
+	  command line, TODO for making it work properly :-)
+
+2004-09-28 14:12  davidfraser
+
+	* convert/po2moz: added option to change locale, which restructures
+	  directories etc inside xpi jars using new xpi.clone parameters
+	  this is required for the round-trip xpi -> po -> xpi to work,
+	  which is now complete extended warning when files not found in
+	  structure
+
+2004-09-28 14:10  davidfraser
+
+	* storage/xpi.py: various changes needed to handle directory
+	  structures when changing language names (removed TODOs) split
+	  initdirmap into findlangreg and setlangreg move files directly in
+	  xpi (not in a sub-jar) into a "package" directory added method
+	  restructurejar which moves things from one lang-region to another
+	  modified clone to reconstruct jars using restructurejar keep
+	  locale and region as members
+
+2004-09-28 12:21  davidfraser
+
+	* tools/oosetupmerge: updated to handle languages list better
+
+2004-09-28 12:10  davidfraser
+
+	* storage/xpi.py: only print out the name when listing files...
+
+2004-09-28 12:08  davidfraser
+
+	* storage/html.py: added span as a text-marking tag
+
+2004-09-28 12:06  davidfraser
+
+	* __version__.py: version 0.8 beta 3
+
+2004-08-31 17:48  davidfraser
+
+	* convert/po2prop.py: added a little hook that will allow setting
+	  strings to empty values by setting the msgstr to "   " (three
+	  spaces)
+
+2004-08-31 17:07  davidfraser
+
+	* convert/dtd2po.py: fixed a bug where the logic for mixed entities
+	  failed for merging dtds (basically the mixed entity was marked as
+	  already merged when the original version was converted, so the
+	  translation was ignored) this is fixed by using "mixbuckets" to
+	  mark the alreadymerged value differently for orig and translation
+
+2004-08-31 15:23  davidfraser
+
+	* convert/: po2nb, nb2po: added fixes to handle end of lines sanely
+	  only replace one instance of each string in the result when
+	  converting back
+
+2004-08-27 13:46  davidfraser
+
+	* convert/po2html: only do a replace if the translation is
+	  non-empty
+
+2004-08-27 13:31  davidfraser
+
+	* convert/html2po: strip html blocks
+
+2004-08-27 13:10  davidfraser
+
+	* convert/html2po: allow generation of .pot files
+
+2004-08-27 13:07  davidfraser
+
+	* convert/: nb2po, po2nb: updated nb2po to fit with new
+	  storage.html handling of untaggeddata (part of normal blocks)
+	  added usepots option to nb2po nb parts files are always htm, not
+	  html - updated po2nb
+
+2004-08-27 13:01  davidfraser
+
+	* convert/html2po: added option to include untagged data
+
+2004-08-27 12:52  davidfraser
+
+	* convert/po2nb: added po2nb to translate nanoblogger part files
+	  using po files
+
+2004-08-27 12:26  davidfraser
+
+	* storage/html.py: added code to include untagged data in the blogs
+	  if desired added li as a valid marking tag
+
+2004-08-27 12:10  davidfraser
+
+	* convert/nb2po: added code to parse html and split up blocks with
+	  a fair amount of intelligence removed unneccessary import of os
+	  module
+
+2004-08-27 11:54  davidfraser
+
+	* convert/nb2po: added initial nb2po script for handling
+	  nanoblogger files
+
+2004-08-27 11:41  davidfraser
+
+	* convert/html2po, storage/html.py: moved POHTMLParser from
+	  convert/html2po to new storage/html.py module removed
+	  unneccessary import of os module
+
+2004-08-27 11:17  davidfraser
+
+	* convert/: TODO, html2po: added TODO for oo2po removed notes about
+	  po2html not existing...
+
+2004-08-23 13:22  davidfraser
+
+	* tools/ooswitchlang: need to import sys to get the arguments
+	  later...
+
+2004-08-18 12:25  davidfraser
+
+	* tools/oosetupmerge: rather have a \n inserted before the field
+	  name because this gives us the tab indentation we want
+
+2004-08-18 12:06  davidfraser
+
+	* tools/oosetupmerge: added code to localize module text (name,
+	  description)
+
+2004-08-18 11:59  davidfraser
+
+	* tools/oosetupmerge: added code to insert HelpText Text(nn)
+	  entries for each language - so installation Help is now localized
+	  use one suffix variable per index instead of recalculating it
+	  everywhere we can :-) to support inserting fields into sections,
+	  added end of variables to tokennums index added methods to
+	  renamefield, getfieldtokenrange, insertforeignvalue (just puts
+	  index tokenrange in before end of section)
+
+2004-08-17 11:46  davidfraser
+
+	* tools/ooo_languageselector.png: added icon for ooo language
+	  switcher on linux
+
+2004-08-17 11:43  davidfraser
+
+	* tools/oosetupmerge: allowed adding a file to zip without
+	  specifying contents (otherwise file was removed) fixed file size,
+	  date and time for zip changes check posix by looking at name of
+	  setup file, not os.name (we pack on linux anyway)
+
+2004-08-17 11:37  davidfraser
+
+	* tools/ooswitchlang: added expat import to prevent problem in
+	  singlefile version added code to look in directory program is
+	  installed in in case not run from there
+
+2004-08-17 09:38  davidfraser
+
+	* tools/oosetupmerge: added setuplaunchscript, code to create it
+	  for posix installers initialize members in constructor rather
+	  than from mergefiles...  moved desktop entries code into method
+	  adddesktopentries copy desktop files before generating
+	  mainsetupfile (this is because we will need to change file
+	  attributes...)
+
+2004-08-17 09:21  davidfraser
+
+	* tools/oosetupmerge: added TODO about HelpText
+
+2004-08-17 09:07  davidfraser
+
+	* tools/oosetupmerge: added code to add desktop / menu items with
+	  icons for kde and gnome (and gnome2) this required entries to
+	  access zip files the desktop entries are hardcoded and the icons
+	  are generated from icons/ooo_languageselector.png under the
+	  current directory
+
+2004-08-16 13:35  davidfraser
+
+	* tools/oosetupmerge: recursively rename a directory's child
+	  directories...  this should fix templates not being included
+
+2004-08-15 16:54  davidfraser
+
+	* tools/ooswitchlang: check if there are any valid oo versions if
+	  not, display a message and switch to advanced mode
+
+2004-08-15 16:31  davidfraser
+
+	* tools/ooswitchlang: moved xmlwrapper import to prevent expat
+	  version conflict
+
+2004-08-13 19:13  davidfraser
+
+	* convert/oo2po: added TODOs
+
+2004-08-12 11:42  davidfraser
+
+	* tools/ooswitchlang: improved tooltip for adminchoice
+
+2004-08-12 11:38  davidfraser
+
+	* tools/ooswitchlang: changed adminchoice to be a drop down box.
+	  moved above language selector added function getadminmode to work
+	  out what it means
+
+2004-08-12 11:29  davidfraser
+
+	* tools/ooswitchlang: make sure we return after finding the current
+	  directory, otherwise manual selection happens anyway...
+
+2004-08-12 11:24  davidfraser
+
+	* tools/ooswitchlang: added lots of error handling and intelligence
+	  so user gets reasonable messages if language cannot be found /
+	  set if registered version directory does not exist, ignore it
+	  (with a verbose log message) rather than showing message factored
+	  out finding directory in version names into separate function
+	  findregisteredversion try to look up if manually entered
+	  directory is one of registered versions
+
+2004-08-11 18:38  davidfraser
+
+	* convert/po2html: added simple po2html
+
+2004-08-11 11:27  davidfraser
+
+	* tools/oosetupmerge: added a shortisocode member for matching just
+	  language (e.g. en-US -> en) check hostnames to rename on every
+	  index, not just self. also check shortisocode
+
+2004-08-11 10:54  davidfraser
+
+	* tools/ooswitchlang: Sipedi is actually Sepedi - but have adopted
+	  "Sesotho sa Leboa" - "Northern Sotho" as better term
+
+2004-08-10 15:23  davidfraser
+
+	* tools/ooswitchlang.ico: add oo switchlang icon
+
+2004-08-10 15:12  davidfraser
+
+	* misc/xmlwrapper.py: import expat to prevent conflicts with wx
+
+2004-08-10 15:05  davidfraser
+
+	* tools/ooswitchlang: changed error dialog titles
+
+2004-08-10 15:04  davidfraser
+
+	* tools/ooswitchlang: added more info about needing to restart,
+	  changed title
+
+2004-08-10 14:56  davidfraser
+
+	* tools/ooswitchlang: Added lots of tooltips
+
+2004-08-10 14:40  davidfraser
+
+	* tools/ooswitchlang: changed language names to be in that
+	  language. added TODO to handle languages better changed cmdline
+	  to quote the binary name (otherwise on Windows it fails if in
+	  Program Files)
+
+2004-08-10 14:26  davidfraser
+
+	* tools/oosetupmerge: added code to create shortcuts for windows
+	  start menu added link to switch lang program
+
+2004-08-10 12:00  davidfraser
+
+	* tools/oosetupmerge: copy all the license, readme,
+	  thirdpartlicense etc files into the dest directory with -nn in
+	  their names (even do this for the main setup file as otherwise
+	  people will wonder what it is...)
+
+2004-08-10 11:42  davidfraser
+
+	* tools/oosetupmerge: added function islocalizefile, which now
+	  detects not only resource files but also README and LICENSE files
+
+2004-08-10 09:15  davidfraser
+
+	* convert/po2dtd.py: added note on \n characters
+
+2004-08-10 09:12  davidfraser
+
+	* convert/po2oo: putting in extra \ns was coming out in the oo
+	  files, this is leftover stuff from mozilla, don't add any...
+
+2004-08-06 14:21  davidfraser
+
+	* tools/ooswitchlang: added docstrings, comments
+
+2004-08-06 14:18  davidfraser
+
+	* tools/ooswitchlang: made forcing the default tried to improve
+	  labels...
+
+2004-08-06 14:08  davidfraser
+
+	* tools/ooswitchlang: added AutoSize method so we don't have to set
+	  the size manually also it works when switching modes...  note we
+	  use SetClientSize otherwise it is too small on Windows...
+
+2004-08-06 13:49  davidfraser
+
+	* tools/ooswitchlang: construct dirsizer in arrangeoptioncontrols
+	  each time (otherwise segfaults. Clearing a BoxSizer destroys it)
+	  Switch the advanced button label depending on self.advancedmode
+
+2004-08-06 13:38  davidfraser
+
+	* tools/ooswitchlang: added button to switch between simple and
+	  advanced modes, made it work took optionssizer construction out
+	  of arrangeoptioncontrols moved initial arrangeoptioncontrols call
+	  to later in constructor
+
+2004-08-06 13:25  davidfraser
+
+	* tools/ooswitchlang: rearranged creation and arranging of option
+	  controls into functions...  makes it much easier to read, and
+	  will be able to switch modes hopefully...
+
+2004-08-06 13:19  davidfraser
+
+	* tools/ooswitchlang: started adding code to do simple / advanced
+	  modes for the GUI...	added docstring and commandline option
+	  parsing added option for starting in advanced mode
+
+2004-08-05 19:18  davidfraser
+
+	* tools/oosetupmerge: needs to be quoted empty string :-)
+
+2004-08-05 18:42  davidfraser
+
+	* tools/ooswitchlang: forget the xmlwrapper stuff :-) added
+	  TODOs...
+
+2004-08-05 18:38  davidfraser
+
+	* tools/oosetupmerge: some files don't have a PackedName (they are
+	  usually just being deleted so it doesn't matter, just leave
+	  it...)
+
+2004-08-05 17:35  davidfraser
+
+	* convert/po2txt: added basic text wrapping
+
+2004-08-05 17:24  davidfraser
+
+	* storage/properties.py: don't decode unicode in comments
+
+2004-08-05 17:19  davidfraser
+
+	* misc/xmlwrapper.py: make life simpler by using
+	  ElementTree.XMLTreeBuilder (the XMLTreeBuilder module is just a
+	  backwards-compatibility wrapper)
+
+2004-08-05 17:10  davidfraser
+
+	* misc/quote.py: show the digits causing the problem...
+
+2004-08-05 17:05  davidfraser
+
+	* convert/po2txt, storage/po.py: made including escapes optional in
+	  po.getunquotedstr don't include escapes for text files...
+
+2004-08-05 16:41  davidfraser
+
+	* convert/po2oo: added requirement for languagecode (otherwise we
+	  produce bad target files...)
+
+2004-08-05 16:35  davidfraser
+
+	* convert/: po2txt, txt2po: created simple po2txt
+
+2004-08-05 12:33  davidfraser
+
+	* tools/ooswitchlang: try import xmlwrapper from the current
+	  directory if import fails...
+
+2004-08-05 12:11  davidfraser
+
+	* tools/oosetupmerge: add -j option to zip so it doesn't include
+	  the pathname added option --switchlang rather than including
+	  ooswitchlang.exe if it is there
+
+2004-08-05 11:33  davidfraser
+
+	* tools/oosetupmerge: added offset param to makepackedname in case
+	  more than one is needed removed direntry parameter for
+	  addmanualfile as it can be deduced from baseentry zip generates
+	  .zip files so rename them...
+
+2004-08-05 11:22  davidfraser
+
+	* tools/oosetupmerge: added self.manualfiles so any files added
+	  manually are automatically zipped into the right destination
+	  (currently using cmdline) added call to addfiletomodule so files
+	  added manually are also listed in the modulename to be installed
+	  added function makepackedname for when we need a new packedname
+	  added default value option to getfieldvalue, rather than getting
+	  errors added call to add ooswitchlang.exe to setup if it exists
+
+2004-08-05 10:56  davidfraser
+
+	* tools/oosetupmerge: use isocodes for directory names rather than
+	  using HostName (which could be full lang name) this means all the
+	  f* files have now got shorter names
+
+2004-08-05 10:49  davidfraser
+
+	* tools/oosetupmerge: refactored addfiletomodule to use a dummy
+	  setup file rather than searching for commas...  this means we
+	  don't have to leave out some files because we couldn't find the
+	  commas also we don't require the index (which will make it easier
+	  to add manual files)
+
+2004-08-05 10:13  davidfraser
+
+	* tools/oosetupmerge: factored out addfiletomodule from
+	  addforeignfile rename aftersection parameter of addmanualfile to
+	  baseentry
+
+2004-08-05 09:59  davidfraser
+
+	* tools/oosetupmerge: added addmanualfile method (adds a new
+	  section describing a file off disk)	- to be used for adding gui
+	  switchlang executable split off parsing code into base class
+	  SetupParser this allows us to create a little SetupParser to
+	  describe manual additions corrected dir arguments (one-off error
+	  from sys.argv->optparser change)
+
+2004-08-05 09:09  davidfraser
+
+	* tools/ooswitchlang: changed setlanguage to take admin and force
+	  as parameters setlanguage now displays errors and offers to force
+	  only quit if setlanguage successful
+
+2004-08-05 08:59  davidfraser
+
+	* tools/ooswitchlang: Added Tswana Enlarged window
+
+2004-08-05 08:50  davidfraser
+
+	* tools/oosetupmerge: improved doc string use optparse for option
+	  parsing added version info
+
+2004-08-05 08:33  davidfraser
+
+	* tools/oosetupmerge: use directory names rather than setup files
+	  as arguments copy other needed files (non-f*, non-setup.in[sf])
+
+2004-08-04 12:08  davidfraser
+
+	* tools/ooswitchlang: added browse button for selecting install dir
+	  tried to improve sizing...
+
+2004-08-04 11:39  davidfraser
+
+	* tools/ooswitchlang: added instructions for building exe...
+
+2004-08-04 10:22  davidfraser
+
+	* tools/ooswitchlang: add box for install directory include
+	  "(other)" for manually chosen directory...
+
+2004-08-04 10:21  davidfraser
+
+	* tools/oosetupmerge: try import on sparse and import directly if
+	  not in translate.misc - to allow standalone oosetupmerge also add
+	  basic commandline help...
+
+2004-08-02 22:02  dwaynebailey
+
+	* tools/TODO: Ideas for: - podiff - glossary creator
+
+2004-08-02 22:01  dwaynebailey
+
+	* misc/: optrecurse.py, progressbar.py: Improved naming of progress
+	  bar types
+
+2004-08-02 21:57  dwaynebailey
+
+	* convert/: convert.py, html2po, moz2po, txt2po: Improved usage
+	  messages
+
+2004-08-02 21:34  dwaynebailey
+
+	* convert/oo2po: Improved purpose message
+
+2004-07-30 14:09  davidfraser
+
+	* tools/ooswitchlang: fix up errors on windows - file:///x:/ ends
+	  up with an initial \\x:\\ in the path os.path.samefile not
+	  available on windows, just use equality
+
+2004-07-30 13:21  davidfraser
+
+	* tools/ooswitchlang: added code to handle multiple versions
+	  installed, use .sversionrc or sversion.ini to find versions use
+	  current directory or parent directory as well
+
+2004-07-29 13:44  davidfraser
+
+	* tools/ooswitchlang: call setofficelang directly (simpler) added
+	  ability to force it added size for window
+
+2004-07-29 13:38  davidfraser
+
+	* tools/ooswitchlang: added begin/end busy cursors so people know
+	  we're trying to set the language...
+
+2004-07-29 13:30  davidfraser
+
+	* tools/ooswitchlang: added check box to select whether to set the
+	  admin language or not update the current language when the admin
+	  check box is changed redid the sizing so that it works well for
+	  more than one option
+
+2004-07-29 13:16  davidfraser
+
+	* tools/ooswitchlang: simplified wx sizing
+
+2004-07-29 12:51  davidfraser
+
+	* tools/ooswitchlang: added code to call setofficelang with
+	  available options and deal with the return code this is better
+	  than changing xml files ourselves...	added function to get/set
+	  admin language
+
+2004-07-29 12:36  davidfraser
+
+	* tools/ooswitchlang: added a higher level to manage user / admin
+	  settings (will use setofficelang.bin as well...)
+
+2004-07-29 12:28  davidfraser
+
+	* tools/ooswitchlang: added tool for switching oo installation
+	  language (in progress)
+
+2004-07-28 15:26  davidfraser
+
+	* storage/xpi.py: combine iterjarcontents into initdirmap (so later
+	  we can intelligently handle the jar names...)
+
+2004-07-28 12:08  davidfraser
+
+	* misc/xmlwrapper.py: added makefixtagproc which can be used to set
+	  specific names for namespaces when rewriting file (by replacing
+	  ElementTree.fixtag) also added some excludetags capability to
+	  ignore certain plaintext/children...
+
+2004-07-22 13:03  davidfraser
+
+	* convert/sxw2po: added special code to exclude change tracking
+	  stuff from the sxw file
+
+2004-07-22 12:43  davidfraser
+
+	* convert/sxw2po: added sxw2po
+
+2004-07-22 12:38  davidfraser
+
+	* convert/: html2po, txt2po: fixed UTF8 -> UTF-8 (official name
+	  that msguniq likes)
+
+2004-07-22 12:37  davidfraser
+
+	* misc/xmlwrapper.py: added xml wrapper
+
+2004-07-20 00:30  tfogwill
+
+	* portal/importers/__init__.py: added missing __init__.py for
+	  importers
+
+2004-07-20 00:27  tfogwill
+
+	* portal/: database/createdb.sql, database/dbhelper.py,
+	  importers/Import.py, views/SetupView.py, views/filedetail.py,
+	  views/filedetail.tmpl, views/projectdetail.py,
+	  views/projectdetail.tmpl, views/projectlist.py,
+	  views/projectlist.tmpl, views/stringdetail.py,
+	  views/stringdetail.tmpl, views/testing.py: - added missing
+	  importer (imports from .pot and .po files), with a whole bunch of
+	  fixes.  - added a string formatter to the web stuff (for now, it
+	  is merely used to ensure that any html markup in the po strings
+	  is "escaped", so that it is not rendered in the browser) - a few
+	  bug fixes in dbhelper (escape % and ' in sql strings, etc)
+
+2004-07-19 21:13  tfogwill
+
+	* portal/: .cvsignore, createdb.py, dropdb.py, actions/Actions.py,
+	  database/createdb.sql, database/dbhelper.py, database/model.py,
+	  views/SetupView.py, views/filedetail.py, views/filedetail.tmpl,
+	  views/filelist.py, views/filelist.tmpl, views/projectdetail.py,
+	  views/projectdetail.tmpl, views/projectlist.py,
+	  views/projectlist.tmpl, views/stringdetail.py,
+	  views/stringdetail.tmpl, views/testing.py:  - cleanup: removed
+	  old (unused) code. This should help revent confusion as to which
+	  code to use (i.e. which is current)
+	   - added: missing files (model, a few views, db creation sql) -
+	  somehow I missed these with my last commit
+	   - other small updates
+
+2004-07-16 22:11  davidfraser
+
+	* tools/oosetupmerge: exclude non-alpha isocodes from
+	  ooSetupLocales
+
+2004-07-16 15:27  davidfraser
+
+	* tools/oosetupmerge: added keymunging so en-US gets changed to
+	  en_US also removed extra _ before suffix
+
+2004-07-16 14:28  davidfraser
+
+	* tools/oosetupmerge: disable updating the Languages field as
+	  support for language names in the setup selection list is
+	  currently limited
+
+2004-07-16 13:29  davidfraser
+
+	* tools/oosetupmerge: set the list of installed languages manually
+	  (rather than using default template system that doesn't work)
+
+2004-07-16 13:08  davidfraser
+
+	* tools/oosetupmerge: added code to merge config items ...  this
+	  fixes for example New->Text Document always being in the same
+	  language
+
+2004-07-16 12:46  davidfraser
+
+	* tools/: oosetup, oosetupmerge: renamed oosetup to oosetupmerge
+
+2004-07-16 12:38  davidfraser
+
+	* tools/oosetup: minor change that will make changing the
+	  packedname easier...
+
+2004-07-14 17:48  davidfraser
+
+	* storage/xpi.py: converted commonprefix code to make a more
+	  intelligent map based on locale directories...  locale/nn-NN gets
+	  mapped to lang-reg locale/NN gets mapped to reg also changed
+	  directory creation so we don't create unneccessary directories
+	  like this added a showprefix option which currently lists the
+	  maps determined (for debugging)
+
+2004-07-09 16:34  dwaynebailey
+
+	* filters/TODO: Adding HTML and email checker todo item
+
+2004-07-09 15:51  davidfraser
+
+	* storage/dtd.py: removed <!ENTITY xxx > definitions that have been
+	  commented out (will only work with single line definitions...)
+
+2004-07-09 15:50  davidfraser
+
+	* misc/quote.py: make stripcomment handle half-comments more
+	  intelligently (if comment is split over lines) in
+	  extractwithoutquotes, be careful if laststartinextracted is still
+	  None...  this produced a memory grabbing frenzy from psyco (as
+	  will ''[:None])
+
+2004-07-09 15:13  dwaynebailey
+
+	* filters/TODO: Wihslist XML/HTML checks
+
+2004-07-09 14:30  davidfraser
+
+	* filters/decoration.py: factored out isvalidaccelerator...
+
+2004-07-09 14:26  davidfraser
+
+	* filters/pofilter: made listfilters work even though input is not
+	  given (had to use a callback to do this...)
+
+2004-07-09 12:09  davidfraser
+
+	* misc/optrecurse.py: improved psyco importing logic, added
+	  excluded function encodings.search_function
+
+2004-07-09 11:54  davidfraser
+
+	* convert/po2moz: added fix for non-recursive templates (single
+	  file usage)
+
+2004-07-08 17:03  davidfraser
+
+	* storage/xpi.py: added compression to XPI files by default...
+
+2004-07-08 16:10  davidfraser
+
+	* convert/convert.py, filters/pofilter, filters/pogrep: added
+	  usepsyco option to run methods where neccessary...
+
+2004-07-08 16:07  davidfraser
+
+	* misc/optrecurse.py: added options to use psyco for speedup.
+	  print a warning message if its asked for but not available can be
+	  set to none/full/profile
+
+2004-07-08 15:36  davidfraser
+
+	* convert/po2moz: added message about writing xpi file as it can
+	  take a while more intelligence about single file / stdout output
+
+2004-07-08 15:31  davidfraser
+
+	* convert/convert.py: don't close copied files if the output is to
+	  a tty
+
+2004-07-08 15:20  davidfraser
+
+	* misc/zipfileext.py: removed unneccessary flush from writeendrec
+
+2004-07-08 14:47  davidfraser
+
+	* misc/wStringIO.py: only update the length after writing if we've
+	  written over the end of the file
+
+2004-07-08 13:01  davidfraser
+
+	* misc/optrecurse.py: added requireemnt to use - for stdin input
+	  instead of leaving it out this lets us give a more helpful error
+	  message if no options given at start...
+
+2004-07-07 18:10  davidfraser
+
+	* convert/dtd2po.py: added TODO to remind us about losing
+	  comments...
+
+2004-07-07 18:05  davidfraser
+
+	* convert/dtd2po.py: modified to exclude blank elements...
+
+2004-07-07 17:40  davidfraser
+
+	* tools/detectencoding: changed default output to utf-8
+
+2004-07-07 17:39  davidfraser
+
+	* convert/oo2po: changed to utf-8 for output.  this actually
+	  reflects what we were doing anyway...
+
+2004-07-07 17:28  davidfraser
+
+	* convert/: html2po, prop2po.py, txt2po: removed unneccessary pot
+	  cruft
+
+2004-07-07 17:20  davidfraser
+
+	* convert/: dtd2po.py, html2po, prop2po.py, txt2po: make pot file
+	  headers say charset=utf8 (and make sure encoding is 8bit too)
+	  otherwise gettext tools etc will complain about non-ASCII
+	  characters
+
+2004-07-07 17:08  davidfraser
+
+	* storage/properties.py: escape control characters in comments...
+
+2004-07-07 17:07  davidfraser
+
+	* misc/quote.py: separated out propertyescapes (renamed from
+	  escapes) and controlchars dicts from mozillapropertiesdecode
+	  added an escapecontrols method
+
+2004-07-07 15:17  davidfraser
+
+	* convert/po2prop.py: handle the new escaping produced by prop2po -
+	  we want \n to come through normally, but not \quotes or \\u...
+
+2004-07-07 15:09  davidfraser
+
+	* convert/prop2po.py: changed method of escaping strings for po
+	  files
+
+2004-07-07 14:51  davidfraser
+
+	* misc/quote.py: mozilla properties stufF: don't convert control
+	  characters to full representation (po converter can do that where
+	  it wants) added controlchars dict to make looking up controlchars
+	  easier (currently they all map to themselves but this could be
+	  changed)
+
+2004-07-07 12:51  davidfraser
+
+	* misc/sparse.py: added suport for having a different closing quote
+	  to starting quote character
+
+2004-07-07 12:38  davidfraser
+
+	* misc/quote.py: keep all the control characters escaped
+
+2004-07-07 12:29  davidfraser
+
+	* storage/properties.py: strip eols from comments and put a
+	  standard \n on
+
+2004-07-06 10:12  tfogwill
+
+	* portal/: BaseMVCServlet.py, index.py, actions/Actions.py,
+	  actions/__init__.py, database/__init__.py,
+	  database/connection.py, database/dbhelper.py, util/HTTPUtil.py,
+	  util/Logging.py, util/__init__.py, views/SetupView.py,
+	  views/__init__.py, views/filedetail.py, views/filedetail.tmpl,
+	  views/filelist.py, views/filelist.tmpl, views/stringdetail.py,
+	  views/stringdetail.tmpl, views/testing.py, views/testing.tmpl:
+	  initial addition of files (finally)
+
+2004-07-05 17:07  davidfraser
+
+	* tools/oosetup: added dialing code as an attribute added resource
+	  files handling...
+
+2004-07-05 16:30  davidfraser
+
+	* tools/oosetup: set languagename and isocode as attributes...
+	  work out which directories should be renamed based on HostName,
+	  not gid
+
+2004-07-05 16:04  davidfraser
+
+	* tools/oosetup: found the cause for missing files, trouble
+	  locating packedsection:  was using straight copy for sections,
+	  so the tokennums child dictionary was having values overwritten.
+	  fixed by using deepcopy.  removed unneccessary error handling...
+	  simplified printout to only print changed file names
+
+2004-07-05 14:57  davidfraser
+
+	* tools/oosetup: added directory entry copying (otherwise files
+	  didn't have the corresponding directory section, giving script
+	  errors)
+
+2004-07-05 13:43  davidfraser
+
+	* tools/oosetup: refactored adding a foreign file into a method
+	  some pychecker cleanups...
+
+2004-07-05 13:37  davidfraser
+
+	* tools/oosetup: added code to modify the lists of files in Modules
+	  to add new files...  changed printout to make it less verbose for
+	  copying files...
+
+2004-07-02 22:53  davidfraser
+
+	* tools/oosetup: added code to copy files to a destination
+	  directory, renaming as neccessary some problems with finding the
+	  PackedName need to be fixed
+
+2004-07-02 22:10  davidfraser
+
+	* tools/oosetup: added files from other indexes into main file,
+	  rename all relevant files changed token finding to handle token
+	  changes improved tokenrange work took out demo of foreign stuff
+	  as its being used now
+
+2004-07-02 19:25  davidfraser
+
+	* tools/oosetup: refactored parsing of section into separate
+	  function   remember tokennums relative to start (renamed from
+	  type)   remember end tokennum relative to start modified
+	  getsource to allow start and end token numbers added method
+	  insertforeignsection to allow copying sections from another index
+	  modified getsource to add in inserted sections (using
+	  foreignindex.getsource) added code to remember which files belong
+	  in which directory added a simple demo of insertforeignsection
+	  for testing
+
+2004-07-02 18:26  davidfraser
+
+	* tools/oosetup: redid parsing to handle newline, nesting, ; etc
+	  correctly added initial code to merge setup files, do renaming of
+	  directories
+
+2004-07-02 16:50  davidfraser
+
+	* tools/oosetup: added tool for dealing with openoffice
+	  setup.ins/inf scripts
+
+2004-07-01 20:42  dwaynebailey
+
+	* tools/TODO: Add TODO items
+
+2004-07-01 17:31  davidfraser
+
+	* convert/txt2po: improved logic so blank lines don't end up at
+	  start of text
+
+2004-07-01 12:49  davidfraser
+
+	* convert/txt2po: made txt2po do blocks instead of lines
+
+2004-06-30 22:44  davidfraser
+
+	* misc/optrecurse.py: don't try and remove stdout!
+
+2004-06-30 22:35  davidfraser
+
+	* filters/checks.py: added missing comma (made endwhitespace and
+	  startpunc not have precondition)
+
+2004-06-30 22:25  davidfraser
+
+	* filters/checks.py: added ${ } variable matcher for openoffice
+
+2004-06-30 14:50  davidfraser
+
+	* filters/checks.py: should call funcmatch, not funcsmatch, when
+	  passing a single function
+
+2004-06-30 14:45  davidfraser
+
+	* filters/prefilters.py: changed to use new expanded tokenize
+	  function so parser.source gets set correctly
+
+2004-06-30 14:34  davidfraser
+
+	* misc/sparse.py: added option to give tokenizers to tokenize (so
+	  self.source gets set)
+
+2004-06-29 21:13  davidfraser
+
+	* filters/prefilters.py: fixed old-style findtokenpos call
+
+2004-06-29 16:32  davidfraser
+
+	* filters/TODO: need to use unicode strings otherwise we can split
+	  up multibyte characters in checks...
+
+2004-06-29 16:18  dwaynebailey
+
+	* tools/pocount: Untranslated words was incorrectly counting the
+	  msgstr instead of the msgid
+
+2004-06-29 16:16  dwaynebailey
+
+	* tools/TODO: Need to be able to merge fuzzy status back to mack
+	  strings fuzzy or to unset fuzzy status
+
+2004-06-29 15:29  dwaynebailey
+
+	* convert/TODO: Adding to TODO need for csv2po to have a charset
+	  option to set po header charset.
+
+2004-06-29 14:29  davidfraser
+
+	* convert/html2po: initial html2po
+
+2004-06-29 13:54  davidfraser
+
+	* convert/txt2po: added txt2po tool
+
+2004-06-29 11:37  davidfraser
+
+	* filters/TODO: accelerators are done
+
+2004-06-29 11:16  davidfraser
+
+	* filters/checks.py: renamed self.accelerators to self.accelmarkers
+	  to prevent it from hiding the accelerators check method
+
+2004-06-25 17:40  davidfraser
+
+	* storage/csvl10n.py: limited quotechars to " (no ' in files from
+	  translators) added intelligence to patch together partial quoting
+	  (probably not neccessary)
+
+2004-06-25 17:37  davidfraser
+
+	* convert/csv2po, filters/prefilters.py: updated to new sparse API
+
+2004-06-25 17:36  davidfraser
+
+	* misc/sparse.py: updated to a new object-based API all functions
+	  available inside new StringParser object requires changes to any
+	  code using this!
+
+2004-06-24 15:42  davidfraser
+
+	* storage/csvl10n.py: added SimpleDictReader which unlike the csv
+	  module doesn't have problems with newlines
+
+2004-06-23 14:17  davidfraser
+
+	* misc/csv.py: updated to handle keyword arguments
+
+2004-06-16 19:05  dwaynebailey
+
+	* filters/TODO: Check for accelerators
+
+2004-06-09 18:45  davidfraser
+
+	* ChangeLog: changed to standard cvs2cl ChangeLog so I don't have
+	  to edit it...
+
 2004-06-09 18:14  davidfraser
 
 	* __version__.py: version 0.8 beta 2
