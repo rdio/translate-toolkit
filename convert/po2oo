@@ -159,7 +159,8 @@ if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
   formats = {("po", "oo"):("oo", convertoo)}
-  parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
+  archiveformats = {"gsi":oo.oomultifile, "sdf":oo.oomultifile, "txt":oo.oomultifile}
+  parser = convert.ArchiveConvertOptionParser(formats, usetemplates=True, description=__doc__, archiveformats=archiveformats)
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
   parser.passthrough.append("languagecode")
