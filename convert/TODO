@@ -1,5 +1,7 @@
 --update option
   make recursive methods only run if input is newer than output
+make sure extensions, etc are consistent all the way through
+  e.g. .dtd -> .dtd.po -> .dtd
 mozilla - automate
   unpackxpi
   convert to .po files
@@ -7,7 +9,6 @@ mozilla - automate
   convert back
   repackxpi
 mozilla - migrate from one version to another
-add openoffice conversion
 
 make po files of all existing translations
 take over the world
