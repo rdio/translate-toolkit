@@ -287,9 +287,10 @@ class TranslatePage(pagelayout.PootlePage):
       suggestionhidden = widgets.Input({'type': 'hidden', "name": "sugg%d.%d" % (item, suggid), 'value': suggestion})
       acceptbutton = widgets.Input({"type":"submit", "name":"accept%d.%d" % (item, suggid), "value":"accept"}, "accept")
       rejectbutton = widgets.Input({"type":"submit", "name":"reject%d.%d" % (item, suggid), "value":"reject"}, "reject")
-      suggdiv = widgets.Division([suggtitle, suggestiontext, suggestionhidden, "<br/>", acceptbutton, rejectbutton], "sugg%d" % item)
+      suggdiv = widgets.Division(["<br/>", suggtitle, suggestiontext, suggestionhidden, "<br/>", acceptbutton, rejectbutton], "sugg%d" % item)
       suggdivs.append(suggdiv)
-    transdiv = widgets.Division([currenttitle, currenttext, editlink, "<br/>"] + suggdivs, "trans%d" % item, cls="translate-translation")
+    skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
+    transdiv = widgets.Division([currenttitle, currenttext, editlink] + suggdivs + [skipbutton], "trans%d" % item, cls="translate-translation")
     return transdiv
 
   def gettransview(self, item, trans):
