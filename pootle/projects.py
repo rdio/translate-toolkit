@@ -311,7 +311,10 @@ class pootlefile(po.pofile):
       if self.getsuggestions(item):
         classes.append("has-suggestion")
       for classname in classes:
-        self.classify[classname].append(item)
+        if classname in self.classify:
+          self.classify[classname].append(item)
+        else:
+          self.classify[classname] = item
 
   def classifyelement(self, poel):
     """returns all classify keys that this element should match"""
