@@ -2,6 +2,7 @@
 
 from jToolkit.web import server
 from jToolkit.widgets import widgets
+from jToolkit.widgets import form
 from translate.pootle import indexpage
 from translate.pootle import translatepage
 from translate.pootle import pagelayout
@@ -13,6 +14,20 @@ class LoginPage(server.LoginPage, pagelayout.PootlePage):
     loginform = self.contents
     contents = widgets.Division(pagelayout.IntroText(loginform), "content")
     pagelayout.PootlePage.__init__(self, "Login to Pootle", contents, session)
+
+class RegisterPage(pagelayout.PootlePage):
+  """page for new registrations"""
+  def __init__(self, session):
+    contents = widgets.Division(self.getform(), "content")
+    pagelayout.PootlePage.__init__(self, "Pootle Registration", contents, session)
+
+  def getform(self):
+    columnlist = [("username", "Email Address", "Must be a valid email address")]
+    formlayout = {1:("username", )}
+    optionsdict = {}
+    extrawidgets = []
+    record = dict([(column[0], "") for column in columnlist])
+    return form.SimpleForm(record, "register", columnlist, formlayout, optionsdict, extrawidgets)
 
 class OptionalLoginAppServer(server.LoginAppServer):
   """a server that enables login but doesn't require it except for specified pages"""
@@ -47,6 +62,8 @@ class PootleServer(OptionalLoginAppServer):
         redirectpage = pagelayout.PootlePage("Redirecting to index...", redirecttext, session)
         return server.Redirect("index.html", withpage=redirectpage)
       return LoginPage(session)
+    elif top == "register.html":
+      return RegisterPage(session)
     elif hasattr(session.instance.projects, top):
       project = getattr(session.instance.projects, top)
       pathwords = pathwords[1:]
