@@ -87,6 +87,8 @@ class dtdelement:
         if not self.incomment: comment += '\n'
         # depending on the type of comment (worked out at the start), put it in the right place
         # make it record the comment and type as a tuple
+        if comment.find('<!ENTITY') <> -1:
+          comment, dummy = quote.extractwithoutquotes(comment, ">", "<!ENTITY", None, 1)
         commentpair = (self.commenttype,comment)
         if self.commenttype == "locfile":
           self.locfilenotes.append(commentpair)
