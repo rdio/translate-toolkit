@@ -68,15 +68,44 @@ def _get_elements_by_tagName_faster_helper(parent, name, rc):
         if node.nodeType == minidom.Node.ELEMENT_NODE and \
             (name == "*" or node.tagName == name):
             yield node
-	for node in _get_elements_by_tagName_faster_helper(node, name, rc):
+        for node in _get_elements_by_tagName_faster_helper(node, name, rc):
             yield node
 
+def _get_elements_by_tagName_clever_helper(parent, name, onlysearch):
+    """limits the search to within tags occuring in onlysearch"""
+    for node in parent.childNodes:
+        if node.nodeType == minidom.Node.ELEMENT_NODE and \
+            (name == "*" or node.tagName == name):
+            yield node
+        if node.nodeType == minidom.Node.ELEMENT_NODE and node.tagName in onlysearch:
+            for node in _get_elements_by_tagName_clever_helper(node, name, onlysearch):
+                yield node
+
 minidom._get_elements_by_tagName_helper = _get_elements_by_tagName_faster_helper
+minidom.Document.searchElementsByTagName = _get_elements_by_tagName_clever_helper
+minidom.Element.searchElementsByTagName = _get_elements_by_tagName_clever_helper
+
+def getFirstElementByTagName(node, name):
+  results = node.getElementsByTagName(name)
+  if isinstance(results, list):
+    return results[0]
+  try:
+    return results.next()
+  except StopIteration:
+    return None
+
+def getnodetext(node):
+  """returns the node's text by iterating through the child nodes"""
+  if node is None: return ""
+  return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
 
 class QtTsParser:
+  contextancestors = dict.fromkeys(["TS"])
+  messageancestors = dict.fromkeys(["TS", "context"])
   def __init__(self, inputfile=None):
     """make a new QtTsParser, reading from the given inputfile if required"""
     self.filename = getattr(inputfile, "filename", None)
+    self.knowncontextnodes = {}
     if inputfile is None:
       self.document = minidom.parseString("<!DOCTYPE TS><TS></TS>")
     else:
@@ -98,7 +127,7 @@ class QtTsParser:
       self.document.documentElement.appendChild(contextnode)
     for message in self.getmessagenodes(contextnode):
       if self.getmessagesource(message).strip() == source.strip():
-        translationnode = self.getFirstElementByTagName(message, "translation")
+        translationnode = getFirstElementByTagName(message, "translation")
         newtranslationnode = self.document.createElement("translation")
         translationtext = self.document.createTextNode(translation)
         newtranslationnode.appendChild(translationtext)
@@ -125,76 +154,66 @@ class QtTsParser:
     contextnode.appendChild(messagenode)
     return True
 
-  def getnodetext(self, node):
-    """returns the node's text by iterating through the child nodes"""
-    if node is None: return ""
-    return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
-
   def getxml(self):
     """return the ts file as xml"""
     xml = self.document.toprettyxml(indent="    ", encoding="utf-8")
     xml = "\n".join([line for line in xml.split("\n") if line.strip()])
     return xml
 
-  def getFirstElementByTagName(self, node, name):
-    results = node.getElementsByTagName(name)
-    if isinstance(results, list):
-      return results[0]
-    try:
-      return results.next()
-    except StopIteration:
-      return None
-
   def getcontextname(self, contextnode):
     """returns the name of the given context"""
-    namenode = self.getFirstElementByTagName(contextnode, "name")
-    return self.getnodetext(namenode)
+    namenode = getFirstElementByTagName(contextnode, "name")
+    return getnodetext(namenode)
 
   def getcontextnode(self, contextname):
     """finds the contextnode with the given name"""
-    contextnodes = self.document.getElementsByTagName("context")
+    contextnode = self.knowncontextnodes.get(contextname, None)
+    if contextnode is not None:
+      return contextnode
+    contextnodes = self.document.searchElementsByTagName("context", self.contextancestors)
     for contextnode in contextnodes:
       if self.getcontextname(contextnode) == contextname:
+        self.knowncontextnodes[contextname] = contextnode
         return contextnode
     return None
 
   def getmessagenodes(self, context=None):
     """returns all the messagenodes, limiting to the given context (name or node) if given"""
     if context is None:
-      return self.document.getElementsByTagName("message")
+      return self.document.searchElementsByTagName("message", self.messageancestors)
     else:
       if isinstance(context, (str, unicode)):
         # look up the context node by name
         context = self.getcontextnode(context)
         if context is None:
           return []
-      return context.getElementsByTagName("message")
+      return context.searchElementsByTagName("message", self.messageancestors)
 
   def getmessagesource(self, message):
     """returns the message source for a given node"""
-    sourcenode = self.getFirstElementByTagName(message, "source")
-    return self.getnodetext(sourcenode)
+    sourcenode = getFirstElementByTagName(message, "source")
+    return getnodetext(sourcenode)
 
   def getmessagetranslation(self, message):
     """returns the message translation for a given node"""
     translationnode = message.getElementsByTagName("translation")
-    return self.getnodetext(translationnode)
+    return getnodetext(translationnode)
 
   def getmessagetype(self, message):
     """returns the message translation attributes for a given node"""
-    translationnode = self.getFirstElementByTagName(message, "translation")
+    translationnode = getFirstElementByTagName(message, "translation")
     return translationnode.getAttribute("type")
 
   def getmessagecomment(self, message):
     """returns the message comment for a given node"""
-    commentnode = self.getFirstElementByTagName(message, "comment")
+    commentnode = getFirstElementByTagName(message, "comment")
     # NOTE: handles only one comment per msgid (OK)
     # and only one-line comments (can be VERY wrong) TODO!!!
-    return self.getnodetext(commentnode)
+    return getnodetext(commentnode)
 
   def iteritems(self):
     """iterates through (contextname, messages)"""
-    for contextnode in self.document.getElementsByTagName("context"):
+    for contextnode in self.document.searchElementsByTagName("context", self.contextancestors):
       yield self.getcontextname(contextnode), self.getmessagenodes(contextnode)
 
   def __del__(self):
