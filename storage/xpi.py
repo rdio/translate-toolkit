@@ -319,6 +319,8 @@ class XpiFile(ZipFileCatcher):
         if filename.endswith('/'):
           if not includedirs: continue
           elif len(filename.split('/'))-1 < len(self.commonprefix): continue
+          # no point generating an error because a directory doesn't match the commonprefix...
+          elif filename.split('/')[:len(self.commonprefix)] != self.commonprefix: continue
         if not self.islocfile(filename) and not self.includenonloc: continue
         yield self.jartoospath(jarfilename, filename)
 
