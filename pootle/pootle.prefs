@@ -1,0 +1,27 @@
+# jToolkit preferences file
+# showing jBrowser fields
+
+importmodules:
+  pootle = 'translate.pootle'
+  pootleserver = 'translate.pootle.server'
+
+Pootle:
+  serverclass = pootleserver.PootleServer
+  sessionkey='p00tl3'
+  # set this to the URL people will access pootle from
+  baseurl = "http://localhost:8080/"
+  title = "Pootle"
+  description = "this is a demo installation of pootle"
+  registration:
+    fromaddress = "pootle-registration@localhost"
+  users:
+    # store user details here
+  languages:
+    # this is an example, please change...
+    af:
+      fullname = "Afrikaans"
+      projects:
+        openoffice:
+          fullname = "OpenOffice.org"
+          podir = "po/openoffice/af"
+
