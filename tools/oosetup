@@ -21,6 +21,7 @@ class SetupIndex(sparse.SimpleParser):
     self.definitions = {}
     self.bytype = {}
     self.referrals = []
+    self.insertions = {}
     for sectiontype in self.sectiontypes:
       self.bytype[sectiontype] = {}
     if filename is not None:
@@ -39,65 +40,89 @@ class SetupIndex(sparse.SimpleParser):
     self.originaltokens = self.tokens[:]
     tokennum = 0
     while tokennum < len(self.tokens):
-      sectiontype = self.tokens[tokennum]
-      if sectiontype not in self.sectiontypes:
-        print >>sys.stderr, "unknown sectiontype....", sectiontype, "last section", sectionname
-        if sectiontype not in self.bytype:
-          self.bytype[sectiontype] = {}
-      sectionname = self.tokens[tokennum + 1]
-      section = {}
-      if sectionname in self.definitions:
-        print >>sys.stderr, "duplicate", sectionname
-      self.definitions[sectionname] = section
-      self.bytype[sectiontype][sectionname] = section
-      section['type'] = sectiontype
-      section['tokennums'] = {'type':tokennum}
-      tokennum += 2
-      while self.tokens[tokennum] == '\n':
-        tokennum += 1
-      while self.tokens[tokennum].lower() != 'end':
-        varname = self.tokens[tokennum]
-        if self.tokens[tokennum+1] != '=':
-          print >>sys.stderr, "expected =...", sectiontype, sectionname, varname
-        startvardef = tokennum+2
-        nestlevel = 0
-        while self.tokens[tokennum] != '\n' or nestlevel > 0:
-          varpart = self.tokens[tokennum]
-          if varpart.lower().startswith('gid_'):
-            self.referrals.append((varpart, tokennum))
-          if varpart == '(':
-            nestlevel += 1
-          elif varpart == ')':
-            nestlevel -= 1
-          tokennum += 1
-        value = "".join(self.tokens[startvardef:tokennum])
-        if value.endswith(";"): value = value[:-1]
-        section[varname] = value
-        section['tokennums'][varname] = startvardef
-        tokennum = tokennum + 1
+      tokennum = self.parsesection(tokennum)
+
+  def parsesection(self, tokennum):
+    sectiontype = self.tokens[tokennum]
+    if sectiontype not in self.sectiontypes:
+      print >>sys.stderr, "unknown sectiontype....", sectiontype, "last section", sectionname
+      if sectiontype not in self.bytype:
+        self.bytype[sectiontype] = {}
+    sectionname = self.tokens[tokennum + 1]
+    section = {}
+    if sectionname in self.definitions:
+      print >>sys.stderr, "duplicate", sectionname
+    self.definitions[sectionname] = section
+    self.bytype[sectiontype][sectionname] = section
+    section['type'] = sectiontype
+    section['tokennums'] = {'start':tokennum}
+    tokennum += 2
+    while self.tokens[tokennum] == '\n':
       tokennum += 1
-      while tokennum < len(self.tokens) and self.tokens[tokennum] == '\n':
+    while self.tokens[tokennum].lower() != 'end':
+      varname = self.tokens[tokennum]
+      if self.tokens[tokennum+1] != '=':
+        print >>sys.stderr, "expected =...", sectiontype, sectionname, varname
+      startvardef = tokennum+2
+      nestlevel = 0
+      while self.tokens[tokennum] != '\n' or nestlevel > 0:
+        varpart = self.tokens[tokennum]
+        if varpart.lower().startswith('gid_'):
+          self.referrals.append((varpart, tokennum))
+        if varpart == '(':
+          nestlevel += 1
+        elif varpart == ')':
+          nestlevel -= 1
         tokennum += 1
+      value = "".join(self.tokens[startvardef:tokennum])
+      if value.endswith(";"): value = value[:-1]
+      section[varname] = value
+      section['tokennums'][varname] = startvardef - section['tokennums']['start']
+      tokennum = tokennum + 1
+    section['tokennums']['end'] = tokennum - section['tokennums']['start']
+    tokennum += 1
+    while tokennum < len(self.tokens) and self.tokens[tokennum] == '\n':
+      tokennum += 1
+    return tokennum
 
   def rename(self, sectionname, newname):
     section = self.definitions[sectionname]
-    tokennum = section['tokennums']['type']
+    tokennum = section['tokennums']['start']
     self.tokens[tokennum+1] = newname
     for varpart, tokennum in self.referrals:
       if varpart.lower() == sectionname.lower():
         self.tokens[tokennum] = newname
 
-  def getsource(self):
+  def insertforeignsection(self, aftersection, sectionname, section, index, tokenrange):
+    tokennum = self.getsectionendtokennum(aftersection) + 1
+    self.definitions[sectionname] = section.copy()
+    self.definitions[sectionname]['tokennums']['start'] = tokennum
+    if tokennum in self.insertions:
+      self.insertions[tokennum].append((index, tokenrange))
+    else:
+      self.insertions[tokennum] = [(index, tokenrange)]
+
+  def getsource(self, start=None, end=None):
     sourceparts = []
-    tokenpos = 0
     lastprint = 0
-    for tokennum in range(len(self.tokens)):
+    if start is None:
+      start = 0
+    if end is None:
+      end = len(self.tokens)
+    tokenpos = self.findtokenpos(start)
+    for tokennum in range(start, end):
       originaltoken = self.originaltokens[tokennum]
       nexttokenpos = self.source.find(originaltoken, tokenpos)
       sourceparts.append(self.source[tokenpos:nexttokenpos])
       sourceparts.append(self.tokens[tokennum])
       tokenpos = nexttokenpos + len(originaltoken)
-    sourceparts.append(self.source[tokenpos:])
+      if tokennum in self.insertions:
+        for index, tokenrange in self.insertions[tokennum]:
+          foreignstart, foreignend = tokenrange
+          foreignsource = index.getsource(foreignstart, foreignend)
+          sourceparts.append(foreignsource)
+    if end == len(self.tokens):
+      sourceparts.append(self.source[tokenpos:end])
     return "".join(sourceparts)
 
   def getfieldvalue(self, sectionname, fieldname):
@@ -106,7 +131,11 @@ class SetupIndex(sparse.SimpleParser):
 
   def getfieldtokennum(self, sectionname, fieldname):
     section = self.definitions[sectionname]
-    return section['tokennums'][fieldname]
+    return section['tokennums'][fieldname] + section['tokennums']['start']
+
+  def getsectionendtokennum(self, sectionname):
+    section = self.definitions[sectionname]
+    return section['tokennums']['end'] + section['tokennums']['start']
 
   def setfieldvalue(self, sectionname, fieldname, fieldvalue):
     fieldtokennum = self.getfieldtokennum(sectionname, fieldname)
@@ -125,6 +154,7 @@ class SetupIndex(sparse.SimpleParser):
     directoriestorename = {}
     for index in indexes:
       index.directorychildren = {}
+      index.directoryfiles = {}
       for directory in index.bytype["Directory"]:
         if directory.find('_Language') != -1 or directory.find("_Isolanguage") != -1:
           directoriestorename[directory] = 1
@@ -133,6 +163,13 @@ class SetupIndex(sparse.SimpleParser):
           index.directorychildren[parentid] = [directory]
         else:
           index.directorychildren[parentid].append(directory)
+      # make an index of which files go in which directory
+      for fileentry in index.bytype["File"]:
+        directory = index.getfieldvalue(fileentry, 'Dir')
+        if directory not in index.directoryfiles:
+          index.directoryfiles[directory] = [fileentry]
+        else:
+          index.directoryfiles[directory].append(fileentry)
     for directory in directoriestorename:
       hostname = sparse.stringeval(self.getfieldvalue(directory, "HostName"))
       newname = directory.replace("_Language", "_%s" % hostname)
@@ -157,6 +194,16 @@ if __name__ == '__main__':
   for arg in sys.argv[2:-1]:
     othersetupfiles.append(SetupIndex(arg))
   mainsetupfile.merge(othersetupfiles)
+  # demonstration of inserting foreign sections
+  for index in othersetupfiles:
+    language = index.getfieldvalue('gid_Installation', 'DefaultLanguage')
+    language = sparse.stringeval(language)
+    section = index.definitions['gid_Installation']
+    sectionname = 'gid_Installation_%s' % language
+    index.rename('gid_Installation', sectionname)
+    start, end = section['tokennums']['start'], section['tokennums']['end']
+    tokenrange = (start, start+end+2)
+    mainsetupfile.insertforeignsection('gid_Installation', sectionname, section, index, tokenrange)
   open(sys.argv[-1], 'w').write(mainsetupfile.getsource())
 
 
