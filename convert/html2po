@@ -28,10 +28,10 @@ from translate.misc import quote
 from translate.convert import convert
 
 class html2po:
-  def convertfile(self, inputfile, filename, includeheader):
+  def convertfile(self, inputfile, filename, includeheader, includeuntagged=False):
     """converts a file to .po format"""
     thepofile = po.pofile()
-    htmlparser = html.POHTMLParser()
+    htmlparser = html.POHTMLParser(includeuntaggeddata=includeuntagged)
     if includeheader:
       headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
       thepofile.poelements.append(headerpo)
@@ -49,12 +49,12 @@ class html2po:
       thepofile.poelements.append(thepo)
     return thepofile
 
-def converthtml(inputfile, outputfile, templates):
+def converthtml(inputfile, outputfile, templates, includeuntagged=False):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   convertor = html2po()
   outputfilepos = outputfile.tell()
   includeheader = outputfilepos == 0
-  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader)
+  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader, includeuntagged)
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
   return 1
@@ -63,5 +63,8 @@ if __name__ == '__main__':
   # handle command line options
   formats = {"html":("po",converthtml), "htm":("po",converthtml)}
   parser = convert.ConvertOptionParser(formats, description=__doc__)
+  parser.add_option("-u", "--untagged", dest="includeuntagged", default=False, action="store_true",
+                    help="include untagged sections")
+  parser.passthrough.append("includeuntagged")
   parser.run()
 
