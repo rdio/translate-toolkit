@@ -286,7 +286,7 @@ if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
   formats = {"dtd": ("po", convertdtd), ("dtd", "dtd"): ("po", convertdtd)}
-  parser = convert.ConvertOptionParserExt(formats, usetemplates=True, usepots=True)
+  parser = convert.ConvertOptionParser(formats, usetemplates=True, usepots=True)
   parser.convertparameters.append("pot")
   parser.runconversion()
 
