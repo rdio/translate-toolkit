@@ -7,11 +7,13 @@ from translate.misc import quote
 from translate.filters import checks
 from translate.filters import pofilter
 from translate.convert import po2csv
+from translate.convert import pot2po
 from translate.tools import pogrep
 from jToolkit import timecache
 import time
 import os
 import sre
+import StringIO
 try:
   import PyLucene
 except:
@@ -478,22 +480,24 @@ class potimecache(timecache.timecache):
  
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
-  def __init__(self, languagecode, projectcode, potree):
+  def __init__(self, languagecode, projectcode, potree, create=False):
     self.languagecode = languagecode
     self.projectcode = projectcode
     self.potree = potree
     self.languagename = self.potree.getlanguagename(self.languagecode)
     self.projectname = self.potree.getprojectname(self.projectcode)
     self.projectdescription = self.potree.getprojectdescription(self.projectcode)
+    self.pofiles = potimecache(15*60, self)
     self.projectcheckerstyle = self.potree.getprojectcheckerstyle(self.projectcode)
+    checkerclasses = [checks.projectcheckers.get(self.projectcheckerstyle, checks.StandardChecker), pofilter.StandardPOChecker]
+    self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses, errorhandler=self.filtererrorhandler)
+    if create:
+      self.create()
     self.podir = potree.getpodir(languagecode, projectcode)
     if self.potree.hasgnufiles(self.podir, self.languagecode):
       self.filestyle = "gnu"
     else:
       self.filestyle = "std"
-    self.pofiles = potimecache(15*60, self)
-    checkerclasses = [checks.projectcheckers.get(self.projectcheckerstyle, checks.StandardChecker), pofilter.StandardPOChecker]
-    self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses, errorhandler=self.filtererrorhandler)
     self.scanpofiles()
     self.initindex()
 
@@ -517,7 +521,7 @@ class TranslationProject:
     if self.filestyle == "gnu":
       if not self.potree.languagematch(self.languagecode, pofilename[:-len(".po")]):
         raise ValueError("invalid GNU-style file name %s: must match '%s.po' or '%s[_-][A-Z]{2,3}.po'" % (pofilename, self.languagecode, self.languagecode))
-    dircheck = ""
+    dircheck = self.podir
     for part in dirname.split(os.sep):
       dircheck = os.path.join(dircheck, part)
       if dircheck and not os.path.isdir(dircheck):
@@ -526,6 +530,35 @@ class TranslationProject:
     pofile.write(contents)
     pofile.close()
     self.scanpofiles()
+
+  def create(self):
+    projectdir = os.path.join(self.potree.podirectory, self.projectcode)
+    templatesdir = os.path.join(projectdir, "templates")
+    if self.potree.isgnustyle(self.projectcode):
+      self.filestyle = "gnu"
+    else:
+      self.filestyle = "std"
+    if not os.path.exists(templatesdir):
+      templatesdir = projectdir
+    templates = self.potree.gettemplates(self.projectcode)
+    if self.filestyle == "gnu":
+      self.podir = projectdir
+      if not templates:
+        raise NotImplementedError("Cannot create GNU-style translation project without templates")
+    else:
+      self.podir = os.path.join(projectdir, self.languagecode)
+      if not os.path.exists(self.podir):
+        os.mkdir(self.podir)
+    for potfilename in templates:
+      inputfile = open(os.path.join(templatesdir, potfilename), "rb")
+      outputfile = StringIO.StringIO()
+      pot2po.convertpot(inputfile, outputfile, None)
+      dirname, potfilename = os.path.dirname(potfilename), os.path.basename(potfilename)
+      if self.filestyle == "gnu":
+        pofilename = self.languagecode + os.extsep + "po"
+      else:
+        pofilename = potfilename[:-len(os.extsep+"pot")] + os.extsep + "po"
+      self.addnewpofile(dirname, pofilename, outputfile.getvalue())
 
   def filtererrorhandler(self, functionname, str1, str2, e):
     print "error in filter %s: %r, %r, %s" % (functionname, str1, str2, e)
@@ -1093,27 +1126,42 @@ class POTree:
     except IndexError:
       return False
 
+  def gettemplates(self, projectcode):
+    """returns templates for the given project"""
+    projectdir = os.path.join(self.podirectory, projectcode)
+    templatesdir = os.path.join(projectdir, "templates")
+    if not os.path.exists(templatesdir):
+      templatesdir = projectdir
+    potfilenames = []
+    def addfiles(podir, dirname, fnames):
+      """adds the files to the set of files for this project"""
+      basedirname = dirname.replace(podir, "", 1)
+      while basedirname.startswith(os.sep):
+        basedirname = basedirname.replace(os.sep, "", 1)
+      ponames = [fname for fname in fnames if fname.endswith(os.extsep+"pot")]
+      potfilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
+    os.path.walk(templatesdir, addfiles, templatesdir)
+    return potfilenames
+
   def getproject(self, languagecode, projectcode):
     """returns the project object for the languagecode and projectcode"""
     if (languagecode, projectcode) not in self.projectcache:
       self.projectcache[languagecode, projectcode] = TranslationProject(languagecode, projectcode, self)
     return self.projectcache[languagecode, projectcode]
 
+  def isgnustyle(self, projectcode):
+    """checks whether the whole project is a GNU-style project"""
+    projectdir = os.path.join(self.podirectory, projectcode)
+    for otherlanguagecode in self.getlanguagecodes(projectcode):
+      if self.hasgnufiles(projectdir, otherlanguagecode):
+        return True
+    return False
+
   def addtranslationproject(self, languagecode, projectcode):
     """creates a new TranslationProject"""
     if self.hasproject(languagecode, projectcode):
       raise ValueError("TranslationProject for project %s, language %s already exists" % (projectcode, languagecode))
-    gnustyle = False
-    projectdir = os.path.join(self.podirectory, projectcode)
-    for otherlanguagecode in self.getlanguagecodes(projectcode):
-      if self.hasgnufiles(projectdir, otherlanguagecode):
-        gnustyle = True
-        break
-    if gnustyle:
-      raise NotImplementedError("Can't yet create GNU translationprojects")
-    else:
-      languagedir = os.path.join(projectdir, languagecode)
-      os.mkdir(languagedir)
+    translationproject = TranslationProject(languagecode, projectcode, self, create=True)
 
   def getprojectname(self, projectcode):
     """returns the full name of the project"""
