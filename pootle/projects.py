@@ -12,6 +12,7 @@ from translate.tools import pocompile
 from translate.tools import pogrep
 from translate.pootle import versioncontrol
 from jToolkit import timecache
+from jToolkit import prefs
 import time
 import os
 import sre
@@ -44,11 +45,9 @@ class TranslationSession:
   def getrights(self):
     """gets the current users rights"""
     if self.session.isopen:
-      if self.project.languagecode == "en":
-        return ["view", "archive", "pocompile"]
-      return ["view", "review", "translate", "archive", "pocompile"]
+      return self.project.getrights(self.session.username)
     else:
-      return ["view"]
+      return self.project.getrights(None)
 
   def receivetranslation(self, pofilename, item, trans, issuggestion):
     """submits a new/changed translation from the user"""
@@ -162,7 +161,11 @@ class pootlefile(po.pofile):
   def getstats(self):
     """reads the stats if neccessary or returns them from the cache"""
     if os.path.exists(self.statsfilename):
-      self.readstats()
+      try:
+        self.readstats()
+      except Exception, e:
+        print "Error reading stats from %s, so recreating (Error was %s)" % (self.statsfilename, e)
+        self.statspomtime = None
     pomtime = getmodtime(self.filename)
     pendingmtime = getmodtime(self.pendingfilename, None)
     if hasattr(self, "pendingmtime"):
@@ -597,8 +600,50 @@ class TranslationProject:
       self.filestyle = "gnu"
     else:
       self.filestyle = "std"
+    self.readprefs()
     self.scanpofiles()
     self.initindex()
+
+  def readprefs(self):
+    """reads the project preferences"""
+    self.prefs = prefs.PrefsParser()
+    self.prefsfile = os.path.join(self.podir, "pootle-%s-%s.prefs" % (self.projectcode, self.languagecode))
+    if not os.path.exists(self.prefsfile):
+      prefsfile = open(self.prefsfile, "w")
+      prefsfile.write("# Pootle preferences for project %s, language %s\n\n" % (self.projectcode, self.languagecode))
+      prefsfile.close()
+    self.prefs.parsefile(self.prefsfile)
+
+  def saveprefs(self):
+    """saves the project preferences"""
+    self.prefs.savefile()
+
+  def getrights(self, username):
+    """gets the rights for the given username (or not-logged-in if username is None)"""
+    if hasattr(self.prefs, "rights"):
+      rights = self.prefs.rights
+    else:
+      rights = None
+    if username is None:
+      rights = getattr(rights, "nobody", "view")
+    else:
+      rights = getattr(rights, username, getattr(rights, "default", None))
+      if rights is None:
+        if self.languagecode == "en":
+          rights = "view, archive, pocompile"
+        else:
+          rights = "view, review, translate, archive, pocompile"
+    return [right.strip() for right in rights.split(",")]
+
+  def setrights(self, username, rights):
+    """sets the rights for the given username... (or not-logged-in if username is None)"""
+    if username is None: username = "nobody"
+    if isinstance(rights, list):
+      rights = ", ".join(rights)
+    if not hasattr(self.prefs, "rights"):
+      self.prefs.rights = prefs.PrefNode(self.prefs, "rights")
+    setattr(self.prefs.rights, username, rights)
+    self.saveprefs()
 
   def scanpofiles(self):
     """sets the list of pofilenames by scanning the project directory"""

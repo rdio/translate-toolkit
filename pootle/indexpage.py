@@ -464,7 +464,7 @@ class ProjectAdminPage(pagelayout.PootlePage):
 
   def getlanguageitem(self, languagecode):
     languagename = self.potree.getlanguagename(languagecode)
-    adminlink = widgets.Link("../../%s/%s/" % (languagecode, self.projectcode), languagename)
+    adminlink = widgets.Link("../../%s/%s/admin.html" % (languagecode, self.projectcode), languagename)
     updatelink = widgets.Link("?doupdatelanguage=1&updatelanguage=%s" % languagecode, self.localize("Update from templates"))
     return pagelayout.ItemDescription([adminlink, updatelink])
 
@@ -479,6 +479,73 @@ class ProjectAdminPage(pagelayout.PootlePage):
     submitbutton = widgets.Input({"type": "submit", "name": "doaddlanguage", "value": self.localize("Add Language")})
     newlangform = widgets.Form([languageselect, submitbutton], {"action": "", "name":"newlangform"})
     return newlangform
+
+class TranslationProjectAdminPage(pagelayout.PootlePage):
+  """admin page for a translation project (project+language)"""
+  def __init__(self, potree, project, session, argdict):
+    self.potree = potree
+    self.project = project
+    self.session = session
+    self.localize = session.localize
+    localize = self.localize
+    self.rightnames = [("view", localize("View")),
+                       ("suggest", localize("Suggest")),
+                       ("translate", localize("Translate")),
+                       ("review", localize("Review")),
+                       ("archive", localize("Archive")),
+                       ("pocompile", localize("Compile PO files")),
+                      ]
+    description = self.project.projectdescription
+    if self.session.issiteadmin():
+      if "doupdaterights" in argdict:
+        for key, value in argdict.iteritems():
+          if key.startswith("rights-"):
+            username = key.replace("rights-", "", 1)
+            self.project.setrights(username, value)
+        username = argdict.get("rightsnew-username", None)
+        if username:
+          username = username.strip()
+          if self.session.loginchecker.userexists(username):
+            self.project.setrights(username, argdict.get("rightsnew", ""))
+          else:
+            raise IndexError(self.localize("Cannot set rights for username %s - user does not exist") % username)
+      contents = [self.getoptions()]
+    else:
+      contents = pagelayout.IntroText(self.localize("You do not have the rights to administer this project."))
+    pagelayout.PootlePage.__init__(self, self.localize("Pootle Admin: %s") % description, contents, session, bannerheight=81)
+
+  def getoptions(self):
+    """returns a box that describes the options"""
+    if self.project.filestyle == "gnu":
+      filestyle = pagelayout.IntroText(self.localize("This is a GNU-style project (one directory, files named per language)."))
+    else:
+      filestyle = pagelayout.IntroText(self.localize("This is a standard style project (one directory per language)."))
+    rightstitle = pagelayout.Title(self.localize("User Permissions"))
+    rightstable = table.TableLayout()
+    rightstable.setcell(0, 0, table.TableCell(pagelayout.Title(self.localize("Username"))))
+    rightstable.setcell(0, 1, table.TableCell(pagelayout.Title(self.localize("Rights"))))
+    self.addrightsrow(rightstable, 1, "nobody", self.project.getrights(None))
+    defaultrights = self.project.getrights("default")
+    self.addrightsrow(rightstable, 2, "default", defaultrights)
+    rownum = 3
+    for username, rights in getattr(self.project.prefs, "rights", {}).iteritems():
+      if username in ("nobody", "default"): continue
+      self.addrightsrow(rightstable, rownum, username, rights)
+      rownum += 1
+    rightstable.setcell(rownum, 0, table.TableCell(widgets.Input({"name": "rightsnew-username"})))
+    selectrights = widgets.MultiSelect({"name": "rightsnew", "value": defaultrights}, self.rightnames)
+    rightstable.setcell(rownum, 1, table.TableCell(selectrights))
+    submitbutton = widgets.Input({"type": "submit", "name": "doupdaterights", "value": self.localize("Update Rights")})
+    rightsform = widgets.Form([rightstitle, rightstable, submitbutton], {"action": "", "name":"rightsform"})
+    return [filestyle, rightsform]
+
+  def addrightsrow(self, rightstable, rownum, username, rights):
+    """adds a row for the given user's rights"""
+    if not isinstance(rights, list):
+      rights = [right.strip() for right in rights.split(",")]
+    rightstable.setcell(rownum, 0, table.TableCell(username))
+    selectrights = widgets.MultiSelect({"name": "rights-%s" % username, "value": rights}, self.rightnames)
+    rightstable.setcell(rownum, 1, table.TableCell(selectrights))
 
 class ProjectIndex(pagelayout.PootlePage):
   """the main page"""

@@ -209,6 +209,8 @@ class PootleServer(users.OptionalLoginAppServer):
           top = ""
         if not top or top == "index.html":
 	  return indexpage.ProjectIndex(project, session, argdict)
+        elif top == "admin.html":
+          return indexpage.TranslationProjectAdminPage(self.potree, project, session, argdict)
 	elif bottom == "translate.html":
 	  if len(pathwords) > 1:
             dirfilter = os.path.join(*pathwords[:-1])
