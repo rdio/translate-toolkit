@@ -317,8 +317,10 @@ class UsersAdminPage(pagelayout.PootlePage):
     # users.setcell(0, 3, table.TableCell(pagelayout.Title(self.localize("Projects"))))
     # users.setcell(0, 4, table.TableCell(pagelayout.Title(self.localize("Languages"))))
     for username, usernode in self.users.iteritems():
+      if username == "__dummy__":
+        continue
       fullnametextbox = widgets.Input({"name": "userfullname-%s" % username, "value": getattr(usernode, "name", "")})
-      emailtextbox = widgets.Input({"name": "useremail-%s" % username, "value": usernode.email})
+      emailtextbox = widgets.Input({"name": "useremail-%s" % username, "value": getattr(usernode, "email", "")})
       removecheckbox = widgets.Input({"name": "userremove-%s" % username, "type": "checkbox"})
       rownum = users.maxrownum()+1
       users.setcell(rownum, 0, table.TableCell(username))
