@@ -83,11 +83,9 @@ class SimpleDictReader:
         currentfield = self.getvalue(currentfield)
       fields.append(currentfield)
     values = {}
-    printout = 0
     for fieldnum in range(len(self.fieldnames)):
       if fieldnum >= len(fields):
         values[self.fieldnames[fieldnum]] = ""
-        printout = 1
       else:
         values[self.fieldnames[fieldnum]] = fields[fieldnum]
     return values
