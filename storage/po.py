@@ -130,6 +130,7 @@ class poelement:
 
   def fromlines(self,lines):
     inmsgid = 0
+    inmsgid_comment = 0
     inmsgid_plural = 0
     inmsgstr = 0
     msgstr_pluralid = None
@@ -155,10 +156,12 @@ class poelement:
           inmsgid = 0
           inmsgid_plural = 1
           inmsgstr = 0
+          inmsgid_comment = 0
         elif line.startswith('msgid'):
           inmsgid = 1
           inmsgid_plural = 0
           inmsgstr = 0
+          inmsgid_comment = 0
         elif line.startswith('msgstr'):
           inmsgid = 0
           inmsgid_plural = 0
@@ -170,16 +173,24 @@ class poelement:
       extracted = quote.extractstr(line)
       if not extracted is None:
         if inmsgid:
-          # self.othercomments.append("# msgid=["+repr(extracted)+","+repr(extracted[:2])+"]\n")
-          if extracted.find('_:') != -1:
+          # TODO: improve kde comment detection
+          if extracted.find("_:") != -1:
+            inmsgid_comment = 1
+          elif inmsgid_comment:
             self.msgidcomments.append(extracted)
           else:
             self.msgid.append(extracted)
+          if inmsgid_comment and extracted.find("\\n") != -1:
+            inmsgid_comment = 0
         elif inmsgid_plural:
-          if extracted.find('_:') != -1:
+          if extracted.find("_:") != -1:
+            inmsgid_comment = 1
+          if inmsgid_comment:
             self.msgid_pluralcomments.append(extracted)
           else:
             self.msgid_plural.append(extracted)
+          if inmsgid_comment and extracted.find("\\n") != -1:
+            inmsgid_comment = 0
         elif inmsgstr:
           if msgstr_pluralid is None:
             self.msgstr.append(extracted)
