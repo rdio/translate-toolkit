@@ -97,12 +97,14 @@ class TranslationProject:
           try:
             stats = open(statsfilename, "r").read()
             statsmtime, postatsstring = stats.split("\n", 1)
+            statsmtime = int(statsmtime)
             postats = {}
             for line in postatsstring.split("\n"):
               name, count = line.split(":", 1)
               count = int(count.strip())
               postats[name.strip()] = count
           except:
+            # TODO: provide some logging here for debugging...
             continue
           if pomtime != statsmtime:
             continue
