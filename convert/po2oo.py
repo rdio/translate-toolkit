@@ -173,7 +173,8 @@ def convertoo(inputfile, outputfile, templatefile, languagecode=None, timestamp=
 def main():
   from translate.convert import convert
   formats = {("po", "oo"):("oo", convertoo)}
-  archiveformats = {"gsi":oo.oomultifile, "sdf":oo.oomultifile, "txt":oo.oomultifile}
+  # always treat the input as an archive unless it is a directory
+  archiveformats = {None: oo.oomultifile}
   parser = convert.ArchiveConvertOptionParser(formats, usetemplates=True, description=__doc__, archiveformats=archiveformats)
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")

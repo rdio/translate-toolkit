@@ -136,12 +136,14 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
     if mustexist and not os.path.isfile(fileoption):
       return False
     fileext = self.splitext(fileoption)[1]
-    return fileext in self.archiveformats
+    # if None is in the archive formats, then treat all non-directory inputs as archives
+    return (fileext in self.archiveformats) or (None in self.archiveformats and not os.path.isdir(fileoption))
 
   def openarchive(self, archivefilename, **kwargs):
     """creates an archive object for the given file"""
     archiveext = self.splitext(archivefilename)[1]
-    archiveclass = self.archiveformats[archiveext]
+    # we'll only get here if archiveext is in self.archiveformats or None is
+    archiveclass = self.archiveformats.get(archiveext, self.archiveformats.get(None, None))
     return archiveclass(archivefilename, **kwargs)
 
   def recurseinputfiles(self, options):
