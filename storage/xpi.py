@@ -24,9 +24,15 @@ import zipfile
 import os.path
 from translate import __version__
 try:
-  from cStringIO import StringIO
-except:
-  from StringIO import StringIO
+  import cStringIO
+  class NamedStringInput:
+    def __init__(self, *args, **kwargs):
+      self.__dict__["__i"] = cStringIO.StringIO(*args, **kwargs)
+    def __getattr__(self, *args, **kwargs):
+      return getattr(self.__dict__["__i"], *args, **kwargs)
+except ImportError:
+  import StringIO
+  NamedStringInput = StringIO.StringIO
 
 def _commonprefix(itemlist):
   def cp(a, b):
@@ -149,7 +155,9 @@ class XpiFile(zipfile.ZipFile):
     else:
       jarfile = self.jarfiles[jarfilename]
       contents = jarfile.read(filename)
-    return StringIO(contents)
+    inputstream = NamedStringInput(contents)
+    inputstream.name = self.jartoospath(jarfilename, filename)
+    return inputstream
 
   def iterextractnames(self, includenonjars=False, includedirs=False):
     """iterates through all the localization files with the common prefix stripped and a jarfile name added if neccessary"""
