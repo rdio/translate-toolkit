@@ -176,7 +176,7 @@ class poelement:
           # TODO: improve kde comment detection
           if extracted.find("_:") != -1:
             inmsgid_comment = 1
-          elif inmsgid_comment:
+          if inmsgid_comment:
             self.msgidcomments.append(extracted)
           else:
             self.msgid.append(extracted)
