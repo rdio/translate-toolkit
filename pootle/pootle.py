@@ -3,6 +3,7 @@
 from jToolkit.web import server
 from jToolkit.web import session
 from jToolkit import prefs
+from jToolkit import localize
 from jToolkit.widgets import widgets
 from translate.pootle import indexpage
 from translate.pootle import translatepage
@@ -18,10 +19,9 @@ class PootleServer(users.OptionalLoginAppServer):
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=users.LoginPage):
     if sessioncache is None:
       sessioncache = session.SessionCache(sessionclass=users.PootleSession)
-    self.localedomains = ["jToolkit", "pootle"]
+    self.potree = projects.POTree(instance)
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.setdefaultoptions()
-    self.potree = projects.POTree(self.instance)
 
   def saveprefs(self):
     """saves any changes made to the preferences"""
@@ -53,6 +53,24 @@ class PootleServer(users.OptionalLoginAppServer):
       optionname = key.replace("option-", "", 1)
       setattr(self.instance, optionname, value)
     self.saveprefs()
+
+  def inittranslation(self, localedir=None, localedomains=None, defaultlanguage=None):
+    """initializes live translations using the Pootle PO files"""
+    self.localedomains = ['jToolkit', 'pootle']
+    self.localedir = None
+    self.languagelist = self.potree.getlanguagecodes('pootle')
+    self.languagenames = dict([(code, self.potree.getlanguagename(code)) for code in self.languagelist])
+    self.defaultlanguage = defaultlanguage
+    if self.defaultlanguage is None:
+      self.defaultlanguage = localize.getdefaultlanguage(self.languagelist)
+    self.translation = self.potree.getproject(self.defaultlanguage, 'pootle')
+
+  def gettranslation(self, language):
+    """returns a translation object for the given language (or default if language is None)"""
+    if language is None:
+      return self.translation
+    else:
+      return self.potree.getproject(language, 'pootle')
 
   def refreshstats(self):
     """refreshes all the available statistics..."""

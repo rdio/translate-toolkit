@@ -79,16 +79,6 @@ class pootlefile(po.pofile):
     self.getstats()
     self.getassigns()
 
-  def readpofile(self):
-    """reads and parses the main po file"""
-    self.poelements = []
-    pomtime = getmodtime(self.filename)
-    self.parse(open(self.filename, 'r'))
-    # we ignore all the headers by using this filtered set
-    self.transelements = [poel for poel in self.poelements if not (poel.isheader() or poel.isblank())]
-    self.classifyelements()
-    self.pomtime = pomtime
-
   def savepofile(self):
     """saves changes to the main file to disk..."""
     lines = self.tolines()
@@ -837,6 +827,43 @@ class TranslationProject:
     pofilename = csvfilename.replace(".csv", ".po")
     pofile = self.getpofile(pofilename)
     return pofile.getcsv()
+
+  def gettext(self, message):
+    """uses the project as a live translator for the given message"""
+    for pofile in self.pofiles:
+      pofile.freshen()
+      if not hasattr(pofile, "msgidindex"):
+        pofile.makeindex()
+      thepo = pofile.msgidindex.get(message, None)
+      if not thepo or thepo.isblankmsgstr():
+        continue
+      tmsg = po.unquotefrompo(thepo.msgstr)
+      if tmsg is not None:
+        return tmsg
+    return message
+
+  def ugettext(self, message):
+    """gets the translation of the message by searching through all the pofiles (unicode version)"""
+    print "searching for", repr(message), self.languagecode
+    for pofilename, pofile in self.pofiles.iteritems():
+      if pofile.pomtime != getmodtime(pofile.filename):
+        pofile.readpofile()
+        pofile.makeindex()
+      elif not hasattr(pofile, "msgidindex"):
+        pofile.makeindex()
+      thepo = pofile.msgidindex.get(message, None)
+      if not thepo or thepo.isblankmsgstr():
+        continue
+      tmsg = po.unquotefrompo(thepo.msgstr)
+      if tmsg is not None:
+        print "found translation", repr(tmsg)
+        if isinstance(tmsg, unicode):
+          return tmsg
+        else:
+          print repr(tmsg), repr(pofile.encoding)
+          return unicode(tmsg, pofile.encoding)
+    print "not found"
+    return unicode(message)
 
 class POTree:
   """Manages the tree of projects and languages"""
