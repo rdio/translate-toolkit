@@ -12,7 +12,7 @@ from translate.misc import xmlwrapper
 from translate import __version__
 
 # TODO: find a way to list the available languages outside the code
-availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'tn': 'Setswana', 'zu': 'IsiZulu'}
+availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sesotho sa Leboa', 'tn': 'Setswana', 'zu': 'IsiZulu'}
 
 class oosetupfile(xmlwrapper.XMLWrapper):
   """this represents an openoffice.org Setup.xcu file"""
