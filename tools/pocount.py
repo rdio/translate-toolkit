@@ -35,7 +35,7 @@ def summarize(elements):
   translated = filter(lambda poel: not poel.isblankmsgstr() and not poel.isfuzzy(), elements)
   fuzzy = filter(lambda poel: poel.isfuzzy() and not poel.isblankmsgstr(), elements)
   review = filter(lambda poel: poel.isreview(), elements)
-  untranslated = filter(lambda poel: poel.isblankmsgstr(), elements)
+  untranslated = filter(lambda poel: poel.isblankmsgstr() and not poel.isobsolete(), elements)
   wordcounts = dict(map(lambda poel: (poel, wordsinpoel(poel)), elements))
   msgidwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][0], elementlist))
   msgstrwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][1], elementlist))
