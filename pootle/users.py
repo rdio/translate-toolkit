@@ -72,8 +72,9 @@ class OptionalLoginAppServer(server.LoginAppServer):
       session.remote_ip = self.getremoteip(req)
     return self.getpage(pathwords, session, argdict)
 
-  def adduser(self, users, username, email, password):
+  def adduser(self, users, username, fullname, email, password):
     """adds the user with the given details"""
+    setattr(users, username + ".name", fullname)
     setattr(users, username + ".email", email)
     setattr(users, username + ".passwdhash", session.md5hexdigest(password))
 
@@ -115,9 +116,10 @@ class OptionalLoginAppServer(server.LoginAppServer):
         userpassword = argdict.get("newuserpassword", None)
         if userpassword is None:
           raise ValueError("You must specify a password")
+        userfullname = argdict.get("newfullname", None)
         useremail = argdict.get("newuseremail", None)
         useractivate = "newuseractivate" in argdict
-        self.adduser(users, username, useremail, userpassword)
+        self.adduser(users, username, userfullname, useremail, userpassword)
         if useractivate:
           self.activate(users, username)
         else:
@@ -131,6 +133,7 @@ class OptionalLoginAppServer(server.LoginAppServer):
     username = argdict.get("username", "")
     if not username or not username.isalnum() or not username[0].isalpha():
       raise RegistrationError("Username must be alphanumeric, and must start with an alphabetic character")
+    fullname = argdict.get("name", "")
     email = argdict.get("email", "")
     password = argdict.get("password", "")
     if not (email and "@" in email and "." in email):
@@ -156,7 +159,7 @@ class OptionalLoginAppServer(server.LoginAppServer):
       minpasswordlen = 6
       if not password or len(password) < minpasswordlen:
         raise RegistrationError("You must supply a valid password of at least %d characters" % minpasswordlen)
-      self.adduser(users, username, email, password)
+      self.adduser(users, username, fullname, email, password)
       activationcode = self.makeactivationcode(users, username)
       activationlink = ""
       message = "A Pootle account has been created for you using this email address\n"
