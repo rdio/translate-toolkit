@@ -198,7 +198,9 @@ class detector:
         raise
       except Exception, e:
         raise UnicodeDecodeError(encoding, translation, 0, 0, str(e))
-      decodedwords = decoded.lower().split()
+      if self.options.ignorecase:
+        decoded = decoded.lower()
+      decodedwords = decoded.split()
       for word in decodedwords:
         if word in dictmap:
           if self.options.verbose:
@@ -220,7 +222,9 @@ class detector:
     if self.dictstring:
       for dictword in self.dictstring.split():
         if not dictword.translate(ignoremap).isspace():
-          dictmap[dictword.lower()] = 0
+          if self.options.ignorecase:
+            dictword = dictword.lower()
+          dictmap[dictword] = 0
     print "%d words in dictionary" % len(dictmap)
     encodingcounts = {}
     for encoding in self.listencodings():
@@ -257,6 +261,8 @@ class detector:
     if self.dictstring:
       for dictword in self.dictstring.split():
         if not dictword.translate(ignoremap).isspace():
+          if self.options.ignorecase:
+            dictword = dictword.lower()
           dictmap[self.fuzzy(dictword, self.excludestring)] = dictword
     print "%d words in dictionary" % len(dictmap)
     uniquewordsfound = {}
@@ -264,7 +270,9 @@ class detector:
     wordsfound = 0
     for translation in self.alltranslations:
       decoded = translation.decode(encoding)
-      decodedwords = decoded.lower().split()
+      if self.options.ignorecase:
+        decoded = decoded.lower()
+      decodedwords = decoded.split()
       for word in decodedwords:
         fuzzyword = self.fuzzy(word, self.excludestring)
         if fuzzyword in dictmap:
@@ -334,6 +342,9 @@ if __name__ == '__main__':
   optparser.add_option("", "--limitencodings", dest="limitencodings",
     action="store", default=None,
     help="only use the encodings specified")
+  optparser.add_option("-i", "--ignorecase", dest="ignorecase",
+    action="store_true", default=False,
+    help="only use ignorecase words found, not total")
   optparser.add_option("-u", "--unique", dest="unique",
     action="store_true", default=False,
     help="only use unique words found, not total")
