@@ -791,7 +791,7 @@ class ProjectIndex(pagelayout.PootlePage):
         removelinkbase = "?showassigns=1&removeassigns=1"
       else:
         removelinkbase = "?showassigns=1&removeassigns=1&removefilter=%s" % basename
-      statsdetails += self.getassigndetails(projectstats, linkbase, removelinkbase)
+      statsdetails = statsdetails + self.getassigndetails(projectstats, linkbase, removelinkbase)
     statsdetails = widgets.SeparatedList(statsdetails, "<br/>\n")
     return pagelayout.ItemStatistics(statsdetails)
 
@@ -820,14 +820,19 @@ class ProjectIndex(pagelayout.PootlePage):
   def getassigndetails(self, projectstats, linkbase, removelinkbase):
     """return a list of strings describing the assigned strings"""
     total = max(projectstats.get("total", 0), 1)
-    for assignname, assigncount in projectstats.iteritems():
+    assignlinks = []
+    keys = projectstats.keys()
+    keys.sort()
+    for assignname in keys: 
       if not assignname.startswith("assign-"):
         continue
+      assigncount = projectstats[assignname]
       assignname = assignname.replace("assign-", "", 1)
       if total and assigncount:
         assignlink = widgets.Link(self.makelink(linkbase, assignedto=assignname), assignname)
         stats = self.localize("%d strings (%d%%) assigned") % (assigncount, (assigncount * 100 / total))
         removetext = self.localize("Remove")
         removelink = widgets.Link(self.makelink(removelinkbase, assignedto=assignname), removetext)
-        yield [assignlink, ": ", stats, " ", removelink]
+        assignlinks += [[assignlink, ": ", stats, " ", removelink]]
+    return assignlinks
 
