@@ -4,6 +4,7 @@ mozilla - automate
   unpackxpi
   convert to .po files
     * make it handle already translated languages well
+    - done for dtd files, do for .properties files
   convert back
   repackxpi
 mozilla - migrate from one version to another
