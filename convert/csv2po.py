@@ -93,9 +93,12 @@ class repo:
 
   def handlecsvelement(self, thecsv):
     """handles reintegrating a csv element into the .po file"""
-    if len(thecsv.source.strip()) == 0 and thecsv.msgid.find("Content-Type:") != -1:
-      # this is the header string, we don't need to do anything with it
-      return
+    if self.mightbeheader:
+      # ignore typical header strings...
+      if [item.strip().lower() for item in thecsv.source, thecsv.msgid, thecsv.msgstr] == ["source", "original", "translation"]:
+        return
+      if len(thecsv.source.strip()) == 0 and thecsv.msgid.find("Content-Type:") != -1:
+        return
     if len(thecsv.source.strip()) > 0 and thecsv.source in self.sourceindex:
       thepo = self.sourceindex[thecsv.source]
     elif thecsv.msgid in self.msgidindex:
@@ -118,9 +121,11 @@ class repo:
     """takes the translations from the given csvfile and puts them into the pofile"""
     self.c = csvfile
     # translate the strings
+    self.mightbeheader = 1
     for thecsv in self.c.csvelements:
       # there may be more than one element due to msguniq merge
       self.handlecsvelement(thecsv)
+      self.mightbeheader = 0
     print >>sys.stderr, "%d unmatched out of %d strings" % (self.unmatched, len(self.p.poelements))
     missing = 0
     for thepo in self.p.poelements:
@@ -153,7 +158,7 @@ if __name__ == '__main__':
   parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformats, outputformat, usetemplates=True, templateslikeinput=False)
   (options, args) = parser.parse_args()
   try:
-    parser.runconversion(options, None)
+    parser.runconversion(options, convertcsv)
   except convert.optparse.OptParseError, message:
     parser.error(message)
 

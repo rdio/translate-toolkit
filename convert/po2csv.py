@@ -80,7 +80,7 @@ if __name__ == '__main__':
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:
-    parser.runconversion(options, None)
+    parser.runconversion(options, convertcsv)
   except convert.optparse.OptParseError, message:
     parser.error(message)
 

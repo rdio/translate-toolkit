@@ -181,7 +181,7 @@ class ConvertOptionParser(optparse.OptionParser):
         self.error(optparse.OptionValueError("output must be existing directory for recursive run."))
       self.recurseconversion(options)
     else:
-      convertmethod(self.getinputfile(options), self.getoutputfile(options))
+      convertmethod(self.getinputfile(options), self.getoutputfile(options), None)
 
   def getconvertmethod(self, inputext, outputext):
     """works out which conversion method to use..."""
@@ -230,7 +230,8 @@ class ConvertOptionParser(optparse.OptionParser):
   def reportprogress(self, filename, success):
     """shows that we are progressing..."""
     self.progressbar.amount += 1
-    self.progressbar.show(filename)
+    if success:
+      self.progressbar.show(filename)
     
   def checksubdir(self, parent, subdir):
     """checks to see if subdir under parent needs to be created, creates if neccessary"""
