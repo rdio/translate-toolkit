@@ -101,6 +101,7 @@ class oofile:
     self.oolines = []
     self.ooelements = []
     self.ookeys = {}
+    self.filename = "(unknown file)"
 
   def addline(self, thisline):
     """adds a parsed line to the file"""
@@ -184,12 +185,15 @@ class oomultifile:
   def openinputfile(self, subfile):
     """returns a pseudo-file object for the given subfile"""
     lines = self.getlines(subfile)
-    return wStringIO.StringIO("".join(lines))
+    inputfile = wStringIO.StringIO("".join(lines))
+    inputfile.filename = subfile
+    return inputfile
 
   def getoofile(self, subfile):
     """returns an oofile built up from the given subfile's lines"""
     lines = self.getlines(subfile)
     oofilefromlines = oofile()
+    oofilefromlines.filename = subfile
     oofilefromlines.fromlines(lines)
     return oofilefromlines
 
