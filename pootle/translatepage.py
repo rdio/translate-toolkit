@@ -3,26 +3,18 @@
 from jToolkit.widgets import widgets
 from jToolkit.widgets import table
 from translate.pootle import pagelayout
-
-dummytranslations = [
-  ("Important Information for Arabic and Hebrew Versions", "Impurtunt Inffurmeshun fur Erebeec und Hebroo Ferseeuns"),
-  ("If the user interface of the Arabic or Hebrew versions shows blanks or squares instead of text, please install the most recent Java Runtime Environment (JRE 1.4.1) before running the OpenOffice.org Installation Program. The JRE will install the fonts required for Arabic and Hebrew versions.", "Iff zee user interffece-a ooff zee Erebeec oor Hebroo ferseeuns shoos blunks oor sqooeres insteed ooff text, pleese-a instell zee must recent Jefa Roonteeme-a Infurunment (JRE 1.4.1) beffure-a roonneeng zee OopenOffffeece-a.oorg Instelleshun Prugrem. Zee JRE veell instell zee funts reqooured fur Erebeec und Hebroo ferseeuns."),
-  ("Important Information for Asian Versions", "Impurtunt Inffurmeshun fur Eseeun Ferseeuns"),
-  ("Please change the following lines in your user environment settings before running the application.", "Pleese-a chunge-a zee fullooeeng leenes in yuoor user infurunment setteengs beffure-a roonneeng zee eppleeceshun. Bork Bork Bork!"),
-  ("to (or add the following lines if they do not exist at all):", ""),
-  ("Deinstalling a Network Installation Under Common Desktop Environment (CDE)", ""),
-  ("The shortcuts set in the CDE in a network installation are not automatically removed during deinstallation. Before deinstallation, enter as Administrator (root) the following command line to remove the shortcuts from the CDE: /usr/dt/bin/dtappintegrate -u -s [path to OpenOffice.org].", "")
-  ]
+from translate.storage import po
 
 class TranslationIterator:
   def __init__(self, project, subproject):
-    self.translations = dummytranslations
+    inputfile = open(subproject.pofile, "r")
+    self.pofile = po.pofile(inputfile)
+    self.translations = [(po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)) for thepo in self.pofile.poelements if not thepo.isheader()]
+    self.item = 0
 
   def gettranslations(self, contextbefore=3, contextafter=3):
     """returns (a set of translations before, the next translation, a set of translations after)"""
-    import random
-    random.shuffle(self.translations)
-    return self.translations[0:3], self.translations[3], self.translations[4:]
+    return self.translations[min(self.item-contextbefore,0):self.item], self.translations[self.item], self.translations[self.item+1:self.item+1+contextafter]
 
 translationiterators = {}
 
@@ -58,9 +50,9 @@ class TranslatePage(pagelayout.PootlePage):
     rowoffset = 0
     for row, (orig, trans) in enumerate(translationsbefore):
       self.addtranslationrow(rowoffset + row, orig, trans)
-    rowoffset += row
+    rowoffset += len(translationsbefore)
     orig, trans = currenttranslation
-    self.addtranslationrow(row, orig, trans, True)
+    self.addtranslationrow(rowoffset, orig, trans, True)
     rowoffset += 1
     for row, (orig, trans) in enumerate(translationsafter):
       self.addtranslationrow(rowoffset + row, orig, trans)
