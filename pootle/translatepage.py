@@ -18,7 +18,7 @@ class TranslatePage(pagelayout.PootlePage):
     translations = self.gettranslations()
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     translateform = widgets.Form([translations, contextinfo], {"name": "translate", "action":""})
-    title = "Pootle: translating %s into %s: %s" % (self.project.projectcode, self.project.languagecode, self.pofilename)
+    title = "Pootle: translating %s into %s: %s" % (self.project.projectname, self.project.languagename, self.pofilename)
     translatediv = pagelayout.TranslateForm(translateform)
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
     self.links.addcontents(pagelayout.SidebarTitle("current file"))

@@ -300,12 +300,12 @@ class POTree:
     """returns the language's full name"""
     return getattr(self.getlanguage(languagecode), "fullname", languagecode)
 
-  def getlanguages(self):
-    """returns a dictionary mapping language code to language object"""
-    return dict(self.languages.iteritems())
+  def getlanguagecodes(self):
+    """returns a list of valid languagecodes"""
+    return [languagecode for languagecode, language in self.languages.iteritems()]
 
-  def getprojects(self, languagecode):
-    """returns a dictionary mapping project code to project object for the given language"""
+  def getprojectcodes(self, languagecode):
+    """returns a list of project codes that are valid for the given languagecode"""
     language = self.getlanguage(languagecode)
     return dict(language.projects.iteritems())
 
@@ -318,8 +318,6 @@ class POTree:
 
   def getproject(self, languagecode, projectcode):
     """returns the project object for the languagecode and projectcode"""
-    language = self.getlanguage(languagecode)
-    project = getattr(language.projects, projectcode)
     if (languagecode, projectcode) not in self.projects:
       self.projects[languagecode, projectcode] = TranslationProject(languagecode, projectcode, self)
     return self.projects[languagecode, projectcode]
@@ -327,13 +325,13 @@ class POTree:
   def getprojectname(self, languagecode, projectcode):
     """returns the full name of the project"""
     language = self.getlanguage(languagecode)
-    project = getattr(language.projects, projectcode)
-    return getattr(project, "fullname", projectcode)
+    projectprefs = getattr(language.projects, projectcode)
+    return getattr(projectprefs, "fullname", projectcode)
 
   def getpodir(self, languagecode, projectcode):
     """returns the full name of the project"""
     language = self.getlanguage(languagecode)
-    project = getattr(language.projects, projectcode)
-    return project.podir
+    projectprefs = getattr(language.projects, projectcode)
+    return projectprefs.podir
 
 

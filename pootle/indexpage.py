@@ -25,7 +25,7 @@ class PootleIndex(pagelayout.PootlePage):
 
   def getlanguagelinks(self):
     """gets the links to the languages"""
-    languageitems = [self.getlanguageitem(languagecode) for languagecode in self.potree.getlanguages()]
+    languageitems = [self.getlanguageitem(languagecode) for languagecode in self.potree.getlanguagecodes()]
     return pagelayout.Contents(languageitems)
 
   def getlanguageitem(self, languagecode):
@@ -33,8 +33,8 @@ class PootleIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % languagename
     bodydescription = pagelayout.ItemDescription(widgets.Link(languagecode+"/", languagename))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    languageprojects = self.potree.getprojects(languagecode)
-    projectlist = [self.potree.getproject(languagecode, projectcode) for projectcode in languageprojects]
+    projectcodes = self.potree.getprojectcodes(languagecode)
+    projectlist = [self.potree.getproject(languagecode, projectcode) for projectcode in projectcodes]
     projectcount = len(projectlist)
     projectstats = [project.calculatestats() for project in projectlist]
     totalstats = summarizestats(projectstats, {"translated":0, "total":0})
@@ -55,8 +55,8 @@ class LanguageIndex(pagelayout.PootlePage):
 
   def getprojectlinks(self):
     """gets the links to the projects"""
-    languageprojects = self.potree.getprojects(self.languagecode)
-    projectitems = [self.getprojectitem(projectcode) for projectcode in languageprojects]
+    projectcodes = self.potree.getprojectcodes(self.languagecode)
+    projectitems = [self.getprojectitem(projectcode) for projectcode in projectcodes]
     return pagelayout.Contents(projectitems)
 
   def getprojectitem(self, projectcode):
@@ -64,9 +64,9 @@ class LanguageIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % projectname
     bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", '%s project' % projectname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    translationproject = self.potree.getproject(self.languagecode, projectcode)
-    numfiles = len(translationproject.pofilenames)
-    projectstats = translationproject.calculatestats()
+    project = self.potree.getproject(self.languagecode, projectcode)
+    numfiles = len(project.pofilenames)
+    projectstats = project.calculatestats()
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
@@ -75,8 +75,8 @@ class LanguageIndex(pagelayout.PootlePage):
 
 class ProjectIndex(pagelayout.PootlePage):
   """the main page"""
-  def __init__(self, translationproject, session, argdict, dirfilter=None):
-    self.translationproject = translationproject
+  def __init__(self, project, session, argdict, dirfilter=None):
+    self.project = project
     self.showchecks = argdict.get("showchecks", 0)
     if isinstance(self.showchecks, str) and self.showchecks.isdigit():
       self.showchecks = int(self.showchecks)
@@ -92,13 +92,13 @@ class ProjectIndex(pagelayout.PootlePage):
         depth += 1
     direntries = []
     fileentries = []
-    for childdir in self.translationproject.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=False):
+    for childdir in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=False):
       direntry = self.getdiritem(childdir)
       direntries.append(direntry)
-    for childfile in self.translationproject.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
+    for childfile in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
       fileentry = self.getfileitem(childfile)
       fileentries.append(fileentry)
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.translationproject.projectcode, [processlinks, direntries, fileentries], session, bannerheight=81)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [processlinks, direntries, fileentries], session, bannerheight=81)
 
   def getdiritem(self, direntry):
     basename = os.path.basename(direntry)
@@ -108,9 +108,9 @@ class ProjectIndex(pagelayout.PootlePage):
     quicklink = widgets.Link("%s/translate.html?fuzzy=1&blank=1" % basename, "Quick Translate")
     bodydescription = pagelayout.ItemDescription([browselink, checkslink, quicklink])
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    pofilenames = self.translationproject.browsefiles(direntry)
+    pofilenames = self.project.browsefiles(direntry)
     numfiles = len(pofilenames)
-    projectstats = self.translationproject.calculatestats(pofilenames)
+    projectstats = self.project.calculatestats(pofilenames)
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
@@ -144,7 +144,7 @@ class ProjectIndex(pagelayout.PootlePage):
     csvlink = widgets.Link(csvname, 'CSV file')
     bodydescription = pagelayout.ItemDescription([browselink, checkslink, quicklink, downloadlink, csvlink])
     pofilenames = [fileentry]
-    projectstats = self.translationproject.calculatestats(pofilenames)
+    projectstats = self.project.calculatestats(pofilenames)
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
