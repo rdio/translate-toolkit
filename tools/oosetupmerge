@@ -129,9 +129,9 @@ class SetupParser(sparse.SimpleParser):
       sourceparts.append(self.source[tokenpos:end])
     return "".join(sourceparts)
 
-  def getfieldvalue(self, sectionname, fieldname):
+  def getfieldvalue(self, sectionname, fieldname, default=None):
     section = self.definitions[sectionname]
-    return section[fieldname]
+    return section.get(fieldname, default)
 
   def getfieldtokennum(self, sectionname, fieldname):
     section = self.definitions[sectionname]
@@ -162,6 +162,7 @@ class SetupParser(sparse.SimpleParser):
 class SetupIndex(SetupParser):
   def __init__(self, filename=None):
     SetupParser.__init__(self)
+    self.manualfiles = []
     if filename is not None:
       self.readfile(filename)
 
@@ -219,9 +220,8 @@ class SetupIndex(SetupParser):
       # make an index of which modules files belong to...
       index.filemodules = {}
       for module in index.bytype["Module"]:
-        try:
-          filelist = index.getfieldvalue(module, 'Files')
-        except KeyError:
+        filelist = index.getfieldvalue(module, 'Files', None)
+        if filelist is None:
           # not all modules have a file list
           continue
         filelist = [fileentry.strip() for fileentry in filelist[1:-1].split(",")]
@@ -298,6 +298,10 @@ class SetupIndex(SetupParser):
     fileentrysection = dummysetup.definitions[fileentry]
     tokenrange = dummysetup.getsectiontokenrange(fileentry)
     self.insertforeignsection(baseentry, fileentry, fileentrysection, dummysetup, tokenrange)
+    if baseentry in self.filemodules:
+      for modulename in self.filemodules[baseentry]:
+        self.addfiletomodule(modulename, fileentry, baseentry)
+    self.manualfiles.append((filename, packedname))
 
   def addforeignconfigitem(self, index, configitem, suffix):
     """adds the foreign config item and updates the modules list..."""
@@ -340,7 +344,16 @@ class SetupIndex(SetupParser):
         packedname = sparse.stringeval(self.getfieldvalue(fileentry, "PackedName"))
         self.setfieldvalue(fileentry, "PackedName", '"%s"' % (packedname+suffix))
 
+  def makepackedname(self, prefix):
+    """finds a new packedname starting with prefix in the sequence"""
+    packednames = [self.getfieldvalue(fileentry, "PackedName", '""') for fileentry in self.bytype['File']]
+    packednames = map(sparse.stringeval, packednames)
+    packednames = [packedname.replace(prefix,"",1) for packedname in packednames if packedname.startswith(prefix)]
+    packednums = [int(filter(str.isdigit, packedname)) for packedname in packednames]
+    return "%s%d" % (prefix, max(packednums)+1)
+
   def copyfiles(self, srcdirectory, destdirectory, onlychanged=0):
+    """copy all the [changed] files listed in this setup file from srcdirectory to destdirectory"""
     for fileentry in self.bytype['File']:
       fileentrysection = self.definitions[fileentry]
       if 'PackedName' not in fileentrysection: continue
@@ -353,6 +366,8 @@ class SetupIndex(SetupParser):
         if packedname != originalpackedname:
           print '%s -> %s' % (srcfile, destfile)
         os.system('cp -p %s %s' % (srcfile, destfile))
+    for filename, packedname in self.manualfiles:
+      os.system('zip %s %s' % (os.path.join(destdirectory, packedname), filename))
 
 if __name__ == '__main__':
   try:
@@ -382,7 +397,9 @@ if __name__ == '__main__':
   for otherdir in otherdirs:
     othersetupfiles.append(SetupIndex(os.path.join(otherdir, setupname)))
   mainsetupfile.merge(othersetupfiles)
-  # mainsetupfile.addmanualfile("gid_File_Bin_switchlang", "gid_Dir_Program", "ooswitchlang.exe", "f999999", "gid_File_Bin_Setofficelang")
+  if os.path.exists("ooswitchlang.exe"):
+    packedname = mainsetupfile.makepackedname("f_")
+    mainsetupfile.addmanualfile("gid_File_Bin_switchlang", "gid_Dir_Program", "ooswitchlang.exe", packedname, "gid_File_Bin_Setofficelang")
   if not os.path.isdir(outputdir):
     os.mkdir(outputdir)
   open(os.path.join(outputdir, setupname), 'w').write(mainsetupfile.getsource())
