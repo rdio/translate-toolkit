@@ -25,7 +25,7 @@ from translate.misc import optrecurse
 import sre
 
 class pogrepfilter:
-  def __init__(self, searchstring, searchparts, ignorecase, useregexp, invertmatch, accelchar):
+  def __init__(self, searchstring, searchparts, ignorecase=False, useregexp=False, invertmatch=False, accelchar=None):
     """builds a pocheckfilter using the given checker"""
     self.searchstring = searchstring
     if searchparts:
