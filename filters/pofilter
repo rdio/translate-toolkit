@@ -40,7 +40,7 @@ class pocheckfilter:
 
   def filterelement(self, thepo, includereview=1, includefuzzy=0, excludefilters={}, limitfilters=None):
     """runs filters on an element"""
-    if thepo.isheader() or thepo.isfuzzy(): return []
+    if thepo.isheader(): return []
     if thepo.hasplural():
       unquotedid = po.getunquotedstr(thepo.msgid)
       unquotedstr = po.getunquotedstr(thepo.msgstr[0])
