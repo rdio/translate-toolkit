@@ -50,16 +50,20 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     self.define_option(psycooption)
 
   def usepsyco(self, options):
-    if options.psyco != "none":
-      try:
-        import psyco
-      except Exception, e:
-        self.warning("psyco unavailable: %s" % e)
-        return
+    if options.psyco == "none":
+      return
+    try:
+      import psyco
+    except Exception, e:
+      self.warning("psyco unavailable: %s" % e)
+      return
     if options.psyco == "full":
       psyco.full()
     elif options.psyco == "profile":
       psyco.profile()
+    # tell psyco the functions it cannot compile, to prevent warnings
+    import encodings
+    psyco.cannotcompile(encodings.search_function)
 
   def set_usage(self, usage=None):
     """sets the usage string - if usage not given, uses getusagestring for each option"""
