@@ -23,7 +23,6 @@
 You can convert back to .txt using po2txt, but it doesn't exist yet"""
 
 # TODO: create po2txt
-# TODO: add options to do paragraphs instead of lines
 
 from translate.storage import po
 from translate.misc import quote
@@ -35,25 +34,40 @@ class txt2po:
     """construct a txt2po converter"""
     self.blankmsgstr = blankmsgstr
 
+  def convertblock(self, filename, block, linenum):
+    """makes a poelement based on the current block"""
+    thepo = po.poelement()
+    thepo.sourcecomments.append("#: %s:%d\n" % (filename,linenum+1))
+    thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in block]
+    if len(thepo.msgid) > 1:
+      thepo.msgid = [quote.quotestr("")] + thepo.msgid
+    thepo.msgstr = []
+    return thepo
+
   def convertfile(self, inputfile, filename, includeheader):
     """converts a file to .po format"""
     thepofile = po.pofile()
     if includeheader:
-      headerpo = thepofile.makeheader(charset="ISO-8859-1")
+      headerpo = thepofile.makeheader(charset="UTF8")
       thepofile.poelements.append(headerpo)
     lines = inputfile.readlines()
+    block = []
+    startline = 0
     for linenum in range(len(lines)):
       line = lines[linenum]
-      if not line.strip(): continue
-      thepo = po.poelement()
-      thepo.sourcecomments.append("#: %s:%d\n" % (filename,linenum+1))
-      thepo.msgid = [quote.quotestr(quote.rstripeol(line))]
-      if len(thepo.msgid) > 1:
-        thepo.msgid = [quote.quotestr("")] + thepo.msgid
-      thepo.msgstr = []
+      if not line.strip() and block:
+        thepo = self.convertblock(filename, block, startline)
+        thepofile.poelements.append(thepo)
+        block = []
+      else:
+        if not block:
+          startline = linenum
+        block.append(line)
+    if block:
+      thepo = self.convertblock(filename, block, startline)
       thepofile.poelements.append(thepo)
     return thepofile
-    
+
 def converttxt(inputfile, outputfile, templates, pot=False):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   convertor = txt2po(blankmsgstr=pot)
