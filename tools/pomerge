@@ -50,7 +50,7 @@ def mergepofiles(p1, p2, mergeblanks=1, includep1typecomments=1):
         sys.stderr.write("".join(po2.tolines()) + "\n")
       else:
         # finally set the new definition in po1
-        po1.msgstr = po2.msgstr
+        po1.merge(po2)
     for entity in entities:
       po1 = None
       if p1.sourceindex.has_key(entity):
@@ -74,14 +74,7 @@ def mergepofiles(p1, p2, mergeblanks=1, includep1typecomments=1):
           unquotedstr = po.getunquotedstr(po2.msgstr)
           if len(unquotedstr.strip()) == 0: continue
         # finally set the new definition in po1
-        po1.msgstr = po2.msgstr
-        # if there are markers other than fuzzy, use them...
-        if not includep1typecomments:
-          po1.typecomments = []
-        for tc in po2.typecomments:
-          if tc.find("fuzzy") == -1:
-            if tc not in po1.typecomments:
-              po1.typecomments.append(tc)
+        po1.merge(po2)
   return p1
 
 def mergepo(inputfile, outputfile, templatefile):
