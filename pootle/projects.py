@@ -29,6 +29,7 @@ def getmodtime(filename, default=None):
 class RightsError(ValueError):
   pass
 
+languagere = sre.compile("^[a-z]{2,3}([_-][A-Z]{2,3}|)$")
 regionre = sre.compile("^[_-][A-Z]{2,3}$")
 
 class TranslationSession:
@@ -1152,10 +1153,7 @@ class POTree:
   def isgnustyle(self, projectcode):
     """checks whether the whole project is a GNU-style project"""
     projectdir = os.path.join(self.podirectory, projectcode)
-    for otherlanguagecode in self.getlanguagecodes(projectcode):
-      if self.hasgnufiles(projectdir, otherlanguagecode):
-        return True
-    return False
+    return self.hasgnufiles(projectdir)
 
   def addtranslationproject(self, languagecode, projectcode):
     """creates a new TranslationProject"""
@@ -1193,12 +1191,24 @@ class POTree:
     projectprefs = getattr(self.projects, projectcode)
     setattr(projectprefs, "checkerstyle", projectcheckerstyle)
 
-  def hasgnufiles(self, podir, languagecode):
+  def hasgnufiles(self, podir, languagecode=None):
     """returns whether this directory contains gnu-style PO filenames for the given language"""
     fnames = os.listdir(podir)
     poext = os.extsep + "po"
-    ponames = [fn for fn in fnames if fn.endswith(poext) and self.languagematch(languagecode, fn[:-len(poext)])]
-    return bool(ponames)
+    subdirs = []
+    for fn in fnames:
+      if fn.endswith(poext):
+        if self.languagematch(languagecode, fn[:-len(poext)]):
+          return True
+      elif os.path.isdir(os.path.join(podir, fn)):
+        # if we have a language subdirectory, we're probably not GNU-style
+        if self.languagematch(languagecode, fn):
+          return False
+        subdirs.append(os.path.join(podir, fn))
+    for subdir in subdirs:
+      if self.hasgnufiles(subdir, languagecode):
+        return True
+    return False
 
   def getpodir(self, languagecode, projectcode):
     """returns the base directory containing po files for the project"""
@@ -1222,6 +1232,8 @@ class POTree:
 
   def languagematch(self, languagecode, otherlanguagecode):
     """matches a languagecode to another, ignoring regions in the second"""
+    if languagecode is None:
+      return languagere.match(otherlanguagecode)
     return languagecode == otherlanguagecode or \
       (otherlanguagecode.startswith(languagecode) and regionre.match(otherlanguagecode[len(languagecode):]))
 
