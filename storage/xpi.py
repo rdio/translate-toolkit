@@ -52,28 +52,33 @@ def _commonprefix(itemlist):
 class CatchStringOutput(NamedStringOutput):
   """catches the output before it is written and sends it to an onclose method"""
   def __init__(self, onclose):
+    """Set up the output stream, and remember a method to call on closing"""
     NamedStringOutput.__init__(self)
     self.onclose = onclose
   def close(self):
+    """wrap the underlying close method, to pass the value to onclose before it goes"""
     value = self.getvalue()
     self.onclose(value)
     self.__dict__["__i"].close()
   def slam(self):
+    """use this method to force the closing of the stream if it isn't closed yet"""
     if not self.closed:
       self.close()
 
 class ZipFileCatcher(zipfile.ZipFile, object):
+  """a ZipFile that calls any methods its instructed to before closing (useful for catching stream output)"""
   def addcatcher(self, pendingsave):
+    """remember to call the given method before closing"""
     if hasattr(self, "pendingsaves"):
       self.pendingsaves.append(pendingsave)
     else:
       self.pendingsaves = [pendingsave]
   def close(self):
+    """close the stream, remembering to call any addcatcher methods first"""
     if hasattr(self, "pendingsaves"):
       for pendingsave in self.pendingsaves:
         pendingsave()
     super(ZipFileCatcher, self).close()
-
 
 class XpiFile(ZipFileCatcher):
   def __init__(self, *args, **kwargs):
