@@ -108,6 +108,8 @@ class SetupParser(sparse.SimpleParser):
 
   def insertforeignvalue(self, sectionname, index, tokenrange):
     tokennum = self.getsectionendtokennum(sectionname) - 1
+    if self.tokens[tokennum] == "\n":
+      tokennum -= 1
     if tokennum in self.insertions:
       self.insertions[tokennum].append((index, tokenrange))
     else:
@@ -170,6 +172,10 @@ class SetupParser(sparse.SimpleParser):
     start, end = section['tokennums'][fieldname]-2, section['tokennums'][fieldname+' end']
     while self.tokens[sectionstart+end] == '\n' and sectionstart+end < len(self.tokens)-1:
       end += 1
+    if self.tokens[sectionstart+start-1] == '\n' and start > 0:
+      start -= 1
+      if self.tokens[sectionstart+end-1] == '\n':
+        end -= 1
     return (sectionstart+start, sectionstart+end)
 
   def getmoduleentrytokennum(self, modulename, fileentry):
