@@ -209,7 +209,7 @@ class PootleServer(users.OptionalLoginAppServer):
 	    dirfilter = ""
           try:
             return translatepage.TranslatePage(project, session, argdict, dirfilter)
-          except (StopIteration, projects.RightsError), stoppedby:
+          except projects.RightsError, stoppedby:
             argdict["message"] = str(stoppedby)
             return indexpage.ProjectIndex(project, session, argdict, dirfilter)
 	elif bottom.endswith(".po"):
@@ -217,7 +217,7 @@ class PootleServer(users.OptionalLoginAppServer):
 	  if argdict.get("translate", 0):
             try:
               return translatepage.TranslatePage(project, session, argdict, dirfilter=pofilename)
-            except (StopIteration, projects.RightsError), stoppedby:
+            except projects.RightsError, stoppedby:
               argdict["message"] = str(stoppedby)
               return indexpage.ProjectIndex(project, session, argdict, dirfilter=pofilename)
 	  elif argdict.get("index", 0):

@@ -36,7 +36,12 @@ class TranslatePage(pagelayout.PootlePage):
     # TODO: clean up modes to be one variable
     self.viewmode = self.argdict.get("view", 0) and "view" in self.rights
     self.reviewmode = self.argdict.get("review", 0)
-    self.finditem()
+    notice = ""
+    try:
+      self.finditem()
+    except StopIteration, stoppedby:
+      notice = self.getfinishedtext(stoppedby)
+      self.item = None
     self.maketable()
     searchcontextinfo = widgets.HiddenFieldList({"searchtext": self.searchtext})
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
@@ -46,7 +51,7 @@ class TranslatePage(pagelayout.PootlePage):
       pagelinks = self.getpagelinks("?translate=1&view=1", 10)
     else:
       pagelinks = []
-    translatediv = pagelayout.TranslateForm([pagelinks, translateform, pagelinks])
+    translatediv = pagelayout.TranslateForm([notice, pagelinks, translateform, pagelinks])
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
     self.addfilelinks(self.pofilename, self.matchnames)
     if dirfilter and dirfilter.endswith(".po"):
@@ -56,6 +61,13 @@ class TranslatePage(pagelayout.PootlePage):
     self.addfolderlinks(self.localize("current folder"), currentfolder, "index.html")
     autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
     self.headerwidgets.append(autoexpandscript)
+
+  def getfinishedtext(self, stoppedby):
+    """gets notice to display when the translation is finished"""
+    title = pagelayout.Title(self.localize("End of batch"))
+    finishedlink = "index.html?" + "&".join(["%s=%s" % (arg, value) for arg, value in self.argdict.iteritems() if arg.startswith("show")])
+    returnlink = widgets.Link(finishedlink, self.localize("Click here to return to the index"))
+    return [title, pagelayout.IntroText(str(stoppedby)), returnlink]
 
   def getpagelinks(self, baselink, pagesize):
     """gets links to other pages of items, based on the given baselink"""
@@ -209,7 +221,11 @@ class TranslatePage(pagelayout.PootlePage):
 
   def gettranslations(self):
     """gets the list of translations desired for the view, and sets editable and firstitem parameters"""
-    if self.viewmode:
+    if self.item is None:
+      self.editable = []
+      self.firstitem = self.item
+      return []
+    elif self.viewmode:
       self.editable = []
       self.firstitem = self.item
       return self.project.getitems(self.pofilename, self.item, self.item+10)
