@@ -111,7 +111,11 @@ class reoo:
     """applies the translation for entity in the po element to the dtd element"""
     if self.languages is None:
       part1 = theoo.lines[0]
-      part2 = theoo.lines[1]
+      if len(theoo.lines) > 1:
+        part2 = theoo.lines[1]
+      else:
+        part2 = oo.ooline(part1.getparts())
+        theoo.addline(part2)
     else:
       part1 = theoo.languages[self.languages[0]]
       part2 = theoo.languages[self.languages[1]]
