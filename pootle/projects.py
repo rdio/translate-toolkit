@@ -17,8 +17,8 @@ class TranslationSession:
 
   def getnextitem(self):
     """gives the user the next item to be translated"""
-    matchtest = lambda thepo: thepo.isfuzzy() or thepo.isblankmsgstr()
-    self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchtest)
+    matchnames = ["fuzzy", "blank"]
+    self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchnames)
     self.pofile = self.translationproject.getpofile(self.pofilename)
     thepo = self.pofile.transelements[item]
     orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
@@ -50,14 +50,18 @@ class TranslationProject:
       index = self.pofilenames.index(pofilename)
       return self.pofilenames[index+1]
 
-  def findnextitem(self, pofilename, item, matchtest):
-    """finds the next item matching the given filter criteria"""
+  def findnextitem(self, pofilename, item, matchnames):
+    """finds the next item matching one of the given classification names"""
     matches = False
     while not matches:
       pofilename, item = self.getnextitem(pofilename, item)
       pofile = self.getpofile(pofilename)
       thepo = pofile.transelements[item]
-      matches = matchtest(thepo)
+      matches = False
+      for name in matchnames:
+        if item in pofile.classify[name]:
+          matches = True
+          continue
     return pofilename, item
 
   def getnextitem(self, pofilename, lastitem):
