@@ -128,6 +128,8 @@ class ProjectIndex(pagelayout.PootlePage):
   """the main page"""
   def __init__(self, project, session, argdict, dirfilter=None):
     self.project = project
+    self.session = self.project.gettranslationsession(session)
+    self.rights = self.session.getrights()
     self.showchecks = argdict.get("showchecks", 0)
     if isinstance(self.showchecks, (str, unicode)) and self.showchecks.isdigit():
       self.showchecks = int(self.showchecks)
@@ -245,19 +247,19 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       baseactionlink = "%s?translate=1" % basename
       baseindexlink = "%s?index=1" % basename
-    if "check" in linksrequired:
+    if "check" in linksrequired and "translate" in self.rights:
       if self.showchecks:
         checkslink = widgets.Link(baseindexlink + "&showchecks=0", "Hide Checks")
       else:
         checkslink = widgets.Link(baseindexlink + "&showchecks=1", "Show Checks")
       actionlinks.append(checkslink)
-    if "review" in linksrequired and projectstats.get("has-suggestion", 0):
+    if "review" in linksrequired and "review" in self.rights and projectstats.get("has-suggestion", 0):
       reviewlink = widgets.Link(baseactionlink + "&review=1&has-suggestion=1", "Review Suggestions")
       actionlinks.append(reviewlink)
-    if "quick" in linksrequired and projectstats.get("translated", 0) < projectstats.get("total", 0):
+    if "quick" in linksrequired and "translate" in self.rights and projectstats.get("translated", 0) < projectstats.get("total", 0):
       quicklink = widgets.Link(baseactionlink + "&fuzzy=1&blank=1", "Quick Translate")
       actionlinks.append(quicklink)
-    if "all" in linksrequired:
+    if "all" in linksrequired and "translate" in self.rights:
       translatelink = widgets.Link(baseactionlink, 'Translate All')
       actionlinks.append(translatelink)
     return actionlinks

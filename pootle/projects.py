@@ -23,6 +23,13 @@ class TranslationSession:
     self.session = session
     self.project = project
 
+  def getrights(self):
+    """gets the current users rights"""
+    if self.session.isopen:
+      return ["view", "review", "translate"]
+    else:
+      return ["view"]
+
   def receivetranslation(self, pofilename, item, trans, issuggestion):
     """submits a new/changed translation from the user"""
     if issuggestion:
