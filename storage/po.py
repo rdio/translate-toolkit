@@ -19,8 +19,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """classes that hold elements of .po files (poelement) or entire files (pofile)
-gettext-style .po (or .pot) files are used in translations for KDE et al (see kbabel)
-FIXME: add simple test which reads in a file and writes it out again"""
+gettext-style .po (or .pot) files are used in translations for KDE et al (see kbabel)"""
 
 from __future__ import generators
 from translate.misc import quote
@@ -186,7 +185,9 @@ class poelement:
     return sources
 
 class pofile:
+  """this represents a .po file containing various poelements"""
   def __init__(self, inputfile=None):
+    """construct a pofile, optionally reading in from inputfile"""
     self.poelements = []
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
@@ -203,7 +204,8 @@ class pofile:
     else:
       return 0
 
-  def fromlines(self,lines):
+  def fromlines(self, lines):
+    """read the lines of a po file in and include them as poelements"""
     start = 0
     end = 0
     # make only the first one the header
@@ -262,6 +264,7 @@ class pofile:
           self.sourceindex[source] = thepo
 
   def tolines(self):
+    """convert the poelements back to lines"""
     lines = []
     for pe in self.poelements:
       pelines = pe.tolines()
