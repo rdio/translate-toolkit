@@ -38,6 +38,7 @@ Pootle:
       fullname = "xfce 4.2"
       description = "Linux desktop with good looks and speed to thrill"
       checkerstyle = "gnome"
+      createmofiles = 1
   podirectory = "po"
   languages:
     af:
