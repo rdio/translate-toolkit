@@ -628,6 +628,11 @@ class TranslationProject:
 
   def unquotefrompo(self, postr):
     """extracts a po-quoted string to normal text"""
+    # TODO: handle plurals properly
+    if isinstance(postr, dict):
+      pokeys = postr.keys()
+      pokeys.sort()
+      return self.unquotefrompo(postr[pokeys[0]])
     return po.unquotefrompo(postr)
 
   def quoteforpo(self, text):
