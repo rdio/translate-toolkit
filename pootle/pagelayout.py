@@ -75,18 +75,21 @@ class PootleSidebar(widgets.Division):
   def __init__(self, session):
     baseurl = session.instance.baseurl
     title = SidebarTitle(getattr(session.instance, "title", session.localize("Pootle Demo")))
+    doclink = widgets.Link(baseurl+"doc/index.html", session.localize("Docs & Help"))
     if session.status:
       loginstatus = session.status
     else:
       loginstatus = session.localize("not logged in")
     if session.isopen:
       loginlinks = widgets.Link(baseurl+"?islogout=1", session.localize("Log Out"))
+      homelink = [" | ", widgets.Link(baseurl+"home/", session.localize("Home"))]
     else:
       loginlinks = [widgets.Link(baseurl+"login.html", session.localize("Log In")), " / ", widgets.Link(baseurl+"register.html", session.localize("Register")), " / ", widgets.Link(baseurl+"activate.html", session.localize("Activate"))]
+      homelink = []
     loginimage = Icon("person.png")
     loginstatus = SidebarText([loginimage, loginstatus])
+    doclink = SidebarText([doclink, homelink])
     loginlink = SidebarText(loginlinks)
-    doclink = SidebarText(widgets.Link(baseurl+"doc/index.html", session.localize("Docs / Help")))
     widgets.Division.__init__(self, [title, doclink, loginstatus, loginlink], "links")
 
 class Icon(widgets.Image):
