@@ -27,11 +27,22 @@ from translate.filters import decoration
 # filters that the string is passed through before certain tests:
 
 def removekdecomments(str1):
+  """removed kde-style po comments i.e. starting with _: and ending with litteral \\n"""
+  iskdecomment = False
   lines = str1.split("\n")
+  removelines = []
   for linenum in range(len(lines)):
     line = lines[linenum]
     if line.startswith("_:"):
       lines[linenum] = ""
+      iskdecomment = True
+    if iskdecomment:
+      removelines.append(linenum)
+    if line.strip() and not iskdecomment:
+      break
+    if iskdecomment and line.strip().endswith("\\n"):
+      iskdecomment = False
+  lines = [lines[linenum] for linenum in range(len(lines)) if linenum not in removelines]
   return "\n".join(lines)
 
 ignoreaccelerators = []
