@@ -75,7 +75,7 @@ class QtTsParser:
       self.document = minidom.parse(inputfile)
       assert self.document.documentElement.tagName == "TS"
 
-  def addtranslation(self, contextname, source, translation, comment, transtype=None, createifmissing=False):
+  def addtranslation(self, contextname, source, translation, comment=None, transtype=None, createifmissing=False):
     """adds the given translation (will create the nodes required if asked). Returns success"""
     contextnode = self.getcontextnode(contextname)
     if contextnode is None:
@@ -103,7 +103,7 @@ class QtTsParser:
     sourcetext = self.document.createTextNode(source)
     sourcenode.appendChild(sourcetext)
     messagenode.appendChild(sourcenode)
-    if len(comment) > 0 :
+    if comment:
         commentnode = self.document.createElement("comment")
         commenttext = self.document.createTextNode(comment)
         commentnode.appendChild(commenttext)

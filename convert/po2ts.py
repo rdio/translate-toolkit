@@ -43,9 +43,8 @@ class po2ts:
         extractline = lambda line: line[2:-1]
         joiner = "\n"
         comment = joiner.join([extractline(line) for line in thepo.othercomments])
-        #comment = thepo.othercomments[0]
       else:
-        comment = ""
+        comment = None
       transtype = None
       if thepo.isfuzzy():
         transtype = "unfinished"
