@@ -105,7 +105,7 @@ class prop2po:
     # TODO: handle multiline msgid
     if theprop.isblank():
       return None
-    thepo.sourcecomments.extend("#: "+theprop.name+eol)
+    thepo.sourcecomments.append("#: "+theprop.name+eol)
     thepo.msgid = [quote.quotestr(msgid, escapeescapes=1)]
     thepo.msgstr = ['""']
     return thepo
