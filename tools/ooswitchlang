@@ -15,8 +15,6 @@ availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi'
 
 # TODO: make force the default
 # TODO: rename default options
-# TODO: maybe advanced / simple GUI
-# TODO: maybe remove combo, path...
 
 class oosetupfile(xmlwrapper.XMLWrapper):
   def __init__(self, setupfile):
@@ -171,7 +169,7 @@ class LanguageSelectionWindow(wx.Frame):
     wx.EVT_BUTTON(self, self.applybutton.GetId(), self.OnApply)
     self.cancelbutton = wx.Button(self.panel, wx.ID_ANY, "Cancel")
     wx.EVT_BUTTON(self, self.cancelbutton.GetId(), self.OnCancel)
-    self.advancedbutton = wx.Button(self.panel, wx.ID_ANY, "More options...")
+    self.advancedbutton = wx.Button(self.panel, wx.ID_ANY, "")
     wx.EVT_BUTTON(self, self.advancedbutton.GetId(), self.OnSwitchAdvanced)
     self.buttonsizer = wx.BoxSizer(wx.HORIZONTAL)
     self.buttonsizer.Add(self.applybutton)
@@ -200,9 +198,6 @@ class LanguageSelectionWindow(wx.Frame):
     self.dirbox = wx.TextCtrl(self.panel, wx.ID_ANY, style=wx.TE_PROCESS_ENTER, size=(200,-1))
     self.dirbrowse = wx.Button(self.panel, wx.ID_ANY, "Browse...")
     wx.EVT_BUTTON(self, self.dirbrowse.GetId(), self.OnBrowse)
-    self.dirsizer = wx.BoxSizer(wx.HORIZONTAL)
-    self.dirsizer.Add(self.dirbox)
-    self.dirsizer.Add(self.dirbrowse)
     wx.EVT_TEXT_ENTER(self, self.dirbox.GetId(), self.OnSetInstallDir)
 
     self.languagelabel = wx.StaticText(self.panel, wx.ID_ANY, "Select language:")
@@ -220,7 +215,7 @@ class LanguageSelectionWindow(wx.Frame):
   def arrangeoptioncontrols(self):
     """arranges all the option controls using a sizer"""
     optionslayout = [(self.versionlabel, self.versionchoice),
-                     (self.dirlabel, self.dirsizer),
+                     (self.dirlabel, self.dirbox),
                      (self.languagelabel, self.languagelist),
                      (self.adminlabel, self.adminchoice),
                      (self.forcelabel, self.forcechoice)]
@@ -230,9 +225,19 @@ class LanguageSelectionWindow(wx.Frame):
       if label in self.advancedcontrols and not self.advancedmode:
         continue
       self.optionssizer.Add(label, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
-      self.optionssizer.Add(control, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+      if control == self.dirbox:
+        self.dirsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.dirsizer.Add(self.dirbox)
+        self.dirsizer.Add(self.dirbrowse)
+        self.optionssizer.Add(self.dirsizer, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+      else:
+        self.optionssizer.Add(control, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
     for control in self.advancedcontrols:
       control.Show(self.advancedmode)
+    if self.advancedmode:
+      self.advancedbutton.SetLabel("Less...")
+    else:
+      self.advancedbutton.SetLabel("More...")
     self.panel.Layout()
 
   def setinstalldir(self, installdir):
