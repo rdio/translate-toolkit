@@ -1,3 +1,5 @@
+don't create empty directories
+
 --update option
   make recursive methods only run if input is newer than output
 mozilla - automate
