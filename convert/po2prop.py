@@ -57,7 +57,8 @@ class reprop:
         # this converts the po-style string to a prop-style string
         # i.e. no quotes but backslash at the end of the line continues to the next
         propstring = self.convertstring(thepo.msgstr)
-        if len(propstring.strip()) == 0:
+        # NOTE: triple-space as a string means leave it empty (special signal)
+        if len(propstring.strip()) == 0 and propstring != "   ":
           propstring = self.convertstring(thepo.msgid)
         self.podict[entity] = propstring
 
