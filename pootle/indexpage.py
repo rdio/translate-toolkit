@@ -3,6 +3,7 @@
 from jToolkit.widgets import widgets
 from jToolkit.widgets import table
 from translate.pootle import pagelayout
+from translate.pootle import projects
 import os
 
 def summarizestats(statslist, totalstats=None):
@@ -326,6 +327,14 @@ class ProjectIndex(pagelayout.PootlePage):
     bodytitle = widgets.Link(self.getbrowseurl(""), bodytitle)
     if dirfilter == "":
       dirfilter = None
+    if argdict.get("doassign", 0):
+      assignto = argdict.get("assignto", None)
+      action = argdict.get("action", None)
+      if not assignto and action:
+        raise ValueError("cannot doassign, need assignto and action")
+      search = projects.Search(dirfilter=dirfilter)
+      assigncount = self.project.assignpoitems(search, assignto, action)
+      print "assigned %d strings to %s for %s" % (assigncount, assignto, action)
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []
@@ -341,6 +350,8 @@ class ProjectIndex(pagelayout.PootlePage):
     childitems = self.getchilditems(dirfilter)
     pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, mainitem, childitems], session, bannerheight=81)
     self.addsearchbox(searchtext="", action="translate.html")
+    if session.issiteadmin():
+      self.addassignbox()
     self.addnavlinks(dirfilter)
 
   def addnavlinks(self, dirfilter):
@@ -366,6 +377,15 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       archivename = "%s-%s.zip" % (self.project.projectcode, self.project.languagecode)
     self.addfolderlinks(self.localize("zip of folder"), archivename, archivename)
+
+  def addassignbox(self):
+    """adds a box that lets the user assign strings"""
+    self.links.addcontents(pagelayout.SidebarTitle(self.localize("Assign Strings")))
+    assigntobox = widgets.Input({"name": "assignto", "value": "", "title": self.localize("Assign to User")})
+    actionbox = widgets.Input({"name": "action", "value": "translate", "title": self.localize("Assign Action")})
+    submitbutton = widgets.Input({"type": "submit", "name": "doassign", "value": self.localize("Assign Strings")})
+    assignform = widgets.Form([assigntobox, actionbox, submitbutton], {"action": "", "name":"assignform"})
+    self.links.addcontents(assignform)
 
   def getchilditems(self, dirfilter):
     """get all the items for directories and files viewable at this level"""

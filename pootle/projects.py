@@ -243,6 +243,14 @@ class pootlefile(po.pofile):
       userassigns[action] = items
     return poassigns
 
+  def assignto(self, item, username, action):
+    """assigns the item to the given username for the given action"""
+    userassigns = self.assigns.setdefault(username, {})
+    items = userassigns.setdefault(action, [])
+    if item not in items:
+      items.append(item)
+    self.saveassigns()
+
   def saveassigns(self):
     """saves the current assigns to file"""
     # assumes self.assigns is up to date
@@ -425,7 +433,7 @@ class pootlefile(po.pofile):
 
 class Search:
   """an object containint all the searching information"""
-  def __init__(self, dirfilter=None, matchnames=None, assignedto=None, assignedaction=None, searchtext=None):
+  def __init__(self, dirfilter=None, matchnames=[], assignedto=None, assignedaction=None, searchtext=None):
     self.dirfilter = dirfilter
     self.matchnames = matchnames
     self.assignedto = assignedto
@@ -657,6 +665,25 @@ class TranslationProject:
             yield pofilename, item
         else:
           yield pofilename, item
+
+  def assignpoitems(self, search, assignto, action):
+    """assign all the items matching the search to the assignto user with the given action"""
+    if search.searchtext:
+      pogrepfilter = pogrep.pogrepfilter(search.searchtext, None, ignorecase=True)
+    assigncount = 0
+    for pofilename in self.searchpofilenames(None, search, includelast=True):
+      pofile = self.getpofile(pofilename)
+      for item in pofile.iteritems(search, None):
+        # TODO: move this to iteritems
+        if search.searchtext:
+          thepo = pofile.transelements[item]
+          if pogrepfilter.filterelement(thepo):
+            pofile.assignto(item, assignto, action)
+            assigncount += 1
+        else:
+          pofile.assignto(item, assignto, action)
+          assigncount += 1
+    return assigncount
 
   def gettranslationsession(self, session):
     """gets the user's translationsession"""
