@@ -12,7 +12,6 @@ h1, h2, h3
 {
 	font-family: verdana, arial, sans-serif;
 	font-size: small;
-  	text-transform:uppercase;
 	color: #694288;
 }
 div.autoexpand
@@ -32,20 +31,19 @@ div.contentsitem
 	color:#333;
 	font-size:small;
 	font-weight:normal;
-  	line-height:120%;
+  	line-height:100%;
 }
 div.item-description
 {
 	font-family: verdana, arial, sans-serif;
 	font-size:small;
-  	text-transform:lowercase;
 }
 div.item-statistics
 {
 	font-family:verdana, arial, sans-serif; 
 	font-size: x-small; 
 	color: #000000; 
-	margin-bottom:25px;
+	margin-bottom:5px;
 }
 div.translate-form
 {
