@@ -42,12 +42,32 @@ class oosetupfile(xmlwrapper.XMLWrapper):
     xmlwrapper.ElementTree.fixtag = xmlwrapper.makefixtagproc(oonamespace)
     self.write(open(filename, 'w'))
 
+class ooconfigurator:
+  """manages an open office configuration in a given directory"""
+  def __init__(self, installdir):
+    self.installdir = installdir
+    adminsetupfilename = os.path.join(self.installdir, 'share', 'registry', 'data', 'org', 'openoffice', 'Setup.xcu')
+    usersetupfilename = os.path.join(self.installdir, 'user', 'registry', 'data', 'org', 'openoffice', 'Setup.xcu')
+    self.adminsetupfile = oosetupfile(adminsetupfilename)
+    self.usersetupfile = oosetupfile(usersetupfilename)
+
+  def getuserlanguage(self):
+    """gets the language set for this user"""
+    try:
+      return self.usersetupfile.getcurrentlanguage()
+    except ValueError:
+      return self.adminsetupfile.getcurrentlanguage()
+
+  def setuserlanguage(self, newisocode):
+    """sets the language for the user"""
+    self.usersetupfile.setcurrentlanguage(newisocode)
+    self.usersetupfile.savetofile()
+
 class LanguageSelectionWindow(wx.Frame):
   """Window for selecting language"""
   def __init__(self, parent, id, title):
     wx.Frame.__init__(self, parent, id, title)
-    setupfile = os.path.join('share', 'registry', 'data', 'org', 'openoffice', 'Setup.xcu')
-    self.config = oosetupfile(setupfile)
+    self.config = ooconfigurator('.')
     self.panel = wx.Panel(self, wx.ID_ANY)
     self.optionssizer = wx.BoxSizer(wx.HORIZONTAL)
     self.languagelabel = wx.StaticText(self.panel, wx.ID_ANY, "Select language:")
@@ -56,7 +76,7 @@ class LanguageSelectionWindow(wx.Frame):
     languagenames = self.languages.values()
     languagenames.sort()
     self.languagelist = wx.ListBox(self.panel, wx.ID_ANY, choices=languagenames)
-    currentisocode = self.config.getcurrentlanguage()
+    currentisocode = self.getlanguage()
     currentlanguagename = self.languages.get(currentisocode, None)
     if currentlanguagename in languagenames:
       self.languagelist.Select(languagenames.index(currentlanguagename))
@@ -79,6 +99,12 @@ class LanguageSelectionWindow(wx.Frame):
     self.panel.SetSizer(self.sizer)
     self.Show(1)
 
+  def getlanguage(self):
+    return self.config.getuserlanguage()
+
+  def setlanguage(self, newisocode):
+    self.config.setuserlanguage(newisocode)
+
   def OnApply(self, event):
     """Apply the changes and quit"""
     currentlanguagename = self.languagelist.GetStringSelection()
@@ -91,8 +117,7 @@ class LanguageSelectionWindow(wx.Frame):
       if currentisocode is None:
         wx.MessageBox("Error finding language code", "Error", wx.ICON_ERROR, self)
       else:
-        self.config.setcurrentlanguage(currentisocode)
-        self.config.savetofile()
+        self.setlanguage(currentisocode)
         self.Close(1)
     else:
       wx.MessageBox("First select a language (Cancel to quit)", "Error", wx.ICON_ERROR, self)
