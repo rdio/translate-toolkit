@@ -596,7 +596,7 @@ class TranslationProject:
     """returns a particular item from a particular po file's orig, trans strings as a tuple"""
     pofile = self.getpofile(pofilename)
     thepo = pofile.transelements[item]
-    orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
+    orig, trans = self.unquotefrompo(thepo.msgid), self.unquotefrompo(thepo.msgstr)
     return orig, trans
 
   def getitemclasses(self, pofilename, item):
@@ -605,21 +605,30 @@ class TranslationProject:
     pofile = self.getpofile(pofilename)
     return [classname for (classname, classitems) in pofile.classify.iteritems() if item in classitems]
 
+  def unquotefrompo(self, postr):
+    """extracts a po-quoted string to normal text"""
+    return po.unquotefrompo(postr)
+
+  def quoteforpo(self, text):
+    """quotes text in po-style"""
+    text = text.replace("\r\n", "\n")
+    return po.quoteforpo(text)
+
   def getitems(self, pofilename, itemstart, itemstop):
     """returns a set of items from the pofile, converted to original and translation strings"""
     pofile = self.getpofile(pofilename)
     elements = pofile.transelements[max(itemstart,0):itemstop]
-    return [(po.getunquotedstr(poel.msgid, includeescapes=False), po.getunquotedstr(poel.msgstr, includeescapes=False)) for poel in elements]
+    return [(self.unquotefrompo(poel.msgid), self.unquotefrompo(poel.msgstr)) for poel in elements]
 
   def updatetranslation(self, pofilename, item, trans):
     """updates a translation with a new value..."""
-    newmsgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
+    newmsgstr = self.quoteforpo(trans)
     pofile = self.pofiles[pofilename]
     pofile.setmsgstr(item, newmsgstr)
 
   def suggesttranslation(self, pofilename, item, trans, username):
     """stores a new suggestion for a translation..."""
-    suggmsgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
+    suggmsgstr = self.quoteforpo(trans)
     pofile = self.getpofile(pofilename)
     pofile.addsuggestion(item, suggmsgstr, username)
 
@@ -629,7 +638,7 @@ class TranslationProject:
       pofilename = pofile
       pofile = self.getpofile(pofilename)
     suggestpos = pofile.getsuggestions(item)
-    suggestions = [po.getunquotedstr(suggestpo.msgstr) for suggestpo in suggestpos]
+    suggestions = [self.unquotefrompo(suggestpo.msgstr) for suggestpo in suggestpos]
     return suggestions
 
   def acceptsuggestion(self, pofile, item, suggitem, newtrans):
