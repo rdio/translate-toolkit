@@ -146,7 +146,9 @@ class dtdelement:
       yield entityline+'\n'
 
 class dtdfile:
+  """this class represents a .dtd file, made up of dtdelements"""
   def __init__(self, inputfile=None):
+    """construct a dtdfile, optionally reading in from inputfile"""
     self.dtdelements = []
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
@@ -155,6 +157,7 @@ class dtdfile:
       self.makeindex()
 
   def fromlines(self,lines):
+    """read the lines of a dtd file in and include them as dtdelements"""
     start = 0
     end = 0
     while end < len(lines):
@@ -180,6 +183,7 @@ class dtdfile:
           self.dtdelements.append(newdtd)
 
   def tolines(self):
+    """convert the dtdelements back to lines"""
     lines = []
     for dtd in self.dtdelements:
       dtdlines = dtd.tolines()
@@ -187,6 +191,7 @@ class dtdfile:
     return lines    
 
   def makeindex(self):
+    """makes self.index dictionary keyed on entities"""
     self.index = {}
     for dtd in self.dtdelements:
       self.index[dtd.entity] = dtd
