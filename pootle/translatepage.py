@@ -23,6 +23,9 @@ class TranslatePage(pagelayout.PootlePage):
     # TODO: fix this in jToolkit
     if isinstance(self.searchtext, unicode):
       self.searchtext = self.searchtext.encode("utf8")
+    self.showassigns = self.argdict.get("showassigns", 0)
+    if isinstance(self.showassigns, (str, unicode)) and self.showassigns.isdigit():
+      self.showassigns = int(self.showassigns)
     self.session = self.project.gettranslationsession(session)
     self.localize = session.localize
     self.rights = self.session.getrights()
@@ -73,7 +76,7 @@ class TranslatePage(pagelayout.PootlePage):
     """adds a section on the current file, including any checks happening"""
     searchcontextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     self.addsearchbox(self.searchtext, searchcontextinfo)
-    if self.session.session.issiteadmin():
+    if self.session.session.issiteadmin() and self.showassigns:
       self.addassignbox()
     self.links.addcontents(pagelayout.SidebarTitle(self.localize("current file")))
     self.links.addcontents(pagelayout.SidebarText(pofilename))
@@ -188,7 +191,8 @@ class TranslatePage(pagelayout.PootlePage):
       try:
         search = projects.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext)
         # TODO: find a nicer way to let people search stuff assigned to them (does it by default now)
-        search.assignedto = self.argdict.get("assignedto", self.session.session.username)
+        # search.assignedto = self.argdict.get("assignedto", self.session.session.username)
+        search.assignedto = self.argdict.get("assignedto", None)
         search.assignedaction = self.argdict.get("assignedaction", None)
         self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, search).next()
       except StopIteration:
