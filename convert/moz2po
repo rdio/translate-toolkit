@@ -57,7 +57,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
       self.error(optparse.OptionValueError("must specify output directory for xpi/recursive run."))
     if not os.path.isdir(options.output):
       self.error(optparse.OptionValueError("output must be existing directory for xpi/recursive run."))
-    if os.path.isfile(options.template):
+    if options.template and os.path.isfile(options.template):
       options.templatexpi = xpi.XpiFile(options.template)
     self.recurseconversion(options)
 
