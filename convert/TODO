@@ -2,8 +2,6 @@
   make recursive methods only run if input is newer than output
 --force option
   only overwrite files if this is given (work out which tools its applicable to)
-handle encodings correctly (currently default to iso-8859-1 which is bad)
-allow .properties to be edited in UTF instead of escaped Unicode
 detect whether producing a .po or a .pot (make -P / --pot unneccessary)
 
 mozilla - automate
