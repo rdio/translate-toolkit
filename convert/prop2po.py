@@ -55,6 +55,44 @@ class prop2po:
     thepofile.removeduplicates()
     return thepofile
 
+  def mergefiles(self, origpropfile, translatedpropfile):
+    """converts a .properties file to a .po file..."""
+    thepofile = po.pofile()
+    headerpo = self.makeheader("%s, %s" % (origpropfile.filename, translatedpropfile.filename))
+    translatedpropfile.makeindex()
+    # we try and merge the header po with any comments at the start of the properties file
+    appendedheader = 0
+    waitingcomments = []
+    # loop through the original file, looking at elements one by one
+    for origprop in origpropfile.propelements:
+      origpo = self.convertelement(origprop)
+      if origpo is None:
+        waitingcomments.extend(origprop.comments)
+      # handle the header case specially...
+      if not appendedheader:
+        if origprop.isblank():
+          origpo = headerpo
+        else:
+          thepofile.poelements.append(headerpo)
+        appendedheader = 1
+      # try and find a translation of the same name...
+      if origprop.name in translatedpropfile.index:
+        translatedprop = translatedpropfile.index[origprop.name]
+        translatedpo = self.convertelement(translatedprop)
+      else:
+        translatedpo = None
+      # if we have a valid po element, get the translation and add it...
+      if origpo is not None:
+        if translatedprop is not None:
+          origpo.msgstr = translatedpo.msgid
+        origpo.othercomments = waitingcomments + origpo.othercomments
+        waitingcomments = []
+        thepofile.poelements.append(origpo)
+      elif translatedpo is not None:
+        print >>sys.stderr, "error converting original properties definition %s" % origprop.name
+    thepofile.removeduplicates()
+    return thepofile
+
   def makeheader(self, filename):
     """create a header for the given filename"""
     # TODO: handle this in the po class
@@ -94,13 +132,16 @@ class prop2po:
     return thepo
 
 def main(inputfile, outputfile, templatefile):
-  """reads in inputfile using properties, converts using prop2po, writes to outputfile"""
+  """reads in inputfile and templatefile using properties, converts using prop2po, writes to outputfile"""
   inputprop = properties.propfile(inputfile)
   convertor = prop2po()
-  outputpo = convertor.convertfile(inputprop)
+  if templatefile is None:
+    outputpo = convertor.convertfile(inputprop)
+  else:
+    templateprop = properties.propfile(templatefile)
+    outputpo = convertor.mergefiles(templateprop, inputprop)
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
-  convertor.convertfile(inputfile, outputfile)
 
 if __name__ == '__main__':
   # handle command line options
