@@ -163,6 +163,24 @@ def mozillapropertiesencode(source):
       output += "\\u%04X" % charnum
   return output
 
+propertyescapes = {
+  # escapes that are self-escaping
+  "\\": "\\", "'": "'", '"': '"',
+  # control characters that we keep
+  "b": "\b", "f": "\f", "t": "\t", "n": "\n", "v": "\v", "a": "\a"
+  }
+
+controlchars = {
+  # the reverse of the above...
+  "\b": "\\b", "\f": "\\f", "\t": "\\t", "\n": "\\n", "\v": "\\v", "\a": "\\a"
+  }
+
+def escapecontrols(source):
+  """escape control characters in the given string"""
+  for key, value in controlchars.iteritems():
+    source = source.replace(key, value)
+  return source
+
 def mozillapropertiesdecode(source):
   """decodes source from the escaped-unicode encoding used by mozilla .properties files"""
   # since the .decode("unicode-escape") routine decodes everything, and we don't want to
@@ -171,22 +189,14 @@ def mozillapropertiesdecode(source):
   output = u""
   s = 0
   starts = 0
-  escapes = {
-    # escapes that are self-escaping
-    "\\": "\\", "'": "'", '"': '"',
-    # control characters that we keep
-    "b": "\b", "f": "\f", "t": "\t", "n": "\n", "v": "\v", "a": "\a"
-    }
-  controlchars = {
-    # the reverse of the above...
-    "\b": "\b", "\f": "\f", "\t": "\t", "\n": "\n", "\v": "\v", "\a": "\a"
-    }
   def unichr2(i):
     """Returns a Unicode string of one character with ordinal 32 <= i, otherwise an escaped control character"""
     if 32 <= i:
       return unichr(i)
     elif unichr(i) in controlchars:
-      return controlchars[unichr(i)]
+      # we just return the character, unescaped
+      # if people want to escape them they can use escapecontrols
+      return unichr(i)
     else:
       return "\\u%04x" % i
   while s < len(source):
@@ -200,8 +210,8 @@ def mozillapropertiesdecode(source):
     c = source[s]
     s += 1
     if c == '\n': pass
-    # escapes lookups
-    elif c in escapes: output += escapes[c]
+    # propertyescapes lookups
+    elif c in propertyescapes: output += propertyescapes[c]
     # \000 (octal) escapes
     elif c in "01234567":
       x = ord(c) - ord('0')
