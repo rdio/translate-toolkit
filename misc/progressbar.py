@@ -20,6 +20,25 @@
 
 """progress bar utilities for reporting feedback on progress of application..."""
 
+class SimpleProgressBar:
+  """an ultra-simple progress indicator that just writes a dot for each action"""
+  def __init__(self):
+    import sys
+    self.stdout = sys.stdout
+    self.amount = 0
+
+  def show(self, verbosemessage):
+    """show a dot for progress :-)"""
+    self.stdout.write('.')
+    self.stdout.flush()
+
+  def close(self):
+    self.stdout.write('\n')
+    self.stdout.flush()
+
+  def __del__(self):
+    self.close()
+
 class ProgressBar:
   """a plain progress bar that doesn't know very much about output..."""
   def __init__(self, minValue = 0, maxValue = 100, totalWidth=50):
@@ -50,7 +69,7 @@ class ProgressBar:
     self.progBar = "[%s%s] %3d%%" % ('#'*numHashes, ' '*(allFull-numHashes), percentDone)
     return str(self.progBar)
 
-  def show(self):
+  def show(self, verbosemessage):
     """displays the progress bar"""
     print self
 
@@ -61,7 +80,7 @@ class ConsoleProgressBar(ProgressBar):
     self.sys = sys
     ProgressBar.__init__(self, *args, **kwargs)
 
-  def show(self):
+  def show(self, verbosemessage):
     self.sys.stdout.write(str(self) + '\r')
     self.sys.stdout.flush()
 
@@ -71,6 +90,19 @@ class ConsoleProgressBar(ProgressBar):
 
   def __del__(self):
     self.close()
+
+class VerboseProgressBar(ConsoleProgressBar):
+  def __init__(self, *args, **kwargs):
+    self.lastwidth = 0
+    ConsoleProgressBar.__init__(self, *args, **kwargs)
+
+  def show(self, verbosemessage):
+    output = str(self)
+    self.sys.stdout.write('\r' + ' '*self.lastwidth)
+    self.sys.stdout.write('\r' + verbosemessage + '\n')
+    self.lastwidth = len(output)
+    self.sys.stdout.write('\r' + output)
+    self.sys.stdout.flush()
 
 class CursesProgressBar(ProgressBar):
   """a ProgressBar that uses curses..."""
@@ -90,7 +122,7 @@ class CursesProgressBar(ProgressBar):
   def __del__(self):
     self.close()
 
-  def show(self):
+  def show(self, verbosemessage):
     y, x = self.cursesyx
     self.curseswin.addnstr(y, x, self.__str__(), self.width)
     self.curseswin.refresh()
