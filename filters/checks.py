@@ -183,13 +183,13 @@ class StandardChecker(TranslationChecker):
     """checks whether whitespace at the beginning of the strings matches"""
     str1 = self.filteraccelerators(self.filtervariables(str1))
     str2 = self.filteraccelerators(self.filtervariables(str2))
-    return helpers.funcsmatch(str1, str2, decoration.spacestart)
+    return helpers.funcmatch(str1, str2, decoration.spacestart)
 
   def endwhitespace(self, str1, str2):
     """checks whether whitespace at the end of the strings matches"""
     str1 = self.filteraccelerators(self.filtervariables(str1))
     str2 = self.filteraccelerators(self.filtervariables(str2))
-    return helpers.funcsmatch(str1, str2, decoration.spaceend)
+    return helpers.funcmatch(str1, str2, decoration.spaceend)
 
   def startpunc(self, str1, str2):
     """checks whether punctuation at the beginning of the strings match"""
