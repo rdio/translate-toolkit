@@ -115,10 +115,14 @@ class OptionalLoginAppServer(server.LoginAppServer):
         if hasattr(users, username):
           raise ValueError("Already have user with the login: %s" % username)
         userpassword = argdict.get("newuserpassword", None)
-        if userpassword is None:
+        if userpassword is None or userpassword == self.localize("(add password here)"):
           raise ValueError("You must specify a password")
         userfullname = argdict.get("newfullname", None)
+        if userfullname == self.localize("(add full name here)"):
+          raise ValueError("Please set the users full name or leave it blank")
         useremail = argdict.get("newuseremail", None)
+        if useremail == self.localize("(add email here)"):
+          raise ValueError("Please set the users email address or leave it blank")
         useractivate = "newuseractivate" in argdict
         self.adduser(users, username, userfullname, useremail, userpassword)
         if useractivate:
