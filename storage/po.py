@@ -200,10 +200,15 @@ class pofile:
     """returns whether the po file doesn't contain any definitions..."""
     if len(self.poelements) == 0:
       return 1
-    elif len(self.poelements) == 1:
-      return self.poelements[0].isheader()
-    else:
+    # first we check the header...
+    header = self.poelements[0]
+    if not (header.isheader() or header.isblank()):
       return 0
+    # if there are any other elements, this is only empty if they are blank
+    for poelement in self.poelements[1:]:
+      if not poelement.isblank():
+        return 0
+    return 1
 
   def fromlines(self, lines):
     """read the lines of a po file in and include them as poelements"""
