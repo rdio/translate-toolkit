@@ -352,8 +352,10 @@ class RecursiveOptionParser(optparse.OptionParser, object):
         self.finalizetempoutputfile(options, outputfile, fulloutputpath)
       return True
     else:
-      outputfile.close()
-      os.unlink(fulloutputpath)
+      # remove the file if it is a file (could be stdout etc)
+      if fulloutputpath and os.path.isfile(fulloutputpath):
+        outputfile.close()
+        os.unlink(fulloutputpath)
       return False
 
   def reportprogress(self, filename, success):
