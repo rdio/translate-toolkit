@@ -70,21 +70,19 @@ class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
   def __init__(self, session):
     baseurl = session.instance.baseurl
-    title = SidebarTitle(getattr(session.instance, "title", session.localize("Pootle")))
-    description = SidebarText(getattr(session.instance, "description", session.localize("this is a demo installation of pootle")))
-    logintitle = SidebarTitle(session.localize("login status"))
+    title = SidebarTitle(getattr(session.instance, "title", session.localize("Pootle Demo")))
     if session.status:
       loginstatus = session.status
     else:
       loginstatus = session.localize("not logged in")
     if session.isopen:
-      loginlink = widgets.Link(baseurl+"?islogout=1", session.localize("Log Out"))
+      loginlinks = widgets.Link(baseurl+"?islogout=1", session.localize("Log Out"))
     else:
-      loginlink = [widgets.Link(baseurl+"login.html", session.localize("Log In")), " / ", widgets.Link(baseurl+"register.html", session.localize("Register")), " / ", widgets.Link(baseurl+"activate.html", session.localize("Activate"))]
+      loginlinks = [widgets.Link(baseurl+"login.html", session.localize("Log In")), " / ", widgets.Link(baseurl+"register.html", session.localize("Register")), " / ", widgets.Link(baseurl+"activate.html", session.localize("Activate"))]
     loginimage = Icon("person.png")
     loginstatus = SidebarText([loginimage, loginstatus])
-    loginlink = SidebarText(loginlink)
-    widgets.Division.__init__(self, [title, description, logintitle, loginstatus, loginlink], "links")
+    loginlink = SidebarText(loginlinks)
+    widgets.Division.__init__(self, [title, loginstatus, loginlink], "links")
 
 class Icon(widgets.Image):
   """an icon image"""
