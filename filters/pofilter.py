@@ -137,6 +137,8 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
     else:
       checkerclasses = [options.filterclass, StandardPOChecker]
     options.checkfilter = pocheckfilter(checkerclasses, options.excludefilters, options.limitfilters)
+    if not options.checkfilter.checker.combinedfilters:
+      self.error("No valid filters were specified")
     options.inputformats = self.inputformats
     options.outputoptions = self.outputoptions
     self.usepsyco(options)
