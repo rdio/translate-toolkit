@@ -50,7 +50,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
     if options.input is None:
       self.error(optparse.OptionValueError("cannot use stdin for xpi/recursive run. please specify inputfile"))
     elif os.path.isfile(options.input):
-      options.inputxpi = xpi.XpiFile(options.input)
+      options.inputxpi = xpi.XpiFile(options.input, includenonloc=False)
     elif not os.path.isdir(options.input):
       self.error(optparse.OptionValueError("inputfile must be file for xpi run or directory for recursive run."))
     if options.output is None:
@@ -58,7 +58,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
     if not os.path.isdir(options.output):
       self.error(optparse.OptionValueError("output must be existing directory for xpi/recursive run."))
     if options.template and os.path.isfile(options.template):
-      options.templatexpi = xpi.XpiFile(options.template)
+      options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
     self.recurseconversion(options)
 
   def inputisxpi(self, options):
