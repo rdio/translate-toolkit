@@ -28,20 +28,42 @@ from translate.filters import prefilters
 # actual test methods
 
 class TranslationChecker:
-  def __init__(self):
+  def __init__(self, accelerators=[], varmatches=[]):
     """construct the TranslationChecker..."""
     self.prefilters = {}
     for prefilter in (self.filtervariables, self.filteraccelerators, self.filterwordswithpunctuation):
       self.prefilters[getattr(prefilter, 'name', prefilter.__name__)] = prefilter
-    self.helperfunctions = ("__init__", "run_all")
+    self.setaccelerators(accelerators)
+    self.setvarmatches(varmatches)
+    # exclude functions defined in TranslationChecker from being treated as tests...
+    self.helperfunctions = {}
+    for functionname in dir(TranslationChecker):
+      if functionname in self.prefilters: continue
+      function = getattr(self, functionname)
+      if callable(function):
+        self.helperfunctions[functionname] = function
+
+  def setaccelerators(self, accelerators):
+    """sets the accelerator list"""
+    self.accelerators = accelerators
+    self.accfilters = [prefilters.filteraccelerators(accelmarker) for accelmarker in self.accelerators]
+    self.acccounters = [decoration.countaccelerators(accelmarker) for accelmarker in self.accelerators]
+
+  def setvarmatches(self, varmatches):
+    """sets the set of start and end markers to match variables by"""
+    self.varmatches = varmatches
+    self.varfilters =  [prefilters.filtervariables(startmatch, endmatch, prefilters.varname)
+                        for startmatch, endmatch in self.varmatches]
+    self.varchecks = [decoration.getvariables(startmarker, endmarker)
+                      for startmarker, endmarker in self.varmatches]
 
   def filtervariables(self, str1):
     """filter out variables from str1"""
-    return helpers.multifilter(str1, prefilters.varfilters)
+    return helpers.multifilter(str1, self.varfilters)
 
   def filteraccelerators(self, str1):
     """filter out accelerators from str1"""
-    return helpers.multifilter(str1, prefilters.accfilters)
+    return helpers.multifilter(str1, self.accfilters)
 
   def filterwordswithpunctuation(self, str1):
     """replaces words with punctuation with their unpunctuated equivalents..."""
@@ -60,6 +82,8 @@ class TranslationChecker:
           failures.append("%s: %s" % (checkname, checkfunction.__doc__))
     return failures
 
+class StandardChecker(TranslationChecker):
+  """simply defines a bunch of tests..."""
   def untranslated(self, str1, str2):
     """checks whether a string has been translated at all"""
     return not (len(str1.strip()) > 0 and len(str2) == 0)
@@ -94,11 +118,11 @@ class TranslationChecker:
     """checks whether accelerators are consistent between the two strings"""
     str1 = self.filtervariables(str1)
     str2 = self.filtervariables(str2)
-    return helpers.funcsmatch(str1, str2, prefilters.acccounters)
+    return helpers.funcsmatch(str1, str2, self.acccounters)
 
   def variablesconsistent(self, str1, str2):
     """checks whether variables of various forms are consistent between the two strings"""
-    return helpers.funcsmatch(str1, str2, prefilters.varchecks)
+    return helpers.funcsmatch(str1, str2, self.varchecks)
 
   def startandend(self, str1, str2):
     """checks whether punctuation at the beginning and end of the strings match"""
@@ -130,9 +154,23 @@ class TranslationChecker:
 
 # code to actually run the tests (use unittest?)
 
+class OpenOfficeChecker(StandardChecker):
+  def __init__(self):
+    StandardChecker.__init__(self,
+      accelerators = ("~"),
+      varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("#", "#"))
+      )
+
+class MozillaChecker(StandardChecker):
+  def __init__(self):
+    StandardChecker.__init__(self,
+      accelerators = ("&"),
+      varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None))
+      )
+
 def runtests(str1, str2, ignorelist=()):
   """verifies that the tests pass for a pair of strings"""
-  checker = TranslationChecker()
+  checker = StandardChecker()
   failures = checker.run_all(str1, str2, ignorelist)
   for failure in failures:
     print "failure: %s\n  %r\n  %r" % (failure, str1, str2)

@@ -28,22 +28,6 @@ from translate.filters import decoration
 
 ignoreaccelerators = []
 
-# TODO: have a more intelligent way of selecting sets of accelerators, variables, and tests
-
-oo_accelerators = ("~")
-moz_accelerators = ("&")
-accelerators = oo_accelerators
-
-accchecks = [decoration.getaccelerators(accelmarker) for accelmarker in accelerators]
-
-acccounters = [decoration.countaccelerators(accelmarker) for accelmarker in accelerators]
-
-oo_varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("#", "#"))
-moz_varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None))
-varmatches = oo_varmatches
-
-varchecks = [decoration.getvariables(startmarker, endmarker) for startmarker, endmarker in varmatches]
-
 def filteraccelerators(accelmarker):
   """returns a function that filters accelerators marked using accelmarker in strings"""
   if accelmarker is None: accelmarkerlen = 0
@@ -59,8 +43,6 @@ def filteraccelerators(accelmarker):
     fstr1 += str1[pos:]
     return fstr1
   return filtermarkedaccelerators
-
-accfilters = [filteraccelerators(accelmarker) for accelmarker in accelerators]
 
 ignorevariables = ["amp"]
 
@@ -94,8 +76,6 @@ def filtervariables(startmarker, endmarker, varfilter):
     return fstr1
   return filtermarkedvariables
 
-varfilters = [filtervariables(start, end, varname) for start, end in varmatches]
-
 wordswithpunctuation = ["can't", "couldn't", "doesn't", "don't", "wasn't", "won't", "you're",
                         "user's", "system's", "writer's",  # english
                         "'n", "makro's", "scenario's"   # afrikaans
@@ -122,21 +102,5 @@ def filterwordswithpunctuation(str1):
     lastpos = pos + len(origword)
   newstr1 += str1[lastpos:]
   return newstr1
-
-def accfiltertestmethod(testmethod):
-  """returns a function that runs the accelerator filters before the testmethod"""
-  return helpers.multifiltertestmethod(testmethod, accfilters)
-
-def varfiltertestmethod(testmethod):
-  """returns a function that runs the var filters before the testmethod"""
-  return helpers.multifiltertestmethod(testmethod, varfilters)
-
-def puncfiltertestmethod(testmethod):
-  """returns a function that runs the punctuation filter before the testmethod"""
-  return helpers.filtertestmethod(testmethod, filterwordswithpunctuation)
-
-def accvarpuncfiltertestmethod(testmethod):
-  """returns a function that runs the accelerator and var and punctuation filters before the testmethod"""
-  return helpers.multifiltertestmethod(testmethod, varfilters + accfilters + [filterwordswithpunctuation])
 
 
