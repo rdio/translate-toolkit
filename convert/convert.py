@@ -238,6 +238,8 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
 
   def inittemplatearchive(self, options):
     """opens the templatearchive if not already open"""
+    if not self.usetemplates:
+      return
     if options.template and self.isarchive(options.template) and not hasattr(options, "templatearchive"):
       options.templatearchive = self.openarchive(options.template)
 
