@@ -174,12 +174,14 @@ def main():
   from translate.convert import convert
   formats = {("po", "oo"):("oo", convertoo)}
   # always treat the input as an archive unless it is a directory
-  archiveformats = {None: oo.oomultifile}
+  archiveformats = {(None, "output"): oo.oomultifile, (None, "template"): oo.oomultifile}
   parser = convert.ArchiveConvertOptionParser(formats, usetemplates=True, description=__doc__, archiveformats=archiveformats)
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
   parser.add_option("-T", "--keeptimestamp", dest="timestamp", default=None, action="store_const", const=0,
                     help="don't change the timestamps of the strings")
+  parser.add_option("", "--nonrecursiveoutput", dest="allowrecursiveoutput", default=True, action="store_false", help="don't treat the output oo as a recursive store")
+  parser.add_option("", "--nonrecursivetemplate", dest="allowrecursivetemplate", default=True, action="store_false", help="don't treat the template oo as a recursive store")
   parser.passthrough.append("languagecode")
   parser.passthrough.append("timestamp")
   parser.run()
