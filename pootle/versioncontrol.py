@@ -50,16 +50,19 @@ def cvsupdatefile(path, revision=None):
   """Does a clean update of the given path"""
   dirname = shellescape(os.path.dirname(path))
   filename = shellescape(os.path.basename(path))
-  command = ""
+  basecommand = ""
   if dirname:
-    command = "cd %s ; " % dirname
+    basecommand = "cd %s ; " % dirname
+  command = basecommand + "mv %s %s.bak ; " % (filename, filename)
   if revision:
     command += "cvs -Q update -C -r%s %s" % (revision, filename)
   else:
     command += "cvs -Q update -C %s" % (filename)
   output, error = pipe(command)
   if error:
+    pipe(basecommand + "mv %s.bak %s" % (filename, filename))
     raise IOError("Error running CVS command '%s': %s" % (command, error))
+  pipe(basecommand + "rm %s.bak" % filename)
   return output
 
 def getcvsrevision(cvsentries, filename):
