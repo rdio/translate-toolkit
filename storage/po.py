@@ -86,6 +86,11 @@ class poelement:
     unquotedid = [quote.extractwithoutquotes(line,'"','"','\\',includeescapes=0)[0] for line in self.msgid]
     return len("".join(unquotedid).strip()) == 0
 
+  def isblankmsgstr(self):
+    """checks whether the msgstr is blank"""
+    msgstrlen = len(getunquotedstr(self.msgstr).strip())
+    return msgstrlen == 0
+
   def hastypecomment(self, typecomment):
     return ("".join(self.typecomments)).find(typecomment) != -1
 
