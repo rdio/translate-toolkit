@@ -167,7 +167,8 @@ class detector:
     validencodings = {}
     encodingdeltas = {}
     for encoding in self.listencodings():
-      validencodings[encoding] = self.makecountmap(encoding)
+      countmap = self.makecountmap(encoding)
+      validencodings[encoding] = countmap
       if dictcountmap:
         encodingdeltas[encoding] = self.getcountmapdelta(dictcountmap, countmap)
     if self.dictstring:
@@ -187,6 +188,29 @@ class detector:
       validencoding += " "*(keylen-len(validencoding))
       print validencoding, self.encodeattempt(sortedstring)
 
+  def findwords(self, dictmap, encoding):
+    uniquewordsfound = {}
+    wordsfound = 0
+    for translation in self.alltranslations:
+      try:
+        decoded = translation.decode(encoding)
+      except UnicodeDecodeError:
+        raise
+      except Exception, e:
+        raise UnicodeDecodeError(encoding, translation, 0, 0, str(e))
+      decodedwords = decoded.lower().split()
+      for word in decodedwords:
+        if word in dictmap:
+          if self.options.verbose:
+            if (not self.options.unique) or (word not in uniquewordsfound):
+              print self.encodeattempt(word)
+          uniquewordsfound[word] = 1
+          wordsfound += 1
+    if options.unique:
+      return len(uniquewordsfound)
+    else:
+      return wordsfound
+
   def testwordstats(self):
     """produces word count for each encoding, shows matches to dict"""
     ignoremap = {}
@@ -199,29 +223,9 @@ class detector:
           dictmap[dictword.lower()] = 0
     print "%d words in dictionary" % len(dictmap)
     encodingcounts = {}
-    uniquewordsfound = {}
     for encoding in self.listencodings():
       try:
-        wordsfound = 0
-        for translation in self.alltranslations:
-          try:
-            decoded = translation.decode(encoding)
-          except UnicodeDecodeError:
-            raise
-          except Exception, e:
-            raise UnicodeDecodeError(encoding, translation, 0, 0, str(e))
-          decodedwords = decoded.lower().split()
-          for word in decodedwords:
-            if word in dictmap:
-              if self.options.verbose:
-                if (not self.options.unique) or (word not in uniquewordsfound):
-                  print self.encodeattempt(word)
-              uniquewordsfound[word] = 1
-              wordsfound += 1
-        if options.unique:
-          encodingcounts[encoding] = len(uniquewordsfound)
-        else:
-          encodingcounts[encoding] = wordsfound
+        encodingcounts[encoding] = self.findwords(dictmap, encoding)
       except UnicodeDecodeError:
         continue
     counts = [(count, encoding) for encoding, count in encodingcounts.iteritems()]
@@ -260,7 +264,7 @@ class detector:
     wordsfound = 0
     for translation in self.alltranslations:
       decoded = translation.decode(encoding)
-      decodedwords = translation.lower().split()
+      decodedwords = decoded.lower().split()
       for word in decodedwords:
         fuzzyword = self.fuzzy(word, self.excludestring)
         if fuzzyword in dictmap:
@@ -270,16 +274,9 @@ class detector:
               print repr(word), repr(fuzzyword), repr(dictmap[fuzzyword])
           uniquewordsfound[word] = fuzzyword
     if options.unique:
-      encodingcounts[encoding] = len(uniquewordsfound)
+      print "fuzzy match on encoding %s produced %d unique words" % (encoding, len(uniquewordsfound))
     else:
-      encodingcounts[encoding] = wordsfound
-    counts = [(count, encoding) for encoding, count in encodingcounts.iteritems()]
-    counts.sort()
-    validkeys = [encoding for count, encoding in counts]
-    for validencoding in validkeys:
-      count = encodingcounts[validencoding]
-      if count:
-        print "%s: %d" % (validencoding, count)
+      print "fuzzy match on encoding %s produced %d words" % (encoding, wordsfound)
 
 if __name__ == '__main__':
   try:
