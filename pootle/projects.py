@@ -352,7 +352,7 @@ class pootlefile(po.pofile):
     self.savependingfile()
     self.reclassifyelement(item)
 
-  def iteritems(self, lastitem=None, matchnames=None, assigncondition=None):
+  def iteritems(self, search, lastitem=None):
     """iterates through the items in this pofile starting after the given lastitem
     if matchnames is given only returns items matching one of the given classifications
     if assigncondition is given, as (username, action), only returns items assigned to username for action"""
@@ -364,17 +364,25 @@ class pootlefile(po.pofile):
       minitem = lastitem + 1
     maxitem = len(self.transelements)
     validitems = range(minitem, maxitem)
-    if assigncondition is not None: 
+    if search.assigncondition is not None: 
       self.getassigns()
-      username, action = assigncondition
+      username, action = search.assigncondition
       assignitems = self.assigns.get(username, {}).get(action, {})
       validitems = [item for item in validitems if item in assignitems]
     for item in validitems:
-      if not matchnames:
+      if not search.matchnames:
         yield item
-      for name in matchnames:
+      for name in search.matchnames:
         if item in self.classify[name]:
           yield item
+
+class Search:
+  """an object containint all the searching information"""
+  def __init__(self, dirfilter=None, matchnames=None, assigncondition=None, searchtext=None):
+    self.dirfilter = dirfilter
+    self.matchnames = matchnames
+    self.assigncondition = assigncondition
+    self.searchtext = searchtext
 
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
@@ -435,27 +443,28 @@ class TranslationProject:
       yield self.pofilenames[index]
       index += 1
 
-  def searchpofilenames(self, lastpofilename, matchnames, dirfilter, includelast=False):
+  def searchpofilenames(self, lastpofilename, search, includelast=False):
     """find the next pofilename that has items matching one of the given classification names"""
     for pofilename in self.iterpofilenames(lastpofilename, includelast):
-      if dirfilter is not None and not pofilename.startswith(dirfilter):
+      # TODO: handle assigncondition
+      if search.dirfilter is not None and not pofilename.startswith(search.dirfilter):
         continue
-      if not matchnames:
+      if not search.matchnames:
         yield pofilename
       postats = self.getpostats(pofilename)
-      for name in matchnames:
+      for name in search.matchnames:
         if postats[name]:
           yield pofilename
 
-  def searchpoitems(self, pofilename, item, matchnames, dirfilter, searchstring, assigncondition=None):
+  def searchpoitems(self, pofilename, item, search):
     """finds the next item matching one of the given classification names"""
-    if searchstring:
-      pogrepfilter = pogrep.pogrepfilter(searchstring, None, ignorecase=True)
-    # TODO: pass assigncondition to searchpofilenames to...
-    for pofilename in self.searchpofilenames(pofilename, matchnames, dirfilter, includelast=True):
+    if search.searchtext:
+      pogrepfilter = pogrep.pogrepfilter(search.searchtext, None, ignorecase=True)
+    for pofilename in self.searchpofilenames(pofilename, search, includelast=True):
       pofile = self.getpofile(pofilename)
-      for item in pofile.iteritems(item, matchnames, assigncondition):
-        if searchstring:
+      for item in pofile.iteritems(search, item):
+        # TODO: move this to iteritems
+        if search.searchtext:
           thepo = pofile.transelements[item]
           if pogrepfilter.filterelement(thepo):
             yield pofilename, item

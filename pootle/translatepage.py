@@ -3,6 +3,7 @@
 from jToolkit.widgets import widgets
 from jToolkit.widgets import table
 from translate.pootle import pagelayout
+from translate.pootle import projects
 import difflib
 
 class TranslatePage(pagelayout.PootlePage):
@@ -163,7 +164,8 @@ class TranslatePage(pagelayout.PootlePage):
           assigncondition = (self.session.session.username, "suggest")
         else:
           assigncondition = None
-        self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, self.matchnames, self.dirfilter, self.searchtext, assigncondition).next()
+        search = projects.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext, assigncondition=assigncondition)
+        self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, search).next()
       except StopIteration:
         if self.lastitem is None:
           raise StopIteration("There are no items matching that search")
