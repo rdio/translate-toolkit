@@ -226,6 +226,15 @@ class SetupIndex(SetupParser):
           index.directorychildren[parentid] = [directory]
         else:
           index.directorychildren[parentid].append(directory)
+      # make sure that if a directory is renamed, all its child directories are too...
+      recursecount = 1
+      while recursecount:
+        recursecount = 0
+        for directory in directoriestorename.keys():
+          for child in index.directorychildren.get(directory, []):
+            if not child in directoriestorename:
+              directoriestorename[child] = 1
+              recursecount += 1
       # make an index of which files go in which directory
       for fileentry in index.bytype["File"]:
         directory = index.getfieldvalue(fileentry, 'Dir')
