@@ -40,21 +40,26 @@ class ConvertOptionParser(optparse.OptionParser, object):
     """construct the specialized Option Parser"""
     optparse.OptionParser.__init__(self, version="%prog "+__version__.ver)
     self.usepots = usepots
+    self.setprogressoptions()
+    if self.usepots:
+      self.setpotoption(inputformats, outputformats)
     self.setinputformats(inputformats)
     self.setoutputformats(outputformats)
     self.settemplatehandling(usetemplates, templateslikeinput)
-    self.setprogressoptions()
-    if self.usepots:
-      self.setpotoption()
     self.convertparameters = []
     self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
 
   def getusagestring(self, option):
     """returns the usage string for the given option"""
     optionstring = "|".join(option._short_opts + option._long_opts)
+    if getattr(option, "optionalswitch", False):
+      optionstring = "[%s]" % optionstring
     if option.metavar:
       optionstring += " " + option.metavar
-    return "[%s]" % optionstring
+    if getattr(option, "required", False):
+      return optionstring
+    else:
+      return "[%s]" % optionstring
 
   def define_option(self, option):
     """defines the given option, replacing an existing one of the same short name if neccessary..."""
@@ -74,6 +79,8 @@ class ConvertOptionParser(optparse.OptionParser, object):
     inputformathelp = self.getformathelp(inputformats)
     inputoption = optparse.Option("-i", "--input", dest="input", default=None, metavar="INPUT",
                     help="read from INPUT in %s" % (inputformathelp))
+    inputoption.optionalswitch = True
+    inputoption.required = True
     self.define_option(inputoption)
 
   def setoutputformats(self, outputformats):
@@ -84,6 +91,8 @@ class ConvertOptionParser(optparse.OptionParser, object):
     outputformathelp = self.getformathelp(outputformats)
     outputoption = optparse.Option("-o", "--output", dest="output", default=None, metavar="OUTPUT",
                     help="write to OUTPUT in %s" % (outputformathelp))
+    outputoption.optionalswitch = True
+    outputoption.required = True
     self.define_option(outputoption)
 
   def settemplatehandling(self, usetemplates, templateslikeinput):
@@ -112,13 +121,13 @@ class ConvertOptionParser(optparse.OptionParser, object):
                       help="set progress type to one of %s" % (", ".join(self.progresstypes)))
     self.define_option(progressoption)
 
-  def setpotoption(self):
+  def setpotoption(self, inputformats, outputformats):
     """sets the -P/--pot option depending on input/output formats etc"""
     if self.usepots:
-      if "po" in self.inputformats:
+      if "po" in inputformats:
         potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
                                    help="use PO template files (.pot) as input")
-      elif "po" in self.outputformats:
+      elif "po" in outputformats:
         potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
                                    help="use PO template files (.pot) in output")
       else:
