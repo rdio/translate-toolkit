@@ -164,5 +164,6 @@ if __name__ == '__main__':
   parser = convert.ConvertOptionParser(formats, usetemplates=True)
   parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
                     help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
+  parser.convertparameters.append("languagecode")
   parser.runconversion()
 
