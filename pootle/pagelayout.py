@@ -16,8 +16,13 @@ class IntroText(widgets.Division):
     widgets.Division.__init__(self, contents, cls="intro")
 
 class Item(widgets.Division):
-  def __init__(self, contents):
-    widgets.Division.__init__(self, contents, cls="item")
+  def __init__(self, contents, polarity=False):
+    cls = "item "
+    if polarity:
+      cls += "item-even"
+    else:
+      cls += "item-odd"
+    widgets.Division.__init__(self, contents, cls=cls)
 
 class MainItem(widgets.Division):
   def __init__(self, contents):
