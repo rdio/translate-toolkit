@@ -44,15 +44,15 @@ class pocheckfilter:
     """runs filters on an element"""
     if thepo.isheader(): return []
     if thepo.hasplural():
-      unquotedid = po.getunquotedstr(thepo.msgid)
-      unquotedstr = po.getunquotedstr(thepo.msgstr[0])
+      unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
+      unquotedstr = po.getunquotedstr(thepo.msgstr[0], joinwithlinebreak=False)
       failures = self.checker.run_filters(unquotedid, unquotedstr)
-      unquotedid = po.getunquotedstr(thepo.msgid_plural)
-      unquotedstr = po.getunquotedstr(thepo.msgstr[1])
+      unquotedid = po.getunquotedstr(thepo.msgid_plural, joinwithlinebreak=False)
+      unquotedstr = po.getunquotedstr(thepo.msgstr[1], joinwithlinebreak=False)
       failures += self.checker.run_filters(unquotedid, unquotedstr)
     else:
-      unquotedid = po.getunquotedstr(thepo.msgid)
-      unquotedstr = po.getunquotedstr(thepo.msgstr)
+      unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
+      unquotedstr = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False)
       failures = self.checker.run_filters(unquotedid, unquotedstr)
     if not failures:
       if self.includereview and thepo.hastypecomment("review"):
