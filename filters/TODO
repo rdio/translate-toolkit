@@ -3,10 +3,18 @@ allow the user to mark strings fuzzy and write back into the input file
 provide options to handle true/false
   return all that don't have empty translations
 handle KDE and Gettext plural forms
+allow groups of checks: eg --test-group=critical to allow focus on certain
+  types of tests. -l should show these groupings
+Allow test to be disabled by default eg spelling, unless you specificly invoke
+  it.  This allows certain language specific test to be always off.  Might work
+  well in conjunction with test-groups and a default test-group.
 
 bugs
   startcaps - read the locale data to determine what letters are considered
     capitals. msgid should be treated as English caps.
+  startcaps - can't cope with sentence such as in Afrikaans taht start with 'n
+    [CAPS].  Perhaps some prefilter to remove the 'n if the language is AF?
+    Would need to be able to detect the language.
 
 other checks
   stop words - 
@@ -24,3 +32,4 @@ other checks
     properly in the PO header so that Pootle could then also check spelling of
     various files.  Might need to extend the #_ error comment to highlight what
     words had errors.
+    http://www.republika.pl/wmula/prog/prog/aspell-python2.1.tar.gz
