@@ -29,6 +29,7 @@ from translate import __version__
 
 def getlabel(unquotedstr):
   """retrieve the label from a mixed label+accesskey entity"""
+  unquotedstr = unquotedstr.decode("UTF-8")
   # mixed labels just need the & taken out
   # except that &entity; needs to be avoided...
   amppos = 0
@@ -44,10 +45,11 @@ def getlabel(unquotedstr):
       # (see below to see how the accesskey is done)
       unquotedstr = unquotedstr[:amppos-1] + unquotedstr[amppos:]
       break
-  return unquotedstr
+  return unquotedstr.encode("UTF-8")
 
 def getaccesskey(unquotedstr):
   """retrieve the access key from a mixed label+accesskey entity"""
+  unquotedstr = unquotedstr.decode("UTF-8")
   # mixed access keys need the key extracted from after the &
   # but we must avoid proper entities i.e. &gt; etc...
   amppos = 0
@@ -61,7 +63,7 @@ def getaccesskey(unquotedstr):
           # what we have found is an entity, not a shortcut key...
           continue
       # otherwise, we found the shortcut key
-      return unquotedstr[amppos]
+      return unquotedstr[amppos].encode("UTF-8")
   # if we didn't find the shortcut key, return an empty string rather than the original string
   # this will come out as "don't have a translation for this" because the string is not changed...
   # so the string from the original dtd will be used instead
