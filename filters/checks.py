@@ -121,6 +121,12 @@ class StandardChecker(TranslationChecker):
     len2 = len(str2.strip())
     return not ((len1 > 0) and (0 < len2 < (len1 * 0.1)))
 
+  def long(self, str1, str2):
+    """checks whether a translation is much longer than the original string"""
+    len1 = len(str1.strip())
+    len2 = len(str2.strip())
+    return not ((len1 > 0) and (0 < len1 < (len2 * 0.1)))
+
   def escapes(self, str1, str2):
     """checks whether escaping is consistent between the two strings"""
     return helpers.countsmatch(str1, str2, ("\\", "\\\\"))
@@ -173,11 +179,17 @@ class StandardChecker(TranslationChecker):
     """checks whether numbers of various forms are consistent between the two strings"""
     return helpers.funcmatch(str1, str2, decoration.getnumbers)
 
-  def whitespace(self, str1, str2):
-    """checks whether whitespace at the beginning and end of the strings match"""
+  def startwhitespace(self, str1, str2):
+    """checks whether whitespace at the beginning of the strings matches"""
     str1 = self.filteraccelerators(self.filtervariables(str1))
     str2 = self.filteraccelerators(self.filtervariables(str2))
-    return helpers.funcsmatch(str1, str2, (decoration.spacestart, decoration.spaceend))
+    return helpers.funcsmatch(str1, str2, decoration.spacestart)
+
+  def endwhitespace(self, str1, str2):
+    """checks whether whitespace at the end of the strings matches"""
+    str1 = self.filteraccelerators(self.filtervariables(str1))
+    str2 = self.filteraccelerators(self.filtervariables(str2))
+    return helpers.funcsmatch(str1, str2, decoration.spaceend)
 
   def startpunc(self, str1, str2):
     """checks whether punctuation at the beginning of the strings match"""
@@ -213,9 +225,9 @@ class StandardChecker(TranslationChecker):
     else:
       return abs(capitals1 - capitals2) < (len(str1) + len(str2)) / 6 
 
-  preconditions = {"untranslated": ("escapes", "short", "unchanged", "singlequoting", "doublequoting",
-                                    "doublespacing", "puncspacing",
-                                    "accelerators", "variables", "numbers", "whitespace",
+  preconditions = {"untranslated": ("escapes", "short", "long", "unchanged", "singlequoting", "doublequoting",
+                                    "accelerators", "variables", "numbers",
+                                    "doublespacing", "puncspacing", "startwhitespace", "endwhitespace"
                                     "startpunc", "endpunc", "purepunc", "simplecaps") }
 
 # code to actually run the tests (use unittest?)
