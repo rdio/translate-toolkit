@@ -11,7 +11,6 @@ other:
   manage new users / registration
     - need to make emailing more robust, add hash check to verify address
     - should move user details into separate prefs file
-  add ability to turn off client ip lookup
   add ability to mark/unmark things as fuzzy
   move the sidebar to be like distributed proofreaders (at the top, small)
   test with apache multiprocess
