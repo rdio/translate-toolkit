@@ -64,7 +64,7 @@ class propfile:
     inmultilinemsgid = 0
     for line in lines:
       # handle unicode-escape encoding
-      line = line.decode("unicode-escape")
+      line = quote.mozillapropertiesdecode(line)
       # handle multiline msgid if we're in one
       if inmultilinemsgid:
         newpe.msgid += quote.rstripeol(line).lstrip()
