@@ -98,8 +98,8 @@ class dtd2po:
     thepo.visiblecomments += labelpo.visiblecomments
     thepo.visiblecomments += accesskeypo.visiblecomments
     # redo the strings from original dtd...
-    label = self.extractdtdstring(labeldtd.definition)
-    accesskey = self.extractdtdstring(accesskeydtd.definition)
+    label = unicode(self.extractdtdstring(labeldtd.definition), 'UTF-8')
+    accesskey = unicode(self.extractdtdstring(accesskeydtd.definition), 'UTF-8')
     if len(accesskey) == 0:
       return None
     # try and put the & in front of the accesskey in the label...
@@ -133,6 +133,7 @@ class dtd2po:
     # now we want to handle whatever we found...
     if accesskeypos >= 0:
       label = label[:accesskeypos] + '&' + label[accesskeypos:]
+      label = label.encode("UTF-8", "replace")
     else:
       # can't currently mix accesskey if it's not in label
       return None
