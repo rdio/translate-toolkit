@@ -88,18 +88,10 @@ class ooconfigurator:
     elif retcode:
       raise ValueError("Unknown error: %d" % retcode)
 
-  def setuserlanguage(self, newisocode):
-    """sets the language for the user"""
-    self.setofficelang(newisocode)
-
-  def setadminlanguage(self, newisocode):
-    """sets the language for the user"""
-    self.setofficelang(newisocode, admin=True)
-
 class LanguageSelectionWindow(wx.Frame):
   """Window for selecting language"""
   def __init__(self, parent, id, title):
-    wx.Frame.__init__(self, parent, id, title)
+    wx.Frame.__init__(self, parent, id, title, size=(300,200))
     self.config = ooconfigurator('.')
     self.panel = wx.Panel(self, wx.ID_ANY)
     self.languagelabel = wx.StaticText(self.panel, wx.ID_ANY, "Select language:")
@@ -111,6 +103,8 @@ class LanguageSelectionWindow(wx.Frame):
     self.adminlabel = wx.StaticText(self.panel, wx.ID_ANY, "Set defaults:")
     self.adminchoice = wx.CheckBox(self.panel, wx.ID_ANY, "")
     wx.EVT_CHECKBOX(self, self.adminchoice.GetId(), self.OnSetAdmin)
+    self.forcelabel = wx.StaticText(self.panel, wx.ID_ANY, "Force:")
+    self.forcechoice = wx.CheckBox(self.panel, wx.ID_ANY, "")
     
     self.showcurrentlanguage()
 
@@ -119,6 +113,8 @@ class LanguageSelectionWindow(wx.Frame):
     self.optionssizer.Add(self.languagelist, 0, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
     self.optionssizer.Add(self.adminlabel, 1, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
     self.optionssizer.Add(self.adminchoice, 1, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+    self.optionssizer.Add(self.forcelabel, 2, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
+    self.optionssizer.Add(self.forcechoice, 2, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
 
     self.applybutton = wx.Button(self.panel, wx.ID_ANY, "Apply Changes")
     self.applybutton.SetDefault()
@@ -143,10 +139,9 @@ class LanguageSelectionWindow(wx.Frame):
       return self.config.getuserlanguage()
 
   def setlanguage(self, newisocode):
-    if self.adminchoice.GetValue():
-      self.config.setadminlanguage(newisocode)
-    else:
-      self.config.setuserlanguage(newisocode)
+    admin = self.adminchoice.GetValue()
+    force = self.forcechoice.GetValue()
+    self.config.setofficelang(newisocode, admin=admin, force=force)
     wx.MessageBox("Setting language successful", "ooswitchlang", wx.OK, self)
 
   def showcurrentlanguage(self):
