@@ -158,23 +158,32 @@ def getnumbers(str1):
   # TODO: handle locale-based periods e.g. 2,5 for Afrikaans
   numbers = []
   innumber = False
+  inunicode = False
   lastnumber = ""
   carryperiod = ""
   for chr1 in str1:
-    if chr1.isdigit():
-      innumber = True
-    elif innumber and chr1 == '.':
+    if innumber and (chr1 == '.' or (chr1 == '\xc2' or inunicode)):
       pass
+    elif chr1.isdigit():
+      innumber = True
     elif innumber:
       innumber = False
       if lastnumber:
         numbers.append(lastnumber)
       lastnumber = ""
     if innumber:
-      if chr1 == '.':
+      if inunicode:
+        if chr1 == '\xb0':
+          lastnumber += '\xc2\xb0'
+        inunicode = False
+      elif chr1 == '\xc2':
+        inunicode = True
+        pass
+      elif chr1 == '.':
         carryperiod += chr1
       else:
         lastnumber += carryperiod + chr1
+        carryperiod = ""
     else:
       carryperiod = ""
   if innumber:
