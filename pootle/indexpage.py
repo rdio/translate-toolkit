@@ -127,7 +127,7 @@ class UserOptions(pagelayout.PootlePage):
 
   def getlanguageoptions(self):
     """gets the options box to change the user's languages"""
-    languagestitle = pagelayout.Title(self.localize("My Projects"))
+    languagestitle = pagelayout.Title(self.localize("My Languages"))
     languageoptions = []
     userlanguages = self.session.getlanguages()
     for languagecode in self.potree.getlanguagecodes():
