@@ -53,12 +53,6 @@ class PootleServer(OptionalLoginAppServer):
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage):
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.potree = projects.POTree(self.instance)
-    for languagecode, language in self.potree.getlanguages().iteritems():
-      if not hasattr(language, "fullname"):
-        language.fullname = languagecode
-      for projectcode, project in self.potree.getprojects(languagecode).iteritems():
-        if not hasattr(project, "fullname"):
-          project.fullname = projectcode
 
   def saveprefs(self):
     """saves changed preferences back to disk"""
@@ -108,7 +102,6 @@ class PootleServer(OptionalLoginAppServer):
         return RegisterPage(session)
     elif self.potree.haslanguage(top):
       languagecode = top
-      language = self.potree.getlanguage(languagecode)
       pathwords = pathwords[1:]
       if pathwords:
         top = pathwords[0]
@@ -120,27 +113,26 @@ class PootleServer(OptionalLoginAppServer):
         return indexpage.LanguageIndex(self.potree, languagecode, session)
       if self.potree.hasproject(languagecode, top):
         projectcode = top
-        project = self.potree.getproject(languagecode, projectcode)
-	translationproject = projects.getproject(project)
+        translationproject = self.potree.getproject(languagecode, projectcode)
         pathwords = pathwords[1:]
         if pathwords:
           top = pathwords[0]
         else:
           top = ""
         if not top or top == "index.html":
-	  return indexpage.ProjectIndex(project, session, argdict)
+	  return indexpage.ProjectIndex(translationproject, session, argdict)
 	elif bottom == "translate.html":
 	  if len(pathwords) > 1:
             dirfilter = os.path.join(*pathwords[:-1])
 	  else:
 	    dirfilter = ""
-          return translatepage.TranslatePage(language, project, session, argdict, dirfilter)
+          return translatepage.TranslatePage(translationproject, session, argdict, dirfilter)
 	elif bottom.endswith(".po"):
 	  pofilename = os.path.join(*pathwords)
 	  if argdict.get("translate", 0):
-            return translatepage.TranslatePage(language, project, session, argdict, dirfilter=pofilename)
+            return translatepage.TranslatePage(translationproject, session, argdict, dirfilter=pofilename)
 	  elif argdict.get("index", 0):
-            return indexpage.ProjectIndex(project, session, argdict, dirfilter=pofilename)
+            return indexpage.ProjectIndex(translationproject, session, argdict, dirfilter=pofilename)
 	  else:
 	    contents = translationproject.getsource(pofilename)
 	    page = widgets.PlainContents(contents)
@@ -157,9 +149,9 @@ class PootleServer(OptionalLoginAppServer):
             dirfilter = os.path.join(*pathwords[:-1])
           else:
             dirfilter = None
-	  return indexpage.ProjectIndex(project, session, argdict, dirfilter)
+	  return indexpage.ProjectIndex(translationproject, session, argdict, dirfilter)
 	else:
-	  return indexpage.ProjectIndex(project, session, argdict, os.path.join(*pathwords))
+	  return indexpage.ProjectIndex(translationproject, session, argdict, os.path.join(*pathwords))
     return None
 
 if __name__ == '__main__':

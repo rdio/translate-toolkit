@@ -25,17 +25,16 @@ class PootleIndex(pagelayout.PootlePage):
 
   def getlanguagelinks(self):
     """gets the links to the languages"""
-    languageitems = [self.getlanguageitem(languagecode, language) for languagecode, language in self.potree.getlanguages().iteritems()]
+    languageitems = [self.getlanguageitem(languagecode) for languagecode in self.potree.getlanguages()]
     return pagelayout.Contents(languageitems)
 
-  def getlanguageitem(self, languagecode, language):
-    if not hasattr(language, "fullname"):
-      language.fullname = languagecode
-    bodytitle = '<h3 class="title">%s</h3>' % language.fullname
-    bodydescription = pagelayout.ItemDescription(widgets.Link(languagecode+"/", language.fullname))
+  def getlanguageitem(self, languagecode):
+    languagename = self.potree.getlanguagename(languagecode)
+    bodytitle = '<h3 class="title">%s</h3>' % languagename
+    bodydescription = pagelayout.ItemDescription(widgets.Link(languagecode+"/", languagename))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
     languageprojects = self.potree.getprojects(languagecode)
-    projectlist = [projects.getproject(project) for (projectcode, project) in languageprojects.iteritems()]
+    projectlist = [self.potree.getproject(languagecode, projectcode) for projectcode in languageprojects]
     projectcount = len(projectlist)
     projectstats = [project.calculatestats() for project in projectlist]
     totalstats = summarizestats(projectstats, {"translated":0, "total":0})
@@ -50,21 +49,22 @@ class LanguageIndex(pagelayout.PootlePage):
   def __init__(self, potree, languagecode, session):
     self.potree = potree
     self.languagecode = languagecode
-    self.language = self.potree.getlanguage(self.languagecode)
+    languagename = self.potree.getlanguagename(self.languagecode)
     projectlinks = self.getprojectlinks()
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.language.fullname, projectlinks, session, bannerheight=81)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+languagename, projectlinks, session, bannerheight=81)
 
   def getprojectlinks(self):
     """gets the links to the projects"""
     languageprojects = self.potree.getprojects(self.languagecode)
-    projectitems = [self.getprojectitem(projectcode, project) for projectcode, project in languageprojects.iteritems()]
+    projectitems = [self.getprojectitem(projectcode) for projectcode in languageprojects]
     return pagelayout.Contents(projectitems)
 
-  def getprojectitem(self, projectcode, project):
-    bodytitle = '<h3 class="title">%s</h3>' % project.fullname
-    bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", '%s project' % project.fullname))
+  def getprojectitem(self, projectcode):
+    projectname = self.potree.getprojectname(self.languagecode, projectcode)
+    bodytitle = '<h3 class="title">%s</h3>' % projectname
+    bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", '%s project' % projectname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    translationproject = projects.getproject(project)
+    translationproject = self.potree.getproject(self.languagecode, projectcode)
     numfiles = len(translationproject.pofilenames)
     projectstats = translationproject.calculatestats()
     translated = projectstats.get("translated", 0)
@@ -75,9 +75,8 @@ class LanguageIndex(pagelayout.PootlePage):
 
 class ProjectIndex(pagelayout.PootlePage):
   """the main page"""
-  def __init__(self, project, session, argdict, dirfilter=None):
-    self.project = project
-    self.translationproject = projects.getproject(self.project)
+  def __init__(self, translationproject, session, argdict, dirfilter=None):
+    self.translationproject = translationproject
     self.showchecks = argdict.get("showchecks", 0)
     if isinstance(self.showchecks, str) and self.showchecks.isdigit():
       self.showchecks = int(self.showchecks)
@@ -99,7 +98,7 @@ class ProjectIndex(pagelayout.PootlePage):
     for childfile in self.translationproject.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
       fileentry = self.getfileitem(childfile)
       fileentries.append(fileentry)
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.fullname, [processlinks, direntries, fileentries], session, bannerheight=81)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.translationproject.projectcode, [processlinks, direntries, fileentries], session, bannerheight=81)
 
   def getdiritem(self, direntry):
     basename = os.path.basename(direntry)
