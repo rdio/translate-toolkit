@@ -30,7 +30,7 @@ from translate.misc import quote
 from translate import __version__
 
 class oo2po:
-  def __init__(self, languages=None, blankmsgstr=0):
+  def __init__(self, languages=None, blankmsgstr=False):
     """construct an oo2po converter for the specified languages"""
     # languages is a pair of language ids
     self.languages = languages
@@ -50,7 +50,7 @@ class oo2po:
     """converts an oo key tuple into a key identifier for the po file"""
     project, sourcefile, resourcetype, groupid, localid, platform = ookey
     sourcefile = sourcefile.replace('\\','/')
-    if len(groupid) == 0 or len(localid) == 0:
+    if (groupid) == 0 or len(localid) == 0:
       ooid = groupid + localid
     else:
       ooid = groupid + "." + localid
@@ -96,15 +96,12 @@ class oo2po:
     thepofile.removeduplicates()
     return thepofile
 
-# TODO: work out nicer way to get the convertor's --pot switch into blankmsgstr
-blankmsgstr = 0
-def convertoo(inputfile, outputfile, templates):
+def convertoo(inputfile, outputfile, templates, pot=False):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
-  global blankmsgstr
   fromfile = oo.oofile()
   filelines = inputfile.readlines()
   fromfile.fromlines(filelines)
-  convertor = oo2po(blankmsgstr=blankmsgstr)
+  convertor = oo2po(blankmsgstr=pot)
   outputpo = convertor.convertfile(fromfile)
   if outputpo.isempty():
     return 0
@@ -118,10 +115,10 @@ if __name__ == '__main__':
   inputformat = {"oo":convertoo}
   outputformat = "po"
   parser = convert.ConvertOptionParser(inputformat, outputformat, usepots=True)
+  parser.convertparameters.append("pot")
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:
-    blankmsgstr = options.pot
     parser.runconversion(options)
   except convert.optparse.OptParseError, message:
     parser.error(message)
