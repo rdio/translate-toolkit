@@ -21,9 +21,6 @@ class PootleServer(users.OptionalLoginAppServer):
       sessioncache = session.SessionCache(sessionclass=users.ActivateSession)
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.potree = projects.POTree(self.instance)
-    # these are for pootle UI localization
-    if not self.languagenames:
-      self.languagenames = None
 
   def saveuserprefs(self, users):
     """saves changed preferences back to disk"""
