@@ -6,8 +6,9 @@ import sys
 import os
 from translate.storage import po
 
-def sum(parts):
-  return reduce(int.__add__, parts, 0)
+if not hasattr(__builtins__, "sum"):
+  def sum(parts):
+    return reduce(int.__add__, parts, 0)
 
 def untranslatedwords(pair):
   original, translation = pair

@@ -64,7 +64,7 @@ class pogrepfilter:
           return True
       if self.searchmsgstr:
         for msgstr in thepo.msgstr.values():
-          unquotedstr = po.getunquotedstr(thepo.msgstr)
+          unquotedstr = po.getunquotedstr(msgstr)
           if self.matches(unquotedstr): return True
     else:
       if self.searchmsgid:
