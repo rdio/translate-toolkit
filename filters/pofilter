@@ -24,14 +24,60 @@ from translate.storage import po
 from translate.filters import checks
 from translate.misc import optrecurse
 
+class POChecker(checks.TranslationChecker):
+  """allows advanced checks that have access to the whole po element, not just strings"""
+  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None):
+    """construct the POChecker..."""
+    super(POChecker, self).__init__(accelmarkers, varmatches, excludefilters, limitfilters)
+
+  def run_filters(self, thepo):
+    """run all the tests in this suite"""
+    failures = []
+    ignores = []
+    functionnames = self.defaultfilters.keys()
+    priorityfunctionnames = self.preconditions.keys()
+    otherfunctionnames = filter(lambda functionname: functionname not in self.preconditions, functionnames)
+    for functionname in priorityfunctionnames + otherfunctionnames:
+      if functionname in ignores:
+        continue
+      filterfunction = getattr(self, functionname)
+      if not filterfunction(thepo):
+        # we test some preconditions that aren't actually a cause for failure...
+        if functionname in self.defaultfilters:
+          failures.append("%s: %s" % (functionname, filterfunction.__doc__))
+        if functionname in self.preconditions:
+          for ignoredfunctionname in self.preconditions[functionname]:
+            ignores.append(ignoredfunctionname)
+    return failures
+
+class POTeeChecker(checks.TeeChecker):
+  """A Checker that can control the POChecker as well as standard checkers"""
+  def run_filters(self, thepo, str1, str2):
+    """run all the tests in the checker's suites"""
+    failures = []
+    for checker in self.checkers:
+      if isinstance(checker, POChecker):
+        failures.extend(checker.run_filters(thepo))
+      else:
+        failures.extend(checker.run_filters(str1, str2))
+    return failures
+
+class StandardPOChecker(POChecker):
+  """The standard checks for PO elements"""
+  def isfuzzy(self, thepo):
+    """check if the po element has been marked fuzzy"""
+    return not thepo.isfuzzy()
+
+  def isreview(self, thepo):
+    """check if the po element has been marked review"""
+    return not thepo.hastypecomment("review")
+
 class pocheckfilter:
-  def __init__(self, checkerclass=None, includereview=1, includefuzzy=0, excludefilters={}, limitfilters=None):
-    """builds a pocheckfilter using the given checker"""
-    if checkerclass is None:
-      checkerclass = checks.StandardChecker
-    self.checker = checkerclass(excludefilters=excludefilters, limitfilters=limitfilters)
-    self.includereview = includereview
-    self.includefuzzy = includefuzzy
+  def __init__(self, checkerclasses=None, excludefilters={}, limitfilters=None):
+    """builds a pocheckfilter using the given checker (a list is allowed too)"""
+    if checkerclasses is None:
+      checkerclasses = [checks.StandardChecker, StandardPOChecker]
+    self.checker = POTeeChecker(excludefilters=excludefilters, limitfilters=limitfilters, checkerclasses=checkerclasses)
 
   def getfilterdocs(self):
     """lists the docs for filters available on checker..."""
@@ -46,27 +92,20 @@ class pocheckfilter:
     if thepo.hasplural():
       unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
       unquotedstr = po.getunquotedstr(thepo.msgstr[0], joinwithlinebreak=False)
-      failures = self.checker.run_filters(unquotedid, unquotedstr)
+      failures = self.checker.run_filters(thepo, unquotedid, unquotedstr)
       unquotedid = po.getunquotedstr(thepo.msgid_plural, joinwithlinebreak=False)
       unquotedstr = po.getunquotedstr(thepo.msgstr[1], joinwithlinebreak=False)
-      failures += self.checker.run_filters(unquotedid, unquotedstr)
+      failures += self.checker.run_filters(thepo, unquotedid, unquotedstr)
     else:
       unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
       unquotedstr = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False)
-      failures = self.checker.run_filters(unquotedid, unquotedstr)
-    if not failures:
-      if self.includereview and thepo.hastypecomment("review"):
-        failures.append("marked for review")
-      if self.includefuzzy and thepo.isfuzzy():
-        failures.append("fuzzy")
+      failures = self.checker.run_filters(thepo, unquotedid, unquotedstr)
     return failures
 
   def filterfile(self, thepofile):
     """runs filters on a file"""
     thenewpofile = po.pofile()
     for thepo in thepofile.poelements:
-      if (not self.includefuzzy and thepo.isfuzzy()) or (not self.includereview and thepo.hastypecomment("review")):
-        continue
       failures = self.filterelement(thepo)
       if failures:
         thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in failures])
@@ -93,8 +132,7 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
   def run(self):
     """parses the arguments, and runs recursiveprocess with the resulting options"""
     (options, args) = self.parse_args()
-    options.checkfilter = pocheckfilter(options.filterclass, options.includereview, options.includefuzzy, \
-        options.excludefilters, options.limitfilters)
+    options.checkfilter = pocheckfilter(options.filterclass, options.excludefilters, options.limitfilters)
     options.inputformats = self.inputformats
     options.outputoptions = self.outputoptions
     self.usepsyco(options)

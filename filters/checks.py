@@ -26,7 +26,10 @@ from translate.filters import prefilters
 
 # actual test methods
 
-class TranslationChecker:
+class TranslationChecker(object):
+  """Base Checker class which does the checking based on functions available in derived classes"""
+  preconditions = {}
+
   def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None):
     """construct the TranslationChecker..."""
     self.setaccelmarkers(accelmarkers)
@@ -48,7 +51,7 @@ class TranslationChecker:
     for functionname in limitfilters:
       if functionname in excludefilters: continue
       if functionname in self.helperfunctions: continue
-      filterfunction = getattr(self, functionname)
+      filterfunction = getattr(self, functionname, None)
       if not callable(filterfunction): continue
       filters[functionname] = filterfunction
     return filters
@@ -89,7 +92,10 @@ class TranslationChecker:
     for functionname in priorityfunctionnames + otherfunctionnames:
       if functionname in ignores:
         continue
-      filterfunction = getattr(self, functionname)
+      filterfunction = getattr(self, functionname, None)
+      # this filterfunction may only be defined on another checker if using TeeChecker
+      if filterfunction is None:
+        continue
       if not filterfunction(str1, str2):
         # we test some preconditions that aren't actually a cause for failure...
         if functionname in self.defaultfilters:
@@ -97,6 +103,37 @@ class TranslationChecker:
         if functionname in self.preconditions:
           for ignoredfunctionname in self.preconditions[functionname]:
             ignores.append(ignoredfunctionname)
+    return failures
+
+class TeeChecker:
+  """A Checker that controls multiple checkers..."""
+  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None, checkerclasses=None):
+    """construct a TeeChecker from the given checkers"""
+    self.limitfilters = limitfilters
+    if checkerclasses is None:
+      checkerclasses = [StandardChecker]
+    self.checkers = [checkerclass(excludefilters=excludefilters, limitfilters=limitfilters) for checkerclass in checkerclasses]
+    self.combinedfilters = self.getfilters(excludefilters, limitfilters)
+
+  def getfilters(self, excludefilters={}, limitfilters=None):
+    """returns dictionary of available filters, including/excluding those in the given lists"""
+    filterslist = [checker.getfilters(excludefilters, limitfilters) for checker in self.checkers]
+    self.combinedfilters = {}
+    for filters in filterslist:
+      self.combinedfilters.update(filters)
+    # TODO: move this somewhere more sensible (a checkfilters method?)
+    if limitfilters is not None:
+      for filtername in limitfilters:
+        if not filtername in self.combinedfilters:
+          import sys
+          print >>sys.stderr, "warning: could not find filter %s" % filtername
+    return self.combinedfilters
+
+  def run_filters(self, str1, str2):
+    """run all the tests in the checker's suites"""
+    failures = []
+    for checker in self.checkers:
+      failures.extend(self.run_filters(str1, str2))
     return failures
 
 class StandardChecker(TranslationChecker):
