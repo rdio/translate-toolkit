@@ -145,6 +145,8 @@ div.intro {
 }
 .translation-text
 {
+	float: left;
+	text-align: left;
 }
 .translation-action
 {
