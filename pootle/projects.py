@@ -332,6 +332,8 @@ class TranslationProject:
     pendingfile.poelements.append(newpo)
     self.savependingfile(pofilename)
     self.reclassifyelement(pofile, item)
+    if pofilename in self.stats:
+      del self.stats[pofilename]
 
   def getsuggestions(self, pofile, item):
     """find all the suggestions submitted for the given (pofile or pofilename) and item"""
@@ -373,6 +375,8 @@ class TranslationProject:
     del pendingfile.poelements[suggitem]
     self.savependingfile(pofilename)
     self.reclassifyelement(pofile, item)
+    if pofilename in self.stats:
+      del self.stats[pofilename]
 
   def savepofile(self, pofilename):
     """saves changes to disk..."""

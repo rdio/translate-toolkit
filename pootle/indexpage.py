@@ -129,8 +129,10 @@ class ProjectIndex(pagelayout.PootlePage):
     bodytitle = '<h3 class="title">%s</h3>' % basename
     browselink = widgets.Link(basename+"/", 'Browse')
     checkslink = widgets.Link("%s/index.html?showchecks=1" % basename, "Checks")
-    reviewlink = widgets.Link("%s/translate.html?review=1&has-suggestion=1" % basename, "Review Suggestions")
-    actionlinks = [browselink, checkslink, reviewlink]
+    actionlinks = [browselink, checkslink]
+    if projectstats.get("has-suggestion", 0):
+      reviewlink = widgets.Link("%s/translate.html?review=1&has-suggestion=1" % basename, "Review Suggestions")
+      actionlinks.append(reviewlink)
     if translated < total:
       quicklink = widgets.Link("%s/translate.html?fuzzy=1&blank=1" % basename, "Quick Translate")
       actionlinks.append(quicklink)
@@ -169,8 +171,10 @@ class ProjectIndex(pagelayout.PootlePage):
     viewlink = widgets.Link('%s?translate=1&view=1' % basename, 'View')
     checkslink = widgets.Link("%s?index=1&showchecks=1" % basename, "Checks")
     translatelink = widgets.Link('%s?translate=1' % basename, 'Translate All')
-    reviewlink = widgets.Link("%s?translate=1&review=1&has-suggestion=1" % basename, "Review Suggestions")
-    actionlinks = [viewlink, checkslink, translatelink, reviewlink]
+    actionlinks = [viewlink, checkslink, translatelink]
+    if projectstats.get("has-suggestion", 0):
+      reviewlink = widgets.Link("%s?translate=1&review=1&has-suggestion=1" % basename, "Review Suggestions")
+      actionlinks.append(reviewlink)
     if translated < total:
       quicklink = widgets.Link('%s?translate=1&fuzzy=1&blank=1' % basename, 'Quick Translate')
       actionlinks.append(quicklink)
