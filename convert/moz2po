@@ -32,8 +32,11 @@ def convertdtd(inputfile, outputfile):
   inputdtd = dtd.dtdfile(inputfile)
   convertor = dtd2po.dtd2po()
   outputpo = convertor.convertfile(inputdtd)
+  if outputpo.isempty():
+    return 0
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
+  return 1
 
 def convertprop(inputfile, outputfile):
   convertor = prop2po.prop2po()
@@ -44,6 +47,8 @@ outputformat = "po"
 
 def recurse(inputdir, outputdir, outputformat):
   dirstack = ['']
+  # discreated contains all the directories created, mapped to whether they've been used or not...
+  dirscreated = {}
   while dirstack:
     top = dirstack.pop(-1)
     names = os.listdir(os.path.join(inputdir, top))
@@ -56,6 +61,9 @@ def recurse(inputdir, outputdir, outputformat):
         outputname = os.path.join(outputdir, top, name)
         if not os.path.isdir(outputname):
           os.mkdir(outputname)
+          dirscreated[dirs[-1]] = 0
+          if top in dirscreated:
+            dirscreated[top] = 1
       elif os.path.isfile(inputname):
         base, inputext = os.path.splitext(name)
         inputext = inputext.replace(os.extsep, "", 1)
@@ -67,10 +75,20 @@ def recurse(inputdir, outputdir, outputformat):
         inputfile = open(inputname, 'r')
         outputfile = open(outputname, 'w')
         convertfile = inputformats[inputext]
-        convertfile(inputfile, outputfile)
+        if convertfile(inputfile, outputfile):
+          if top in dirscreated:
+            dirscreated[top] = 1
+        else:
+          outputfile.close()
+          os.unlink(outputname)
     # make sure the directories are processed next time round...
     dirs.reverse()
     dirstack.extend(dirs)
+  # remove any directories we created unneccessarily
+  # note that if there is a tree of empty directories, only leaves will be removed...
+  for createddir, used in dirscreated.iteritems():
+    if not used:
+      os.rmdir(os.path.join(outputdir, createddir))
 
 def handleoptions(options):
   """handles the options, and runs the neccessary functions..."""
@@ -94,7 +112,7 @@ if __name__ == '__main__':
   except ImportError:
     from translate.misc import optparse
   # TODO: add ability to import translations from another directory
-  parser = optparse.OptionParser(usage="%prog [-i|--input-dir inputdir] [-o|--output-dir outputdir]")
+  parser = optparse.OptionParser(usage="%prog [-P|--pot] [-i|--input-dir inputdir] [-o|--output-dir outputdir]")
   parser.add_option("-i", "--input-dir", dest="inputdir", default=None,
                     help="read from inputdir in "+", ".join(inputformats)+" formats", metavar="inputdir")
   parser.add_option("-o", "--output-dir", dest="outputdir", default=None,
