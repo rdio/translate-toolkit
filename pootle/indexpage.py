@@ -110,7 +110,7 @@ class UserOptions(pagelayout.PootlePage):
     formmembers = [self.getprojectoptions(), self.getlanguageoptions(), hiddenfields, submitbutton]
     useroptions = widgets.Form(formmembers, {"name": "useroptions", "action":""})
     homelink = pagelayout.IntroText(widgets.Link("index.html", self.localize("Home page")))
-    contents = [useroptions, homelink]
+    contents = [self.getpersonaloptions(), useroptions, homelink]
     pagelayout.PootlePage.__init__(self, self.localize("Options for: %s") % session.username, contents, session)
 
   def getprojectoptions(self):
@@ -136,6 +136,23 @@ class UserOptions(pagelayout.PootlePage):
     languageselect = widgets.MultiSelect({"value": userlanguages, "name": "languages"}, languageoptions)
     bodydescription = pagelayout.ItemDescription(languageselect)
     return pagelayout.Contents([languagestitle, bodydescription])
+
+  def getpersonaloptions(self):
+    """get the options fields to change the user's personal details"""
+    personaltitle = pagelayout.Title(self.localize("Personal Details"))
+    personal = table.TableLayout()
+    personal.setcell(0, 0, table.TableCell(pagelayout.Title(self.localize("Option"))))
+    personal.setcell(0, 1, table.TableCell(pagelayout.Title(self.localize("Current value"))))
+    for optionname in ("name", "email"):
+      optionvalue = getattr(self.session.prefs, optionname, "")
+      valuetextbox = widgets.Input({"name": "option-%s" % optionname, "value": optionvalue})
+      rownum = personal.maxrownum()+1
+      personal.setcell(rownum, 0, table.TableCell(optionname))
+      personal.setcell(rownum, 1, table.TableCell(valuetextbox))
+    rownum = personal.maxrownum()+1
+    submitbutton = widgets.Input({"type":"submit", "name":"changepersonal", "value":self.localize("Save changes")})
+    personalform = widgets.Form([personal, submitbutton], {"name": "personal", "action":""})
+    return pagelayout.Contents([personaltitle, personalform])
 
 class AdminPage(pagelayout.PootlePage):
   """page for administering pootle..."""

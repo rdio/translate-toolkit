@@ -285,6 +285,14 @@ class PootleSession(session.LoginSession):
     setattr(self.prefs, "languages", ",".join(userlanguages))
     self.saveprefs()
 
+  def setpersonaloptions(self, argdict):
+    """sets the users personal details"""
+    name = argdict.get("option-name", "")
+    setattr(self.prefs, "name", name)
+    email = argdict.get("option-email", "")
+    setattr(self.prefs, "email", email)
+    self.saveprefs()
+
   def getprojects(self):
     """gets the user's projects"""
     userprojects = getattr(self.prefs, "projects", "")
