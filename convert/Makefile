@@ -49,6 +49,8 @@ clean-csv:
 
 test-moz2po: test-moz2po-notemplate test-moz2po-withtemplate
 
+# set the progress option...
+progress ?= none
 # TODO: download xpi for tests and unpack if neccessary...
 dtddir=/share/translate.org.za/dev/mozilla/dtd
 oodir=/share/translate.org.za/dev/openoffice/oo
@@ -59,7 +61,7 @@ test-moz2po-notemplate: output=test-moz2po-notemplate
 test-moz2po-notemplate:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./moz2po --progress=none -P -i $(input) -o $(output)
+	./moz2po --progress=$(progress) -P -i $(input) -o $(output)
 
 test-moz2po-withtemplate: input=$(dtddir)/de-AT-1.6
 test-moz2po-withtemplate: output=test-moz2po-withtemplate
@@ -67,7 +69,7 @@ test-moz2po-withtemplate: template=$(dtddir)/en-US-1.6
 test-moz2po-withtemplate: 
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./moz2po --progress=none -i $(input) -o $(output) -t $(template)
+	./moz2po --progress=$(progress) -i $(input) -o $(output) -t $(template)
 
 test-po2moz: input=test-moz2po-withtemplate
 test-po2moz: output=test-po2moz
@@ -75,14 +77,14 @@ test-po2moz: template=$(dtddir)/en-US-1.6
 test-po2moz: test-moz2po-withtemplate
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./po2moz --progress=none -i $(input) -o $(output) -t $(template)
+	./po2moz --progress=$(progress) -i $(input) -o $(output) -t $(template)
 
 test-oo2po: input=$(oodir)/1.1/en
 test-oo2po: output=test-oo2po
 test-oo2po:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./oo2po.py --progress=none -R -P -i $(input) -o $(output)
+	./oo2po.py --progress=$(progress) -R -P -i $(input) -o $(output)
 
 test-po2oo: input=$(oopodir)/af
 test-po2oo: output=test-po2oo
@@ -91,20 +93,20 @@ test-po2oo: languagecode=27
 test-po2oo:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./po2oo.py --progress=none -R -l $(languagecode) -i $(input) -o $(output) -t $(template)
+	./po2oo.py --progress=$(progress) -R -l $(languagecode) -i $(input) -o $(output) -t $(template)
 
 test-po2csv: input=$(oopodir)/af
 test-po2csv: output=test-po2csv
 test-po2csv:
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./po2csv.py --progress=none -R -i $(input) -o $(output)
+	./po2csv.py --progress=$(progress) -R -i $(input) -o $(output)
 
 test-csv2po: input=$(oopodir)/af
 test-csv2po: output=test-csv2po
 test-csv2po: test-po2csv
 	if [[ -e $(output) ]] ; then rm -R $(output) ; fi
 	mkdir $(output)
-	./csv2po.py --progress=none -R -i $(input) -o $(output)
+	./csv2po.py --progress=$(progress) -R -i $(input) -o $(output)
 
 
