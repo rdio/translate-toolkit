@@ -31,8 +31,9 @@ class TranslationChecker(object):
   """Base Checker class which does the checking based on functions available in derived classes"""
   preconditions = {}
 
-  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None):
+  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None, errorhandler=None):
     """construct the TranslationChecker..."""
+    self.errorhandler = errorhandler
     self.setaccelmarkers(accelmarkers)
     self.setvarmatches(varmatches)
     # exclude functions defined in TranslationChecker from being treated as tests...
@@ -52,6 +53,7 @@ class TranslationChecker(object):
     for functionname in limitfilters:
       if functionname in excludefilters: continue
       if functionname in self.helperfunctions: continue
+      if functionname == "errorhandler": continue
       filterfunction = getattr(self, functionname, None)
       if not callable(filterfunction): continue
       filters[functionname] = filterfunction
@@ -100,8 +102,11 @@ class TranslationChecker(object):
       try:
         filterresult = filterfunction(str1, str2)
       except Exception, e:
-        raise ValueError("error in filter %s: %r, %r, %s" % (functionname, str1, str2, e))
-      if not filterfunction(str1, str2):
+        if self.errorhandler is None:
+          raise ValueError("error in filter %s: %r, %r, %s" % (functionname, str1, str2, e))
+        else:
+          filterresult = self.errorhandler(functionname, str1, str2, e)
+      if not filterresult:
         # we test some preconditions that aren't actually a cause for failure...
         if functionname in self.defaultfilters:
           failures.append("%s: %s" % (functionname, filterfunction.__doc__))
@@ -112,12 +117,12 @@ class TranslationChecker(object):
 
 class TeeChecker:
   """A Checker that controls multiple checkers..."""
-  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None, checkerclasses=None):
+  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None, checkerclasses=None, errorhandler=None):
     """construct a TeeChecker from the given checkers"""
     self.limitfilters = limitfilters
     if checkerclasses is None:
       checkerclasses = [StandardChecker]
-    self.checkers = [checkerclass(excludefilters=excludefilters, limitfilters=limitfilters) for checkerclass in checkerclasses]
+    self.checkers = [checkerclass(excludefilters=excludefilters, limitfilters=limitfilters, errorhandler=errorhandler) for checkerclass in checkerclasses]
     self.combinedfilters = self.getfilters(excludefilters, limitfilters)
 
   def getfilters(self, excludefilters={}, limitfilters=None):
