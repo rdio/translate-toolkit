@@ -253,7 +253,10 @@ class ConvertOptionParser(optparse.OptionParser, object):
     if self.isrecursive(options.input):
       if not self.isrecursive(options.output):
         self.error(optparse.OptionValueError("Cannot have recursive input and non-recursive output. check output exists"))
-      allfiles = self.recursefiles(options)
+      if isinstance(options.input, list):
+        allfiles = self.recursefilelist(options)
+      else:
+        allfiles = self.recursefiles(options)
     else:
       if options.input:
         allfiles = [os.path.basename(options.input)]
@@ -349,6 +352,19 @@ class ConvertOptionParser(optparse.OptionParser, object):
     fullpath = os.path.join(parent, subdir)
     if not os.path.isdir(fullpath):
       self.mkdir(parent, subdir)
+
+  def recursefilelist(self, options):
+    """use a list of files, and find a common base directory for them"""
+    # find a common base directory for the files to do everything relative to
+    commondir = os.path.dirname(os.path.commonprefix(options.input))
+    allfiles = []
+    for inputfile in options.input:
+      if inputfile.startswith(commondir+os.sep):
+        allfiles.append(inputfile.replace(commondir+os.sep, "", 1))
+      else:
+        allfiles.append(inputfile.replace(commondir, "", 1))
+    options.input = commondir
+    return allfiles
 
   def recursefiles(self, options):
     """recurse through directories and return files to be converted..."""
