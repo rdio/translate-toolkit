@@ -1,3 +1,15 @@
+2004-03-31: David Fraser <david@translate.org.za>
+	* translate/convert/po2csv.py
+	- added ' to list of values to be escaped at start of string (spreadsheet cell)...
+	* translate/filters/prefilters.py
+	- added code to detect any apostrophe in the middle of a word as not being punctuation
+	* translate/filters/checks.py
+	- separated quoting into singlequoting and doublequoting
+	- removed unneccessary calls to filterwordswithpunctuation prefilter
+	- added checks for numbers
+	* translate/filters/decoration.py
+	- added checks for numbers
+
 2004-03-30: David Fraser <david@translate.org.za>
 	* MANIFEST.in
 	- added new scripts
@@ -8,7 +20,8 @@
 	* translate/convert/convert.py
 	- added ability to use templates in non-recursive case...
 	- made templates pot files if output is po (needs cleanup)
-	- added code to handle outputing to the input or template file without overwriting them (use temp file)
+	- added code to handle outputing to the input or template file without overwriting them
+	  (this uses a temp file)
 	* translate/convert/csv2po.py
 	- merged csv2po and repo into one class so we can sort out related issues together...
 	- moved header testing out of template-merging code to make it apply to all conversions
