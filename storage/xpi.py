@@ -132,7 +132,7 @@ class XpiFile(ZipFileCatcher):
 
   def findcommonprefix(self):
     """finds the common prefix of all the files stored in the jar files"""
-    return _commonprefix([filename.split('/') for filename in self.iterjarcontents()])
+    return _commonprefix([filename.split('/')[:-1] for filename in self.iterjarcontents()])
 
   def stripcommonprefix(self, filename):
     """strips the common prefix off the filename"""
@@ -291,7 +291,7 @@ if __name__ == '__main__':
   optparser.add_option("-x", "--extract", help="extract files", \
     action="store_true", dest="extractfiles", default=False)
   optparser.add_option("-d", "--extractdir", help="extract into EXTRACTDIR", \
-    default=None, metavar="EXTRACTDIR")
+    default=".", metavar="EXTRACTDIR")
   (options, args) = optparser.parse_args()
   if len(args) < 1:
     optparser.error("need at least one argument")
