@@ -251,6 +251,18 @@ class pootlefile(po.pofile):
       items.append(item)
     self.saveassigns()
 
+  def unassign(self, item, username, action=None):
+    """removes assignments of the item to the given username for the given action (or all actions)"""
+    userassigns = self.assigns.setdefault(username, {})
+    if action is None:
+      itemlist = [userassigns.get(action, []) for action in userassigns]
+    else:
+      itemlist = [userassigns.get(action, [])]
+    for items in itemlist:
+      if item in items:
+        items.remove(item)
+    self.saveassigns()
+
   def saveassigns(self):
     """saves the current assigns to file"""
     # assumes self.assigns is up to date
@@ -280,9 +292,9 @@ class pootlefile(po.pofile):
               else:
                 assignstring += ",%d" % item
             lastitem = item
-        if rangestart is not None:
-          assignstring += "-%d" % lastitem
-        assignstrings.append(assignstring + "\n")
+          if rangestart is not None:
+            assignstring += "-%d" % lastitem
+          assignstrings.append(assignstring + "\n")
     assignsfile = open(self.assignsfilename, "w")
     assignsfile.writelines(assignstrings)
     assignsfile.close()
@@ -685,6 +697,25 @@ class TranslationProject:
             assigncount += 1
         else:
           pofile.assignto(item, assignto, action)
+          assigncount += 1
+    return assigncount
+
+  def unassignpoitems(self, search, assignedto, action=None):
+    """unassigns all the items matching the search to the assignedto user"""
+    if search.searchtext:
+      pogrepfilter = pogrep.pogrepfilter(search.searchtext, None, ignorecase=True)
+    assigncount = 0
+    for pofilename in self.searchpofilenames(None, search, includelast=True):
+      pofile = self.getpofile(pofilename)
+      for item in pofile.iteritems(search, None):
+        # TODO: move this to iteritems
+        if search.searchtext:
+          thepo = pofile.transelements[item]
+          if pogrepfilter.filterelement(thepo):
+            pofile.unassign(item, assignedto, action)
+            assigncount += 1
+        else:
+          pofile.unassign(item, assignedto, action)
           assigncount += 1
     return assigncount
 

@@ -377,6 +377,7 @@ class ProjectIndex(pagelayout.PootlePage):
     bodytitle = widgets.Link(self.getbrowseurl(""), bodytitle)
     if dirfilter == "":
       dirfilter = None
+    self.dirfilter = dirfilter
     if argdict.get("doassign", 0):
       assignto = argdict.get("assignto", None)
       action = argdict.get("action", None)
@@ -385,6 +386,18 @@ class ProjectIndex(pagelayout.PootlePage):
       search = projects.Search(dirfilter=dirfilter)
       assigncount = self.project.assignpoitems(search, assignto, action)
       print "assigned %d strings to %s for %s" % (assigncount, assignto, action)
+    if argdict.get("removeassigns", 0):
+      assignedto = argdict.get("assignedto", None)
+      removefilter = argdict.get("removefilter", "")
+      if removefilter:
+        if dirfilter:
+          removefilter = dirfilter + removefilter
+      else:
+        removefilter = dirfilter
+      search = projects.Search(dirfilter=removefilter)
+      search.assignedto = assignedto
+      assigncount = self.project.unassignpoitems(search, assignedto)
+      print "removed %d assigns from %s" % (assigncount, assignedto)
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []
@@ -564,7 +577,11 @@ class ProjectIndex(pagelayout.PootlePage):
         assignlinkbase = basename + "translate.html?"
       else:
         assignlinkbase = basename + "?translate=1"
-      statsdetails = "<br/>\n".join(self.getassigndetails(projectstats, assignlinkbase))
+      if not basename or basename.endswith("/"):
+        removelinkbase = "?showassigns=1&removeassigns=1"
+      else:
+        removelinkbase = "?showassigns=1&removeassigns=1&removefilter=%s" % basename
+      statsdetails = "<br/>\n".join(self.getassigndetails(projectstats, assignlinkbase, removelinkbase))
       statssummary += "<br/>" + statsdetails
     return pagelayout.ItemStatistics(statssummary)
 
@@ -580,7 +597,7 @@ class ProjectIndex(pagelayout.PootlePage):
         stats = self.localize("%d strings (%d%%) failed") % (checkcount, (checkcount * 100 / total))
         yield "%s: %s" % (checklink, stats)
 
-  def getassigndetails(self, projectstats, assignlinkbase):
+  def getassigndetails(self, projectstats, assignlinkbase, removelinkbase):
     """return a list of strings describing the assigned strings"""
     total = max(projectstats.get("total", 0), 1)
     for assignname, assigncount in projectstats.iteritems():
@@ -590,5 +607,7 @@ class ProjectIndex(pagelayout.PootlePage):
       if total and assigncount:
         assignlink = "<a href='%s&assignedto=%s'>%s</a>" % (assignlinkbase, assignname, assignname)
         stats = self.localize("%d strings (%d%%) assigned") % (assigncount, (assigncount * 100 / total))
-        yield "%s: %s" % (assignlink, stats)
+        removetext = self.localize("Remove")
+        removelink = "<a href='%s&assignedto=%s'>%s</a>" % (removelinkbase, assignname, removetext)
+        yield "%s: %s %s" % (assignlink, stats, removelink)
 
