@@ -342,7 +342,7 @@ class SetupIndex(SetupParser):
     if directory in self.directoryfiles:
       for fileentry in self.directoryfiles[directory]:
         self.rename(fileentry, fileentry + suffix)
-        packedname = sparse.stringeval(self.getfieldvalue(fileentry, "PackedName", ""))
+        packedname = sparse.stringeval(self.getfieldvalue(fileentry, "PackedName", '""'))
         if packedname:
           self.setfieldvalue(fileentry, "PackedName", '"%s"' % (packedname+suffix))
 
