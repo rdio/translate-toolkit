@@ -147,13 +147,14 @@ class ooinstallmanager(ConfigParser.RawConfigParser):
   def versions(self):
     """returns a list of version names and directories"""
     versionlist = []
-    for versionname, versionurl in self.items("Versions"):
-      try:
-        versiondir = self.urltopath(versionurl)
-      except ValueError, e:
-        wx.LogVerbose("could not find version %s: %s" % (versionname, e))
-        continue
-      versionlist.append((versionname, versiondir))
+    if self.has_section("Versions"):
+      for versionname, versionurl in self.items("Versions"):
+        try:
+          versiondir = self.urltopath(versionurl)
+        except ValueError, e:
+          wx.LogVerbose("could not find version %s: %s" % (versionname, e))
+          continue
+        versionlist.append((versionname, versiondir))
     return versionlist
 
   def urltopath(self, versionurl):
@@ -323,9 +324,14 @@ class LanguageSelectionWindow(wx.Frame):
         return
     # otherwise use the first valid version...
     self.versionchoice.SetSelection(0)
-    versiondir = self.versions[self.versionchoice.GetStringSelection()]
+    versiondir = self.versions.get(self.versionchoice.GetStringSelection(), '')
     self.dirbox.SetValue(versiondir)
-    self.setinstalldir(versiondir)
+    if versiondir:
+      self.setinstalldir(versiondir)
+    else:
+      wx.LogError("Could not find any OpenOffice.org installations\nPlease select Browse to choose the directory manually")
+      self.advancedmode = True
+      self.arrangeoptioncontrols()
 
   def getadminmode(self):
     """returns wheter we are adjusting system defaults or user settings"""
