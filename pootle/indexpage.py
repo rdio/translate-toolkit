@@ -134,15 +134,15 @@ class ProjectIndex(pagelayout.PootlePage):
     message = argdict.get("message", "")
     if message:
       message = pagelayout.IntroText(message)
-    bodytitle = '<h2 class="title">%s</h3>' % dirfilter
-    if dirfilter.endswith(".po"):
+    bodytitle = '<h2 class="title">%s</h3>' % (dirfilter or self.project.projectname)
+    if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
     else:
       pofilenames = self.project.browsefiles(dirfilter)
       projectstats = self.project.calculatestats(pofilenames)
       actionlinks = self.getactionlinks("", projectstats)
       actionlinks = pagelayout.ActionLinks(actionlinks)
-    mainitem = pagelayout.Item([bodytitle, actionlinks])
+    mainitem = pagelayout.MainItem([bodytitle, actionlinks])
     childitems = self.getchilditems(dirfilter)
     pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, mainitem, childitems], session, bannerheight=81)
     self.addsearchbox(searchtext="", action="translate.html")
@@ -184,7 +184,7 @@ class ProjectIndex(pagelayout.PootlePage):
     pofilenames = self.project.browsefiles(direntry)
     projectstats = self.project.calculatestats(pofilenames)
     basename = os.path.basename(direntry)
-    bodytitle = '<h3 class="title">%s</h3>' % basename
+    bodytitle = widgets.Link(basename + "/", '<h3 class="title">%s</h3>' % basename)
     actionlinks = self.getactionlinks(basename + "/", projectstats)
     bodydescription = pagelayout.ActionLinks(actionlinks)
     body = pagelayout.ContentsItem([bodytitle, bodydescription])

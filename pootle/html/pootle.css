@@ -29,10 +29,15 @@ div.item
 {
 	margin-bottom:5px;
 }
+div.mainitem 
+{
+	margin-bottom:10px;
+	background-color: #f0f0f0;
+	padding: 5px;
+}
 div.contentsitem
 {
 	font-family: verdana, arial, sans-serif;
-	color:#333;
 	font-size:small;
 	font-weight:normal;
   	line-height:100%;
