@@ -227,6 +227,18 @@ class TranslationProject:
       for classname in classes:
         pofile.classify[classname].append(item)
 
+  def reclassifyelement(self, pofile, item):
+    """updates the classification of poel in pofile.classify"""
+    poel = pofile.transelements[item]
+    classes = self.classifyelement(poel)
+    for classname, matchingitems in pofile.classify.items():
+      if (classname in classes) != (item in matchingitems):
+        if classname in classes:
+          pofile.classify[classname].append(item)
+        else:
+          pofile.classify[classname].remove(item)
+        pofile.classify[classname].sort()
+
   def classifyelement(self, poel):
     """returns all classify keys that this element should match"""
     classes = ["total"]
@@ -268,7 +280,7 @@ class TranslationProject:
     pofile.transelements[item].msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
     del self.stats[pofilename]
     self.savefile(pofilename)
-    self.classifyelements(pofile)
+    self.reclassifyelement(pofile, item)
 
   def savefile(self, pofilename):
     """saves changes to disk..."""
