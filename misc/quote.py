@@ -31,17 +31,17 @@ def extract(source,startdelim,enddelim,escape,startinstring=0):
   lastspecial = 0
   lenstart = len(startdelim)
   lenend = len(enddelim)
-  str = ""
+  extracted = ""
   if escape is None: escape = "&&&&&&&&&&&&&&&NOESCAPE&&&&&&&&&&&&&&&&&&" 
   for pos in range(len(source)):
     c = source[pos]
     if instring and inescape:
       # if in an escape, just add to the string
-      str += c
+      extracted += c
       lastspecial = pos+1
     elif instring and ((pos-lenend < lastspecial) or (source.find(enddelim,pos-lenend) <> pos-lenend)):
       # if we're in the string and we're not at the end, add to the string
-      str += c
+      extracted += c
     else:
       if instring and (pos-lenend >= lastspecial) and (source.find(enddelim,pos-lenend) == pos-lenend) and (not inescape):
         # if we're in the string and we find we've just passed the end, mark that we're out
@@ -51,7 +51,7 @@ def extract(source,startdelim,enddelim,escape,startinstring=0):
         instring = not instring
         laststart = pos + lenstart
         lastspecial = laststart
-        str += c
+        extracted += c
     if (source.find(escape,pos) == pos) and (not inescape):
       inescape = 1
     else:
@@ -60,7 +60,7 @@ def extract(source,startdelim,enddelim,escape,startinstring=0):
   pos = len(source)
   if instring and (pos-lenend >= laststart) and (source.find(enddelim,pos-lenend) == pos-lenend) and (not inescape):
     instring = not instring
-  return (str,instring)
+  return (extracted,instring)
 
 def extractfromlines(lines,startdelim,enddelim,escape):
   """Calls extract over multiple lines, remembering whether in the string or not"""
@@ -92,54 +92,54 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
   lastspecial = 0
   lenstart = len(startdelim)
   lenend = len(enddelim)
-  laststartinresultstr = None
-  str = ""
+  laststartinextracted = None
+  extracted = ""
   if escape is None: escape = "&&&&&&&&&&&&&&&NOESCAPE&&&&&&&&&&&&&&&&&&" 
   for pos in range(len(source)):
     c = source[pos]
     if instring and inescape:
       # if not including escapes in result, take them out
       if not includeescapes:
-        str = str[:-len(escape)]
+        extracted = extracted[:-len(escape)]
       # if in an escape, just add to the string
-      str += c
+      extracted += c
       lastspecial = pos+1
     elif instring and ((pos-lenend < lastspecial) or (source.find(enddelim,pos-lenend) <> pos-lenend)):
       # if we're in the string and we're not at the end, add to the string
-      str += c
+      extracted += c
     else:
       if instring and (pos-lenend >= lastspecial) and (source.find(enddelim,pos-lenend) == pos-lenend) and (not inescape):
         # if we're in the string and we find we've just passed the end, mark that we're out
         instring = not instring
         # remove the last start bit in the result string and forget it
-        str = str[:laststartinresultstr] + str[laststartinresultstr+lenstart:]
-        laststartinresultstr = None
+        extracted = extracted[:laststartinextracted] + extracted[laststartinextracted+lenstart:]
+        laststartinextracted = None
         # remove the end bit of the string
-        str = str[:-lenend]
+        extracted = extracted[:-lenend]
       if (not instring) and (source.find(startdelim,pos) == pos) and (not inescape):
         # if we're not in the string and we find the start, add to the string and mark that we're in
         instring = not instring
         laststart = pos + lenstart
         lastspecial = laststart
-        laststartinresultstr = len(str)
-        str += c
+        laststartinextracted = len(extracted)
+        extracted += c
     if (source.find(escape,pos) == pos) and (not inescape):
       inescape = 1
     else:
       inescape = 0
 
   # take out any remaining start in the resultstring
-  if laststartinresultstr is not None:
-    str = str[:laststartinresultstr] + str[laststartinresultstr+lenstart:]
+  if laststartinextracted is not None:
+    extracted = extracted[:laststartinextracted] + extracted[laststartinextracted+lenstart:]
 
   # if we're right at the end, just check if we've just had an end...
   pos = len(source)
   if instring and (pos-lenend >= laststart) and (source.find(enddelim,pos-lenend) == pos-lenend) and (not inescape):
     instring = not instring
     # and remember to remove it
-    str = str[:-lenend]
+    extracted = extracted[:-lenend]
 
-  return (str,instring)
+  return (extracted,instring)
 
 def escapequotes(source, escapeescapes=0):
   "Returns the same string, with double quotes escaped with backslash"
@@ -152,11 +152,11 @@ def escapesinglequotes(source):
   "Returns the same string, with single quotes doubled"
   return source.replace("'","''")
 
-def escapeunicode(str):
-  return str.replace('\\u','\\\\u')
+def escapeunicode(source):
+  return source.replace('\\u','\\\\u')
 
-def unescapeunicode(str):
-  return str.replace('\\\\u','\\u')
+def unescapeunicode(source):
+  return source.replace('\\\\u','\\u')
 
 def quotestr(source, escapeescapes=0):
   "Returns a doublequote-delimited quoted string, escaping double quotes with backslash"
