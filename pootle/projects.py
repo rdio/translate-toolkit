@@ -20,7 +20,10 @@ class TranslationSession:
 
   def receivetranslation(self, pofilename, item, trans):
     """submits a new/changed translation from the user"""
-    self.project.receivetranslation(pofilename, item, trans)
+    if False:
+      self.project.updatetranslation(pofilename, item, trans)
+    else:
+      self.project.suggesttranslation(pofilename, item, trans)
     self.pofilename = pofilename
     self.lastitem = item
 
@@ -42,6 +45,7 @@ class TranslationProject:
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses)
     self.pofilenames = []
     self.pofiles = {}
+    self.pendingfiles = {}
     self.stats = {}
     os.path.walk(self.podir, self.addfiles, None)
     self.initstatscache()
@@ -213,6 +217,20 @@ class TranslationProject:
     self.pofiles[pofilename] = pofile
     return pofile
 
+  def getpendingfile(self, pofilename):
+    """gets the pending po elements stored for the given pofilename"""
+    pendingfilename = pofilename + ".pending"
+    if pendingfilename in self.pendingfiles:
+      return self.pendingfiles[pendingfilename]
+    abspendingfilename = os.path.join(self.podir, pendingfilename)
+    if os.path.exists(abspendingfilename):
+      inputfile = open(abspendingfilename, "r")
+      pendingfile = po.pofile(inputfile)
+    else:
+      pendingfile = po.pofile()
+    self.pendingfiles[pendingfilename] = pendingfile
+    return pendingfile
+
   def classifyelements(self, pofile):
     # we always want to have the classifications available
     pofile.classify = {}
@@ -279,20 +297,40 @@ class TranslationProject:
     elements = pofile.transelements[max(itemstart,0):itemstop]
     return [(po.getunquotedstr(poel.msgid), po.getunquotedstr(poel.msgstr)) for poel in elements]
 
-  def receivetranslation(self, pofilename, item, trans):
-    """receives a new translation that has been submitted..."""
+  def updatetranslation(self, pofilename, item, trans):
+    """updates a translation with a new value..."""
     pofile = self.getpofile(pofilename)
-    pofile.transelements[item].msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
+    thepo = pofile.transelements[item]
+    thepo.msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
+    thepo.markfuzzy(False)
     del self.stats[pofilename]
-    self.savefile(pofilename)
+    self.savepofile(pofilename)
     self.reclassifyelement(pofile, item)
 
-  def savefile(self, pofilename):
+  def suggesttranslation(self, pofilename, item, trans):
+    """stores a new suggestion for a translation..."""
+    pofile = self.getpofile(pofilename)
+    thepo = pofile.transelements[item]
+    newpo = thepo.copy()
+    newpo.msgstr = [quote.quotestr(transpart) for transpart in trans.split("\n")]
+    newpo.markfuzzy(False)
+    pendingfile = self.getpendingfile(pofilename)
+    pendingfile.poelements.append(newpo)
+    self.savependingfile(pofilename)
+
+  def savepofile(self, pofilename):
     """saves changes to disk..."""
     pofile = self.getpofile(pofilename)
     lines = pofile.tolines()
     abspofilename = os.path.join(self.podir, pofilename)
     open(abspofilename, "w").writelines(lines)
+
+  def savependingfile(self, pofilename):
+    """saves changes to disk..."""
+    pendingfile = self.getpendingfile(pofilename)
+    lines = pendingfile.tolines()
+    abspendingfilename = os.path.join(self.podir, pofilename + ".pending")
+    open(abspendingfilename, "w").writelines(lines)
 
   def getsource(self, pofilename):
     """returns pofile source"""
