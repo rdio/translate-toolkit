@@ -74,10 +74,16 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
         self.error(optparse.OptionValueError("output must be existing directory for recursive run."))
       self.recurseconversion(options)
 
+  def recursefiles(self, options):
+    """recurse through xpi file / directories and return files to be converted"""
+    if options.recursive != "xpi":
+      return super(MozConvertOptionParser, self).recursefiles(options)
+    else:
+      return self.recursexpifiles(options)
+
   def recursexpifiles(self, options):
     """recurse through xpi files and convert files"""
     options.inputxpi = xpi.XpiFile(options.input)
-    self.dirscreated = {}
     for inputpath in options.inputxpi.iterextractnames(includedirs=True):
       if inputpath.endswith(os.path.sep):
         self.checksubdir(options.output, inputpath)
@@ -97,8 +103,11 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
       inputext = inputext.replace(os.extsep, "", 1)
       yield (inputext, inputpath, outputext, outputpath, templatepath)
 
-  def convertxpifile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
+  def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
     """run an invidividual conversion"""
+    if options.recursive != 'xpi':
+      return super(MozConvertOptionParser, self).convertfile \
+        (convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
     jarfilename, filename = options.inputxpi.ostojarpath(fullinputpath)
     inputfile = options.inputxpi.openinputstream(jarfilename, filename)
     outputfile = open(fulloutputpath, 'w')
@@ -115,28 +124,12 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
       os.unlink(fulloutputpath)
       return False
 
-  def recurseconversion(self, options):
-    """recurse through directories and convert files"""
-    if options.recursive != 'xpi':
-      return convert.ConvertOptionParserExt.recurseconversion(self, options)
-    join = os.path.join
-    allfiles = self.recursexpifiles(options)
-    allfiles = self.initprogressbar(allfiles, options)
-    for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
-      convertmethod = self.getconvertmethod(inputext, outputext)
-      fullinputpath = inputpath
-      fulloutputpath = join(options.output, outputpath)
-      if templatepath is  None:
-        fulltemplatepath = None
-      else:
-        fulltemplatepath = join(options.template, templatepath)
-      success = self.convertxpifile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
-      if success:
-        outputsubdir = os.path.dirname(outputpath)
-        self.usesubdir(outputsubdir)
-      self.reportprogress(inputpath, success)
-    self.prunesubdirs(options)
-    del self.progressbar
+  def getfullinputpath(self, options, inputpath):
+    """gets the absolute path to an input file"""
+    if options.recursive == 'xpi':
+      return inputpath
+    else:
+      return os.path.join(options.input, inputpath)
 
 if __name__ == '__main__':
   # TODO: add ability to import translations from another directory

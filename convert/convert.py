@@ -34,7 +34,7 @@ defaultrecursion = 2
 # TODO: handle input/output without needing -i/-o
 # TODO: refactor this and filters.filtercmd so they share code
 
-class ConvertOptionParser(optparse.OptionParser):
+class ConvertOptionParser(optparse.OptionParser, object):
   """a specialized Option Parser for convertor tools..."""
   def __init__(self, recursion, inputformats, outputformats, usetemplates=False, usepots=False, templateslikeinput=None):
     """construct the specialized Option Parser"""
@@ -211,28 +211,36 @@ class ConvertOptionParser(optparse.OptionParser):
       self.progressbar = self.progresstypes[options.progress]()
     return allfiles
 
+  def getfullinputpath(self, options, inputpath):
+    """gets the absolute path to an input file"""
+    return os.path.join(options.input, inputpath)
+
+  def getfulloutputpath(self, options, outputpath):
+    """gets the absolute path to an output file"""
+    return os.path.join(options.output, outputpath)
+
+  def getfulltemplatepath(self, options, templatepath):
+    """gets the absolute path to a template file"""
+    if templatepath is not None and self.usetemplates and options.template:
+      return os.path.join(options.template, templatepath)
+    else:
+      return None
+
   def recurseconversion(self, options):
     """recurse through directories and convert files"""
-    join = os.path.join
     allfiles = self.recursefiles(options)
     allfiles = self.initprogressbar(allfiles, options)
     for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
       convertmethod = self.getconvertmethod(inputext, outputext)
-      fullinputpath = join(options.input, inputpath)
-      fulloutputpath = join(options.output, outputpath)
-      if templatepath is  None:
-        fulltemplatepath = None
-      else:
-        fulltemplatepath = join(options.template, templatepath)
-      success = self.convertfile(convertmethod, fullinputpath, fulloutputpath, fulltemplatepath)
-      if success:
-        outputsubdir = os.path.dirname(outputpath)
-        self.usesubdir(outputsubdir)
+      fullinputpath = self.getfullinputpath(options, inputpath)
+      fulloutputpath = self.getfulloutputpath(options, outputpath)
+      self.checksubdir(options.output, os.path.dirname(outputpath))
+      fulltemplatepath = self.getfulltemplatepath(options, templatepath)
+      success = self.convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
       self.reportprogress(inputpath, success)
-    self.prunesubdirs(options)
     del self.progressbar
 
-  def convertfile(self, convertmethod, fullinputpath, fulloutputpath, fulltemplatepath):
+  def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
     """run an invidividual conversion"""
     tempoutput = False
     if fulloutputpath == fullinputpath:
@@ -267,35 +275,27 @@ class ConvertOptionParser(optparse.OptionParser):
     self.progressbar.amount += 1
     if success:
       self.progressbar.show(filename)
-    
+
+  def mkdir(self, parent, subdir):
+    """makes a subdirectory (recursively if neccessary)"""
+    if not os.path.isdir(parent):
+      raise ValueError("cannot make child directory %r if parent %r does not exist" % (subdir, parent))
+    currentpath = parent
+    subparts = subdir.split(os.path.sep)
+    for part in subparts:
+      currentpath = os.path.join(currentpath, part)
+      if not os.path.isdir(currentpath):
+        os.mkdir(currentpath)
+
   def checksubdir(self, parent, subdir):
     """checks to see if subdir under parent needs to be created, creates if neccessary"""
     fullpath = os.path.join(parent, subdir)
     if not os.path.isdir(fullpath):
-      os.mkdir(fullpath)
-      self.dirscreated[subdir] = 0
-      subparent = os.path.dirname(subdir)
-      if subparent in self.dirscreated:
-        self.dirscreated[subparent] = 1
-
-  def usesubdir(self, subdir):
-    """indicates that the given directory was used..."""
-    if subdir in self.dirscreated:
-      self.dirscreated[subdir] = 1
-
-  def prunesubdirs(self, options):
-    """prunes any directories that were created unneccessarily"""
-    # remove any directories we created unneccessarily
-    # note that if there is a tree of empty directories, only leaves will be removed...
-    for createddir, used in self.dirscreated.iteritems():
-      if not used:
-        os.rmdir(os.path.join(options.output, createddir))
+      self.mkdir(parent, subdir)
 
   def recursefiles(self, options):
     """recurse through directories and return files to be converted..."""
     dirstack = ['']
-    # discreated contains all the directories created, mapped to whether they've been used or not...
-    self.dirscreated = {}
     join = os.path.join
     while dirstack:
       top = dirstack.pop(-1)
@@ -303,14 +303,12 @@ class ConvertOptionParser(optparse.OptionParser):
       dirs = []
       for name in names:
         inputpath = join(top, name)
-        fullinputpath = join(options.input, inputpath)
+        fullinputpath = self.getfullinputpath(options, inputpath)
         # handle directories...
         if os.path.isdir(fullinputpath):
           dirs.append(inputpath)
-          self.checksubdir(options.output, inputpath)
-          if self.usetemplates and options.template:
-            fulltemplatepath = join(options.template, inputpath)
-            if not os.path.isdir(fulltemplatepath):
+          fulltemplatepath = self.getfulltemplatepath(options, inputpath)
+          if fulltemplatepath and not os.path.isdir(fulltemplatepath):
               print >>sys.stderr, "warning: missing template directory %s" % fulltemplatepath
         elif os.path.isfile(fullinputpath):
           if not self.isvalidinputname(options, name):
