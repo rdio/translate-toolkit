@@ -33,15 +33,7 @@ class TranslatePage(pagelayout.PootlePage):
     translateform = widgets.Form([self.transtable, searchcontextinfo, contextinfo], {"name": "translate", "action":""})
     title = "Pootle: translating %s into %s: %s" % (self.project.projectname, self.project.languagename, self.pofilename)
     if self.viewmode:
-      pagelinks = []
-      if self.firstitem > 0:
-        linkitem = max(self.firstitem - 10, 0)
-        pagelinks.append(widgets.Link("?translate=1&view=1&item=%d" % linkitem, "Previous %d" % (self.firstitem - linkitem)))
-      if self.firstitem + len(self.translations) < self.project.getpofilelen(self.pofilename):
-        linkitem = self.firstitem + 10
-        itemcount = min(self.project.getpofilelen(self.pofilename) - linkitem, 10)
-        pagelinks.append(widgets.Link("?translate=1&view=1&item=%d" % linkitem, "Next %d" % itemcount))
-      pagelinks = pagelayout.IntroText(pagelinks)
+      pagelinks = self.getpagelinks("?translate=1&view=1", 10)
     else:
       pagelinks = []
     translatediv = pagelayout.TranslateForm([pagelinks, translateform])
@@ -54,6 +46,21 @@ class TranslatePage(pagelayout.PootlePage):
     self.addfolderlinks("current folder", currentfolder, "index.html")
     autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
     self.headerwidgets.append(autoexpandscript)
+
+  def getpagelinks(self, baselink, pagesize):
+    """gets links to other pages of items, based on the given baselink"""
+    pagelinks = []
+    if self.firstitem > 0:
+      linkitem = max(self.firstitem - pagesize, 0)
+      pagelinks.append(widgets.Link(baselink + "&item=%d" % linkitem, "Previous %d" % (self.firstitem - linkitem)))
+    pofilelen = self.project.getpofilelen(self.pofilename)
+    lastitem = min(pofilelen, self.firstitem + pagesize - 1)
+    pagelinks.append("Items %d to %d" % (self.firstitem, lastitem))
+    if self.firstitem + len(self.translations) < self.project.getpofilelen(self.pofilename):
+      linkitem = self.firstitem + pagesize
+      itemcount = min(pofilelen - linkitem, pagesize)
+      pagelinks.append(widgets.Link(baselink + "&item=%d" % linkitem, "Next %d" % itemcount))
+    return pagelayout.IntroText(widgets.SeparatedList(pagelinks, " | "))
 
   def addfilelinks(self, pofilename, matchnames):
     """adds a section on the current file, including any checks happening"""
