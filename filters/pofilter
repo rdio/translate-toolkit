@@ -31,11 +31,12 @@ class pocheckfilter:
     else:
       self.checker = checker
 
-  def getfilters(self):
-    """lists the filters available on checker..."""
+  def getfilterdocs(self):
+    """lists the docs for filters available on checker..."""
     filterdict = self.checker.getfilters()
-    filters = ["%s\t%s" % (filtername, filterfunc.__doc__) for (filtername, filterfunc) in filterdict.iteritems()]
-    return filters
+    filterdocs = ["%s\t%s" % (name, filterfunc.__doc__) for (name, filterfunc) in filterdict.iteritems()]
+    filterdocs.sort()
+    return "\n".join(filterdocs)
 
   def filterelement(self, thepo, includereview=1, excludefilters={}, limitfilters=None):
     """runs filters on an element"""
@@ -66,8 +67,7 @@ def runpofilter(inputfile, outputfile, includereview=False, filterobject=None, e
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
   checkfilter = pocheckfilter(filterobject)
   if listfilters:
-    filters = checkfilter.getfilters()
-    print "\n".join(filters)
+    print checkfilter.getfilterdocs()
     return
   fromfile = po.pofile(inputfile)
   tofile = checkfilter.filterfile(fromfile, includereview, excludefilters, limitfilters)
