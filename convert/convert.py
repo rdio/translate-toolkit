@@ -98,12 +98,14 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
 def copyinput(inputfile, outputfile, templatefile, **kwargs):
   """copies the input file to the output file"""
   outputfile.write(inputfile.read())
-  outputfile.close()
+  if not outputfile.isatty():
+    outputfile.close()
   return True
 
 def copytemplate(inputfile, outputfile, templatefile, **kwargs):
   """copies the template file to the output file"""
   outputfile.write(templatefile.read())
-  outputfile.close()
+  if not outputfile.isatty():
+    outputfile.close()
   return True
   
