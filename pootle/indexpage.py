@@ -110,16 +110,21 @@ class ProjectIndex(pagelayout.PootlePage):
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
     statssummary = "%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished)
-    if self.showchecks:
-      for checkname, checkcount in projectstats.iteritems():
-        if not checkname.startswith("check-"):
-          continue
-        checkname = checkname.replace("check-", "", 1)
-        if total and checkcount:
-          checksdetails = "%s: %d strings (%d%%) failed" % (checkname, checkcount, (checkcount * 100 / total))
-          statssummary += "<br/>\n" + checksdetails
+    if total and self.showchecks:
+      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats))
+      statssummary += "<br/>" + statsdetails
     stats = pagelayout.ItemStatistics(statssummary)
     return pagelayout.Item([body, stats])
+
+  def getcheckdetails(self, projectstats):
+    """return a list of strings describing the results of checks"""
+    total = max(projectstats.get("total", 0), 1)
+    for checkname, checkcount in projectstats.iteritems():
+      if not checkname.startswith("check-"):
+        continue
+      checkname = checkname.replace("check-", "", 1)
+      if total and checkcount:
+        yield "%s: %d strings (%d%%) failed" % (checkname, checkcount, (checkcount * 100 / total))
 
   def getfileitem(self, fileentry):
     basename = os.path.basename(fileentry)
@@ -135,6 +140,10 @@ class ProjectIndex(pagelayout.PootlePage):
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    stats = pagelayout.ItemStatistics("files, %d/%d strings (%d%%) translated" % (translated, total, percentfinished))
+    statssummary = "%d/%d strings (%d%%) translated" % (translated, total, percentfinished)
+    if total and self.showchecks:
+      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats))
+      statssummary += "<br/>" + statsdetails
+    stats = pagelayout.ItemStatistics(statssummary)
     return pagelayout.Item([body, stats])
 
