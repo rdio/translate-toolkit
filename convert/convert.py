@@ -143,7 +143,10 @@ class ConvertOptionParser(optparse.OptionParser):
   def getformathelp(self, formats):
     """make a nice help string for describing formats..."""
     if self.usepots and "po" in formats:
-      formats.append("pot")
+      if isinstance(formats, dict):
+        formats["pot"] = formats["po"]
+      else:
+        formats.append("pot")
     if len(formats) == 0:
       return ""
     elif len(formats) == 1:
