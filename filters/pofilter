@@ -22,6 +22,7 @@
 
 from translate.storage import po
 from translate.filters import checks
+from translate.misc import optrecurse
 
 class pocheckfilter:
   def __init__(self, checker=None):
@@ -71,13 +72,30 @@ class pocheckfilter:
         thenewpofile.poelements.append(thepo)
     return thenewpofile
 
-# TODO: refactor to set the filter list once, and use every time, rather than recreating for each file
-def runpofilter(inputfile, outputfile, includereview=False, includefuzzy=False, filterobject=None, excludefilters={}, limitfilters=None, listfilters=False):
+class FilterOptionParser(optrecurse.RecursiveOptionParser):
+  """a specialized Option Parser for filter tools..."""
+  def __init__(self, formats):
+    """construct the specialized Option Parser"""
+    optrecurse.RecursiveOptionParser.__init__(self, formats)
+    self.set_usage()
+    self.add_option("-l", "--listfilters", dest="listfilters",
+      action="store_true", default=False, help="list filters available")
+
+  def run(self):
+    """parses the arguments, and runs recursiveprocess with the resulting options"""
+    (options, args) = self.parse_args()
+    # TODO: handle all the arguments in checkfilter constructor, not per-string
+    options.checkfilter = pocheckfilter(options.filterobject)
+    options.inputformats = self.inputformats
+    options.outputoptions = self.outputoptions
+    if options.listfilters:
+      print pocheckfilter.getfilterdocs()
+    else:
+      self.recursiveprocess(options)
+
+def runpofilter(inputfile, outputfile, templatefile, includereview=False, includefuzzy=False, checkfilter=None, \
+                excludefilters={}, limitfilters=None):
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
-  checkfilter = pocheckfilter(filterobject)
-  if listfilters:
-    print checkfilter.getfilterdocs()
-    return
   fromfile = po.pofile(inputfile)
   tofile = checkfilter.filterfile(fromfile, includereview, includefuzzy, excludefilters, limitfilters)
   if tofile.isempty():
@@ -87,15 +105,11 @@ def runpofilter(inputfile, outputfile, includereview=False, includefuzzy=False, 
   return 1
 
 if __name__ == '__main__':
-  from translate.filters import filtercmd
-  inputformats = {"po":runpofilter, "pot":runpofilter}
-  parser = filtercmd.FilterOptionParser(filtercmd.optionalrecursion, inputformats)
+  formats = {"po":("po", runpofilter), "pot":("pot", runpofilter), None:("po", runpofilter)}
+  parser = FilterOptionParser(formats)
   parser.add_option("", "--review", dest="includereview",
     action="store_true", default=False,
     help="include elements marked for review")
-  parser.add_option("", "--ignorereview", dest="includereview",
-    action="store_false", default=False,
-    help="don't include elements marked for review")
   parser.add_option("", "--fuzzy", dest="includefuzzy",
     action="store_true", default=False,
     help="include elements marked fuzzy")
@@ -117,21 +131,6 @@ if __name__ == '__main__':
   parser.add_option("-t", "--test", dest="limitfilters",
     action="append", default=None, type="string", metavar="FILTER",
     help="only use test FILTERs specified with this option when filtering")
-  parser.add_option("-l", "--listfilters", dest="listfilters",
-    action="store_true", default=False, help="list filters available")
-  requiredoptions = dict([(key, True) for key in 
-    ('includereview', 'includefuzzy', 'filterobject', 'excludefilters', 'limitfilters', 'listfilters')])
-  options, args = parser.parse_args()
-  # TODO: move this code into filtercmd...
-  if options.input is None:
-    if len(args) == 0:
-      parser.runfilter(options, runpofilter, requiredoptions)
-    else:
-      for inputarg in args:
-        options.input = inputarg
-        parser.runfilter(options, runpofilter, requiredoptions)
-  else:
-    if len(args) != 0:
-      parser.error("incorrect number of arguments")
-    parser.runfilter(options, runpofilter, requiredoptions)
+  parser.passthrough.extend(['includereview', 'includefuzzy', 'excludefilters', 'limitfilters', 'checkfilter'])
+  parser.run()
 

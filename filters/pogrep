@@ -21,6 +21,7 @@
 """grep for gettext .po localization files"""
 
 from translate.storage import po
+from translate.misc import optrecurse
 import sre
 
 class pogrepfilter:
@@ -83,10 +84,50 @@ class pogrepfilter:
         thenewpofile.poelements.append(thepo)
     return thenewpofile
 
-# TODO: refactor to set the filter list once, and use every time, rather than recreating for each file
-def runpogrep(inputfile, outputfile, **kwargs):
+class GrepOptionParser(optrecurse.RecursiveOptionParser):
+  """a specialized Option Parser for the grep tool..."""
+  def parse_args(self, args=None, values=None):
+    """parses the command line options, handling implicit input/output args"""
+    (options, args) = optrecurse.optparse.OptionParser.parse_args(self, args, values)
+    # some intelligence as to what reasonable people might give on the command line
+    if args:
+      options.searchstring = args[0]
+      args = args[1:]
+    else:
+      self.error("At least one argument must be given for the search string")
+    if args and not options.input:
+      if not options.output:
+        options.input = args[:-1]
+        args = args[-1:]
+      else:
+        options.input = args
+        args = []
+    if args and not options.output:
+      options.output = args[-1]
+      args = args[:-1]
+    if args:
+      self.error("You have used an invalid combination of --input, --output and freestanding args")
+    if isinstance(options.input, list) and len(options.input) == 1:
+      options.input = options.input[0]
+    return (options, args)
+
+  def set_usage(self, usage=None):
+    """sets the usage string - if usage not given, uses getusagestring for each option"""
+    if usage is None:
+      self.usage = "%prog searchstring " + " ".join([self.getusagestring(option) for option in self.option_list])
+    else:
+      super(GrepOptionParser, self).set_usage(usage)
+
+  def run(self):
+    """parses the arguments, and runs recursiveprocess with the resulting options"""
+    (options, args) = self.parse_args()
+    options.inputformats = self.inputformats
+    options.outputoptions = self.outputoptions
+    options.checkfilter = pogrepfilter(options.searchstring, options.searchparts, options.ignorecase, options.useregexp, options.invertmatch)
+    self.recursiveprocess(options)
+
+def runpogrep(inputfile, outputfile, templatefile, checkfilter):
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
-  checkfilter = pogrepfilter(**kwargs)
   fromfile = po.pofile(inputfile)
   tofile = checkfilter.filterfile(fromfile)
   if tofile.isempty():
@@ -96,36 +137,18 @@ def runpogrep(inputfile, outputfile, **kwargs):
   return 1
 
 if __name__ == '__main__':
-  from translate.filters import filtercmd
-  inputformats = {"po":runpogrep, "pot":runpogrep}
-  parser = filtercmd.FilterOptionParser(filtercmd.optionalrecursion, inputformats)
+  formats = {"po":("po", runpogrep), "pot":("pot", runpogrep), None:("po", runpogrep)}
+  parser = GrepOptionParser(formats)
   parser.add_option("", "--search", dest="searchparts",
     action="append", type="choice", choices=["msgid", "msgstr"],
-    help="searches the given parts")
+    metavar="SEARCHPARTS", help="searches the given parts")
   parser.add_option("-I", "--ignore-case", dest="ignorecase",
     action="store_true", default=False, help="ignore case distinctions")
   parser.add_option("-e", "--regexp", dest="useregexp",
     action="store_true", default=False, help="use regular expression matching")
   parser.add_option("-v", "--invert-match", dest="invertmatch",
     action="store_true", default=False, help="select non-matching lines")
-  requiredoptions = dict([(key, True) for key in 
-    ('searchparts','searchstring','ignorecase', "useregexp", "invertmatch")])
-  options, args = parser.parse_args()
-  # TODO: move this code into filtercmd...
-  if options.input is None:
-    if len(args) == 0:
-      parser.error("incorrect number of arguments. need search string")
-    elif len(args) == 1:
-      options.searchstring = args[0]
-      parser.runfilter(options, runpogrep, requiredoptions)
-    else:
-      options.searchstring = args[0]
-      for inputarg in args[1:]:
-        options.input = inputarg
-        parser.runfilter(options, runpogrep, requiredoptions)
-  else:
-    if len(args) != 1:
-      parser.error("incorrect number of arguments. need search string")
-    options.searchstring = args[0]
-    parser.runfilter(options, runpogrep, requiredoptions)
+  parser.set_usage()
+  parser.passthrough.append('checkfilter')
+  parser.run()
 
