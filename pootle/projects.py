@@ -44,10 +44,12 @@ class pootlefile(po.pofile):
     self.filename = os.path.join(self.project.podir, self.pofilename)
     self.statsfilename = self.filename + os.extsep + "stats"
     self.pendingfilename = self.filename + os.extsep + "pending"
+    self.assignsfilename = self.filename + os.extsep + "assigns"
     self.pendingfile = None
     # we delay parsing until it is required
     self.parsed = False
     self.getstats()
+    self.getassigns()
 
   def readpofile(self):
     """reads and parses the main po file"""
@@ -112,10 +114,10 @@ class pootlefile(po.pofile):
     return self.stats
 
   def readstats(self):
-    """reads the stats from the associated stats file, returning the pomtime and stats"""
+    """reads the stats from the associated stats file, setting the required variables"""
     statsmtime = getmodtime(self.statsfilename)
     if statsmtime == getattr(self, "statsmtime", None):
-      return self.statspomtime, self.statspendingmtime, self.statsmtime, self.stats
+      return
     stats = open(self.statsfilename, "r").read()
     mtimes, postatsstring = stats.split("\n", 1)
     mtimes = mtimes.strip().split()
@@ -160,6 +162,88 @@ class pootlefile(po.pofile):
       self.readpofile()
     postats = dict([(name, len(items)) for name, items in self.classify.iteritems()])
     self.stats = postats
+
+  def getassigns(self):
+    """reads the assigns if neccessary or returns them from the cache"""
+    if os.path.exists(self.assignsfilename):
+      self.assigns = self.readassigns()
+    else:
+      self.assigns = {}
+    return self.assigns
+
+  def readassigns(self):
+    """reads the assigns from the associated assigns file, returning the assigns
+    the format is a number of lines consisting of
+    username: action: itemranges
+    where itemranges is a comma-separated list of item numbers or itemranges like 3-5
+    e.g.  pootlewizz: review: 2-99,101"""
+    assignsmtime = getmodtime(self.assignsfilename)
+    if assignsmtime == getattr(self, "assignsmtime", None):
+      return
+    assignsstring = open(self.assignsfilename, "r").read()
+    poassigns = {}
+    for line in assignsstring.split("\n"):
+      if not line.strip():
+        continue
+      if not line.count(":") == 2:
+        print "invalid assigns line in", self.assignsfilename, line
+        continue
+      username, action, itemranges = line.split(":", 2)
+      username, action = username.strip(), action.strip()
+      if not username in poassigns:
+        poassigns[username] = {}
+      userassigns = poassigns[username]
+      if not action in userassigns:
+        userassigns[action] = []
+      items = userassigns[action]
+      for itemrange in itemranges.split(","):
+        if "-" in itemrange:
+          if not line.count("-") == 1:
+            print "invalid assigns range in", self.assignsfilename, line, itemrange
+            continue
+          itemstart, itemstop = [int(item.strip()) for item in itemrange.split("-", 1)]
+          items.extend(range(itemstart, itemstop+1))
+        else:
+          item = int(itemrange.strip())
+          items.append(item)
+      userassigns[action] = items
+    return poassigns
+
+  def saveassigns(self):
+    """saves the current assigns to file"""
+    # assumes self.assigns is up to date
+    assignstrings = []
+    usernames = self.assigns.keys()
+    usernames.sort()
+    for username in usernames:
+      actions = self.assigns[username].keys()
+      actions.sort()
+      for action in actions:
+        items = self.assigns[username][action]
+        items.sort()
+        if items:
+          lastitem = None
+          rangestart = None
+          assignstring = "%s: %s: " % (username, action)
+          for item in items:
+            if item - 1 == lastitem:
+              if rangestart is None:
+                rangestart = lastitem
+            else:
+              if rangestart is not None:
+                assignstring += "-%d" % lastitem
+                rangestart = None
+              if lastitem is None:
+                assignstring += "%d" % item
+              else:
+                assignstring += ",%d" % item
+            lastitem = item
+        if rangestart is not None:
+          assignstring += "-%d" % lastitem
+        assignstrings.append(assignstring + "\n")
+    assignsfile = open(self.assignsfilename, "w")
+    assignsfile.writelines(assignstrings)
+    assignsfile.close()
 
   def setmsgstr(self, item, newmsgstr):
     """updates a translation with a new msgstr value"""
