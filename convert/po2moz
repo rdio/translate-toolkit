@@ -30,34 +30,11 @@ from translate.storage import po
 from translate.misc import quote
 from translate import __version__
 
-def convertdtd(inputfile, outputfile, templatefile):
-  inputpo = po.pofile(inputfile)
-  if templatefile is None:
-    convertor = po2dtd.po2dtd()
-  else:
-    templatedtd = dtd.dtdfile(templatefile)
-    convertor = po2dtd.redtd(templatedtd)
-  outputdtd = convertor.convertfile(inputpo)
-  outputdtdlines = outputdtd.tolines()
-  outputfile.writelines(outputdtdlines)
-  return 1
-
-def convertprop(inputfile, outputfile, templatefile):
-  inputpo = po.pofile(inputfile)
-  if templatefile is None:
-    raise ValueError("must have template file for properties files")
-    # convertor = po2prop.po2prop()
-  else:
-    convertor = po2prop.reprop(templatefile)
-  outputproplines = convertor.convertfile(inputpo)
-  outputfile.writelines(outputproplines)
-  return 1
-
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
   inputformat = "po"
-  outputformats = {"dtd": convertdtd, "properties": convertprop}
+  outputformats = {"dtd": po2dtd.convertdtd, "properties": po2prop.convertprop}
   parser = convert.ConvertOptionParser(convert.defaultrecursion, inputformat, outputformats, usetemplates=True)
   (options, args) = parser.parse_args()
   # recurse the appropriate directories...

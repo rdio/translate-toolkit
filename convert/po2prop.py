@@ -101,35 +101,27 @@ class reprop:
           return line+eol
     return ""
 
-def main(inputfile, outputfile, templatefile):
+def convertprop(inputfile, outputfile, templatefile):
   inputpo = po.pofile(inputfile)
   if templatefile is None:
-    raise ValueError("must have template file")
+    raise ValueError("must have template file for properties files")
     # convertor = po2prop()
   else:
     convertor = reprop(templatefile)
   outputproplines = convertor.convertfile(inputpo)
   outputfile.writelines(outputproplines)
+  return 1
 
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
   inputformat = "po"
-  outputformat = "properties"
-  parser = convert.ConvertOptionParser(convert.norecursion, inputformat, outputformat, usetemplates=True)
+  outputformats = {"properties": convertprop}
+  parser = convert.ConvertOptionParser(convert.defaultrecursion, inputformat, outputformats, usetemplates=True)
   (options, args) = parser.parse_args()
-  # open the appropriate files
-  if options.input is None:
-    inputfile = sys.stdin
-  else:
-    inputfile = open(options.input, 'r')
-  if options.output is None:
-    outputfile = sys.stdout
-  else:
-    outputfile = open(options.output, 'w')
-  if options.template is None:
-    parser.error("must have template file")
-  else:
-    templatefile = open(options.template, 'r')
-  main(inputfile, outputfile, templatefile)
+  # recurse the appropriate directories...
+  try:
+    parser.runconversion(options, None)
+  except convert.optparse.OptParseError, message:
+    parser.error(message)
 
