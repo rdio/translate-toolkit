@@ -45,19 +45,24 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     self.passthrough = []
 
   def setpsycooption(self):
-    psycooption = optparse.Option(None, "--psyco", dest="psyco", default="full",
+    psycooption = optparse.Option(None, "--psyco", dest="psyco", default=None,
                     choices=("none", "full", "profile"), metavar="PSYCO",
                     help="use psyco to speed up the operation (set mode)")
     self.define_option(psycooption)
 
   def usepsyco(self, options):
+    # options.psyco == None means the default, which is "full", but don't give a warning...
+    # options.psyco == "none" means don't use psyco at all...
     if options.psyco == "none":
       return
     try:
       import psyco
     except Exception, e:
-      self.warning("psyco unavailable: %s" % e)
+      if options.psyco is not None:
+        self.warning("psyco unavailable: %s" % e)
       return
+    if options.psyco is None:
+      options.psyco = "full"
     if options.psyco == "full":
       psyco.full()
     elif options.psyco == "profile":
