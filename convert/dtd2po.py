@@ -175,6 +175,7 @@ class dtd2po:
 
   def makeheader(self, filename):
     """create a header for the given filename"""
+    # TODO: handle this in the po class
     headerpo = po.poelement()
     headerpo.othercomments.append("# extracted from %s\n" % filename)
     headerpo.typecomments.append("#, fuzzy\n")
@@ -238,9 +239,9 @@ class dtd2po:
         # otherwise the mix failed. add each one separately...
     return self.convertelement(thedtd)
 
-  def convertfile(self, thedtdfile, filename="unknown file"):
+  def convertfile(self, thedtdfile):
     thepofile = po.pofile()
-    headerpo = self.makeheader(filename)
+    headerpo = self.makeheader(thedtdfile.filename)
     thepofile.poelements.append(headerpo)
     thedtdfile.makeindex()
     self.findmixedentities(thedtdfile)

@@ -148,6 +148,7 @@ class dtdelement:
 class dtdfile:
   def __init__(self, inputfile=None):
     self.dtdelements = []
+    self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
       dtdlines = inputfile.readlines()
       self.fromlines(dtdlines)
