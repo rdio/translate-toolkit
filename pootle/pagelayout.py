@@ -6,6 +6,7 @@ from jToolkit.widgets import table
 class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""
   def __init__(self, session):
+    baseurl = session.instance.baseurl
     title = widgets.Division(session.instance.title, None, {"class":"sidetitle"})
     description = widgets.Division(session.instance.description, None, {"class":"side"})
     logintitle = widgets.Division("login status", None, {"class":"sidetitle"})
@@ -13,8 +14,13 @@ class PootleSidebar(widgets.Division):
       loginstatus = session.status
     else:
       loginstatus = "not logged in"
+    if session.isopen:
+      loginlink = widgets.Link(baseurl+"?islogout=1", "Log Out")
+    else:
+      loginlink = widgets.Link(baseurl+"login.html", "Log In")
     loginstatus = widgets.Division(loginstatus, None, {"class":"side"})
-    widgets.Division.__init__(self, [title, description, logintitle, loginstatus], "links")
+    loginlink = widgets.Division(loginlink, None, {"class":"side"})
+    widgets.Division.__init__(self, [title, description, logintitle, loginstatus, loginlink], "links")
 
 class PootleBanner(widgets.Division):
   """the banner at the top"""

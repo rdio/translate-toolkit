@@ -41,6 +41,12 @@ class PootleServer(OptionalLoginAppServer):
       top = ""
     if not top or top == "index.html":
       return indexpage.PootleIndex(session)
+    elif top == "login.html":
+      if session.isopen:
+        redirecttext = widgets.Division("Redirecting to index...", None, {"class":"intro"})
+        redirectpage = pagelayout.PootlePage("Redirecting to index...", redirecttext, session)
+        return server.Redirect("index.html", withpage=redirectpage)
+      return LoginPage(session)
     elif hasattr(session.instance.projects, top):
       project = getattr(session.instance.projects, top)
       pathwords = pathwords[1:]
