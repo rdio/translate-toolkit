@@ -107,6 +107,8 @@ class StandardChecker(TranslationChecker):
 
   def unchanged(self, str1, str2):
     """checks whether a translation is basically identical to the original string"""
+    str1 = self.filteraccelerators(str1)
+    str2 = self.filteraccelerators(str2)
     return str1.strip().lower() != str2.strip().lower()
 
   def blank(self, str1, str2):
