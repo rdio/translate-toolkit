@@ -459,9 +459,22 @@ class POTree:
 
   def getpodir(self, languagecode, projectcode):
     """returns the base directory containing po files for the project"""
+    search = self.getdirpattern(languagecode, projectcode)
+    if isinstance(search, (str, unicode)):
+      return search
+    elif search is not None:
+      directoryname = search.directory.replace("$project", projectcode).replace("$language", languagecode)
+      if os.path.exists(directoryname):
+        return directoryname
+    raise IndexError("directory not found for language %s, project %s" % (languagecode, projectcode))
+
+  def getdirpattern(self, languagecode, projectcode):
+    """returns either a directory name or a prefs node indicating how to construct the directory name"""
     for searchname, search in self.directories.iteritems():
       if isinstance(search, (str, unicode)):
         directoryname = search.replace("$project", projectcode).replace("$language", languagecode)
+        if os.path.exists(directoryname):
+          return directoryname
       else:
         directorypattern = search.directory
         if hasattr(search, "projectcode"):
@@ -471,22 +484,39 @@ class POTree:
           if search.languagecode != languagecode:
             continue
         directoryname = search.directory.replace("$project", projectcode).replace("$language", languagecode)
-      if os.path.exists(directoryname):
-        return directoryname
-    raise IndexError("directory not found for language %s, project %s" % (languagecode, projectcode))
+        if not os.path.exists(directoryname):
+          continue
+        return search
+    return None
 
   def getpofiles(self, languagecode, projectcode):
     """returns a list of po files for the project and language"""
-    pofilenames = []
     def addfiles(podir, dirname, fnames):
       """adds the files to the set of files for this project"""
-      basedirname = dirname.replace(podir, "")
+      basedirname = dirname.replace(podir, "", 1)
       while basedirname.startswith(os.sep):
         basedirname = basedirname.replace(os.sep, "", 1)
       ponames = [fname for fname in fnames if fname.endswith(os.extsep+"po")]
       pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
+    def addgnufiles(podir, dirname, fnames):
+      """adds the files to the set of files for this project"""
+      basedirname = dirname.replace(podir, "", 1)
+      while basedirname.startswith(os.sep):
+        basedirname = basedirname.replace(os.sep, "", 1)
+      languageponame = languagecode + os.extsep + "po"
+      ponames = [fname for fname in fnames if fname == languageponame]
+      pofilenames.extend([os.path.join(basedirname, poname) for poname in ponames])
+    pofilenames = []
     podir = self.getpodir(languagecode, projectcode)
-    os.path.walk(podir, addfiles, podir)
+    search = self.getdirpattern(languagecode, projectcode)
+    if isinstance(search, (str, unicode)):
+      dirstyle = "standard"
+    else:
+      dirstyle = getattr(search, "dirstyle", "standard")
+    if dirstyle == "standard":
+      os.path.walk(podir, addfiles, podir)
+    elif dirstyle == "gnu":
+      os.path.walk(podir, addgnufiles, podir)
     return pofilenames
 
   def refreshstats(self):
