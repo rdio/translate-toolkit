@@ -18,6 +18,6 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""translate is a Python package that assists in localization of software
+"""The Translate Toolkit is a Python package that assists in localization of software
 See http://translate.sourceforge.net or http://www.translate.org.za for more information"""
 
