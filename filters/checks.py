@@ -301,6 +301,17 @@ class StandardChecker(TranslationChecker):
 	  return False
     return True
 
+  def doublewords(self, str1, str2):
+    """checks for repeated words in the translation"""
+    lastword = ""
+    without_newlines = "\n".join(str2.split("\n"))
+    words = self.filteraccelerators(self.filtervariables(without_newlines)).replace(".", "").lower().split()
+    for word in words:
+      if word == lastword:
+        return False
+      lastword = word
+    return True
+
   def filepaths(self, str1, str2):
     """checks that file paths have not been translated"""
     for word1 in self.filteraccelerators(str1).split():
@@ -340,7 +351,7 @@ class StandardChecker(TranslationChecker):
                                     "doublespacing", "endpunc", "xmltags",
                                     "startwhitespace", "endwhitespace",
                                     "singlequoting", "doublequoting",
-                                    "filepaths", "purepunc") }
+                                    "filepaths", "purepunc", "doublewords") }
 
 # code to actually run the tests (use unittest?)
 
