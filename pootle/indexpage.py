@@ -567,12 +567,13 @@ class ProjectIndex(pagelayout.PootlePage):
         reviewlink = self.localize("View Suggestions")
       reviewlink = widgets.Link(self.makelink(baseactionlink, review=1, **{"has-suggestion": 1}), reviewlink)
       actionlinks.append(reviewlink)
-    if "quick" in linksrequired and projectstats.get("translated", 0) < projectstats.get("total", 0):
+    if "quick" in linksrequired:
       if "translate" in self.rights:
         quicklink = self.localize("Quick Translate")
       else:
         quicklink = self.localize("View Untranslated")
-      quicklink = widgets.Link(self.makelink(baseactionlink, fuzzy=1, blank=1), quicklink)
+      if projectstats.get("translated", 0) < projectstats.get("total", 0):
+        quicklink = widgets.Link(self.makelink(baseactionlink, fuzzy=1, blank=1), quicklink)
       actionlinks.append(quicklink)
     if "all" in linksrequired and "translate" in self.rights:
       translatelink = widgets.Link(self.makelink(baseactionlink), self.localize('Translate All'))
