@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>File details</title>
+    </head>
+    <body>
+        <small><a href="index?view=filelist">Home</a></small>>
+        <small><u>$file.name</u></small>        
+        <h1>File details</h1>
+        <hr/>
+        <h2>Properties:</h2>
+        <table border="0">
+            <tr><td align="right">Name : </td><td>$file.name</td></tr>
+        </table>
+        <hr/>
+        <h2>Strings:</h2>
+        #for  $original in $file.getOriginals()
+            #set $displayname = $original.getStripped()
+            <p><a href="index?view=stringdetail&original=$original.id">$displayname[:20] ...</a></p>
+        #end for
+    </body>
+</html>

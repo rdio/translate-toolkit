@@ -1,0 +1,115 @@
+#from translate.portal.database.model import Translation
+#def showTranslation($transl,$ed)
+    #set $lang = $transl.language
+    <hr/>
+    <h2>$lang.name ($lang.iso639_2 $lang.iso639_3 $lang.country_iso3166_2)</h2>   
+    <table border="0">
+        <tr>
+            <td align="right">Translation version : </td><td>$transl.version</td>
+        </tr>
+            #if $ed
+            <form name="editForm" action="index">
+            <tr>
+                <td align="right">Raw string : </td><td><textarea name="raw">$transl.raw</textarea></td> 
+            </tr>
+            <tr>               
+                <td align="right">
+                    <input type="hidden" name="action" value="translationsave">
+                    <input type="hidden" name="translationid" value="$transl.id">
+                    <input type="hidden" name="originalid" value="$transl.original.id">                    
+                    <input type="hidden" name="view" value="stringdetail"/>
+                </td><td><input type="submit"  value="save"/></td>                     
+            </tr>
+            <form>
+        #else
+            <tr>
+                <td align="right">Raw string : </td><td>$transl.raw</td>
+            </tgr>
+        #end if
+        </tr>
+        <tr>
+            <td align="right">Accelerator : </td><td>$transl.getAccelerator()</td>
+        </tr>
+        <tr>
+            <td align="right">Stripped string : </td><td>$transl.getStripped()</td>
+        </tr>
+        <tr>
+            <td align="right">Number of words : </td><td>$transl.getWordcount()</td>
+        </tr>
+        <tr>
+            <td align="right">Number of characters : </td><td>$transl.getCharcount()</td>
+        </tr>
+    </table>
+#end def
+
+<html>
+    <head>
+        #set $displayname = $original.getStripped()
+        <small><a href="index?view=filelist">Home</a></small> >
+        <small><a href="index?view=filedetail&file=$original.file.id">$original.file.name</a></small>>
+        <small><u>$displayname[:20] ...</u></small>
+        <title>String details</title>
+    </head>
+    <body>
+        <h1>String details</h1>
+        #if not $editing
+            <a href="index?view=stringdetail&edit=yes&original=$original.id&language=$languageid">edit</a>        
+        #end if
+        <hr/>
+        <h2>Original</h2>
+        <table border="0">
+            <tr>
+                <td align="right">Translator comment : </td><td>$original.translator_comment</td>
+            </tr>
+            <tr>
+                <td align="right">Comment : </td><td>$original.comment</td>
+            </tr>
+            <tr>
+                <td align="right">Raw string : </td><td>$original.raw</td>
+            </tr>
+            <tr>
+                <td align="right">Accelerator : </td><td>$original.getAccelerator()</td>
+            </tr>
+            <tr>
+                <td align="right">Stripped string : </td><td>$original.getStripped()</td>
+            </tr>
+            <tr>
+                <td align="right">Number of words : </td><td>$original.getWordcount()</td>
+            </tr>
+            <tr>
+                <td align="right">Number of characters : </td><td>$original.getCharcount()</td>
+            </tr>
+        </table>
+        <hr/>
+        <form name="langselectForm" action="index">
+            <input type="hidden" name="view" value="stringdetail"/>
+            <input type="hidden" name="edit" value="$editing"/>
+            <input type="hidden" name="original" value="$original.id"/>
+            Select your preferred language: <select name="language" onChange="document.langselectForm.submit()")">
+            #if not $editing
+                <option value="-1">All</option>
+            #end if
+            #for $l in $languages
+                <option value="$l.id" 
+                #if $l.id == $languageid 
+                    selected 
+                #end if
+                >$l.name ($l.iso639_2 $l.iso639_3 $l.country_iso3166_2)</option>
+            #end for        
+           </select></form>
+        #if not $translations
+            <hr/>
+            #if $editing
+                #set $translation = Translation()
+                $translation.setLanguage($language)
+                $translation.setOriginal($original)
+                $showTranslation($translation,$editing)
+            #else
+                <i>No translations for that selection</i>
+            #end if
+        #end if
+        #for $translation in $translations
+            $showTranslation($translation,$editing)
+        #end for
+    </body>
+</html>
