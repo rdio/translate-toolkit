@@ -371,7 +371,7 @@ class SetupIndex(SetupParser):
         os.system('cp -p %s %s' % (srcfile, destfile))
     for filename, packedname in self.manualfiles:
       packedpath = os.path.join(destdirectory, packedname)
-      os.system('zip %s.zip %s' % (packedpath, filename))
+      os.system('zip -j %s.zip %s' % (packedpath, filename))
       os.system('mv %s.zip %s' % (packedpath, packedpath))
 
 if __name__ == '__main__':
@@ -383,7 +383,9 @@ if __name__ == '__main__':
   import optparse
   setupfiles = {}
   optparser = optparse.OptionParser(version="%prog "+__version__.ver, description=__doc__)
-  optparser.set_usage("%prog maindir [otherdirs] outputdir")
+  optparser.set_usage("%prog maindir [--switchlangexe ooswitchlang.exe] [otherdirs] outputdir")
+  optparser.add_option("", "--switchlangexe", dest="switchlangexe", default=None,
+                  help="add SWITCHLANGEXE to program", metavar="SWITCHLANGEXE")
   options, args = optparser.parse_args()
   if len(args) < 2:
     optparser.error("need at least one inputdir and an outputdir")
@@ -402,9 +404,9 @@ if __name__ == '__main__':
   for otherdir in otherdirs:
     othersetupfiles.append(SetupIndex(os.path.join(otherdir, setupname)))
   mainsetupfile.merge(othersetupfiles)
-  if os.path.exists("ooswitchlang.exe"):
+  if options.switchlangexe is not None:
     packedname = mainsetupfile.makepackedname("f_")
-    mainsetupfile.addmanualfile("gid_File_Bin_switchlang", "ooswitchlang.exe", packedname, "gid_File_Bin_Setofficelang")
+    mainsetupfile.addmanualfile("gid_File_Bin_switchlang", options.switchlangexe, packedname, "gid_File_Bin_Setofficelang")
   if not os.path.isdir(outputdir):
     os.mkdir(outputdir)
   open(os.path.join(outputdir, setupname), 'w').write(mainsetupfile.getsource())
