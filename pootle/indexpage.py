@@ -168,34 +168,71 @@ class ProjectIndex(pagelayout.PootlePage):
       self.addfolderlinks("project root", "/", "/".join([".."] * depth) + "/index.html")
 
   def getdiritem(self, direntry):
-    # calculate stats
+    """returns an item showing a directory entry"""
     pofilenames = self.project.browsefiles(direntry)
-    numfiles = len(pofilenames)
+    basename = os.path.basename(direntry)
     projectstats = self.project.calculatestats(pofilenames)
+    bodytitle = '<h3 class="title">%s</h3>' % basename
+    actionlinks = self.getactionlinks(basename + "/", projectstats)
+    bodydescription = pagelayout.ActionLinks(actionlinks)
+    body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    stats = self.getitemstats(basename + "/", projectstats, len(pofilenames))
+    return pagelayout.Item([body, stats])
+
+  def getfileitem(self, fileentry):
+    """returns an item showing a file entry"""
+    basename = os.path.basename(fileentry)
+    bodytitle = '<h3 class="title">%s</h3>' % basename
+    projectstats = self.project.calculatestats([fileentry])
+    actionlinks = self.getactionlinks(basename, projectstats)
+    downloadlink = widgets.Link(basename, 'PO file')
+    csvname = basename.replace(".po", ".csv")
+    csvlink = widgets.Link(csvname, 'CSV file')
+    bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink])
+    body = pagelayout.ContentsItem([bodytitle, bodydescription])
+    stats = self.getitemstats(basename, projectstats, None)
+    return pagelayout.Item([body, stats])
+
+  def getactionlinks(self, basename, projectstats):
+    """get links to the actions that can be taken on an item (directory / file)"""
+    actionlinks = []
+    if basename.endswith("/"):
+      baseactionlink = basename + "translate.html?"
+      baseindexlink = basename + "index.html?"
+      browselink = widgets.Link(basename, 'Browse')
+      actionlinks.append(browselink)
+    else:
+      baseactionlink = "%s?translate=1" % basename
+      baseindexlink = "%s?index=1" % basename
+      viewlink = widgets.Link('%s&view=1' % baseactionlink, 'View')
+      actionlinks.append(viewlink)
+    checkslink = widgets.Link(baseindexlink + "&showchecks=1", "Checks")
+    if projectstats.get("has-suggestion", 0):
+      reviewlink = widgets.Link(baseactionlink + "&review=1&has-suggestion=1", "Review Suggestions")
+      actionlinks.append(reviewlink)
+    if projectstats.get("translated", 0) < projectstats.get("total", 0):
+      quicklink = widgets.Link(baseactionlink + "&fuzzy=1&blank=1", "Quick Translate")
+      actionlinks.append(quicklink)
+    translatelink = widgets.Link(baseactionlink, 'Translate All')
+    actionlinks.append(translatelink)
+    return actionlinks
+
+  def getitemstats(self, basename, projectstats, numfiles):
+    """returns a widget summarizing item statistics"""
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
-    # title and action links
-    basename = os.path.basename(direntry)
-    bodytitle = '<h3 class="title">%s</h3>' % basename
-    browselink = widgets.Link(basename+"/", 'Browse')
-    checkslink = widgets.Link("%s/index.html?showchecks=1" % basename, "Checks")
-    actionlinks = [browselink, checkslink]
-    if projectstats.get("has-suggestion", 0):
-      reviewlink = widgets.Link("%s/translate.html?review=1&has-suggestion=1" % basename, "Review Suggestions")
-      actionlinks.append(reviewlink)
-    if translated < total:
-      quicklink = widgets.Link("%s/translate.html?fuzzy=1&blank=1" % basename, "Quick Translate")
-      actionlinks.append(quicklink)
-    bodydescription = pagelayout.ActionLinks(actionlinks)
-    body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    # statistics
-    statssummary = "%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished)
+    statssummary = "%d/%d strings (%d%%) translated" % (translated, total, percentfinished)
+    if numfiles is not None:
+      statssummary = ("%d files, " % numfiles) + statssummary
     if total and self.showchecks:
-      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, "%s/translate.html?" % basename))
+      if basename.endswith("/"):
+        checklinkbase = basename + "translate.html?"
+      else:
+        checklinkbase = basename + "?translate=1"
+      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, checklinkbase))
       statssummary += "<br/>" + statsdetails
-    stats = pagelayout.ItemStatistics(statssummary)
-    return pagelayout.Item([body, stats])
+    return pagelayout.ItemStatistics(statssummary)
 
   def getcheckdetails(self, projectstats, checklinkbase):
     """return a list of strings describing the results of checks"""
@@ -208,37 +245,4 @@ class ProjectIndex(pagelayout.PootlePage):
         checklink = "<a href='%s%s=1'>%s</a>" % (checklinkbase, checkname, checkname)
         stats = "%d strings (%d%%) failed" % (checkcount, (checkcount * 100 / total))
         yield "%s: %s" % (checklink, stats)
-
-  def getfileitem(self, fileentry):
-    # calculate statistics
-    pofilenames = [fileentry]
-    projectstats = self.project.calculatestats(pofilenames)
-    translated = projectstats.get("translated", 0)
-    total = projectstats.get("total", 0)
-    percentfinished = (translated*100/max(total, 1))
-    # title and action links
-    basename = os.path.basename(fileentry)
-    bodytitle = '<h3 class="title">%s</h3>' % basename
-    viewlink = widgets.Link('%s?translate=1&view=1' % basename, 'View')
-    checkslink = widgets.Link("%s?index=1&showchecks=1" % basename, "Checks")
-    translatelink = widgets.Link('%s?translate=1' % basename, 'Translate All')
-    actionlinks = [viewlink, checkslink, translatelink]
-    if projectstats.get("has-suggestion", 0):
-      reviewlink = widgets.Link("%s?translate=1&review=1&has-suggestion=1" % basename, "Review Suggestions")
-      actionlinks.append(reviewlink)
-    if translated < total:
-      quicklink = widgets.Link('%s?translate=1&fuzzy=1&blank=1' % basename, 'Quick Translate')
-      actionlinks.append(quicklink)
-    downloadlink = widgets.Link(basename, 'PO file')
-    csvname = basename.replace(".po", ".csv")
-    csvlink = widgets.Link(csvname, 'CSV file')
-    bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink])
-    body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    # statistics
-    statssummary = "%d/%d strings (%d%%) translated" % (translated, total, percentfinished)
-    if total and self.showchecks:
-      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, '%s?translate=1&' % basename))
-      statssummary += "<br/>" + statsdetails
-    stats = pagelayout.ItemStatistics(statssummary)
-    return pagelayout.Item([body, stats])
 
