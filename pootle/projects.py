@@ -53,7 +53,6 @@ class TranslationProject:
 
   def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
     """gets a list of pofilenames, optionally filtering with the parent directory"""
-    print dirfilter
     if dirfilter is None:
       pofilenames = self.pofilenames
     else:
@@ -283,7 +282,34 @@ class POTree:
   def __init__(self, instance):
     self.languages = instance.languages
 
+  def haslanguage(self, languagecode):
+    """checks if this language exists"""
+    return hasattr(self.languages, languagecode)
 
+  def getlanguage(self, languagecode):
+    """returns the language object"""
+    return getattr(self.languages, languagecode)
+
+  def getlanguages(self):
+    """returns a dictionary mapping language code to language object"""
+    return dict(self.languages.iteritems())
+
+  def getprojects(self, languagecode):
+    """returns a dictionary mapping project code to project object for the given language"""
+    language = self.getlanguage(languagecode)
+    return dict(language.projects.iteritems())
+
+  def hasproject(self, languagecode, projectcode):
+    """returns whether the project exists for the language"""
+    if not self.haslanguage(languagecode):
+      return False
+    language = self.getlanguage(languagecode)
+    return hasattr(language.projects, projectcode)
+
+  def getproject(self, languagecode, projectcode):
+    """returns the project object for the languagecode and projectcode"""
+    language = self.getlanguage(languagecode)
+    return getattr(language.projects, projectcode)
 
 projects = {}
 
