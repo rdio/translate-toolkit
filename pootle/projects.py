@@ -712,6 +712,9 @@ class POTree:
       return False
     try:
       podir = self.getpodir(languagecode, projectcode)
+      search = self.getdirpattern(languagecode, projectcode)
+      if getattr(search, "dirstyle", "standard") == "gnu":
+        return len(self.getpofiles(languagecode, projectcode)) > 0
       return True
     except IndexError:
       return False
