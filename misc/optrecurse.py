@@ -20,6 +20,7 @@
 
 import sys
 import os.path
+import fnmatch
 try:
   import optparse
   if optparse.__version__ < "1.4.1+":
@@ -134,6 +135,10 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     inputoption.optionalswitch = True
     inputoption.required = True
     self.define_option(inputoption)
+    excludeoption = optparse.Option("-x", "--exclude", dest="exclude", action="append",
+                    type="string", default=[], metavar="EXCLUDE",
+                    help="exclude names matching EXCLUDE from input paths")
+    self.define_option(excludeoption)
     outputformathelp = self.getformathelp(outputformats)
     outputoption = optparse.Option("-o", "--output", dest="output", default=None, metavar="OUTPUT",
                     help="write to OUTPUT in %s" % (outputformathelp))
@@ -408,12 +413,22 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     if not os.path.isdir(fullpath):
       self.mkdir(options.output, subdir)
 
+  def isexcluded(self, options, inputpath):
+    """checks if this path has been excluded"""
+    basename = os.path.basename(inputpath)
+    for excludename in options.exclude:
+      if fnmatch.fnmatch(basename, excludename):
+        return True
+    return False
+
   def recurseinputfilelist(self, options):
     """use a list of files, and find a common base directory for them"""
     # find a common base directory for the files to do everything relative to
     commondir = os.path.dirname(os.path.commonprefix(options.input))
     inputfiles = []
     for inputfile in options.input:
+      if self.isexcluded(options, inputfile):
+        continue
       if inputfile.startswith(commondir+os.sep):
         inputfiles.append(inputfile.replace(commondir+os.sep, "", 1))
       else:
@@ -432,6 +447,8 @@ class RecursiveOptionParser(optparse.OptionParser, object):
       dirs = []
       for name in names:
         inputpath = join(top, name)
+        if self.isexcluded(options, inputpath):
+          continue
         fullinputpath = self.getfullinputpath(options, inputpath)
         # handle directories...
         if os.path.isdir(fullinputpath):
