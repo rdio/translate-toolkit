@@ -20,12 +20,8 @@
 
 """simple script to convert a gettext .po localization file to a comma-separated values (.csv) file"""
 
-from translate.convert import po2csvmod
+from translate.convert import po2csv
 
 if __name__ == '__main__':
-  # handle command line options
-  from translate.convert import convert
-  formats = {"po":("csv", po2csvmode.convertcsv)}
-  parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
-  parser.run()
+  po2csv.main()
 

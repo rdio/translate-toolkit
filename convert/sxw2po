@@ -19,76 +19,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-from translate.storage import po
-from translate.misc import quote
-from translate.convert import convert
-from translate.misc import xmlwrapper
-import sre
-import zipfile
+"""extracts localizable strings from openoffice sxw files to Gettext .po files
+You can convert them back yourself :-)"""
 
-class OpenOfficeDocument(xmlwrapper.XMLWrapper):
-  def __init__(self, xmlstring, startnum=0):
-    root = xmlwrapper.BuildTree(xmlstring)
-    xmlwrapper.XMLWrapper.__init__(self, root)
-    if self.tag != "document-content": raise ValueError("root %r != 'document-content'" % self.tag)
-    self.body = self.getchild("body")
+from translate.convert import sxw2po
 
-  def excludeiterator(self, obj, excludetags):
-    nodes = []
-    for node in obj._children:
-      if xmlwrapper.splitnamespace(node.tag)[1] not in excludetags:
-        nodes.append(node)
-        nodes.extend(self.excludeiterator(node, excludetags))
-    return nodes
-
-  def getmessages(self):
-    nodes = self.excludeiterator(self.body.obj, ["tracked-changes"])
-    paragraphs = []
-    for node in nodes:
-      childns, childtag = xmlwrapper.splitnamespace(node.tag)
-      if childtag == "p":
-        paragraphs.append(xmlwrapper.XMLWrapper(node))
-    messages = []
-    for child in paragraphs:
-      text = child.getplaintext().strip()
-      messages.append(text)
-    return messages
-
-class sxw2po:
-  def convertfile(self, inputfile, filename):
-    """converts a file to .po format"""
-    thepofile = po.pofile()
-    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-    thepofile.poelements.append(headerpo)
-    try:
-      z = zipfile.ZipFile(filename, 'r')
-      contents = z.read("content.xml")
-    except (ValueError, zipfile.BadZipfile):
-      contents = open(filename, 'r').read()
-    sxwdoc = OpenOfficeDocument(contents)
-    blocknum = 0
-    for message in sxwdoc.getmessages():
-      if not message: continue
-      blocknum += 1
-      thepo = po.poelement()
-      thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum))
-      thepo.msgid = [quote.quotestr(quote.rstripeol(message), escapeescapes=1)]
-      if len(thepo.msgid) > 1:
-        thepo.msgid = [quote.quotestr("")] + thepo.msgid
-      thepo.msgstr = []
-      thepofile.poelements.append(thepo)
-    return thepofile
-
-def convertsxw(inputfile, outputfile, templates):
-  """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
-  convertor = sxw2po()
-  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"))
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
-  return 1
-
-if __name__ == "__main__":
-  formats = {"sxw":("po",convertsxw)}
-  parser = convert.ConvertOptionParser(formats, description=__doc__)
-  parser.run()
+if __name__ == '__main__':
+  sxw2po.main()
 

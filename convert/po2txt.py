@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+#
+# Copyright 2002-2004 Zuza Software Foundation
+# 
+# This file is part of translate.
+#
+# translate is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# translate is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with translate; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+"""script to translate a set of plain text message files using gettext .po localization
+You can generate the po files using txt2po"""
+
+from translate.storage import po
+from translate.misc import quote
+from translate.convert import convert
+import os
+try:
+  import textwrap
+except:
+  textwrap = None
+
+class po2txt:
+  """po2txt can take a po file and generate txt. best to give it a template file otherwise will just concat msgstrs"""
+  def convertmessage(self, message):
+    """converts a po message to a string"""
+    return po.getunquotedstr(message, includeescapes=False)
+
+  def wrapmessage(self, message):
+    """rewraps text as required"""
+    if self.wrap is None:
+      return message
+    return "\n".join([textwrap.fill(line, self.wrap, replace_whitespace=False) for line in message.split("\n")])
+
+  def convertfile(self, inputpo):
+    """converts a file to .po format"""
+    txtresult = ""
+    for thepo in inputpo.poelements:
+      if thepo.isheader():
+        continue
+      txtresult += self.wrapmessage(self.convertmessage(thepo.msgstr)) + "\n" + "\n"
+    return txtresult
+ 
+  def mergefile(self, inputpo, templatetext):
+    """converts a file to .po format"""
+    txtresult = templatetext
+    # TODO: make a list of blocks of text and translate them individually
+    # rather than using replace
+    for thepo in inputpo.poelements:
+      if thepo.isheader():
+        continue
+      msgid = self.convertmessage(thepo.msgid)
+      msgstr = self.wrapmessage(self.convertmessage(thepo.msgstr))
+      txtresult = txtresult.replace(msgid, msgstr)
+    return txtresult
+
+def converttxt(inputfile, outputfile, templatefile, wrap=None):
+  """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
+  inputpo = po.pofile(inputfile)
+  convertor = po2txt()
+  po2txt.wrap = wrap
+  if templatefile is None:
+    outputtxt = convertor.convertfile(inputpo)
+  else:
+    templatetext = templatefile.read()
+    outputtxt = convertor.mergefile(inputpo, templatetext)
+  outputfilepos = outputfile.tell()
+  outputfile.write(outputtxt)
+  return 1
+
+def main():
+  formats = {("po", "txt"):("txt",converttxt), ("po"):("txt",converttxt)}
+  parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
+  if textwrap is not None:
+    parser.add_option("-w", "--wrap", dest="wrap", default=None, type="int",
+                      help="set number of columns to wrap text at", metavar="WRAP")
+    parser.passthrough.append("wrap")
+  parser.run()
+

@@ -84,3 +84,9 @@ def convertcsv(inputfile, outputfile, templatefile):
   outputfile.writelines(outputcsvlines)
   return 1
 
+def main():
+  from translate.convert import convert
+  formats = {"po":("csv", po2csv.convertcsv)}
+  parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
+  parser.run()
+
