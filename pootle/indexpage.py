@@ -83,6 +83,9 @@ class ProjectIndex(pagelayout.PootlePage):
     browselink = widgets.Link("index.html", "Browse")
     checkslink = widgets.Link("index.html?showchecks=1", "Checks")
     quicklink = widgets.Link("translate.html?fuzzy=1&blank=1", "Quick Translate")
+    message = argdict.get("message", [])
+    if message:
+      message = pagelayout.IntroText(message)
     processlinks = pagelayout.IntroText([browselink, checkslink, quicklink])
     if dirfilter is None:
       depth = 0
@@ -98,7 +101,7 @@ class ProjectIndex(pagelayout.PootlePage):
     for childfile in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
       fileentry = self.getfileitem(childfile)
       fileentries.append(fileentry)
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [processlinks, direntries, fileentries], session, bannerheight=81)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, processlinks, direntries, fileentries], session, bannerheight=81)
 
   def getdiritem(self, direntry):
     basename = os.path.basename(direntry)

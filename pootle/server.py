@@ -126,11 +126,19 @@ class PootleServer(OptionalLoginAppServer):
             dirfilter = os.path.join(*pathwords[:-1])
 	  else:
 	    dirfilter = ""
-          return translatepage.TranslatePage(project, session, argdict, dirfilter)
+          try:
+            return translatepage.TranslatePage(project, session, argdict, dirfilter)
+          except StopIteration, stoppedby:
+            argdict["message"] = str(stoppedby)
+            return indexpage.ProjectIndex(project, session, argdict, dirfilter)
 	elif bottom.endswith(".po"):
 	  pofilename = os.path.join(*pathwords)
 	  if argdict.get("translate", 0):
-            return translatepage.TranslatePage(project, session, argdict, dirfilter=pofilename)
+            try:
+              return translatepage.TranslatePage(project, session, argdict, dirfilter=pofilename)
+            except StopIteration, stoppedby:
+              argdict["message"] = str(stoppedby)
+              return indexpage.ProjectIndex(project, session, argdict, dirfilter=pofilename)
 	  elif argdict.get("index", 0):
             return indexpage.ProjectIndex(project, session, argdict, dirfilter=pofilename)
 	  else:

@@ -76,7 +76,13 @@ class TranslatePage(pagelayout.PootlePage):
     self.addtransrow(-1, origtitle, transtitle)
     item = self.argdict.get("item", None)
     if item is None:
-      self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem(self.dirfilter, self.matchnames)
+      try:
+        self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem(self.dirfilter, self.matchnames)
+      except StopIteration:
+        if self.translationsession.lastitem is None:
+          raise StopIteration("There are no items matching that search")
+        else:
+          raise StopIteration("You have finished going through the items you selected")
     else:
       if not item.isdigit():
         raise ValueError("Invalid item given")
