@@ -446,17 +446,19 @@ class RecursiveOptionParser(optparse.OptionParser, object):
       dirstack.extend(dirs)
     return inputfiles
 
-  def splitinputext(self, inputpath):
-    """splits an inputpath into name and extension"""
-    root, ext = os.path.splitext(inputpath)
+  def splitext(self, pathname):
+    """splits into name and ext, and removes the extsep"""
+    root, ext = os.path.splitext(pathname)
     ext = ext.replace(os.extsep, "", 1)
     return (root, ext)
 
+  def splitinputext(self, inputpath):
+    """splits an inputpath into name and extension"""
+    return self.splitext(inputpath)
+
   def splittemplateext(self, templatepath):
     """splits a templatepath into name and extension"""
-    root, ext = os.path.splitext(templatepath)
-    ext = ext.replace(os.extsep, "", 1)
-    return (root, ext)
+    return self.splitext(templatepath)
 
   def templateexists(self, options, templatepath):
     """returns whether the given template exists..."""
