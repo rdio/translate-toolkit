@@ -102,7 +102,9 @@ class poelement:
     linesprocessed = 0
     for line in lines:
       linesprocessed += 1
-      if line[0] == '#':
+      if len(line) == 0:
+        continue
+      elif line[0] == '#':
         if inmsgstr:
           # if we're already in the message string, this is from the next element
           break
@@ -191,6 +193,15 @@ class pofile:
       polines = inputfile.readlines()
       inputfile.close()
       self.fromlines(polines)
+
+  def isempty(self):
+    """returns whether the po file doesn't contain any definitions..."""
+    if len(self.poelements) == 0:
+      return 1
+    elif len(self.poelements) == 1:
+      return self.poelements[0].isheader()
+    else:
+      return 0
 
   def fromlines(self,lines):
     start = 0
