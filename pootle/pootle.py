@@ -19,6 +19,7 @@ class PootleServer(users.OptionalLoginAppServer):
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=users.LoginPage):
     if sessioncache is None:
       sessioncache = session.SessionCache(sessionclass=users.ActivateSession)
+    self.localedomains = ["jToolkit", "pootle"]
     super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     self.potree = projects.POTree(self.instance)
 
