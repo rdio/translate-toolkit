@@ -232,8 +232,8 @@ class SetupIndex(SetupParser):
             index.filemodules[fileentry].append(module)
     for index in indexes:
       for directory in directoriestorename:
-        suffix = "_" + sparse.stringeval(index.getfieldvalue(directory, "HostName"))
-        suffix = self.keymunge(suffix)
+        suffix = "_" + index.isocode
+        suffix = self.keymunge("_" + index.isocode)
         if directory.find('_Language') != -1:
           newname = directory.replace("_Language", suffix)
         elif directory.find('_Lang') != -1:
