@@ -181,7 +181,7 @@ def mozillapropertiesdecode(source):
     """Returns a Unicode string of one character with ordinal 32 <= i, otherwise an escaped control character"""
     if 32 <= i:
       return unichr(i)
-    elif unichr(i) in "\b\f\t\n\v\a":
+    elif unichr(i) in "\t\n":
       return unichr(i)
     else:
       return "\\u%04x" % i
