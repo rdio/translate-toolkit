@@ -10,6 +10,7 @@ from translate.convert import po2csv
 from translate.convert import pot2po
 from translate.tools import pocompile
 from translate.tools import pogrep
+from translate.pootle import versioncontrol
 from jToolkit import timecache
 import time
 import os
@@ -616,6 +617,30 @@ class TranslationProject:
       outfile.close()
       self.scanpofiles()
 
+  def updatepofile(self, dirname, pofilename):
+    """updates an individual PO file from version control"""
+    pathname = self.getuploadpath(dirname, pofilename)
+    # read from version control
+    contents = versioncontrol.getcleanfile(pathname)
+    if os.path.exists(pathname):
+      popath = os.path.join(dirname, pofilename)
+      origpofile = self.getpofile(popath)
+      newpofile = pootlefile(self, popath)
+      infile = cStringIO.StringIO(contents)
+      newpofile.parse(infile)
+      newpofile.transelements = [poel for poel in newpofile.poelements if not (poel.isheader() or poel.isblank())]
+      newpofile.classifyelements()
+      newpofile.filename = origpofile.filename
+      # this will overwrite the old file!
+      newpofile.savepofile()
+      # TODO: get the real username here
+      newpofile.mergefile(origpofile, "localpootle")
+    else:
+      outfile = open(pathname, "wb")
+      outfile.write(contents)
+      outfile.close()
+      self.scanpofiles()
+
   def converttemplates(self):
     """creates PO files from the templates"""
     projectdir = os.path.join(self.potree.podirectory, self.projectcode)
@@ -661,7 +686,7 @@ class TranslationProject:
       if os.path.exists(tempzipfile):
         os.remove(tempzipfile)
     # but if it doesn't work, we can do it from python
-    import cStringIO, zipfile
+    import zipfile
     archivecontents = cStringIO.StringIO()
     archive = zipfile.ZipFile(archivecontents, 'w', zipfile.ZIP_DEFLATED)
     for pofilename in pofilenames:
@@ -682,7 +707,7 @@ class TranslationProject:
       if os.path.exists(tempzipfile):
         os.remove(tempzipfile)
     # but if it doesn't work, we can do it from python
-    import cStringIO, zipfile
+    import zipfile
     archivefile = cStringIO.StringIO(archivecontents)
     archive = zipfile.ZipFile(archivefile, 'r')
     # TODO: find a better way to return errors...
@@ -690,7 +715,6 @@ class TranslationProject:
       if not filename.endswith(os.extsep + "po"):
         print "error adding %s: not a .po file" % filename
         continue
-      pathname = os.path.join(self.podir, dirname, filename)
       contents = archive.read(filename)
       subdirname, pofilename = os.path.dirname(filename), os.path.basename(filename)
       try:

@@ -582,6 +582,15 @@ class ProjectIndex(pagelayout.PootlePage):
       else:
         raise ValueError("can only upload PO files and zips of PO files")
       del self.argdict["doupload"]
+    if "doupdate" in self.argdict:
+      updatefile = self.argdict.pop("updatefile", None)
+      if not updatefile:
+        raise ValueError("cannot update file, no file specified")
+      if updatefile.endswith(".po"):
+        self.project.updatepofile(self.dirname, updatefile)
+      else:
+        raise ValueError("can only update PO files")
+      del self.argdict["doupdate"]
 
   def getboolarg(self, argname, default=False):
     """gets a boolean argument from self.argdict"""
@@ -701,12 +710,15 @@ class ProjectIndex(pagelayout.PootlePage):
     downloadlink = widgets.Link(basename, self.localize('PO file'))
     csvname = basename.replace(".po", ".csv")
     csvlink = widgets.Link(csvname, self.localize('CSV file'))
+    actionlinks += [downloadlink, csvlink]
     if self.project.hascreatemofiles(self.project.projectcode) and "pocompile" in self.rights:
       moname = basename.replace(".po", ".mo")
       molink = widgets.Link(moname, self.localize('MO file'))
-      bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink, molink])
-    else:
-      bodydescription = pagelayout.ActionLinks(actionlinks + [downloadlink, csvlink])
+      actionlinks.append(molink)
+    if self.session.session.issiteadmin():
+      updatelink = widgets.Link("index.html?doupdate=1&updatefile=%s" % basename, self.localize('Update'))
+      actionlinks.append(updatelink)
+    bodydescription = pagelayout.ActionLinks(actionlinks)
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(basename, projectstats, None)
     return pagelayout.Item([body, stats])
