@@ -532,7 +532,7 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       pofilenames = self.project.browsefiles(dirfilter)
       projectstats = self.project.calculatestats(pofilenames)
-      actionlinks = self.getactionlinks("", projectstats, ["review", "check", "assign", "quick", "all"])
+      actionlinks = self.getactionlinks("", projectstats, ["review", "check", "assign", "quick", "all", "zip"], dirfilter)
       actionlinks = pagelayout.ActionLinks(actionlinks)
       mainstats = self.getitemstats("", projectstats, len(pofilenames))
       mainicon = pagelayout.Icon("folder.png")
@@ -545,7 +545,6 @@ class ProjectIndex(pagelayout.PootlePage):
       self.addassignbox()
     if session.issiteadmin():
       self.adduploadbox()
-    self.addnavlinks(dirfilter)
 
   def handleactions(self):
     """handles the given actions that must be taken (changing operations)"""
@@ -621,19 +620,6 @@ class ProjectIndex(pagelayout.PootlePage):
     # TODO: check escaping
     link += "&".join(["%s=%s" % (arg, value) for arg, value in combinedargs.iteritems()])
     return link
-
-  def addnavlinks(self, dirfilter):
-    """add navigation links to the sidebar"""
-    if dirfilter and dirfilter.endswith(".po"):
-      currentfolder = "/".join(dirfilter.split("/")[:-1])
-    else:
-      currentfolder = dirfilter
-    if "archive" in self.rights:
-      if currentfolder:
-        archivename = "%s-%s-%s.zip" % (self.project.projectcode, self.project.languagecode, currentfolder.replace("/", "-"))
-      else:
-        archivename = "%s-%s.zip" % (self.project.projectcode, self.project.languagecode)
-      self.addfolderlinks(self.localize("zip of folder"), archivename, archivename, enhancelink=False)
 
   def addfolderlinks(self, title, foldername, folderlink, tooltip=None, enhancelink=True):
     """adds a folder link to the sidebar"""
@@ -730,7 +716,7 @@ class ProjectIndex(pagelayout.PootlePage):
     else:
       return self.makelink(basename, translate=1, view=1)
 
-  def getactionlinks(self, basename, projectstats, linksrequired=None):
+  def getactionlinks(self, basename, projectstats, linksrequired=None, filepath=None):
     """get links to the actions that can be taken on an item (directory / file)"""
     if linksrequired is None:
       linksrequired = ["review", "quick", "all"]
@@ -776,6 +762,17 @@ class ProjectIndex(pagelayout.PootlePage):
     if "all" in linksrequired and "translate" in self.rights:
       translatelink = widgets.Link(self.makelink(baseactionlink), self.localize('Translate All'))
       actionlinks.append(translatelink)
+    if "zip" in linksrequired and "archive" in self.rights:
+      if filepath and filepath.endswith(".po"):
+        currentfolder = "/".join(filepath.split("/")[:-1])
+      else:
+        currentfolder = filepath
+      if currentfolder:
+        archivename = "%s-%s-%s.zip" % (self.project.projectcode, self.project.languagecode, currentfolder.replace("/", "-"))
+      else:
+        archivename = "%s-%s.zip" % (self.project.projectcode, self.project.languagecode)
+      ziplink = widgets.Link(archivename, self.localize('ZIP of folder'), {'title': archivename})
+      actionlinks.append(ziplink)
     return actionlinks
 
   def getitemstats(self, basename, projectstats, numfiles):
