@@ -41,9 +41,10 @@ def simplify(string):
 
 class csv2po:
   """a class that takes translations from a .csv file and puts them in a .po file"""
-  def __init__(self, templatepo=None):
+  def __init__(self, templatepo=None, charset=None):
     """construct the converter..."""
     self.pofile = templatepo
+    self.charset = charset
     if self.pofile is not None:
       self.unmatched = 0
       self.makeindex()
@@ -135,8 +136,17 @@ class csv2po:
       mergemode = False
     else:
       mergemode = True
+    if self.pofile.poelements and self.pofile.poelements[0].isheader():
+      headerpo = self.pofile.poelements[0]
+      headerpo.msgstr = [line.replace("CHARSET", "UTF-8").replace("ENCODING", "8bit") for line in headerpo.msgstr]
+    else:
+      headerpo = self.pofile.makeheader(charset="UTF-8", encoding="8bit")
+    headerpo.othercomments.append("# extracted from %s\n" % thecsvfile.filename)
     mightbeheader = True
     for thecsv in thecsvfile.csvelements:
+      if self.charset is not None:
+        thecsv.msgid = thecsv.msgid.decode(self.charset)
+        thecsv.msgstr = thecsv.msgstr.decode(self.charset)
       if mightbeheader:
         # ignore typical header strings...
         mightbeheader = False
@@ -160,14 +170,14 @@ class csv2po:
       if thepo.isblankmsgstr():
         missing += 1
 
-def convertcsv(inputfile, outputfile, templatefile):
+def convertcsv(inputfile, outputfile, templatefile, charset=None):
   """reads in inputfile using csvl10n, converts using csv2po, writes to outputfile"""
   inputcsv = csvl10n.csvfile(inputfile)
   if templatefile is None:
-    convertor = csv2po()
+    convertor = csv2po(charset=charset)
   else:
     templatepo = po.pofile(templatefile)
-    convertor = csv2po(templatepo)
+    convertor = csv2po(templatepo, charset=charset)
   outputpo = convertor.convertfile(inputcsv)
   if outputpo.isempty():
     return 0
@@ -180,5 +190,8 @@ def main():
   formats = {("csv", "po"): ("po", convertcsv), ("csv", "pot"): ("po", convertcsv), 
              ("csv", None): ("po", convertcsv)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
+  parser.add_option("", "--charset", dest="charset", default=None,
+    help="set charset to decode from csv files", metavar="CHARSET")
+  parser.passthrough.append("charset")
   parser.run()
 
