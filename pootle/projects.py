@@ -854,7 +854,6 @@ class TranslationProject:
 
   def ugettext(self, message):
     """gets the translation of the message by searching through all the pofiles (unicode version)"""
-    print "searching for", repr(message), self.languagecode
     for pofilename, pofile in self.pofiles.iteritems():
       if pofile.pomtime != getmodtime(pofile.filename):
         pofile.readpofile()
@@ -866,13 +865,10 @@ class TranslationProject:
         continue
       tmsg = po.unquotefrompo(thepo.msgstr)
       if tmsg is not None:
-        print "found translation", repr(tmsg)
         if isinstance(tmsg, unicode):
           return tmsg
         else:
-          print repr(tmsg), repr(pofile.encoding)
           return unicode(tmsg, pofile.encoding)
-    print "not found"
     return unicode(message)
 
 class POTree:
