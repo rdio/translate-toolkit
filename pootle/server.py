@@ -125,7 +125,7 @@ class PootleServer(OptionalLoginAppServer):
         else:
           top = ""
         if not top or top == "index.html":
-	  return indexpage.ProjectIndex(project, session)
+	  return indexpage.ProjectIndex(project, session, argdict)
 	elif bottom == "translate.html":
 	  if len(pathwords) > 1:
             dirfilter = os.path.join(*pathwords[:-1])
@@ -136,6 +136,8 @@ class PootleServer(OptionalLoginAppServer):
 	  pofilename = os.path.join(*pathwords)
 	  if argdict.get("translate", 0):
             return translatepage.TranslatePage(language, project, session, argdict, dirfilter=pofilename)
+	  elif argdict.get("index", 0):
+            return indexpage.ProjectIndex(project, session, argdict, dirfilter=pofilename)
 	  else:
 	    contents = translationproject.getsource(pofilename)
 	    page = widgets.PlainContents(contents)
@@ -152,15 +154,9 @@ class PootleServer(OptionalLoginAppServer):
             dirfilter = os.path.join(*pathwords[:-1])
           else:
             dirfilter = None
-	  return indexpage.ProjectIndex(project, session, dirfilter)
-	elif bottom == "checks.html":
-          if len(pathwords) > 1:
-            dirfilter = os.path.join(*pathwords[:-1])
-          else:
-            dirfilter = None
-	  return indexpage.ProjectIndex(project, session, dirfilter, showchecks=1)
+	  return indexpage.ProjectIndex(project, session, argdict, dirfilter)
 	else:
-	  return indexpage.ProjectIndex(project, session, os.path.join(*pathwords))
+	  return indexpage.ProjectIndex(project, session, argdict, os.path.join(*pathwords))
     return None
 
 if __name__ == '__main__':

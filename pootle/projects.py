@@ -49,10 +49,11 @@ class TranslationProject:
 
   def browsefiles(self, dirfilter=None, depth=None, maxdepth=None, includedirs=False, includefiles=True):
     """gets a list of pofilenames, optionally filtering with the parent directory"""
+    print dirfilter
     if dirfilter is None:
       pofilenames = self.pofilenames
     else:
-      if not dirfilter.endswith(os.path.sep):
+      if not dirfilter.endswith(os.path.sep) and not dirfilter.endswith(os.path.extsep + "po"):
         dirfilter += os.path.sep
       pofilenames = [pofilename for pofilename in self.pofilenames if pofilename.startswith(dirfilter)]
     if includedirs:

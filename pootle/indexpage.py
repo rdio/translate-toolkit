@@ -72,19 +72,23 @@ class LanguageIndex(pagelayout.PootlePage):
 
 class ProjectIndex(pagelayout.PootlePage):
   """the main page"""
-  def __init__(self, project, session, dirfilter=None, showchecks=0):
+  def __init__(self, project, session, argdict, dirfilter=None):
     self.project = project
     self.instance = session.instance
     self.translationproject = projects.getproject(self.project)
-    self.showchecks = showchecks
+    self.showchecks = argdict.get("showchecks", 0)
+    if isinstance(self.showchecks, str) and self.showchecks.isdigit():
+      self.showchecks = int(self.showchecks)
     browselink = widgets.Link("index.html", "Browse")
-    checkslink = widgets.Link("checks.html", "Checks")
+    checkslink = widgets.Link("index.html?showchecks=1", "Checks")
     quicklink = widgets.Link("translate.html?fuzzy=1&blank=1", "Quick Translate")
     processlinks = pagelayout.IntroText([browselink, checkslink, quicklink])
     if dirfilter is None:
       depth = 0
     else:
-      depth = dirfilter.count(os.path.sep) + 1
+      depth = dirfilter.count(os.path.sep)
+      if not dirfilter.endswith(os.path.extsep + "po"):
+        depth += 1
     direntries = []
     fileentries = []
     for childdir in self.translationproject.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=False):
@@ -99,7 +103,7 @@ class ProjectIndex(pagelayout.PootlePage):
     basename = os.path.basename(direntry)
     bodytitle = '<h3 class="title">%s</h3>' % basename
     browselink = widgets.Link(basename+"/", 'Browse')
-    checkslink = widgets.Link("%s/checks.html" % basename, "Checks")
+    checkslink = widgets.Link("%s/index.html?showchecks=1" % basename, "Checks")
     quicklink = widgets.Link("%s/translate.html?fuzzy=1&blank=1" % basename, "Quick Translate")
     bodydescription = pagelayout.ItemDescription([browselink, checkslink, quicklink])
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
@@ -131,11 +135,13 @@ class ProjectIndex(pagelayout.PootlePage):
   def getfileitem(self, fileentry):
     basename = os.path.basename(fileentry)
     bodytitle = '<h3 class="title">%s</h3>' % basename
-    browselink = widgets.Link('%s?translate=1&fuzzy=1&blank=1' % basename, 'Quick Translate')
+    browselink = widgets.Link('%s?translate=1' % basename, 'Browse')
+    checkslink = widgets.Link("%s?index=1&showchecks=1" % basename, "Checks")
+    quicklink = widgets.Link('%s?translate=1&fuzzy=1&blank=1' % basename, 'Quick Translate')
     downloadlink = widgets.Link(basename, 'PO file')
     csvname = basename.replace(".po", ".csv")
     csvlink = widgets.Link(csvname, 'CSV file')
-    bodydescription = pagelayout.ItemDescription([browselink, downloadlink, csvlink])
+    bodydescription = pagelayout.ItemDescription([browselink, checkslink, quicklink, downloadlink, csvlink])
     pofilenames = [fileentry]
     projectstats = self.translationproject.calculatestats(pofilenames)
     translated = projectstats.get("translated", 0)
