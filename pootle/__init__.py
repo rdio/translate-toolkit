@@ -21,5 +21,5 @@
 """translate.pootle is part of the translate package
 It contains classes that are used to implement a web portal for localisation"""
 
-__all__ = ["server"]
+__all__ = ["pootle"]
 

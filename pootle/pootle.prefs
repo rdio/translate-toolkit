@@ -3,7 +3,7 @@
 
 importmodules:
   pootle = 'translate.pootle'
-  pootleserver = 'translate.pootle.server'
+  pootleserver = 'translate.pootle.pootle'
 
 Pootle:
   serverclass = pootleserver.PootleServer
