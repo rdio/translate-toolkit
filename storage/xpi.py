@@ -25,6 +25,7 @@ import zipfile
 import os.path
 from translate import __version__
 import StringIO
+import sre
 
 # we have some enhancements to zipfile in a file called zipfileext
 # hopefully they will be included in a future version of python
@@ -158,7 +159,8 @@ class XpiFile(ZipFileCatcher):
       kwargs["compression"] = zipfile.ZIP_DEFLATED
     super(XpiFile, self).__init__(*args, **kwargs)
     self.jarfiles = {}
-    self.commonprefix = self.findcommonprefix()
+    self.dirmap = {}
+    self.initdirmap()
     self.jarprefixes = self.findjarprefixes()
     self.reverseprefixes = dict([
       (prefix,jarfilename) for jarfilename, prefix in self.jarprefixes.iteritems() if prefix])
@@ -188,17 +190,43 @@ class XpiFile(ZipFileCatcher):
         if not self.islocfile(filename) and not self.includenonloc: continue
         yield filename
 
-  def findcommonprefix(self):
+  def initdirmap(self):
     """finds the common prefix of all the files stored in the jar files"""
-    return _commonprefix([filename.split('/')[:-1] for filename in self.iterjarcontents()])
-
-  def stripcommonprefix(self, filename):
-    """strips the common prefix off the filename"""
-    fileparts = filename.split('/')
-    fileprefix = fileparts[:len(self.commonprefix)]
-    if fileprefix != self.commonprefix:
-      raise ValueError("cannot strip commonprefix %r from filename %r" % (self.commonprefix, filename))
-    return '/'.join(fileparts[len(self.commonprefix):])
+    dirstructure = {}
+    for filename in self.iterjarcontents():
+      parts = filename.split('/')[:-1]
+      treepoint = dirstructure
+      for partnum in range(len(parts)):
+        part = parts[partnum]
+        if part in treepoint:
+          treepoint = treepoint[part]
+        else:
+          treepoint[part] = {}
+          treepoint = treepoint[part]
+    localematch = sre.compile("[a-z]{2,3}-[a-zA-Z]{2,3}")
+    regmatch = sre.compile("[a-zA-Z]{2,3}")
+    locale = None
+    region = None
+    localeentries = {}
+    if 'locale' in dirstructure:
+      for dirname in dirstructure['locale']:
+        localeentries[dirname] = 1
+        if localematch.match(dirname):
+          if locale is None:
+            locale = dirname
+          else:
+            locale = 0
+        elif regmatch.match(dirname):
+          if region is None:
+            region = dirname
+          else:
+            region = 0
+    if locale:
+      self.dirmap[('locale', locale)] = ('lang-reg',)
+      del localeentries[locale]
+    if region:
+      self.dirmap[('locale', region)] = ('reg',)
+      del localeentries[region]
 
   def findjarprefixes(self):
     """checks the uniqueness of the jar files contents"""
@@ -234,11 +262,39 @@ class XpiFile(ZipFileCatcher):
     """converts an os-style filepath to a zipfile filepath"""
     return '/'.join(ospath.split(os.sep))
 
+  def mapfilename(self, filename):
+    """uses a map to simplify the directory structure"""
+    parts = tuple(filename.split('/'))
+    possiblematch = None
+    for prefix, mapto in self.dirmap.iteritems():
+      if parts[:len(prefix)] == prefix:
+        if possiblematch is None or len(possiblematch[0]) < len(prefix):
+          possiblematch = prefix, mapto
+    if possiblematch is not None:
+      prefix, mapto = possiblematch
+      mapped = mapto + parts[len(prefix):]
+      return '/'.join(mapped)
+    return filename
+
+  def reversemapfile(self, filename):
+    """unmaps the filename..."""
+    possiblematch = None
+    parts = tuple(filename.split('/'))
+    for prefix, mapto in self.dirmap.iteritems():
+      if parts[:len(mapto)] == mapto:
+        if possiblematch is None or len(possiblematch[0]) < len(mapto):
+          possiblematch = (mapto, prefix)
+    if possiblematch is None:
+      return filename
+    mapto, prefix = possiblematch
+    reversemapped = prefix + parts[len(mapto):]
+    return '/'.join(reversemapped)
+
   def jartoospath(self, jarfilename, filename):
     """converts a filename from within a jarfile to an os-style filepath"""
     if jarfilename:
       jarprefix = self.jarprefixes[jarfilename]
-      return self.ziptoospath(jarprefix+self.stripcommonprefix(filename))
+      return self.ziptoospath(jarprefix+self.mapfilename(filename))
     else:
       return self.ziptoospath(filename)
 
@@ -248,13 +304,13 @@ class XpiFile(ZipFileCatcher):
     prefix = zipparts[0] + '/'
     if prefix in self.reverseprefixes:
       jarfilename = self.reverseprefixes[prefix]
-      filename = '/'.join(self.commonprefix + zipparts[1:])
+      filename = self.reversemapfile('/'.join(zipparts[1:]))
       return jarfilename, filename
     else:
       filename = self.ostozippath(ospath)
       if filename in self.namelist():
         return None, filename
-      filename = '/'.join(self.commonprefix + zipparts)
+      filename = self.reversemapfile('/'.join(zipparts))
       possiblejarfilenames = [jarfilename for jarfilename, prefix in self.jarprefixes.iteritems() if not prefix]
       for jarfilename in possiblejarfilenames:
         jarfile = self.jarfiles[jarfilename]
@@ -358,9 +414,6 @@ class XpiFile(ZipFileCatcher):
       for filename in jarfile.namelist():
         if filename.endswith('/'):
           if not includedirs: continue
-          elif len(filename.split('/'))-1 < len(self.commonprefix): continue
-          # no point generating an error because a directory doesn't match the commonprefix...
-          elif filename.split('/')[:len(self.commonprefix)] != self.commonprefix: continue
         if not self.islocfile(filename) and not self.includenonloc: continue
         yield self.jartoospath(jarfilename, filename)
 
@@ -373,6 +426,8 @@ if __name__ == '__main__':
   optparser.usage = "%prog [-l|-x] [options] file.xpi"
   optparser.add_option("-l", "--list", help="list files", \
     action="store_true", dest="listfiles", default=False)
+  optparser.add_option("-p", "--prefix", help="show common prefix", \
+    action="store_true", dest="showprefix", default=False)
   optparser.add_option("-x", "--extract", help="extract files", \
     action="store_true", dest="extractfiles", default=False)
   optparser.add_option("-d", "--extractdir", help="extract into EXTRACTDIR", \
@@ -381,19 +436,18 @@ if __name__ == '__main__':
   if len(args) < 1:
     optparser.error("need at least one argument")
   xpifile = XpiFile(args[0])
+  if options.showprefix:
+    for prefix, mapto in xpifile.dirmap.iteritems():
+      print "/".join(prefix), "->", "/".join(mapto)
   if options.listfiles:
     for name in xpifile.iterextractnames(includenonjars=True, includedirs=True):
       print name, xpifile.ostojarpath(name)
   if options.extractfiles:
     if options.extractdir and not os.path.isdir(options.extractdir):
       os.mkdir(options.extractdir)
-    for name in xpifile.iterextractnames(includenonjars=True, includedirs=True):
+    for name in xpifile.iterextractnames(includenonjars=True, includedirs=False):
       abspath = os.path.join(options.extractdir, name)
-      if abspath.endswith(os.sep):
-        if not os.path.isdir(abspath):
-          os.mkdir(abspath)
-        continue
-      # check directories exist anyway - some zip files don't store them
+      # check neccessary directories exist - this way we don't create empty directories
       currentpath = options.extractdir
       subparts = os.path.dirname(name).split(os.sep)
       for part in subparts:
