@@ -333,6 +333,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     requiredoptions = self.getrequiredoptions(options)
     if convertmethod(inputfile, outputfile, templatefile, **requiredoptions):
       if tempoutput:
+        self.warning("writing to temporary output...")
         self.finalizetempoutputfile(options, outputfile, fulloutputpath)
       return True
     else:
@@ -460,10 +461,12 @@ class ConvertOptionParser(optparse.OptionParser, object):
 def copyinput(inputfile, outputfile, templatefile, **kwargs):
   """copies the input file to the output file"""
   outputfile.write(inputfile.read())
+  outputfile.close()
   return True
 
 def copytemplate(inputfile, outputfile, templatefile, **kwargs):
   """copies the template file to the output file"""
   outputfile.write(templatefile.read())
+  outputfile.close()
   return True
   

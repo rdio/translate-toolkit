@@ -28,6 +28,7 @@ from translate.convert import po2prop
 from translate.storage import xpi
 from translate import __version__
 from translate.convert import convert
+import StringIO
 
 class MozConvertOptionParser(convert.ConvertOptionParser):
   def __init__(self, formats, usetemplates=False, usepots=False):
@@ -71,11 +72,28 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
       try:
         jarfilename, filename = options.outputxpi.ostojarpath(fulloutputpath)
       except IndexError:
-        self.warning("Could not find where to put %s in output xpi; writing to stdout" % fulloutputpath)
-        return sys.stdout
+        self.warning("Could not find where to put %s in output xpi; writing to tmp" % fulloutputpath)
+        return StringIO.StringIO()
       return options.outputxpi.openoutputstream(jarfilename, filename)
     else:
       return super(MozConvertOptionParser, self).openoutputfile(options, fulloutputpath)
+
+  def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
+    """run an invidividual conversion"""
+    if self.isxpi(options.output):
+      inputfile = self.openinputfile(options, fullinputpath)
+      # TODO: handle writing back to same xpi as input/template
+      templatefile = self.opentemplatefile(options, fulltemplatepath)
+      outputfile = self.openoutputfile(options, fulloutputpath)
+      requiredoptions = self.getrequiredoptions(options)
+      if convertmethod(inputfile, outputfile, templatefile, **requiredoptions):
+        return True
+      else:
+        outputfile.close()
+        os.unlink(fulloutputpath)
+        return False
+    else:
+      return super(MozConvertOptionParser, self).convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
 
   def opentemplatefile(self, options, fulltemplatepath):
     """opens the template file (if required)"""
