@@ -98,7 +98,7 @@ class csv2po:
       print >>sys.stderr, "could not find csv entry in po: %r, %r, %r" % (thecsv.source, thecsv.msgid, thecsv.msgstr)
       self.unmatched += 1
       return
-    thepo.msgstr = [quotecsvstr(quote.doencode(line)) for line in thecsv.msgstr.split('\n')]
+    thepo.msgstr = [quotecsvstr(line) for line in thecsv.msgstr.split('\n')]
 
   def convertfile(self, thecsvfile):
     """converts a csvfile to a pofile, and returns it. uses templatepo if given at construction"""
