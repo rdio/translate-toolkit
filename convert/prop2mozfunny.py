@@ -30,7 +30,10 @@ if wasdefines:
     if pe.isblank():
       sys.stdout.write("\n")
     else:
-      sys.stdout.write("#define %s %s\n" % (pe.name, pe.msgid.replace("\n", "\\n")))
+      definition = "#define %s %s\n" % (pe.name, pe.msgid.replace("\n", "\\n"))
+      if isinstance(definition, unicode):
+        definition = definition.encode("UTF-8")
+      sys.stdout.write(definition)
 elif waspseudoprops:
   # this was a pseudo-properties .it file
   for pe in pf.propelements:
@@ -42,5 +45,8 @@ elif waspseudoprops:
     if pe.isblank():
       sys.stdout.write("\n")
     else:
-      sys.stdout.write("%s=%s\n" % (pe.name, pe.msgid))
+      definition = "%s=%s\n" % (pe.name, pe.msgid)
+      if isinstance(definition, unicode):
+        definition = definition.encode("UTF-8")
+      sys.stdout.write(definition)
 
