@@ -23,6 +23,9 @@ New tools
 		"Proxy Server" are extracted. The idea being that you can create a
 		glossary for a single PO file or for the whole project like KDE.
 		Translators get to define important words before beginning to translate
+	pomigrate - need a python based tool that takes an input file the new
+		template and outputs the new migrated PO files. Initialising as needed
+		and merging if possible.
 
 pocount
 	- Fix po class so that it handles KDE style plurals there not in pocount
