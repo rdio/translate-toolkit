@@ -310,23 +310,71 @@ class pofile:
       inputfile.close()
       self.fromlines(polines)
 
-  def makeheader(self, charset="CHARSET", encoding="ENCODING"):
-    """create a header for the given filename"""
+  def makeheader(self, charset="CHARSET", encoding="ENCODING", projectid=None, creationdate=None, revisiondate=None, lasttranslator=None, languageteam=None, mimeversion=None, **kwargs):
+    """create a header for the given filename. arguments are specially handled, kwargs added as key: value
+    creationdate can be None (current date) or a value (datetime or string)
+    revisiondate can be None (form), False (=creationdate), True (=now), or a value (datetime or string)"""
     # TODO: clean this up, make it handle all the properties...
     headerpo = poelement()
     headerpo.markfuzzy()
     headerpo.msgid = ['""']
     headeritems = [""]
-    headeritems.append("Project-Id-Version: PACKAGE VERSION\\n")
-    headeritems.append("POT-Creation-Date: " + datetime.datetime.utcnow().strftime("%F %H:%M%z") + "\\n")
-    headeritems.append("PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n")
-    headeritems.append("Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n")
-    headeritems.append("Language-Team: LANGUAGE <LL@li.org>\\n")
-    headeritems.append("MIME-Version: 1.0\\n")
-    headeritems.append("Content-Type: text/plain; charset=%s\\n" % charset)
-    headeritems.append("Content-Transfer-Encoding: %s\\n" % encoding)
+    if projectid is None:
+      projectid = "PACKAGE VERSION"
+    if creationdate is None or creationdate == True:
+      creationdate = datetime.datetime.utcnow()
+    if not isinstance(creationdate, (str, unicode)):
+      creationdate = creationdate.strftime("%F %H:%M%z")
+    if revisiondate is None:
+      revisiondate = "YEAR-MO-DA HO:MI+ZONE"
+    elif revisiondate == False:
+      revisiondate = creationdate
+    elif revisiondate == True:
+      revisiondate = datetime.datetime.utcnow()
+    if not isinstance(revisiondate, (str, unicode)):
+      revisiondate = revisiondate.strftime("%F %H:%M%z")
+    if lasttranslator is None:
+      lasttranslator = "FULL NAME <EMAIL@ADDRESS>"
+    if languageteam is None:
+      languageteam = "LANGUAGE <LL@li.org>"
+    if mimeversion is None:
+      mimeversion = "1.0"
+    addheader = lambda key, value: (key in kwargs) or headeritems.append("%s: %s\\n" % (key, value))
+    addheader("Project-Id-Version",  projectid)
+    addheader("POT-Creation-Date",  creationdate)
+    addheader("PO-Revision-Date",  revisiondate)
+    addheader("Last-Translator",  lasttranslator)
+    addheader("Language-Team",  languageteam)
+    addheader("MIME-Version",  mimeversion)
+    addheader("Content-Type", "text/plain; charset=%s" % charset)
+    addheader("Content-Transfer-Encoding",  encoding)
+    for key, value in kwargs.iteritems():
+      headeritems.append("%s: %s\\n" % (key, value))
     headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
     return headerpo
+
+  def parseheader(self):
+    """parses the values in the header into a dictionary"""
+    headervalues = {}
+    if len(self.poelements) == 0:
+      return headervalues
+    header = self.poelements[0]
+    if not header.isheader():
+      return headervalues
+    lineitem = ""
+    for line in header.msgstr:
+      line = getunquotedstr([line]).strip()
+      if not ":" in line:
+        continue
+      if line.endswith("\\n"):
+        lineitem += line[:-2]
+      else:
+        lineitem += line
+        continue
+      key, value = lineitem.split(":", 1)
+      headervalues[key.strip()] = value.strip()
+      lineitem = ""
+    return headervalues
 
   def isempty(self):
     """returns whether the po file doesn't contain any definitions..."""
