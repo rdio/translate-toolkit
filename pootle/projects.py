@@ -18,9 +18,10 @@ class TranslationSession:
     self.pofile = None
     self.lastitem = None
 
-  def getnextitem(self, dirfilter=None):
+  def getnextitem(self, dirfilter=None, matchnames=None):
     """gives the user the next item to be translated"""
-    matchnames = ["fuzzy", "blank"]
+    if matchnames is None:
+      matchnames = ["fuzzy", "blank"]
     self.pofilename, item = self.translationproject.findnextitem(self.pofilename, self.lastitem, matchnames, dirfilter)
     self.pofile = self.translationproject.getpofile(self.pofilename)
     thepo = self.pofile.transelements[item]

@@ -118,6 +118,7 @@ class PootleServer(OptionalLoginAppServer):
         return indexpage.LanguageIndex(language, session)
       if hasattr(language.projects, top):
         project = getattr(language.projects, top)
+	translationproject = projects.getproject(project)
         pathwords = pathwords[1:]
         if pathwords:
           top = pathwords[0]
@@ -136,14 +137,12 @@ class PootleServer(OptionalLoginAppServer):
 	  if argdict.get("translate", 0):
             return translatepage.TranslatePage(language, project, session, argdict, dirfilter=pofilename)
 	  else:
-	    translationproject = projects.getproject(project)
 	    contents = translationproject.getsource(pofilename)
 	    page = widgets.PlainContents(contents)
 	    page.content_type = "text/plain"
 	    return page
 	elif bottom.endswith(".csv"):
 	  csvfilename = os.path.join(*pathwords)
-	  translationproject = projects.getproject(project)
 	  contents = translationproject.getcsv(csvfilename)
 	  page = widgets.PlainContents(contents)
 	  page.content_type = "text/plain"

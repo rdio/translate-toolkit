@@ -12,6 +12,7 @@ class TranslatePage(pagelayout.PootlePage):
     self.subproject = subproject
     self.dirfilter = dirfilter
     self.translationproject = projects.getproject(self.subproject)
+    self.matchnames = self.getmatchnames(argdict, self.translationproject.checker)
     self.translationsession = self.translationproject.gettranslationsession(session)
     self.instance = session.instance
     self.receivetranslations(argdict)
@@ -52,6 +53,16 @@ class TranslatePage(pagelayout.PootlePage):
 	else:
           self.translationsession.receivetranslation(pofilename, item, value)
 
+  def getmatchnames(self, argdict, checker): 
+    """returns any checker filters the user has asked to match..."""
+    matchnames = []
+    for checkname in argdict:
+      if checkname in checker.getfilters():
+        matchnames.append("check-" + checkname)
+    if matchnames:
+      return matchnames
+    return None
+
   def addtransrow(self, rownum, origcell, transcell):
     self.transtable.setcell(rownum, 0, origcell)
     self.transtable.setcell(rownum, 1, transcell)
@@ -61,7 +72,7 @@ class TranslatePage(pagelayout.PootlePage):
     origtitle = table.TableCell("original", {"class":"translate-table-title"})
     transtitle = table.TableCell("translation", {"class":"translate-table-title"})
     self.addtransrow(-1, origtitle, transtitle)
-    self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem(self.dirfilter)
+    self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem(self.dirfilter, self.matchnames)
     translationsbefore = self.translationproject.getitemsbefore(self.pofilename, item, 3)
     translationsafter = self.translationproject.getitemsafter(self.pofilename, item, 3)
     self.translations = translationsbefore + [(theorig, thetrans)] + translationsafter

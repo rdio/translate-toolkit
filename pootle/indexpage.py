@@ -111,12 +111,12 @@ class ProjectIndex(pagelayout.PootlePage):
     percentfinished = (translated*100/max(total, 1))
     statssummary = "%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished)
     if total and self.showchecks:
-      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats))
+      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, "%s/translate.html?" % basename))
       statssummary += "<br/>" + statsdetails
     stats = pagelayout.ItemStatistics(statssummary)
     return pagelayout.Item([body, stats])
 
-  def getcheckdetails(self, projectstats):
+  def getcheckdetails(self, projectstats, checklinkbase):
     """return a list of strings describing the results of checks"""
     total = max(projectstats.get("total", 0), 1)
     for checkname, checkcount in projectstats.iteritems():
@@ -124,7 +124,9 @@ class ProjectIndex(pagelayout.PootlePage):
         continue
       checkname = checkname.replace("check-", "", 1)
       if total and checkcount:
-        yield "%s: %d strings (%d%%) failed" % (checkname, checkcount, (checkcount * 100 / total))
+        checklink = "<a href='%s%s=1'>%s</a>" % (checklinkbase, checkname, checkname)
+        stats = "%d strings (%d%%) failed" % (checkcount, (checkcount * 100 / total))
+        yield "%s: %s" % (checklink, stats)
 
   def getfileitem(self, fileentry):
     basename = os.path.basename(fileentry)
@@ -142,7 +144,7 @@ class ProjectIndex(pagelayout.PootlePage):
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
     statssummary = "%d/%d strings (%d%%) translated" % (translated, total, percentfinished)
     if total and self.showchecks:
-      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats))
+      statsdetails = "<br/>\n".join(self.getcheckdetails(projectstats, '%s?translate=1&' % basename))
       statssummary += "<br/>" + statsdetails
     stats = pagelayout.ItemStatistics(statssummary)
     return pagelayout.Item([body, stats])
