@@ -43,6 +43,8 @@ class TranslationSession:
   def getrights(self):
     """gets the current users rights"""
     if self.session.isopen:
+      if self.project.languagecode == "en":
+        return ["view", "archive", "pocompile"]
       return ["view", "review", "translate", "archive", "pocompile"]
     else:
       return ["view"]
@@ -469,6 +471,7 @@ class pootlefile(po.pofile):
 
   def mergefile(self, newpofile, username):
     """make sure each msgid is unique ; merge comments etc from duplicates into original"""
+    # TODO: look at removing / obsoleting old elements, and old source ids
     self.makeindex()
     def mergeitems(oldpo, newpo):
       unchanged = po.unquotefrompo(oldpo.msgstr, False) == po.unquotefrompo(newpo.msgstr, False)
