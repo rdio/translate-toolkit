@@ -24,7 +24,7 @@ gettext-style .po (or .pot) files are used in translations for KDE et al (see kb
 from __future__ import generators
 from translate.misc import quote
 import sre
-import datetime
+import time
 
 # general functions for quoting / unquoting po strings
 
@@ -369,16 +369,16 @@ class pofile:
     if projectid is None:
       projectid = "PACKAGE VERSION"
     if creationdate is None or creationdate == True:
-      creationdate = datetime.datetime.utcnow()
-    if not isinstance(creationdate, (str, unicode)):
+      creationdate = time.strftime("%F %H:%M%z")
+    if isinstance(creationdate, time.struct_time):
       creationdate = creationdate.strftime("%F %H:%M%z")
     if revisiondate is None:
       revisiondate = "YEAR-MO-DA HO:MI+ZONE"
     elif revisiondate == False:
       revisiondate = creationdate
     elif revisiondate == True:
-      revisiondate = datetime.datetime.utcnow()
-    if not isinstance(revisiondate, (str, unicode)):
+      revisiondate = time.strftime("%F %H:%M%z")
+    if isinstance(revisiondate, time.struct_time):
       revisiondate = revisiondate.strftime("%F %H:%M%z")
     if lasttranslator is None:
       lasttranslator = "FULL NAME <EMAIL@ADDRESS>"
