@@ -20,102 +20,21 @@
 
 import sys
 import os.path
-try:
-  import optparse
-  if optparse.__version__ < "1.4.1+":
-    raise ImportError("optparse version not compatible")
-except ImportError:
-  from translate.misc import optparse
-from translate.misc import progressbar
+from translate.misc import optrecurse
 from translate import __version__
 try:
   from cStringIO import StringIO
 except ImportError:
   from StringIO import StringIO
 
-# TODO: refactor this and filters.filtercmd so they share code
-
-class ConvertOptionParser(optparse.OptionParser, object):
+class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
   """a specialized Option Parser for convertor tools..."""
   def __init__(self, formats, usetemplates=False, usepots=False, description=None):
     """construct the specialized Option Parser"""
-    optparse.OptionParser.__init__(self, version="%prog "+__version__.ver, description=description)
+    optrecurse.RecursiveOptionParser.__init__(self, formats, usetemplates, description=description)
     self.usepots = usepots
-    self.setprogressoptions()
     self.setpotoption()
-    self.setformats(formats, usetemplates)
-    self.convertparameters = []
-    self.usage = "%prog [options] " + " ".join([self.getusagestring(option) for option in self.option_list])
-
-  def warning(self, msg):
-    """Print a warning message incorporating 'msg' to stderr and exit."""
-    print >>sys.stderr, "\n%s: warning: %s" % (optparse.get_prog_name(), msg)
-
-  def getusagestring(self, option):
-    """returns the usage string for the given option"""
-    optionstring = "|".join(option._short_opts + option._long_opts)
-    if getattr(option, "optionalswitch", False):
-      optionstring = "[%s]" % optionstring
-    if option.metavar:
-      optionstring += " " + option.metavar
-    if getattr(option, "required", False):
-      return optionstring
-    else:
-      return "[%s]" % optionstring
-
-  def define_option(self, option):
-    """defines the given option, replacing an existing one of the same short name if neccessary..."""
-    for short_opt in option._short_opts:
-      if self.has_option(short_opt):
-        self.remove_option(short_opt)
-    for long_opt in option._long_opts:
-      if self.has_option(long_opt):
-        self.remove_option(long_opt)
-    self.add_option(option)
-
-  def setformats(self, formats, usetemplates):
-    """sets the input formats to the given list/single string"""
-    inputformats = []
-    outputformats = []
-    templateformats = []
-    self.outputoptions = {}
-    self.usetemplates = usetemplates
-    for formatgroup, outputoptions in formats.iteritems():
-      if isinstance(formatgroup, (str, unicode)):
-        formatgroup = (formatgroup, )
-      if not isinstance(formatgroup, tuple):
-        raise ValueError("formatgroups must be tuples or str/unicode")
-      if len(formatgroup) < 1 or len(formatgroup) > 2:
-        raise ValueError("formatgroups must be tuples of length 1 or 2")
-      if len(formatgroup) == 1:
-        formatgroup += (None, )
-      inputformat, templateformat = formatgroup
-      if not isinstance(outputoptions, tuple) or len(outputoptions) != 2:
-        raise ValueError("output options must be tuples of length 2")
-      outputformat, converter = outputoptions
-      if not inputformat in inputformats: inputformats.append(inputformat)
-      if not outputformat in outputformats: outputformats.append(outputformat)
-      if not templateformat in templateformats: templateformats.append(templateformat)
-      self.outputoptions[(inputformat, templateformat)] = (outputformat, converter)
-    self.inputformats = inputformats
-    inputformathelp = self.getformathelp(inputformats)
-    inputoption = optparse.Option("-i", "--input", dest="input", default=None, metavar="INPUT",
-                    help="read from INPUT in %s" % (inputformathelp))
-    inputoption.optionalswitch = True
-    inputoption.required = True
-    self.define_option(inputoption)
-    outputformathelp = self.getformathelp(outputformats)
-    outputoption = optparse.Option("-o", "--output", dest="output", default=None, metavar="OUTPUT",
-                    help="write to OUTPUT in %s" % (outputformathelp))
-    outputoption.optionalswitch = True
-    outputoption.required = True
-    self.define_option(outputoption)
-    if self.usetemplates:
-      self.templateformats = templateformats
-      templateformathelp = self.getformathelp(self.templateformats)
-      templateoption = optparse.Option("-t", "--template", dest="template", default=None, metavar="TEMPLATE",
-                  help="read from TEMPLATE in %s" % (templateformathelp))
-      self.define_option(templateoption)
+    self.set_usage()
 
   def potifyformat(self, fileformat):
     """converts a .po to a .pot where required"""
@@ -127,6 +46,17 @@ class ConvertOptionParser(optparse.OptionParser, object):
       return fileformat + "t"
     else:
       return fileformat
+
+  def getformathelp(self, formats):
+    """make a nice help string for describing formats..."""
+    # include implicit pot options...
+    helpformats = []
+    for fileformat in formats:
+      helpformats.append(fileformat)
+      potformat = self.potifyformat(fileformat)
+      if potformat != fileformat:
+        helpformats.append(potformat)
+    return super(ConvertOptionParser, self).getformathelp(helpformats)
 
   def filterinputformats(self, options):
     """filters input formats, processing relevant switches in options"""
@@ -148,351 +78,20 @@ class ConvertOptionParser(optparse.OptionParser, object):
     else:
       return self.outputoptions
 
-  def setprogressoptions(self):
-    """sets the progress options"""
-    self.progresstypes = {"none": progressbar.NoProgressBar, "simple": progressbar.SimpleProgressBar,
-                          "console": progressbar.ConsoleProgressBar, "verbose": progressbar.VerboseProgressBar}
-    progressoption = optparse.Option(None, "--progress", dest="progress", default="console",
-                      choices = self.progresstypes.keys(), metavar="PROGRESS",
-                      help="set progress type to one of %s" % (", ".join(self.progresstypes)))
-    self.define_option(progressoption)
-
   def setpotoption(self):
     """sets the -P/--pot option depending on input/output formats etc"""
     if self.usepots:
-      potoption = optparse.Option("-P", "--pot", action="store_true", dest="pot", default=False, \
-                                 help="use PO template files (.pot) rather than PO files (.po)")
+      potoption = optrecurse.optparse.Option("-P", "--pot", \
+                      action="store_true", dest="pot", default=False, \
+                      help="use PO template files (.pot) rather than PO files (.po)")
       self.define_option(potoption)
 
-  def getformathelp(self, formats):
-    """make a nice help string for describing formats..."""
-    helpformats = []
-    if self.usepots:
-      for fileformat in formats:
-        if fileformat is None: continue
-        helpformats.append(fileformat)
-        potformat = self.potifyformat(fileformat)
-        if potformat != fileformat:
-          helpformats.append(potformat)
-    if len(helpformats) == 0:
-      return ""
-    elif len(helpformats) == 1:
-      return "%s format" % (", ".join(helpformats))
-    else:
-      return "%s formats" % (", ".join(helpformats))
-
-  def isrecursive(self, fileoption):
-    """checks if fileoption is a recursive file"""
-    if fileoption is None:
-      return False
-    elif isinstance(fileoption, list):
-      return True
-    else:
-      return os.path.isdir(fileoption)
-
-  def runconversion(self):
+  def run(self):
     """parses the command line options and runs the conversion"""
     (options, args) = self.parse_args()
-    # some intelligent as to what reasonable people might give on the command line
-    if args and not options.input:
-      if len(args) > 1:
-        options.input = args[:-1]
-        args = args[-1:]
-      else:
-        options.input = args[0]
-        args = []
-    if args and not options.output:
-      options.output = args[-1]
-      args = args[:-1]
-    if args:
-      self.error("You have used an invalid combination of --input, --output and freestanding args")
-    if isinstance(options.input, list) and len(options.input) == 1:
-      options.input = options.input[0]
-    try:
-      self.recurseconversion(options)
-    except optparse.OptParseError, message:
-      self.error(message)
-
-  def getrequiredoptions(self, options):
-    """get the options required to pass to the filtermethod..."""
-    requiredoptions = {}
-    for optionname in dir(options):
-      if optionname in self.convertparameters:
-        requiredoptions[optionname] = getattr(options, optionname)
-    return requiredoptions
-
-  def getoutputoptions(self, options, inputpath, templatepath):
-    """works out which conversion method to use..."""
-    if inputpath:
-      inputbase, inputext = self.splitinputext(inputpath)
-    else:
-      inputext = None
-    if templatepath:
-      templatebase, templateext = self.splittemplateext(templatepath)
-    else:
-      templateext = None
-    if (inputext, templateext) in options.outputoptions:
-      return options.outputoptions[inputext, templateext]
-    elif (inputext, "*") in options.outputoptions:
-      outputformat, convertmethod = options.outputoptions[inputext, "*"]
-    elif ("*", templateext) in options.outputoptions:
-      outputformat, convertmethod = options.outputoptions["*", templateext]
-    elif ("*", "*") in options.outputoptions:
-      outputformat, convertmethod = options.outputoptions["*", "*"]
-    elif (inputext, None) in options.outputoptions:
-      return options.outputoptions[inputext, None]
-    elif (None, templateext) in options.outputoptions:
-      return options.outputoptions[None, templateext]
-    elif ("*", None) in options.outputoptions:
-      outputformat, convertmethod = options.outputoptions["*", None]
-    elif (None, "*") in options.outputoptions:
-      outputformat, convertmethod = options.outputoptions[None, "*"]
-    else:
-      raise ValueError("could not find outputoptions for inputext %s, templateext %s" % (inputext, templateext))
-    if outputformat == "*":
-      if inputext:
-        outputformat = inputext
-      elif templateext:
-        outputformat = templateext
-      else:
-        raise ValueError("could not find output format for inputext %s, templateext %s" % (inputext, templateext))
-    return outputformat, convertmethod
-
-  def initprogressbar(self, allfiles, options):
-    """sets up a progress bar appropriate to the options and files"""
-    if options.progress in ('console', 'verbose'):
-      self.progressbar = self.progresstypes[options.progress](0, len(allfiles))
-      print "processing %d files..." % len(allfiles)
-    else:
-      self.progressbar = self.progresstypes[options.progress]()
-
-  def getfullinputpath(self, options, inputpath):
-    """gets the absolute path to an input file"""
-    if options.input:
-      return os.path.join(options.input, inputpath)
-    else:
-      return inputpath
-
-  def getfulloutputpath(self, options, outputpath):
-    """gets the absolute path to an output file"""
-    if options.recursiveoutput and options.output:
-      return os.path.join(options.output, outputpath)
-    else:
-      return outputpath
-
-  def getfulltemplatepath(self, options, templatepath):
-    """gets the absolute path to a template file"""
-    if not options.recursivetemplate:
-      return templatepath
-    elif templatepath is not None and self.usetemplates and options.template:
-      return os.path.join(options.template, templatepath)
-    else:
-      return None
-
-  def recurseconversion(self, options):
-    """recurse through directories and convert files"""
     options.inputformats = self.filterinputformats(options)
     options.outputoptions = self.filteroutputoptions(options)
-    if self.isrecursive(options.input):
-      if not self.isrecursive(options.output):
-        self.error(optparse.OptionValueError("Cannot have recursive input and non-recursive output. check output exists"))
-      if isinstance(options.input, list):
-        inputfiles = self.recurseinputfilelist(options)
-      else:
-        inputfiles = self.recurseinputfiles(options)
-    else:
-      if options.input:
-        inputfiles = [os.path.basename(options.input)]
-        options.input = os.path.dirname(options.input)
-      else:
-        inputfiles = [options.input]
-    options.recursiveoutput = self.isrecursive(options.output)
-    options.recursivetemplate = self.usetemplates and self.isrecursive(options.template)
-    self.initprogressbar(inputfiles, options)
-    for inputpath in inputfiles:
-      templatepath = self.gettemplatename(options, inputpath)
-      outputformat, convertmethod = self.getoutputoptions(options, inputpath, templatepath)
-      fullinputpath = self.getfullinputpath(options, inputpath)
-      fulltemplatepath = self.getfulltemplatepath(options, templatepath)
-      outputpath = self.getoutputname(options, inputpath, outputformat)
-      fulloutputpath = self.getfulloutputpath(options, outputpath)
-      if options.recursiveoutput and outputpath:
-        self.checkoutputsubdir(options, os.path.dirname(outputpath))
-      try:
-        success = self.convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
-      except Exception, e:
-        self.warning("Error in conversion: input %s, output %s, template %s" % (fullinputpath, fulloutputpath, fulltemplatepath))
-        raise
-      self.reportprogress(inputpath, success)
-    del self.progressbar
-
-  def openinputfile(self, options, fullinputpath):
-    """opens the input file"""
-    if fullinputpath is None:
-      return sys.stdin
-    return open(fullinputpath, 'r')
-
-  def openoutputfile(self, options, fulloutputpath):
-    """opens the output file"""
-    if fulloutputpath is None:
-      return sys.stdout
-    return open(fulloutputpath, 'w')
-
-  def opentempoutputfile(self, options, fulloutputpath):
-    """opens a temporary output file"""
-    return StringIO()
-
-  def finalizetempoutputfile(self, options, outputfile, fulloutputpath):
-    """write the temp outputfile to its final destination"""
-    outputfile.reset()
-    outputstring = outputfile.read()
-    outputfile = self.openoutputfile(options, fulloutputpath)
-    outputfile.write(outputstring)
-    outputfile.close()
-
-  def opentemplatefile(self, options, fulltemplatepath):
-    """opens the template file (if required)"""
-    if fulltemplatepath is not None:
-      if os.path.isfile(fulltemplatepath):
-        return open(fulltemplatepath, 'r')
-      else:
-        self.warning("missing template file %s" % fulltemplatepath)
-    return None
-
-  def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
-    """run an invidividual conversion"""
-    inputfile = self.openinputfile(options, fullinputpath)
-    if fulloutputpath and fulloutputpath in (fullinputpath, fulltemplatepath):
-      outputfile = self.opentempoutputfile(options, fulloutputpath)
-      tempoutput = True
-    else:
-      outputfile = self.openoutputfile(options, fulloutputpath)
-      tempoutput = False
-    templatefile = self.opentemplatefile(options, fulltemplatepath)
-    requiredoptions = self.getrequiredoptions(options)
-    if convertmethod(inputfile, outputfile, templatefile, **requiredoptions):
-      if tempoutput:
-        self.warning("writing to temporary output...")
-        self.finalizetempoutputfile(options, outputfile, fulloutputpath)
-      return True
-    else:
-      outputfile.close()
-      os.unlink(fulloutputpath)
-      return False
-
-  def reportprogress(self, filename, success):
-    """shows that we are progressing..."""
-    self.progressbar.amount += 1
-    if success:
-      self.progressbar.show(filename)
-
-  def mkdir(self, parent, subdir):
-    """makes a subdirectory (recursively if neccessary)"""
-    if not os.path.isdir(parent):
-      raise ValueError("cannot make child directory %r if parent %r does not exist" % (subdir, parent))
-    currentpath = parent
-    subparts = subdir.split(os.sep)
-    for part in subparts:
-      currentpath = os.path.join(currentpath, part)
-      if not os.path.isdir(currentpath):
-        os.mkdir(currentpath)
-
-  def checkoutputsubdir(self, options, subdir):
-    """checks to see if subdir under options.output needs to be created, creates if neccessary"""
-    fullpath = os.path.join(options.output, subdir)
-    if not os.path.isdir(fullpath):
-      self.mkdir(options.output, subdir)
-
-  def recurseinputfilelist(self, options):
-    """use a list of files, and find a common base directory for them"""
-    # find a common base directory for the files to do everything relative to
-    commondir = os.path.dirname(os.path.commonprefix(options.input))
-    inputfiles = []
-    for inputfile in options.input:
-      if inputfile.startswith(commondir+os.sep):
-        allfiles.append(inputfile.replace(commondir+os.sep, "", 1))
-      else:
-        allfiles.append(inputfile.replace(commondir, "", 1))
-    options.input = commondir
-    return inputfiles
-
-  def recurseinputfiles(self, options):
-    """recurse through directories and return files to be converted..."""
-    dirstack = ['']
-    join = os.path.join
-    inputfiles = []
-    while dirstack:
-      top = dirstack.pop(-1)
-      names = os.listdir(join(options.input, top))
-      dirs = []
-      for name in names:
-        inputpath = join(top, name)
-        fullinputpath = self.getfullinputpath(options, inputpath)
-        # handle directories...
-        if os.path.isdir(fullinputpath):
-          dirs.append(inputpath)
-        elif os.path.isfile(fullinputpath):
-          if not self.isvalidinputname(options, name):
-            # only handle names that match recognized input file extensions
-            continue
-          inputfiles.append(inputpath)
-      # make sure the directories are processed next time round...
-      dirs.reverse()
-      dirstack.extend(dirs)
-    return inputfiles
-
-  def splitinputext(self, inputpath):
-    """splits an inputpath into name and extension"""
-    root, ext = os.path.splitext(inputpath)
-    ext = ext.replace(os.extsep, "", 1)
-    return (root, ext)
-
-  def splittemplateext(self, templatepath):
-    """splits a templatepath into name and extension"""
-    root, ext = os.path.splitext(templatepath)
-    ext = ext.replace(os.extsep, "", 1)
-    return (root, ext)
-
-  def templateexists(self, options, templatepath):
-    """returns whether the given template exists..."""
-    fulltemplatepath = self.getfulltemplatepath(options, templatepath)
-    return os.path.isfile(fulltemplatepath)
-
-  def gettemplatename(self, options, inputname):
-    """gets an output filename based on the input filename"""
-    if not self.usetemplates: return None
-    if not inputname or not options.recursivetemplate: return options.template
-    inputbase, inputext = self.splitinputext(inputname)
-    if options.template:
-      for inputext1, templateext1 in options.outputoptions:
-        if inputext == inputext1:
-          if templateext1:
-            templatepath = inputbase + os.extsep + templateext1
-            if self.templateexists(options, templatepath):
-              return templatepath
-      if "*" in options.inputformats:
-        for inputext1, templateext1 in options.outputoptions:
-          if (inputext == inputext1) or (inputext1 == "*"):
-            if templateext1 == "*":
-              templatepath = inputname
-              if self.templateexists(options, templatepath):
-                return templatepath
-            elif templateext1:
-              templatepath = inputbase + os.extsep + templateext1
-              if self.templateexists(options, templatepath):
-                return templatepath
-    return None
-
-  def getoutputname(self, options, inputname, outputformat):
-    """gets an output filename based on the input filename"""
-    if not inputname or not options.recursiveoutput: return options.output
-    inputbase, inputext = self.splitinputext(inputname)
-    return inputbase + os.extsep + outputformat
-
-  def isvalidinputname(self, options, inputname):
-    """checks if this is a valid input filename"""
-    inputbase, inputext = self.splitinputext(inputname)
-    return (inputext in options.inputformats) or ("*" in options.inputformats)
+    self.recursiveprocess(options)
 
 def copyinput(inputfile, outputfile, templatefile, **kwargs):
   """copies the input file to the output file"""
