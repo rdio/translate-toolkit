@@ -26,7 +26,7 @@ def summarize(elements):
   print "untranslated words:", sum(map(lambda poel: wordcount(poel.msgstr), untranslated))
   fuzzy = filter(lambda poel: poel.isfuzzy(), elements)
   print "fuzzy strings:", len(fuzzy)
-  print "fuzzy words:", sum(map(lambda poel: wordcount(poel.msgid), fuzzy))
+  print "fuzzy words (original):", sum(map(lambda poel: wordcount(poel.msgid), fuzzy))
   print "words (original):", sum([wordcount(poel.msgid) for poel in elements])
   print "words (translation):", sum([wordcount(poel.msgstr) for poel in elements])
 
