@@ -30,7 +30,8 @@ from translate import __version__
 
 def quoteforpo(line):
   """quotes the given oo line for a PO file"""
-  return quote.quotestr(line, escapeescapes=1)
+  escaped = line.replace("\\n", "\n").replace('\\', '\\\\').replace("\n", "\\n").replace('"', '\\"')
+  return '"' + escaped + '"'
 
 class oo2po:
   def __init__(self, languages=None, blankmsgstr=False):
