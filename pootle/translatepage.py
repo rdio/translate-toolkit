@@ -169,16 +169,13 @@ class TranslatePage(pagelayout.PootlePage):
     if item is None:
       try:
         search = projects.Search(dirfilter=self.dirfilter, matchnames=self.matchnames, searchtext=self.searchtext)
-        if self.session.session.isopen:
-          search.assignedto = self.session.session.username
-          if self.reviewmode:
-            search.assignedaction = "review"
-          elif not self.viewmode:
-            search.assignedaction = "suggest"
+        # TODO: add links to assigned work
+        search.assignedto = self.argdict.get("assignedto", None)
+        search.assignedaction = self.argdict.get("assignedaction", None)
         self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, search).next()
       except StopIteration:
         if self.lastitem is None:
-          raise StopIteration("There are no items matching that search")
+          raise StopIteration("There are no items matching that search %r")
         else:
           raise StopIteration("You have finished going through the items you selected")
     else:
