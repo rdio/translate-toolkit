@@ -365,18 +365,37 @@ class pofile:
     """remove any poelements which say they are blank"""
     self.poelements = filter(poelement.isnotblank, self.poelements)
 
-  def removeduplicates(self):
+  def removeduplicates(self, duplicatestyle="merge"):
     """make sure each msgid is unique ; merge comments etc from duplicates into original"""
     msgiddict = {}
     uniqueelements = []
-    # index everything
+    # we sometimes need to keep track of what has been marked
+    markedpos = {}
+    def addcomment(thepo):
+      thepo.msgidcomments.append('"_: %s\\n"' % " ".join(thepo.getsources()))
+      markedpos[thepo] = True
     for thepo in self.poelements:
-      msgid = getunquotedstr(thepo.msgid)
+      if duplicatestyle.startswith("msgid_comment"):
+        msgid = getunquotedstr(thepo.msgidcomments) + getunquotedstr(thepo.msgid)
+      else:
+        msgid = getunquotedstr(thepo.msgid)
       if not msgid:
         # blank msgids shouldn't be merged...
         uniqueelements.append(thepo)
+      elif duplicatestyle == "msgid_comment_all":
+        addcomment(thepo)
+        uniqueelements.append(thepo)
       elif msgid in msgiddict:
-        msgiddict[msgid].merge(thepo)
+        if duplicatestyle == "merge":
+          msgiddict[msgid].merge(thepo)
+        elif duplicatestyle == "keep":
+          uniqueelements.append(thepo)
+        elif duplicatestyle == "msgid_comment":
+          origpo = msgiddict[msgid]
+          if origpo not in markedpos:
+            addcomment(origpo)
+          addcomment(thepo)
+          uniqueelements.append(thepo)
       else:
         msgiddict[msgid] = thepo
         uniqueelements.append(thepo)
