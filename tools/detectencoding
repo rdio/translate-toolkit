@@ -365,6 +365,8 @@ if __name__ == '__main__':
     action="store_true", default=False,
     help="verbose (print out lots of strings)")
   (options, args) = optparser.parse_args()
+  if not (options.matchchars or options.matchwords or options.fuzzymatch):
+    optparser.error("you should specify at least one of matchchars, matchwords or fuzzymatch")
   d = detector(args, options)
   if options.matchchars:
     d.testcharstats()
