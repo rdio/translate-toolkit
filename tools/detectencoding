@@ -267,18 +267,24 @@ class detector:
 
   def updatecharmap(self, charmap, word, dictword, ignoremap):
     """updates the given charmap with the changes from word to dictword (using ignoremap)"""
-    if word != dictword:
-      wordparts = word.translate(ignoremap).split()
-      dictparts = dictword.translate(ignoremap).split()
-      for wordpart, dictpart in zip(wordparts, dictparts):
-        if wordpart != dictpart:
-          if wordpart not in charmap:
-            charmap[wordpart] = {}
-          transmap = charmap[wordpart]
-          if dictpart in transmap:
-            transmap[dictpart] += 1
-          else:
-            transmap[dictpart] = 1
+    # check if the word actually matches
+    if dictword == word: return
+    elif isinstance(dictword, dict):
+      if word in dictword: return
+      # otherwise check that there is no ambiguity
+      print "multiple matches: not drawing conclusions. %r, %r" % (word, dictword)
+      return
+    wordparts = word.translate(ignoremap).split()
+    dictparts = dictword.translate(ignoremap).split()
+    for wordpart, dictpart in zip(wordparts, dictparts):
+      if wordpart != dictpart:
+        if wordpart not in charmap:
+          charmap[wordpart] = {}
+        transmap = charmap[wordpart]
+        if dictpart in transmap:
+          transmap[dictpart] += 1
+        else:
+          transmap[dictpart] = 1
 
   def writescript(self, charmap, encoding):
     """writes a script to a file that replaces chars in a po file as defined by charmap"""
@@ -288,11 +294,16 @@ class detector:
     scriptfile.write("class pocharmap(poreplace.poreplace):\n")
     scriptfile.write("  def convertstring(self, postr):\n")
     scriptfile.write("    postr = postr.decode(%r)\n" % encoding)
+    replacements = []
     for wordpart, transmap in charmap.iteritems():
       # only handle exact matches...
       if len(transmap) == 1:
         dictpart, count = transmap.items()[0]
-        scriptfile.write("    postr = postr.replace(%r, %r)\n" % (wordpart, dictpart))
+        replacements.append((count, dictpart, wordpart))
+    replacements.sort()
+    replacements.reverse()
+    for count, dictpart, wordpart in replacements:
+      scriptfile.write("    postr = postr.replace(%r, %r)  # %d matches\n" % (wordpart, dictpart, count))
     scriptfile.write("    postr = postr.encode(%r)\n" % encoding)
     scriptfile.write("    return postr\n")
     scriptfile.write("if __name__ == '__main__':\n")
@@ -310,7 +321,16 @@ class detector:
         if not dictword.translate(ignoremap).isspace():
           if self.options.ignorecase:
             dictword = dictword.lower()
-          dictmap[self.fuzzy(dictword, self.excludestring)] = dictword
+          fuzzyword = self.fuzzy(dictword, self.excludestring)
+          # dictmap will contain a string if there is only one fuzzymatch
+          # otherwise it will contain a dict
+          if fuzzyword in dictmap:
+            if isinstance(dictmap[fuzzyword], dict):
+              dictmap[fuzzyword][dictword] = True
+            else:
+              dictmap[fuzzyword] = {dictmap[fuzzyword]:True, dictword:True}
+          else:
+            dictmap[self.fuzzy(dictword, self.excludestring)] = dictword
     print "%d words in dictionary" % len(dictmap)
     uniquewordsfound = {}
     charmap = {}
