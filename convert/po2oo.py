@@ -143,7 +143,9 @@ class reoo:
         theooline = theooelement.lines[1]
         theooline.languageid = newcode
       except IndexError:
-        print >> sys.stderr, "could not switch language code on ", "/".join(theooelement.lines[0].getkey())
+        theooline = theooelement.lines[0]
+        if theooline.text or theooline.quickhelptext or theooline.title:
+          print >> sys.stderr, "could not switch language code on ", "/".join(theooline.getkey())
 
 def getmtime(filename):
   import stat
