@@ -63,10 +63,10 @@ class propfile:
     newpe = propelement()
     inmultilinemsgid = 0
     for line in lines:
-      # handle unicode-escape encoding
-      line = quote.mozillapropertiesdecode(line)
       # handle multiline msgid if we're in one
       if inmultilinemsgid:
+        # handle unicode-escape encoding
+        line = quote.mozillapropertiesdecode(line)
         newpe.msgid += quote.rstripeol(line).lstrip()
         # see if there's more
         inmultilinemsgid = (newpe.msgid[-1:] == '\\')
@@ -88,6 +88,8 @@ class propfile:
         self.propelements.append(newpe)
         newpe = propelement()
       else:
+        # handle unicode-escape encoding
+        line = quote.mozillapropertiesdecode(line)
         equalspos = line.find('=')
         # if no equals, just ignore it
         if equalspos == -1:
