@@ -6,11 +6,14 @@ handle KDE and Gettext plural forms
 skip entries that have #-#-#-#-# gettext conflicts
 
 other checks
-  stop words - eg. OpenOffice or IMAP should not be translated.
-  check words - liek stop words but check them in msgid ie force
-    a review. Usefull for en_GB translation
+  stop words - 
+	same: eg. OpenOffice or IMAP should not be translated.
+	different: Color, Maximize should be translated
   plural checks - check plural forms against the Gettext plural header
     fallback to list of valid plurals for KDE.
   Supper basic machine translation - en_GB changes color -> colour
   tags - check XML/HTML tags to make sure that the counts are the same
   emails/URLs - checks emails and URLs to make sure they have not been altered
+  punc count - .,: all add up.  Simple way to see if all sentences where
+	translated.
+  detect french style end punc ie [space][!?]
