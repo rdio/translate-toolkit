@@ -14,6 +14,7 @@ Caio Begotti: documentation
 David Fraser: main development, pootle
 Dwayne Bailey: added tests, checks in pofilter, some helpful bash scripts, testing
 Filip Miletic: fixes for unicode problems
+Fredrik Corneliusson: xliff work
 Javier Sola: documentation
 Lucas Vieites: Pootle SVG logo
 Marek Wieckowski: Qt ts file enhancements
