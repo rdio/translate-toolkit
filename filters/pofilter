@@ -31,6 +31,12 @@ class pocheckfilter:
     else:
       self.checker = checker
 
+  def getfilters(self):
+    """lists the filters available on checker..."""
+    filters = self.checker.getfilters().keys()
+    filters.sort()
+    return filters
+
   def filterelement(self, thepo, includereview=1, excludefilters={}, limitfilters=None):
     """runs filters on an element"""
     if thepo.isheader(): return []
@@ -56,10 +62,14 @@ class pocheckfilter:
     return thenewpofile
 
 # TODO: refactor to set the filter list once, and use every time, rather than recreating for each file
-def runpofilter(inputfile, outputfile, includereview=1, filterobject=None, excludefilters={}, limitfilters=None):
+def runpofilter(inputfile, outputfile, includereview=False, filterobject=None, excludefilters={}, limitfilters=None, listfilters=False):
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
-  fromfile = po.pofile(inputfile)
   checkfilter = pocheckfilter(filterobject)
+  if listfilters:
+    filters = checkfilter.getfilters()
+    print "\n".join(filters)
+    return
+  fromfile = po.pofile(inputfile)
   tofile = checkfilter.filterfile(fromfile, includereview, excludefilters, limitfilters)
   if tofile.isempty():
     return 0
@@ -89,8 +99,10 @@ if __name__ == '__main__':
   parser.add_option("-t", "--test", dest="limitfilters",
     action="append", default=None, type="string", metavar="FILTER",
     help="only use test FILTERs specified with this option when filtering")
+  parser.add_option("-l", "--listfilters", dest="listfilters",
+    action="store_true", default=False, help="list filters available")
   requiredoptions = dict([(key, True) for key in 
-    ('includereview', 'filterobject', 'excludefilters', 'limitfilters')])
+    ('includereview', 'filterobject', 'excludefilters', 'limitfilters', 'listfilters')])
   options, args = parser.parse_args()
   # TODO: move this code into filtercmd...
   if options.input is None:
