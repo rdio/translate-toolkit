@@ -1,0 +1,104 @@
+#!/usr/bin/python2.2
+# 
+# Copyright 2002, 2003 Zuza Software Foundation
+# 
+# This file is part of translate.
+#
+# translate is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# translate is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with translate; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+"""script that converts a set of .dtd and .properties files to a set of .po files"""
+
+import sys
+import os
+from translate.convert import dtd2po
+from translate.convert import prop2po
+from translate.storage import dtd
+from translate.storage import po
+from translate.misc import quote
+
+def convertdtd(inputfile, outputfile):
+  inputdtd = dtd.dtdfile(inputfile)
+  convertor = dtd2po.dtd2po()
+  outputpo = convertor.convertfile(inputdtd)
+  outputpolines = outputpo.tolines()
+  outputfile.writelines(outputpolines)
+
+def convertprop(inputfile, outputfile):
+  convertor = prop2po.prop2po()
+  outputpo = convertor.convertfile(inputfile, outputfile)
+
+inputformats = {"dtd": convertdtd, "properties": convertprop}
+outputformat = "po"
+
+def recurse(inputdir, outputdir):
+  dirstack = ['']
+  while dirstack:
+    top = dirstack.pop(-1)
+    names = os.listdir(os.path.join(inputdir, top))
+    dirs = []
+    for name in names:
+      inputname = os.path.join(inputdir, top, name)
+      # handle directories...
+      if os.path.isdir(inputname):
+        dirs.append(os.path.join(top, name))
+        outputname = os.path.join(outputdir, top, name)
+        if not os.path.isdir(outputname):
+          os.mkdir(outputname)
+      elif os.path.isfile(inputname):
+        base, inputext = os.path.splitext(name)
+        inputext = inputext.replace(os.extsep, "", 1)
+        if not inputext in inputformats:
+          # only handle names that match recognized input file extensions
+          continue
+        # now we have split off .po, we split off the original extension
+        outputname = os.path.join(outputdir, top, name + os.extsep + outputformat)
+        inputfile = open(inputname, 'r')
+        outputfile = open(outputname, 'w')
+        convertfile = inputformats[inputext]
+        convertfile(inputfile, outputfile)
+    # make sure the directories are processed next time round...
+    dirs.reverse()
+    dirstack.extend(dirs)
+
+def handleoptions(options):
+  """handles the options, and runs the neccessary functions..."""
+  if options.inputdir is None:
+    raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputdir")
+  if not os.path.isdir(options.inputdir):
+    raise optparse.OptionValueError("inputdir must be directory for recursive run.")
+  if options.outputdir is None:
+    raise optparse.OptionValueError("must specify output directory for recursive run.")
+  if not os.path.isdir(options.outputdir):
+    raise optparse.OptionValueError("output must be existing directory for recursive run.")
+  recurse(options.inputdir, options.outputdir)
+
+if __name__ == '__main__':
+  # handle command line options
+  try:
+    import optparse
+  except ImportError:
+    from translate.misc import optparse
+  parser = optparse.OptionParser(usage="%prog [-i|--input-dir inputdir] [-o|--output-dir outputdir]")
+  parser.add_option("-i", "--input-dir", dest="inputdir", default=None,
+                    help="read from inputdir in "+", ".join(inputformats)+" formats", metavar="inputdir")
+  parser.add_option("-o", "--output-dir", dest="outputdir", default=None,
+                    help="write to outputdir in "+outputformat+" format", metavar="outputdir")
+  (options, args) = parser.parse_args()
+  # recurse the appropriate directories...
+  try:
+    handleoptions(options)
+  except optparse.OptParseError, message:
+    parser.error(message)
+
