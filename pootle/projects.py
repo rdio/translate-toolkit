@@ -5,6 +5,7 @@
 from translate.storage import po
 from translate.misc import quote
 from translate.filters import checks
+from translate.filters import pofilter
 from translate.convert import po2csv
 import os
 
@@ -41,7 +42,8 @@ class TranslationProject:
     self.languagename = self.potree.getlanguagename(self.languagecode)
     self.projectname = self.potree.getprojectname(self.languagecode, self.projectcode)
     self.podir = potree.getpodir(languagecode, projectcode)
-    self.checker = checks.StandardChecker()
+    checkerclasses = [checks.projectcheckers.get(projectcode, checks.StandardChecker), pofilter.StandardPOChecker]
+    self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses)
     self.pofilenames = []
     self.pofiles = {}
     self.stats = {}
@@ -216,7 +218,7 @@ class TranslationProject:
     for item, poel in enumerate(pofile.transelements):
       unquotedid = po.getunquotedstr(poel.msgid, joinwithlinebreak=False)
       unquotedstr = po.getunquotedstr(poel.msgstr, joinwithlinebreak=False)
-      failures = self.checker.run_filters(unquotedid, unquotedstr)
+      failures = self.checker.run_filters(poel, unquotedid, unquotedstr)
       for failure in failures:
         functionname = failure.split(":",2)[0]
         pofile.classify["check-" + functionname].append(item)
