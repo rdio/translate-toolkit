@@ -117,6 +117,37 @@ class ConvertOptionParser(optparse.OptionParser, object):
                   help="read from TEMPLATE in %s" % (templateformathelp))
       self.define_option(templateoption)
 
+  def potifyformat(self, fileformat):
+    """converts a .po to a .pot where required"""
+    if fileformat is None:
+      return fileformat
+    elif fileformat == "po":
+      return "pot"
+    elif fileformat.endswith(os.extsep + "po"):
+      return fileformat + "t"
+    else:
+      return fileformat
+
+  def filterinputformats(self, options):
+    """filters input formats, processing relevant switches in options"""
+    if self.usepots and options.pot:
+      return [self.potifyformat(inputformat) for inputformat in self.inputformats]
+    else:
+      return self.inputformats
+
+  def filteroutputoptions(self, options):
+    """filters output options, processing relevant switches in options"""
+    if self.usepots and options.pot:
+      outputoptions = {}
+      for (inputformat, templateformat), (outputformat, convertor) in self.outputoptions.iteritems():
+        inputformat = self.potifyformat(inputformat)
+        templateformat = self.potifyformat(templateformat)
+        outputformat = self.potifyformat(outputformat)
+        outputoptions[(inputformat, templateformat)] = (outputformat, convertor)
+      return outputoptions
+    else:
+      return self.outputoptions
+
   def setprogressoptions(self):
     """sets the progress options"""
     self.progresstypes = {"none": progressbar.NoProgressBar, "simple": progressbar.SimpleProgressBar,
@@ -135,18 +166,20 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def getformathelp(self, formats):
     """make a nice help string for describing formats..."""
-    if self.usepots and "po" in formats:
-      if isinstance(formats, dict):
-        formats["pot"] = formats["po"]
-      else:
-        formats.append("pot")
-    formats = [format for format in formats if format is not None]
-    if len(formats) == 0:
+    helpformats = []
+    if self.usepots:
+      for fileformat in formats:
+        if fileformat is None: continue
+        helpformats.append(fileformat)
+        potformat = self.potifyformat(fileformat)
+        if potformat != fileformat:
+          helpformats.append(potformat)
+    if len(helpformats) == 0:
       return ""
-    elif len(formats) == 1:
-      return "%s format" % (", ".join(formats))
+    elif len(helpformats) == 1:
+      return "%s format" % (", ".join(helpformats))
     else:
-      return "%s formats" % (", ".join(formats))
+      return "%s formats" % (", ".join(helpformats))
 
   def isrecursive(self, fileoption):
     """checks if fileoption is a recursive file"""
@@ -188,7 +221,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
         requiredoptions[optionname] = getattr(options, optionname)
     return requiredoptions
 
-  def getoutputoptions(self, inputpath, templatepath):
+  def getoutputoptions(self, options, inputpath, templatepath):
     """works out which conversion method to use..."""
     if inputpath:
       inputbase, inputext = self.splitinputext(inputpath)
@@ -198,22 +231,22 @@ class ConvertOptionParser(optparse.OptionParser, object):
       templatebase, templateext = self.splittemplateext(templatepath)
     else:
       templateext = None
-    if (inputext, templateext) in self.outputoptions:
-      return self.outputoptions[inputext, templateext]
-    elif (inputext, "*") in self.outputoptions:
-      outputformat, convertmethod = self.outputoptions[inputext, "*"]
-    elif ("*", templateext) in self.outputoptions:
-      outputformat, convertmethod = self.outputoptions["*", templateext]
-    elif ("*", "*") in self.outputoptions:
-      outputformat, convertmethod = self.outputoptions["*", "*"]
-    elif (inputext, None) in self.outputoptions:
-      return self.outputoptions[inputext, None]
-    elif (None, templateext) in self.outputoptions:
-      return self.outputoptions[None, templateext]
-    elif ("*", None) in self.outputoptions:
-      outputformat, convertmethod = self.outputoptions["*", None]
-    elif (None, "*") in self.outputoptions:
-      outputformat, convertmethod = self.outputoptions[None, "*"]
+    if (inputext, templateext) in options.outputoptions:
+      return options.outputoptions[inputext, templateext]
+    elif (inputext, "*") in options.outputoptions:
+      outputformat, convertmethod = options.outputoptions[inputext, "*"]
+    elif ("*", templateext) in options.outputoptions:
+      outputformat, convertmethod = options.outputoptions["*", templateext]
+    elif ("*", "*") in options.outputoptions:
+      outputformat, convertmethod = options.outputoptions["*", "*"]
+    elif (inputext, None) in options.outputoptions:
+      return options.outputoptions[inputext, None]
+    elif (None, templateext) in options.outputoptions:
+      return options.outputoptions[None, templateext]
+    elif ("*", None) in options.outputoptions:
+      outputformat, convertmethod = options.outputoptions["*", None]
+    elif (None, "*") in options.outputoptions:
+      outputformat, convertmethod = options.outputoptions[None, "*"]
     else:
       raise ValueError("could not find outputoptions for inputext %s, templateext %s" % (inputext, templateext))
     if outputformat == "*":
@@ -258,6 +291,8 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def recurseconversion(self, options):
     """recurse through directories and convert files"""
+    options.inputformats = self.filterinputformats(options)
+    options.outputoptions = self.filteroutputoptions(options)
     if self.isrecursive(options.input):
       if not self.isrecursive(options.output):
         self.error(optparse.OptionValueError("Cannot have recursive input and non-recursive output. check output exists"))
@@ -276,7 +311,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     self.initprogressbar(inputfiles, options)
     for inputpath in inputfiles:
       templatepath = self.gettemplatename(options, inputpath)
-      outputformat, convertmethod = self.getoutputoptions(inputpath, templatepath)
+      outputformat, convertmethod = self.getoutputoptions(options, inputpath, templatepath)
       fullinputpath = self.getfullinputpath(options, inputpath)
       fulltemplatepath = self.getfulltemplatepath(options, templatepath)
       outputpath = self.getoutputname(options, inputpath, outputformat)
@@ -420,18 +455,19 @@ class ConvertOptionParser(optparse.OptionParser, object):
     return os.path.isfile(fulltemplatepath)
 
   def gettemplatename(self, options, inputname):
-    """gets an output filename based on the input filename""" 
+    """gets an output filename based on the input filename"""
+    if not self.usetemplates: return None
     if not inputname or not options.recursivetemplate: return options.template
     inputbase, inputext = self.splitinputext(inputname)
-    if self.usetemplates and options.template:
-      for inputext1, templateext1 in self.outputoptions:
+    if options.template:
+      for inputext1, templateext1 in options.outputoptions:
         if inputext == inputext1:
           if templateext1:
             templatepath = inputbase + os.extsep + templateext1
             if self.templateexists(options, templatepath):
               return templatepath
-      if "*" in self.inputformats:
-        for inputext1, templateext1 in self.outputoptions:
+      if "*" in options.inputformats:
+        for inputext1, templateext1 in options.outputoptions:
           if (inputext == inputext1) or (inputext1 == "*"):
             if templateext1 == "*":
               templatepath = inputname
@@ -447,16 +483,12 @@ class ConvertOptionParser(optparse.OptionParser, object):
     """gets an output filename based on the input filename"""
     if not inputname or not options.recursiveoutput: return options.output
     inputbase, inputext = self.splitinputext(inputname)
-    if self.usepots and options.pot and outputformat == "po":
-      outputformat = "pot"
     return inputbase + os.extsep + outputformat
 
   def isvalidinputname(self, options, inputname):
     """checks if this is a valid input filename"""
     inputbase, inputext = self.splitinputext(inputname)
-    if self.usepots and options.pot and inputext == "pot":
-      inputext = "po"
-    return (inputext in self.inputformats) or ("*" in self.inputformats)
+    return (inputext in options.inputformats) or ("*" in options.inputformats)
 
 def copyinput(inputfile, outputfile, templatefile, **kwargs):
   """copies the input file to the output file"""
