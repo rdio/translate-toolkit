@@ -119,8 +119,11 @@ def convertoo(inputfile, outputfile, blankmsgstr=0):
   fromfile.fromlines(filelines)
   convertor = oo2po(blankmsgstr=blankmsgstr)
   outputpo = convertor.convertfile(fromfile)
+  if outputpo.isempty():
+    return 0
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
+  return 1
 
 if __name__ == '__main__':
   # handle command line options
