@@ -8,7 +8,6 @@ mozilla - automate
   convert back
   repackxpi
 mozilla - migrate from one version to another
-improve prop2po, po2prop by creating a translate.storage.properties class
 
 make po files of all existing translations
 take over the world
