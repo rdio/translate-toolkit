@@ -107,7 +107,7 @@ def convertnb(inputfile, outputfile, templatefile, wrap=None):
 
 if __name__ == '__main__':
   # handle command line options
-  formats = {("po", "htm"):("htm",convertnb), ("po", "html"):("html",convertnb), ("po"):("html",convertnb)}
+  formats = {("po", "htm"):("htm",convertnb), ("po"):("htm",convertnb)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   if textwrap is not None:
     parser.add_option("-w", "--wrap", dest="wrap", default=None, type="int",

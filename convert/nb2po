@@ -44,11 +44,10 @@ class nb2po:
     thepolist = []
     htmlparser = html.POHTMLParser(includeuntaggeddata = True)
     htmlparser.feed(fieldvalue)
-    allblocks = htmlparser.blocks + htmlparser.untaggeddata
     if htmlparser.currentblock.strip():
-      allblocks.append(htmlparser.currentblock.strip())
+      htmlparser.blocks.append(htmlparser.currentblock.strip())
     blocknum = 0
-    for block in allblocks:
+    for block in htmlparser.blocks:
       block = block.strip()
       if not block: continue
       if "" in block.split("\n"):
@@ -119,6 +118,6 @@ def convertnb(inputfile, outputfile, templates):
 if __name__ == '__main__':
   # handle command line options
   formats = {"htm":("po",convertnb)}
-  parser = convert.ConvertOptionParser(formats, description=__doc__)
+  parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.run()
 
