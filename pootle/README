@@ -28,6 +28,14 @@ To stop, press Ctrl-C. On Windows, it will only react to the Ctrl-C after a webp
 Notes
 -----
 
-Currently the files may need to be reindexed if the checks become outdated.
-To do this remove any stats files you want reindexed, and restart pootle
+Files should be reindexed automatically.
+To reindex manually, simply remove any stats files you want reindexed, or run ./pootle.py --refreshstats
+
+Assignments
+-----------
+
+To assign sstrings to users, you need to create a xxx.po.assigns file in the same directory as xxx.po
+This should contain lines in the following format:
+username: action: 0,2-34,36,99
+where action can be 'suggest' or 'review', and the numbers refer to 0-based item numbers in the file
 

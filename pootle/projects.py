@@ -47,34 +47,41 @@ class pootlefile(po.pofile):
     self.assignsfilename = self.filename + os.extsep + "assigns"
     self.pendingfile = None
     # we delay parsing until it is required
-    self.parsed = False
+    self.pomtime = None
     self.getstats()
     self.getassigns()
 
   def readpofile(self):
     """reads and parses the main po file"""
+    self.poelements = []
+    pomtime = getmodtime(self.filename)
     self.parse(open(self.filename, 'r'))
     # we ignore all the headers by using this filtered set
     self.transelements = [poel for poel in self.poelements if not (poel.isheader() or poel.isblank())]
     self.classifyelements()
-    self.parsed = True
+    self.pomtime = pomtime
 
   def savepofile(self):
     """saves changes to the main file to disk..."""
     lines = self.tolines()
     open(self.filename, "w").writelines(lines)
+    # don't need to reread what we saved
+    self.pomtime = getmodtime(self.filename)
+
+  def pofreshen(self):
+    """makes sure we have a freshly parsed pofile"""
+    if self.pomtime != getmodtime(self.filename):
+      self.readpofile()
 
   def getsource(self):
     """returns pofile source"""
-    if not self.parsed:
-      self.readpofile()
+    self.pofreshen()
     lines = self.tolines()
     return "".join(lines)
 
   def getcsv(self):
     """returns pofile as csv"""
-    if not self.parsed:
-      self.readpofile()
+    self.pofreshen()
     convertor = po2csv.po2csv()
     csvfile = convertor.convertfile(self)
     lines = csvfile.tolines()
@@ -88,7 +95,7 @@ class pootlefile(po.pofile):
         return
       inputfile = open(self.pendingfilename, "r")
       self.pendingmtime, self.pendingfile = pendingmtime, po.pofile(inputfile)
-      if self.parsed:
+      if self.pomtime:
         self.reclassifysuggestions()
     else:
       self.pendingfile = po.pofile()
@@ -158,8 +165,7 @@ class pootlefile(po.pofile):
 
   def calcstats(self):
     """calculates translation statistics for the given po file"""
-    if not self.parsed:
-      self.readpofile()
+    self.pofreshen()
     postats = dict([(name, len(items)) for name, items in self.classify.iteritems()])
     self.stats = postats
 
@@ -247,8 +253,7 @@ class pootlefile(po.pofile):
 
   def setmsgstr(self, item, newmsgstr):
     """updates a translation with a new msgstr value"""
-    if not self.parsed:
-      self.readpofile()
+    self.pofreshen()
     thepo = self.transelements[item]
     thepo.msgstr = newmsgstr
     thepo.markfuzzy(False)
@@ -533,8 +538,7 @@ class TranslationProject:
   def getpofile(self, pofilename):
     """parses the file into a pofile object and stores in self.pofiles"""
     pofile = self.pofiles[pofilename]
-    if not pofile.parsed:
-      pofile.readpofile()
+    pofile.pofreshen()
     return pofile
 
   def getpofilelen(self, pofilename):
