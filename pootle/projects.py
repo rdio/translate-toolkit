@@ -17,14 +17,8 @@ class TranslationSession:
 
   def getnextitem(self):
     """gives the user the next item to be translated"""
-    if self.lastitem is None:
-      item = 0
-    else:
-      item = self.lastitem + 1
-    while self.pofile is None or item >= len(self.pofile.transelements):
-      self.pofilename = self.translationproject.getnextpofilename(self.pofilename)
-      self.pofile = self.translationproject.getpofile(self.pofilename)
-      item = 0
+    self.pofilename, item = self.translationproject.getnextitem(self.pofilename, self.lastitem)
+    self.pofile = self.translationproject.getpofile(self.pofilename)
     thepo = self.pofile.transelements[item]
     orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
     return self.pofilename, item, orig, trans
@@ -55,6 +49,22 @@ class TranslationProject:
     else:
       index = self.pofilenames.index(pofilename)
       return self.pofilenames[index+1]
+
+  def getnextitem(self, pofilename, lastitem):
+    """skips to the next item"""
+    if lastitem is None:
+      item = 0
+    else:
+      item = lastitem + 1
+    if pofilename is None:
+      pofile = None
+    else:
+      pofile = self.getpofile(pofilename)
+    while pofile is None or item > len(pofile.transelements):
+      pofilename = self.getnextpofilename(pofilename)
+      pofile = self.getpofile(pofilename)
+      item = 0
+    return pofilename, item
 
   def gettranslationsession(self, session):
     """gets the user's translationsession"""
