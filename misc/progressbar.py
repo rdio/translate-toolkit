@@ -39,6 +39,18 @@ class SimpleProgressBar:
   def __del__(self):
     self.close()
 
+class NoProgressBar:
+  """an invisible indicator that does nothing..."""
+  def __init__(self):
+    self.amount = 0
+
+  def show(self, verbosemessage):
+    """show nothing for progress :-)"""
+    pass
+
+  def close(self):
+    pass
+
 class ProgressBar:
   """a plain progress bar that doesn't know very much about output..."""
   def __init__(self, minValue = 0, maxValue = 100, totalWidth=50):
