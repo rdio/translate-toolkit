@@ -28,20 +28,14 @@ import encodings
 import codecs
 import string
 
-def listencodings():
-  modules = encodings.aliases.aliases.values()
-  moduledict = dict([(module, True) for module in modules])
-  modules = moduledict.keys()
-  modules.sort()
-  return modules
-
 class detector:
   excludechoices={'letters':string.letters, 'digits':string.digits,
                   'whitespace':string.whitespace, 'punctuation':string.punctuation,
                   'std':string.letters+string.digits+string.whitespace+string.punctuation}
 
-  def __init__(self, filenames, outputencoding):
-    self.outputencoding = outputencoding
+  def __init__(self, filenames, options):
+    self.outputencoding = options.outputencoding
+    self.limitencodings = options.limitencodings
     self.alloriginals, self.alltranslations = [], []
     for filename in filenames:
       if not os.path.exists(filename):
@@ -51,6 +45,25 @@ class detector:
         self.handledir(filename)
       else:
         self.handlefile(filename)
+    if options.dictfile:
+      self.dictstring = codecs.open(options.dictfile, 'r', options.dictencoding).read()
+    else:
+      self.dictstring = None
+    self.options = options
+    self.excludestring = ""
+    if options.exclude:
+      for excludecategory in options.exclude:
+        if excludecategory in self.excludechoices:
+          self.excludestring += self.excludechoices[excludecategory]
+
+  def listencodings(self):
+    if self.limitencodings is not None:
+      return self.limitencodings.split(",")
+    modules = encodings.aliases.aliases.values()
+    moduledict = dict([(module, True) for module in modules])
+    modules = moduledict.keys()
+    modules.sort()
+    return modules
 
   def processoriginal(self, original):
     self.alloriginals.append(original)
@@ -135,29 +148,24 @@ class detector:
           failed += char
       return encoded + " " + repr(failed)
 
-  def testencodings(self, excludelist, dictstring):
-    excludestring = ""
-    if excludelist:
-      for excludecategory in excludelist:
-        if excludecategory in self.excludechoices:
-          excludestring += self.excludechoices[excludecategory]
+  def testcharstats(self):
     dictcountmap = {}
-    if dictstring:
-      self.getcountmap(dictstring, excludestring, dictcountmap)
+    if self.dictstring:
+      self.getcountmap(self.dictstring, self.excludestring, dictcountmap)
     validencodings = {}
     encodingdeltas = {}
-    for encoding in listencodings():
-      try:
-        countmap = {}
-        for translation in self.alltranslations:
+    for encoding in self.listencodings():
+      countmap = {}
+      for translation in self.alltranslations:
+        try:
           decoded = translation.decode(encoding)
-          self.getcountmap(decoded, excludestring, countmap)
-        validencodings[encoding] = countmap
-      except:
-        continue
+        except UnicodeDecodeError:
+          continue
+        self.getcountmap(decoded, self.excludestring, countmap)
+      validencodings[encoding] = countmap
       if dictcountmap:
         encodingdeltas[encoding] = self.getcountmapdelta(dictcountmap, countmap)
-    if dictstring:
+    if self.dictstring:
       sortedstring = self.countmaptostring(dictcountmap)
       print "dict:", self.encodeattempt(sortedstring)
       deltas = [(delta, encoding) for encoding, delta in encodingdeltas.iteritems()]
@@ -173,6 +181,59 @@ class detector:
       validencoding = "%s (%d):" % (validencoding, encodingdeltas[validencoding])
       validencoding += " "*(keylen-len(validencoding))
       print validencoding, self.encodeattempt(sortedstring)
+
+  def fuzzy(self, word, includestring):
+    fuzzyword = ''
+    for char in word:
+      if char in includestring:
+        fuzzyword += char
+      else:
+        fuzzyword += ' '
+    return fuzzyword
+
+  def testwordstats(self):
+    ignoremap = {}
+    for excludedchar in self.excludestring:
+      ignoremap[ord(excludedchar)] = u' '
+    dictmap = {}
+    if self.dictstring:
+      for dictword in self.dictstring.split():
+        if not dictword.translate(ignoremap).isspace():
+          if self.options.fuzzymatch:
+            dictmap[self.fuzzy(dictword, self.excludestring)] = dictword
+          else:
+            dictmap[dictword.lower()] = 0
+    print "%d words in dictionary" % len(dictmap)
+    encodingcounts = {}
+    for encoding in self.listencodings():
+      try:
+        wordsfound = 0
+        for translation in self.alltranslations:
+          try:
+            decoded = translation.decode(encoding)
+          except UnicodeDecodeError:
+            raise
+          except Exception, e:
+            raise UnicodeDecodeError(encoding, translation, 0, 0, str(e))
+          decodedwords = translation.lower().split()
+          for word in decodedwords:
+            if self.options.fuzzymatch:
+              fuzzyword = self.fuzzy(word, self.excludestring)
+              if fuzzyword in dictmap:
+                wordsfound += 1
+            else:
+              if word in dictmap:
+                wordsfound += 1
+        encodingcounts[encoding] = wordsfound
+      except UnicodeDecodeError:
+        continue
+    counts = [(count, encoding) for encoding, count in encodingcounts.iteritems()]
+    counts.sort()
+    validkeys = [encoding for count, encoding in counts]
+    for validencoding in validkeys:
+      count = encodingcounts[validencoding]
+      if count:
+        print "%s: %d" % (validencoding, count)
 
 if __name__ == '__main__':
   try:
@@ -192,11 +253,22 @@ if __name__ == '__main__':
   optparser.add_option("", "--outputencoding", dest="outputencoding",
     action="store", default="iso-8859-1",
     help="the encoding of the output")
+  optparser.add_option("", "--matchwords", dest="matchwords",
+    action="store_true", default=False,
+    help="match words to the dictionary")
+  optparser.add_option("", "--matchchars", dest="matchchars",
+    action="store_true", default=False,
+    help="match chars to the dictionary")
+  optparser.add_option("", "--fuzzymatch", dest="fuzzymatch",
+    action="store_true", default=False,
+    help="match words to the dictionary using a fuzzy algorithm...")
+  optparser.add_option("", "--limitencodings", dest="limitencodings",
+    action="store", default=None,
+    help="only use the encodings specified")
   (options, args) = optparser.parse_args()
-  d = detector(args, options.outputencoding)
-  if options.dictfile:
-    dictstring = codecs.open(options.dictfile, 'r', options.dictencoding).read()
-  else:
-    dictstring = None
-  d.testencodings(options.exclude, dictstring)
+  d = detector(args, options)
+  if options.matchwords:
+    d.testwordstats()
+  if options.matchchars:
+    d.testcharstats()
 
