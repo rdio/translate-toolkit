@@ -48,6 +48,9 @@ def _commonprefix(itemlist):
 class XpiFile(zipfile.ZipFile):
   def __init__(self, *args, **kwargs):
     """sets up the xpi file"""
+    self.includenonloc = kwargs.get("includenonloc", True)
+    if "includenonloc" in kwargs:
+      del kwargs["includenonloc"]
     zipfile.ZipFile.__init__(self, *args, **kwargs)
     self.jarfiles = {}
     self.commonprefix = self.findcommonprefix()
@@ -67,11 +70,17 @@ class XpiFile(zipfile.ZipFile):
           jarfile = self.jarfiles[filename]
         yield filename, jarfile
 
+  def islocfile(self, filename):
+    """returns whether the given file is needed for localization (basically .dtd and .properties)"""
+    base, ext = os.path.splitext(filename)
+    return ext in (os.path.extsep + "dtd", os.path.extsep + "properties")
+
   def iterjarcontents(self):
     """iterate through all the localization files stored inside the jars"""
     for jarfilename, jarfile in self.iterjars():
       for filename in jarfile.namelist():
         if filename.endswith('/'): continue
+        if not self.islocfile(filename) and not self.includenonloc: continue
         yield filename
 
   def findcommonprefix(self):
@@ -148,6 +157,22 @@ class XpiFile(zipfile.ZipFile):
           return jarfilename, filename
       raise IndexError("ospath not found in xpi file, could not guess location: %r" % ospath)
 
+  def jarfileexists(self, jarfilename, filename):
+    """checks whether the given file exists inside the xpi"""
+    if jarfilename is None:
+      return filename in self.namelist()
+    else:
+      jarfile = self.jarfiles[jarfilename]
+      return filename in jarfile.namelist()
+
+  def ospathexists(self, ospath):
+    """checks whether the given file exists inside the xpi"""
+    if jarfilename is None:
+      return filename in self.namelist()
+    else:
+      jarfile = self.jarfiles[jarfilename]
+      return filename in jarfile.namelist()
+
   def openinputstream(self, jarfilename, filename):
     """opens a file (possibly inside a jarfile as a StringIO"""
     if jarfilename is None:
@@ -166,6 +191,7 @@ class XpiFile(zipfile.ZipFile):
     if includenonjars:
       for filename in self.namelist():
         if filename.endswith('/') and not includedirs: continue
+        if not self.islocfile(filename) and not self.includenonloc: continue
         if not filename.lower().endswith(".jar"):
           yield self.jartoospath(None, filename)
     for jarfilename, jarfile in self.iterjars():
@@ -173,6 +199,7 @@ class XpiFile(zipfile.ZipFile):
         if filename.endswith('/'):
           if not includedirs: continue
           elif len(filename.split('/'))-1 < len(self.commonprefix): continue
+        if not self.islocfile(filename) and not self.includenonloc: continue
         yield self.jartoospath(jarfilename, filename)
 
 if __name__ == '__main__':
