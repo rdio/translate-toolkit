@@ -68,6 +68,19 @@ class poelement:
     self.msgid_plural = []
     self.msgstr = []
 
+  def copy(self):
+    newpo = poelement()
+    newpo.othercomments = self.othercomments
+    newpo.sourcecomments = self.sourcecomments
+    newpo.typecomments = self.typecomments
+    newpo.visiblecomments = self.visiblecomments
+    newpo.msgidcomments = self.msgidcomments
+    newpo.msgid = self.msgid
+    newpo.msgid_pluralcomments = self.msgid_pluralcomments
+    newpo.msgid_plural = self.msgid_plural
+    newpo.msgstr = self.msgstr
+    return newpo
+
   def msgidlen(self):
     return len(getunquotedstr(self.msgid).strip())
 
