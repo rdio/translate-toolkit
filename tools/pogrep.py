@@ -25,7 +25,7 @@ from translate.misc import optrecurse
 import sre
 
 class pogrepfilter:
-  def __init__(self, searchstring, searchparts, ignorecase, useregexp, invertmatch):
+  def __init__(self, searchstring, searchparts, ignorecase, useregexp, invertmatch, accelchar):
     """builds a pocheckfilter using the given checker"""
     self.searchstring = searchstring
     if searchparts:
@@ -41,10 +41,14 @@ class pogrepfilter:
     if self.useregexp:
       self.searchpattern = sre.compile(self.searchstring)
     self.invertmatch = invertmatch
+    self.accelchar = accelchar
 
   def matches(self, teststr):
     if self.ignorecase:
       teststr = teststr.lower()
+    if self.accelchar:
+      teststr = sre.sub(self.accelchar + self.accelchar, "#", teststr)
+      teststr = sre.sub(self.accelchar, "", teststr)
     if self.useregexp:
       found = self.searchpattern.search(teststr)
     else:
@@ -123,7 +127,7 @@ class GrepOptionParser(optrecurse.RecursiveOptionParser):
     (options, args) = self.parse_args()
     options.inputformats = self.inputformats
     options.outputoptions = self.outputoptions
-    options.checkfilter = pogrepfilter(options.searchstring, options.searchparts, options.ignorecase, options.useregexp, options.invertmatch)
+    options.checkfilter = pogrepfilter(options.searchstring, options.searchparts, options.ignorecase, options.useregexp, options.invertmatch, options.accelchar)
     self.usepsyco(options)
     self.recursiveprocess(options)
 
@@ -149,6 +153,9 @@ def main():
     action="store_true", default=False, help="use regular expression matching")
   parser.add_option("-v", "--invert-match", dest="invertmatch",
     action="store_true", default=False, help="select non-matching lines")
+  parser.add_option("", "--accelerator", dest="accelchar",
+    action="store", type="choice", choices=["&", "_", "~"],
+    metavar="ACCELERATOR", help="ignores the given accelerator when matching")
   parser.set_usage()
   parser.passthrough.append('checkfilter')
   parser.run()
