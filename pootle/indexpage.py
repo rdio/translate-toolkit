@@ -103,12 +103,16 @@ class ProjectIndex(pagelayout.PootlePage):
       fileentries.append(fileentry)
     pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, processlinks, direntries, fileentries], session, bannerheight=81)
     self.addsearchbox(searchtext="", action="translate.html")
-    self.addfolderlinks("current folder", dirfilter, "index.html")
+    if dirfilter and dirfilter.endswith(".po"):
+      currentfolder = "/".join(dirfilter.split("/")[:-1])
+    else:
+      currentfolder = dirfilter
+    self.addfolderlinks("current folder", currentfolder, "index.html")
     if dirfilter is not None:
-      parentfolder = "/".join(dirfilter.split("/")[:-1])
+      parentfolder = "/".join(currentfolder.split("/")[:-1])
       if parentfolder:
         self.addfolderlinks("parent folder", parentfolder, "../index.html")
-      depth = dirfilter.count("/") + 1
+      depth = currentfolder.count("/") + 1
       self.addfolderlinks("project root", "/", "/".join([".."] * depth) + "/index.html")
 
   def getdiritem(self, direntry):

@@ -44,7 +44,11 @@ class TranslatePage(pagelayout.PootlePage):
     translatediv = pagelayout.TranslateForm([pagelinks, translateform])
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
     self.addfilelinks(self.pofilename, self.matchnames)
-    self.addfolderlinks("current folder", dirfilter, "index.html")
+    if dirfilter and dirfilter.endswith(".po"):
+      currentfolder = "/".join(dirfilter.split("/")[:-1])
+    else:
+      currentfolder = dirfilter
+    self.addfolderlinks("current folder", currentfolder, "index.html")
     autoexpandscript = widgets.Script('text/javascript', '', newattribs={'src': self.instance.baseurl + 'js/autoexpand.js'})
     self.headerwidgets.append(autoexpandscript)
 
