@@ -165,19 +165,23 @@ class LanguageSelectionWindow(wx.Frame):
     self.createoptioncontrols()
     self.advancedcontrols = [self.versionlabel, self.versionchoice, self.dirlabel, self.dirbox, self.dirbrowse,
                              self.adminlabel, self.adminchoice, self.forcelabel, self.forcechoice]
-    self.arrangeoptioncontrols()
+    self.optionssizer = wx.FlexGridSizer(0, 2, 0, 0)
 
     self.applybutton = wx.Button(self.panel, wx.ID_ANY, "Apply Changes")
     wx.EVT_BUTTON(self, self.applybutton.GetId(), self.OnApply)
     self.cancelbutton = wx.Button(self.panel, wx.ID_ANY, "Cancel")
     wx.EVT_BUTTON(self, self.cancelbutton.GetId(), self.OnCancel)
+    self.advancedbutton = wx.Button(self.panel, wx.ID_ANY, "More options...")
+    wx.EVT_BUTTON(self, self.advancedbutton.GetId(), self.OnSwitchAdvanced)
     self.buttonsizer = wx.BoxSizer(wx.HORIZONTAL)
     self.buttonsizer.Add(self.applybutton)
     self.buttonsizer.Add(self.cancelbutton)
+    self.buttonsizer.Add(self.advancedbutton)
 
     self.sizer = wx.BoxSizer(wx.VERTICAL)
     self.sizer.Add(self.optionssizer)
     self.sizer.Add(self.buttonsizer)
+    self.arrangeoptioncontrols()
     self.panel.SetAutoLayout(1)
     self.panel.SetSizer(self.sizer)
 
@@ -220,16 +224,16 @@ class LanguageSelectionWindow(wx.Frame):
                      (self.languagelabel, self.languagelist),
                      (self.adminlabel, self.adminchoice),
                      (self.forcelabel, self.forcechoice)]
-    self.optionssizer = wx.FlexGridSizer(0, 2, 0, 0)
+    self.optionssizer.Clear()
     for label, control in optionslayout:
       row = self.optionssizer.GetRows()
       if label in self.advancedcontrols and not self.advancedmode:
         continue
       self.optionssizer.Add(label, row, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
       self.optionssizer.Add(control, row, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-    if not self.advancedmode:
-      for control in self.advancedcontrols:
-        control.Hide()
+    for control in self.advancedcontrols:
+      control.Show(self.advancedmode)
+    self.panel.Layout()
 
   def setinstalldir(self, installdir):
     """Sets the current installation we are working on..."""
@@ -351,6 +355,12 @@ class LanguageSelectionWindow(wx.Frame):
   def OnCancel(self, event):
     """Cancel without applying changes"""
     self.Close(1)
+
+  def OnSwitchAdvanced(self, event):
+    """Cancel without applying changes"""
+    self.advancedmode = not self.advancedmode
+    self.arrangeoptioncontrols()
+    event.Skip()
 
 # to build ooswitchlang exe: use Installer 6 alpha 2 (5b4 not compatible with python 2.3)
 # set tools=x:\path\to\translate\tools
