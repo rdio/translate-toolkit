@@ -840,9 +840,11 @@ class TranslationProject:
 
   def gettext(self, message):
     """uses the project as a live translator for the given message"""
-    for pofile in self.pofiles:
-      pofile.freshen()
-      if not hasattr(pofile, "msgidindex"):
+    for pofilename, pofile in self.pofiles.iteritems():
+      if pofile.pomtime != getmodtime(pofile.filename):
+        pofile.readpofile()
+        pofile.makeindex()
+      elif not hasattr(pofile, "msgidindex"):
         pofile.makeindex()
       thepo = pofile.msgidindex.get(message, None)
       if not thepo or thepo.isblankmsgstr():
