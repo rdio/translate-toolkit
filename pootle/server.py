@@ -148,6 +148,8 @@ class PootleServer(OptionalLoginAppServer):
 	  page = widgets.PlainContents(contents)
 	  page.content_type = "text/plain"
 	  return page
+	elif bottom == "index.html":
+	  return indexpage.SubprojectIndex(subproject, session, os.path.join(*pathwords[:-1]))
 	else:
 	  return indexpage.SubprojectIndex(subproject, session, os.path.join(*pathwords))
     return None

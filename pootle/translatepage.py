@@ -23,6 +23,12 @@ class TranslatePage(pagelayout.PootlePage):
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
     self.links.addcontents(pagelayout.SidebarTitle("current file"))
     self.links.addcontents(pagelayout.SidebarText(self.pofilename))
+    self.links.addcontents(pagelayout.SidebarTitle("current folder"))
+    if dirfilter is None:
+      currentfolderlink = widgets.Link("index.html", "/")
+    else:
+      currentfolderlink = widgets.Link("index.html", dirfilter)
+    self.links.addcontents(pagelayout.SidebarText(currentfolderlink))
     postats = self.translationproject.getpostats(self.pofilename)
     blank, fuzzy = postats["blank"], postats["fuzzy"]
     translated, total = postats["translated"], postats["total"]

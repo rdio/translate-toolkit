@@ -45,7 +45,7 @@ class LanguageIndex(pagelayout.PootlePage):
     self.language = language
     self.instance = session.instance
     subprojectlinks = self.getsubprojectlinks()
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.language.fullname, subprojectlinks, session)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.language.fullname, subprojectlinks, session, bannerheight=81)
 
   def getsubprojectlinks(self):
     """gets the links to the projects"""
@@ -85,7 +85,7 @@ class SubprojectIndex(pagelayout.PootlePage):
     for childfile in self.translationproject.browsefiles(dirfilter=dirfilter, depth=depth, includefiles=True, includedirs=False):
       fileentry = self.getfileitem(childfile)
       fileentries.append(fileentry)
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.subproject.fullname, [processlinks, direntries, fileentries], session)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.subproject.fullname, [processlinks, direntries, fileentries], session, bannerheight=81)
 
   def getdiritem(self, direntry):
     basename = os.path.basename(direntry)
