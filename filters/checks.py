@@ -151,25 +151,25 @@ class StandardChecker(TranslationChecker):
 
   def blank(self, str1, str2):
     """checks whether a translation is totally blank"""
-    len1 = len(str1.strip())
+    len1 = len(prefilter.removekdecomments(str1).strip())
     len2 = len(str2.strip())
     return not (len1 > 0 and len(str2) != 0 and len2 == 0)
 
   def short(self, str1, str2):
     """checks whether a translation is much shorter than the original string"""
-    len1 = len(str1.strip())
+    len1 = len(prefilter.removekdecomments(str1).strip())
     len2 = len(str2.strip())
     return not ((len1 > 0) and (0 < len2 < (len1 * 0.1)))
 
   def long(self, str1, str2):
     """checks whether a translation is much longer than the original string"""
-    len1 = len(str1.strip())
+    len1 = len(prefilter.removekdecomments(str1).strip())
     len2 = len(str2.strip())
     return not ((len1 > 0) and (0 < len1 < (len2 * 0.1)))
 
   def escapes(self, str1, str2):
     """checks whether escaping is consistent between the two strings"""
-    return helpers.countsmatch(str1, str2, ("\\", "\\\\"))
+    return helpers.countsmatch(prefilters.removekdecomments(str1), str2, ("\\", "\\\\"))
 
   def singlequoting(self, str1, str2):
     """checks whether singlequoting is consistent between the two strings"""
@@ -250,6 +250,12 @@ class StandardChecker(TranslationChecker):
       return str1 == str2
     return 1
 
+  def brackets(self, str1, str2):
+    """checks that the number of brackets in both strings match"""
+    str1 = self.filtervariables(str1)
+    str2 = self.filtervariables(str2)
+    return helpers.countsmatch(str1, str2, ("[", "]", "{", "}", "(", ")"))
+
   def simplecaps(self, str1, str2):
     """checks the capitalisation of two strings isn't wildly different"""
     capitals1, capitals2 = helpers.filtercount(str1, str.isupper), helpers.filtercount(str2, str.isupper)
@@ -285,7 +291,7 @@ class StandardChecker(TranslationChecker):
   preconditions = {"untranslated": ("escapes", "short", "long", "unchanged", "singlequoting", "doublequoting",
                                     "accelerators", "variables", "numbers",
                                     "doublespacing", "puncspacing", "startwhitespace", "endwhitespace",
-                                    "startpunc", "endpunc", "purepunc", "simplecaps", "acronyms") }
+                                    "startpunc", "endpunc", "purepunc", "simplecaps", "acronyms", "brackets") }
 
 # code to actually run the tests (use unittest?)
 
