@@ -3,37 +3,37 @@
 from jToolkit.widgets import widgets
 from jToolkit.widgets import table
 
-class Blog(widgets.Division):
-  def __init__(self, title):
-    widgets.Division.__init__(self, title, cls="blog")
+class Contents(widgets.Division):
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="contents")
 
-class BlogBody(widgets.Division):
-  def __init__(self, title):
-    widgets.Division.__init__(self, title, cls="blogbody")
+class ContentsItem(widgets.Division):
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="contentsitem")
 
 class IntroText(widgets.Division):
-  def __init__(self, title):
-    widgets.Division.__init__(self, title, cls="intro")
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="intro")
 
 class Item(widgets.Division):
-  def __init__(self, title):
-    widgets.Division.__init__(self, title, cls="item")
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="item")
 
 class ItemDescription(widgets.Division):
-  def __init__(self, title):
-    widgets.Division.__init__(self, title, cls="item-description")
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="item-description")
 
-class Posted(widgets.Division):
-  def __init__(self, title):
-    widgets.Division.__init__(self, title, cls="posted")
+class ItemStatistics(widgets.Division):
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="item-statistics")
 
 class SidebarTitle(widgets.Division):
-  def __init__(self, title):
-    widgets.Division.__init__(self, title, cls="sidetitle")
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="sidecontents")
 
 class SidebarText(widgets.Division):
-  def __init__(self, title):
-    widgets.Division.__init__(self, title, cls="side")
+  def __init__(self, contents):
+    widgets.Division.__init__(self, contents, cls="side")
 
 class PootleSidebar(widgets.Division):
   """the bar at the side describing current login details etc"""

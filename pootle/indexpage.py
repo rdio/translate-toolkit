@@ -17,12 +17,12 @@ class PootleIndex(pagelayout.PootlePage):
   def getprojectlinks(self):
     """gets the links to the projects"""
     projectitems = [self.getprojectitem(projectcode, project) for projectcode, project in self.instance.projects.iteritems()]
-    return pagelayout.Blog(projectitems)
+    return pagelayout.Contents(projectitems)
 
   def getprojectitem(self, projectcode, project):
     bodytitle = '<h3 class="title">%s</h3>' % project.fullname
     bodydescription = pagelayout.ItemDescription('<a href="%s/">%s projects</a>' % (projectcode, project.fullname))
-    body = pagelayout.BlogBody([bodytitle, bodydescription])
+    body = pagelayout.ContentsItem([bodytitle, bodydescription])
     subprojects = [projects.getproject(subproject) for (subprojectcode, subproject) in project.subprojects.iteritems()]
     subprojectcount = len(subprojects)
     totalstats = {"translated":0, "total":0}
@@ -33,7 +33,7 @@ class PootleIndex(pagelayout.PootlePage):
     translated = totalstats["translated"]
     total = totalstats["total"]
     percentfinished = (translated*100/max(total, 1))
-    stats = pagelayout.Posted("%d subprojects, %d%% translated" % (subprojectcount, percentfinished))
+    stats = pagelayout.ItemStatistics("%d subprojects, %d%% translated" % (subprojectcount, percentfinished))
     return pagelayout.Item([body, stats])
 
 class ProjectIndex(pagelayout.PootlePage):
@@ -48,18 +48,18 @@ class ProjectIndex(pagelayout.PootlePage):
   def getsubprojectlinks(self):
     """gets the links to the projects"""
     subprojectitems = [self.getsubprojectitem(subprojectcode, subproject) for subprojectcode, subproject in self.project.subprojects.iteritems()]
-    return pagelayout.Blog(subprojectitems)
+    return pagelayout.Contents(subprojectitems)
 
   def getsubprojectitem(self, subprojectcode, subproject):
     bodytitle = '<h3 class="title">%s</h3>' % subproject.fullname
     bodydescription = pagelayout.ItemDescription('<a href="%s/">%s subproject</a>' % (subprojectcode, subproject.fullname))
-    body = pagelayout.BlogBody([bodytitle, bodydescription])
+    body = pagelayout.ContentsItem([bodytitle, bodydescription])
     translationproject = projects.getproject(subproject)
     numfiles = len(translationproject.pofilenames)
     projectstats = translationproject.calculatestats()
     translated = projectstats.get("translated", 0)
     total = projectstats.get("total", 0)
     percentfinished = (translated*100/max(total, 1))
-    stats = pagelayout.Posted("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
+    stats = pagelayout.ItemStatistics("%d files, %d/%d strings (%d%%) translated" % (numfiles, translated, total, percentfinished))
     return pagelayout.Item([body, stats])
 
