@@ -190,12 +190,8 @@ def main():
                     help="don't change the timestamps of the strings")
   parser.add_option("", "--nonrecursiveoutput", dest="allowrecursiveoutput", default=True, action="store_false", help="don't treat the output oo as a recursive store")
   parser.add_option("", "--nonrecursivetemplate", dest="allowrecursivetemplate", default=True, action="store_false", help="don't treat the template oo as a recursive store")
-  parser.add_option("", "--fuzzy", dest="includefuzzy", action="store_true", default=False,
-    help="use translations marked fuzzy")
-  parser.add_option("", "--nofuzzy", dest="includefuzzy", action="store_false", default=False,
-    help="don't use translations marked fuzzy (default)")
+  parser.add_fuzzy_option()
   parser.passthrough.append("languagecode")
   parser.passthrough.append("timestamp")
-  parser.passthrough.append("includefuzzy")
   parser.run()
 

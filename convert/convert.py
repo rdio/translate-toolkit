@@ -38,6 +38,18 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
     self.setpotoption()
     self.set_usage()
 
+  def add_fuzzy_option(self, default=False):
+    """adds an option to include / exclude fuzzy translations"""
+    fuzzyhelp = "use translations marked fuzzy"
+    nofuzzyhelp = "don't use translations marked fuzzy"
+    if default:
+      fuzzyhelp += " (default)"
+    else:
+      nofuzzyhelp += " (default)"
+    self.add_option("", "--fuzzy", dest="includefuzzy", action="store_true", default=default, help=fuzzyhelp)
+    self.add_option("", "--nofuzzy", dest="includefuzzy", action="store_false", default=default, help=nofuzzyhelp)
+    self.passthrough.append("includefuzzy")
+
   def potifyformat(self, fileformat):
     """converts a .po to a .pot where required"""
     if fileformat is None:
