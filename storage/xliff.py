@@ -36,7 +36,7 @@ def writexml(self, writer, indent="", addindent="", newl=""):
 
     for a_name in a_names:
         writer.write(" %s=\"" % a_name)
-        _write_data(writer, attrs[a_name].value)
+        minidom._write_data(writer, attrs[a_name].value)
         writer.write("\"")
     if self.childNodes:
         if len(self.childNodes) == 1 and self.childNodes[0].nodeType == self.TEXT_NODE:
@@ -76,9 +76,26 @@ class XliffParser:
       self.document = minidom.parse(inputfile)
       assert self.document.documentElement.tagName == "xliff"
 
+  def addtransunit(self, filename, transunitnode, createifmissing=False):
+    """adds the given trans-unit (will create the nodes required if asked). Returns success"""
+    filenode = self.getfilenode(filename)
+    if filenode is None:
+      if not createifmissing:
+        return False
+      filenode = self.document.createElement("file")
+      filenode.setAttribute("original", filename)
+      self.document.documentElement.appendChild(filenode)
+    for transunit in self.gettransunitnodes(filenode):
+      pass
+    if not createifmissing:
+      return False
+    filenode.appendChild(transunitnode)
+    # transunitnode.setIdAttribute("message1")
+    return True
+
   def getnodetext(self, node):
     """returns the node's text by iterating through the child nodes"""
-    return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
+    return "".join([getattr(t, "data", "") for t in node.childNodes if t.nodeType == t.TEXT_NODE])
 
   def getxml(self):
     """return the ts file as xml"""
@@ -88,7 +105,7 @@ class XliffParser:
 
   def getfilename(self, filenode):
     """returns the name of the given file"""
-    return filenode.attributes.get("original", None)
+    return filenode.getAttribute("original")
 
   def getfilenode(self, filename):
     """finds the filenode with the given name"""

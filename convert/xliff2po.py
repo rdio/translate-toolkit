@@ -46,23 +46,16 @@ class xliff2po:
     """returns the node's text by iterating through the child nodes"""
     return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
 
-  def getattrtext(self, node, attrname, default=None):
-    """returns the text of an attribute"""
-    attrnode = node.attributes.get(attrname, None)
-    if attrnode is None:
-      return default
-    return self.getnodetext(attrnode)
-
   def gettransunitsources(self, transunit):
     """takes a transunit node and finds the location, returning it in po-style list of sources"""
     sources = []
     for contextgroupnode in transunit.getElementsByTagName("context-group"):
-      contextname = self.getattrtext(contextgroupnode, "name")
+      contextname = contextgroupnode.getAttribute("name")
       if contextname == "x-po-reference":
         sourcefile = ""
         linenumber = None
         for contextnode in contextgroupnode.getElementsByTagName("context"):
-          contexttype = self.getattrtext(contextnode, "context-type")
+          contexttype = contextnode.getAttribute("context-type")
           contexttext = self.getnodetext(contextnode)
           if contexttype == "sourcefile":
             sourcefile = contexttext
