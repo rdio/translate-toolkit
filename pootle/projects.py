@@ -609,7 +609,7 @@ class TranslationProject:
     """returns a set of items from the pofile, converted to original and translation strings"""
     pofile = self.getpofile(pofilename)
     elements = pofile.transelements[max(itemstart,0):itemstop]
-    return [(po.getunquotedstr(poel.msgid), po.getunquotedstr(poel.msgstr)) for poel in elements]
+    return [(po.getunquotedstr(poel.msgid, includeescapes=False), po.getunquotedstr(poel.msgstr, includeescapes=False)) for poel in elements]
 
   def updatetranslation(self, pofilename, item, trans):
     """updates a translation with a new value..."""
