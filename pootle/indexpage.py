@@ -139,13 +139,14 @@ class ProjectIndex(pagelayout.PootlePage):
   def getfileitem(self, fileentry):
     basename = os.path.basename(fileentry)
     bodytitle = '<h3 class="title">%s</h3>' % basename
-    browselink = widgets.Link('%s?translate=1' % basename, 'Browse')
+    viewlink = widgets.Link('%s?translate=1&view=1' % basename, 'View')
+    translatelink = widgets.Link('%s?translate=1' % basename, 'Translate')
     checkslink = widgets.Link("%s?index=1&showchecks=1" % basename, "Checks")
     quicklink = widgets.Link('%s?translate=1&fuzzy=1&blank=1' % basename, 'Quick Translate')
     downloadlink = widgets.Link(basename, 'PO file')
     csvname = basename.replace(".po", ".csv")
     csvlink = widgets.Link(csvname, 'CSV file')
-    bodydescription = pagelayout.ItemDescription([browselink, checkslink, quicklink, downloadlink, csvlink])
+    bodydescription = pagelayout.ItemDescription([viewlink, translatelink, checkslink, quicklink, downloadlink, csvlink])
     pofilenames = [fileentry]
     projectstats = self.project.calculatestats(pofilenames)
     translated = projectstats.get("translated", 0)

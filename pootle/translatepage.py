@@ -15,11 +15,24 @@ class TranslatePage(pagelayout.PootlePage):
     self.translationsession = self.project.gettranslationsession(session)
     self.instance = session.instance
     self.receivetranslations()
+    self.viewmode = self.argdict.get("view", 0)
     translations = self.gettranslations()
+    self.maketable(translations)
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
-    translateform = widgets.Form([translations, contextinfo], {"name": "translate", "action":""})
+    translateform = widgets.Form([self.transtable, contextinfo], {"name": "translate", "action":""})
     title = "Pootle: translating %s into %s: %s" % (self.project.projectname, self.project.languagename, self.pofilename)
-    translatediv = pagelayout.TranslateForm(translateform)
+    if self.viewmode:
+      pagelinks = []
+      if self.firstitem > 0:
+        linkitem = max(self.firstitem - 10, 0)
+        pagelinks.append(widgets.Link("?translate=1&view=1&item=%d" % linkitem, "Previous %d" % (self.firstitem - linkitem)))
+      if self.firstitem + len(translations) :
+        linkitem = self.firstitem + 10
+        pagelinks.append(widgets.Link("?translate=1&view=1&item=%d" % linkitem, "Next 10"))
+      pagelinks = pagelayout.IntroText(pagelinks)
+    else:
+      pagelinks = []
+    translatediv = pagelayout.TranslateForm([pagelinks, translateform])
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
     self.links.addcontents(pagelayout.SidebarTitle("current file"))
     self.links.addcontents(pagelayout.SidebarText(self.pofilename))
@@ -69,11 +82,20 @@ class TranslatePage(pagelayout.PootlePage):
     self.transtable.setcell(rownum, 0, origcell)
     self.transtable.setcell(rownum, 1, transcell)
 
-  def gettranslations(self):
+  def maketable(self, translations):
     self.transtable = table.TableLayout({"class":"translate-table", "cellpadding":10})
     origtitle = table.TableCell("original", {"class":"translate-table-title"})
     transtitle = table.TableCell("translation", {"class":"translate-table-title"})
     self.addtransrow(-1, origtitle, transtitle)
+    translations = self.gettranslations()
+    self.textcolors = ["#000000", "#000060"]
+    for row, (orig, trans) in enumerate(translations):
+      thisitem = self.firstitem + row
+      self.addtranslationrow(thisitem, orig, trans, thisitem in self.editable)
+    self.transtable.shrinkrange()
+    return self.transtable
+
+  def gettranslations(self):
     item = self.argdict.get("item", None)
     if item is None:
       try:
@@ -87,17 +109,18 @@ class TranslatePage(pagelayout.PootlePage):
       if not item.isdigit():
         raise ValueError("Invalid item given")
       item = int(item)
-      self.pofilename = self.argdict.get("pofilename", None)
+      self.pofilename = self.argdict.get("pofilename", self.dirfilter)
       theorig, thetrans = self.translationsession.getitem(self.pofilename, item)
-    translationsbefore = self.project.getitemsbefore(self.pofilename, item, 3)
-    translationsafter = self.project.getitemsafter(self.pofilename, item, 3)
-    self.translations = translationsbefore + [(theorig, thetrans)] + translationsafter
-    self.textcolors = ["#000000", "#000060"]
-    for row, (orig, trans) in enumerate(self.translations):
-      thisitem = item - len(translationsbefore) + row
-      self.addtranslationrow(thisitem, orig, trans, thisitem == item)
-    self.transtable.shrinkrange()
-    return self.transtable
+    if self.viewmode:
+      self.editable = []
+      self.firstitem = item
+      return [(theorig, thetrans)] + self.project.getitemsafter(self.pofilename, item, 9)
+    else:
+      translationsbefore = self.project.getitemsbefore(self.pofilename, item, 3)
+      translationsafter = self.project.getitemsafter(self.pofilename, item, 3)
+      self.editable = [item]
+      self.firstitem = item - len(translationsbefore)
+      return translationsbefore + [(theorig, thetrans)] + translationsafter
 
   def getorigcell(self, row, orig, editable):
     origclass = "translate-original "
@@ -124,7 +147,6 @@ class TranslatePage(pagelayout.PootlePage):
       contents = [textarea, skipbutton, submitbutton]
     else:
       text = widgets.Font(trans, {"color":self.textcolors[row % 2]})
-      
       editlink = widgets.Link("?translate=1&item=%d&pofilename=%s" % (row, self.pofilename), "Edit")
       contents = [text, editlink]
     transdiv.addcontents(contents)
