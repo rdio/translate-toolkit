@@ -32,50 +32,54 @@ eol = "\n"
 class prop2po:
   """convert a .properties file to a .po file for handling the translation..."""
   def convertfile(self, inputfile, outputfile):
-    self.inmultilinemsgid = 0
-    prf = properties.propfile(inputfile)
-    alloutputlines = [self.getheader()]
-    for pre in prf.propelements:
-      outputlines = self.convertelement(pre)
-      alloutputlines.extend(outputlines)
-    # this code generates munged lines, so we reconstruct them here...
-    redolines = [line+'\n' for line in "".join(alloutputlines).split('\n')]
-    # this is all so we can remove duplicates.
-    # when the po class is used instead of line-by-line processing, this will be easier
-    p = po.pofile()
-    p.fromlines(redolines)
-    p.removeduplicates()
-    alloutputlines = p.tolines()
-    outputfile.writelines(alloutputlines)
+    thepropfile = properties.propfile(inputfile)
+    thepofile = po.pofile()
+    headerpo = self.makeheader(thepropfile.filename)
+    thepofile.poelements.append(headerpo)
+    for theprop in thepropfile.propelements:
+      thepo = self.convertelement(theprop)
+      if thepo is not None:
+        thepofile.poelements.append(thepo)
+    thepofile.removeduplicates()
+    outputfile.writelines(thepofile.tolines())
 
-  def getheader(self):
-    # TODO: handle this properly in the pofile class
-    return '''# extracted from unknown file
+  def makeheader(self, filename):
+    """create a header for the given filename"""
+    # TODO: handle this in the po class
+    headerpo = po.poelement()
+    headerpo.othercomments.append("# extracted from %s\n" % filename)
+    headerpo.typecomments.append("#, fuzzy\n")
+    headerpo.msgid = ['""']
+    headeritems = [""]
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
 #, fuzzy
-msgid ""
-msgstr ""
-"Project-Id-Version: PACKAGE VERSION\\n"
-"POT-Creation-Date: 2002-07-15 17:13+0100\\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n"
-"Language-Team: LANGUAGE <LL@li.org>\\n"
-"MIME-Version: 1.0\\n"
-"Content-Type: text/plain; charset=CHARSET\\n"
-"Content-Transfer-Encoding: ENCODING\\n"
-'''+eol
+    headeritems.append("Project-Id-Version: PACKAGE VERSION\\n")
+    headeritems.append("POT-Creation-Date: 2002-07-15 17:13+0100\\n")
+    headeritems.append("PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n")
+    headeritems.append("Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n")
+    headeritems.append("Language-Team: LANGUAGE <LL@li.org>\\n")
+    headeritems.append("MIME-Version: 1.0\\n")
+    headeritems.append("Content-Type: text/plain; charset=CHARSET\\n")
+    headeritems.append("Content-Transfer-Encoding: ENCODING\\n")
+    headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
+    return headerpo
 
-  def convertelement(self, pre):
-    """converts a properties element from properties format to .po format..."""
-    # TODO: make this use the po classes
+  def convertelement(self, theprop):
+    """converts a .properties element to a .po element..."""
     # escape unicode
-    msgid = quote.escapeunicode(pre.msgid)
-    outputlines = pre.comments
-    # TODO: handle multiline msgid if we're in one
-    if len(msgid) > 0:
-      outputlines.append("#: "+pre.name+eol)
-      outputlines.append("msgid "+quote.quotestr(msgid, escapeescapes=1)+eol)
-      outputlines.append('msgstr ""'+eol+eol)
-    return outputlines
+    msgid = quote.escapeunicode(theprop.msgid)
+    thepo = po.poelement()
+    thepo.othercomments.extend(theprop.comments)
+    # TODO: handle multiline msgid
+    if len(msgid) == 0:
+      return None
+    thepo.sourcecomments.extend("#: "+theprop.name+eol)
+    thepo.msgid = [quote.quotestr(msgid, escapeescapes=1)]
+    thepo.msgstr = ['""']
+    return thepo
 
 def main(inputfile, outputfile):
   convertor = prop2po()
