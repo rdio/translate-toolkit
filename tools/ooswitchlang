@@ -13,9 +13,6 @@ from translate import __version__
 
 availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'tn': 'Tswana', 'zu': 'Zulu'}
 
-# TODO: make force the default
-# TODO: rename default options
-
 class oosetupfile(xmlwrapper.XMLWrapper):
   def __init__(self, setupfile):
     self.setupfile = setupfile
@@ -212,11 +209,12 @@ class LanguageSelectionWindow(wx.Frame):
     self.languagenames.sort()
     self.languagelist = wx.ListBox(self.panel, wx.ID_ANY, choices=self.languagenames)
 
-    self.adminlabel = wx.StaticText(self.panel, wx.ID_ANY, "Set defaults:")
+    self.adminlabel = wx.StaticText(self.panel, wx.ID_ANY, "Change system settings:")
     self.adminchoice = wx.CheckBox(self.panel, wx.ID_ANY, "")
     wx.EVT_CHECKBOX(self, self.adminchoice.GetId(), self.OnSetAdmin)
-    self.forcelabel = wx.StaticText(self.panel, wx.ID_ANY, "Force:")
+    self.forcelabel = wx.StaticText(self.panel, wx.ID_ANY, "Assume language is valid:")
     self.forcechoice = wx.CheckBox(self.panel, wx.ID_ANY, "")
+    self.forcechoice.SetValue(True)
 
   def arrangeoptioncontrols(self):
     """arranges all the option controls using a sizer"""
