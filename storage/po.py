@@ -298,6 +298,12 @@ class pofile:
   def __init__(self, inputfile=None):
     """construct a pofile, optionally reading in from inputfile"""
     self.poelements = []
+    self.filename = ''
+    if inputfile is not None:
+      self.parse(inputfile)
+
+  def parse(self, inputfile):
+    """parses the given file"""
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
       polines = inputfile.readlines()
