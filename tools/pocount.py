@@ -5,6 +5,7 @@
 import sys
 import os
 from translate.storage import po
+import sre
 
 if not hasattr(__builtins__, "sum"):
   def sum(parts):
@@ -19,7 +20,8 @@ def wordcount(postr):
   if isinstance(postr, dict):
     unquotedstr = " ".join([po.getunquotedstr(msgstr).strip() for msgstr in postr.itervalues()])
   else:
-    unquotedstr = po.getunquotedstr(postr)
+    # TODO: po class should understand KDE style plurals
+    unquotedstr = sre.sub("^_n: ", "", po.getunquotedstr(postr))
   return len(unquotedstr.split())
 
 def wordsinpoel(poel):

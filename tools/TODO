@@ -30,3 +30,4 @@ pocount
 	  then figure is different to msgfmt --statistics.
 	- Optionally count items marked for review
 	- Provide Grand Total per item ie fuzzy+translated+untranslated
+	- Fix po class so that it handles KDE style plurals there not in pocount
