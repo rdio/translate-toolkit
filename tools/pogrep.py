@@ -67,8 +67,12 @@ class pogrepfilter:
         if self.matches(unquotedid) or self.matches(unquotedid_plural):
           return True
       if self.searchmsgstr:
-        for msgstr in thepo.msgstr.values():
-          unquotedstr = po.getunquotedstr(msgstr)
+        if isinstance(thepo.msgstr, dict):
+          for msgstr in thepo.msgstr.values():
+            unquotedstr = po.getunquotedstr(msgstr)
+            if self.matches(unquotedstr): return True
+        else:
+          unquotedstr = po.getunquotedstr(thepo.msgstr)
           if self.matches(unquotedstr): return True
     else:
       if self.searchmsgid:
