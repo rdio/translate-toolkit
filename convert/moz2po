@@ -20,7 +20,6 @@
 
 """script that converts a set of .dtd and .properties files to a set of .po files"""
 
-from __future__ import generators
 import os.path
 from translate.convert import dtd2po
 from translate.convert import prop2po
@@ -41,23 +40,25 @@ class MozConvertOptionParser(convert.ConvertOptionParser):
     """returns whether the file option is an xpi file"""
     return isinstance(fileoption, (str, unicode)) and fileoption.endswith(os.extsep + "xpi") and os.path.isfile(fileoption)
 
-  def recursefiles(self, options):
+  def recurseinputfiles(self, options):
     """recurse through xpi file / directories and return files to be converted"""
     if options.template and self.isxpi(options.template):
-      options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
+      options.templatexpi = xpi.XpiFile(options.template, includenonloc=True)
     if self.isxpi(options.input):
-      options.inputxpi = xpi.XpiFile(options.input, includenonloc=False)
+      options.inputxpi = xpi.XpiFile(options.input, includenonloc=True)
       return self.recursexpifiles(options)
     else:
-      return super(MozConvertOptionParser, self).recursefiles(options)
+      return super(MozConvertOptionParser, self).recurseinputfiles(options)
 
   def recursexpifiles(self, options):
     """recurse through xpi files and convert files"""
+    inputfiles = []
     for inputpath in options.inputxpi.iterextractnames():
       top, name = os.path.split(inputpath)
       if not self.isvalidinputname(options, name):
         continue
-      yield inputpath
+      inputfiles.append(inputpath)
+    return inputfiles
 
   def openinputfile(self, options, fullinputpath):
     """opens the input file"""
@@ -109,7 +110,10 @@ if __name__ == '__main__':
   formats = {("dtd", "dtd"): ("dtd.po", dtd2po.convertdtd),
              ("properties", "properties"): ("properties.po", prop2po.convertprop),
              "dtd": ("dtd.po", dtd2po.convertdtd),
-             "properties": ("properties.po", prop2po.convertprop)}
+             "properties": ("properties.po", prop2po.convertprop),
+             (None, "*"): ("*", convert.copytemplate),
+             ("*", "*"): ("*", convert.copyinput),
+             "*": ("*", convert.copyinput)}
   parser = MozConvertOptionParser(formats, usetemplates=True, usepots=True)
   parser.convertparameters.append("pot")
   parser.runconversion()

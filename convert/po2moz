@@ -21,14 +21,82 @@
 """script that converts a set of .po files to a set of .dtd and .properties files
 either done using a template or just using the .po file"""
 
+import os.path
+import sys
 from translate.convert import po2dtd
 from translate.convert import po2prop
+from translate.storage import xpi
 from translate import __version__
+from translate.convert import convert
+
+class MozConvertOptionParser(convert.ConvertOptionParser):
+  def __init__(self, formats, usetemplates=False, usepots=False):
+    convert.ConvertOptionParser.__init__(self, formats, usetemplates, usepots)
+
+  def isrecursive(self, fileoption):
+    """checks if fileoption is a recursive file"""
+    if self.isxpi(fileoption): return True
+    return super(MozConvertOptionParser, self).isrecursive(fileoption)
+
+  def isxpi(self, fileoption):
+    """returns whether the file option is an xpi file"""
+    return isinstance(fileoption, (str, unicode)) and fileoption.endswith(os.extsep + "xpi") and os.path.isfile(fileoption)
+
+  def recurseinputfiles(self, options):
+    """recurse through xpi file / directories and return files to be converted"""
+    if options.template and self.isxpi(options.template):
+      options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
+    return super(MozConvertOptionParser, self).recurseinputfiles(options)
+
+  def opentemplatefile(self, options, fulltemplatepath):
+    """opens the template file (if required)"""
+    if fulltemplatepath is not None:
+      if self.isxpi(options.template):
+        # TODO: deal with different names in input/template xpis
+        jarfilename, filename = options.templatexpi.ostojarpath(fulltemplatepath)
+        if options.templatexpi.jarfileexists(jarfilename, filename):
+          return options.templatexpi.openinputstream(jarfilename, filename)
+        else:
+          self.warning("missing template file %s" % fulltemplatepath)
+    return super(MozConvertOptionParser, self).opentemplatefile(options, fulltemplatepath)
+
+  def getfulltemplatepath(self, options, templatepath):
+    """gets the absolute path to a template file"""
+    if templatepath is not None and self.usetemplates and options.template:
+      if self.isxpi(options.template):
+        return templatepath
+      else:
+        return os.path.join(options.template, templatepath)
+    else:
+      return None
+
+  def splitinputext(self, inputpath):
+    """splits a inputpath into name and extension"""
+    d, n = os.path.dirname(inputpath), os.path.basename(inputpath)
+    s = n.find(".")
+    if s == '-1':
+      return (inputpath, "")
+    root = os.path.join(d, n[:s])
+    ext = n[s+1:]
+    return (root, ext)
+
+  def templateexists(self, options, templatepath):
+    """returns whether the given template exists..."""
+    if templatepath is not None:
+      if self.isxpi(options.template):
+        # TODO: deal with different names in input/template xpis
+        jarfilename, filename = options.templatexpi.ostojarpath(templatepath)
+        return options.templatexpi.jarfileexists(jarfilename, filename)
+    return super(MozConvertOptionParser, self).templateexists(options, templatepath)
 
 if __name__ == '__main__':
   # handle command line options
   from translate.convert import convert
-  formats = {("po", "dtd"): ("dtd", po2dtd.convertdtd), ("po", "properties"): ("properties", po2prop.convertprop)}
-  parser = convert.ConvertOptionParser(formats, usetemplates=True)
+  formats = {("dtd.po", "dtd"): ("dtd", po2dtd.convertdtd),
+             ("properties.po", "properties"): ("properties", po2prop.convertprop),
+             (None, "*"): ("*", convert.copytemplate),
+             ("*", "*"): ("*", convert.copyinput),
+             "*": ("*", convert.copyinput)}
+  parser = MozConvertOptionParser(formats, usetemplates=True)
   parser.runconversion()
 

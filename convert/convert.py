@@ -18,7 +18,6 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from __future__ import generators
 import sys
 import os.path
 try:
@@ -201,23 +200,38 @@ class ConvertOptionParser(optparse.OptionParser, object):
       templateext = None
     if (inputext, templateext) in self.outputoptions:
       return self.outputoptions[inputext, templateext]
+    elif (inputext, "*") in self.outputoptions:
+      outputformat, convertmethod = self.outputoptions[inputext, "*"]
+    elif ("*", templateext) in self.outputoptions:
+      outputformat, convertmethod = self.outputoptions["*", templateext]
+    elif ("*", "*") in self.outputoptions:
+      outputformat, convertmethod = self.outputoptions["*", "*"]
     elif (inputext, None) in self.outputoptions:
       return self.outputoptions[inputext, None]
     elif (None, templateext) in self.outputoptions:
       return self.outputoptions[None, templateext]
+    elif ("*", None) in self.outputoptions:
+      outputformat, convertmethod = self.outputoptions["*", None]
+    elif (None, "*") in self.outputoptions:
+      outputformat, convertmethod = self.outputoptions[None, "*"]
     else:
       raise ValueError("could not find outputoptions for inputext %s, templateext %s" % (inputext, templateext))
+    if outputformat == "*":
+      if inputext:
+        outputformat = inputext
+      elif templateext:
+        outputformat = templateext
+      else:
+        raise ValueError("could not find output format for inputext %s, templateext %s" % (inputext, templateext))
+    return outputformat, convertmethod
 
   def initprogressbar(self, allfiles, options):
     """sets up a progress bar appropriate to the options and files"""
     if options.progress in ('console', 'verbose'):
-      # iterate through the files and produce a list so we can show progress...
-      allfiles = [inputfile for inputfile in allfiles]
       self.progressbar = self.progresstypes[options.progress](0, len(allfiles))
       print "processing %d files..." % len(allfiles)
     else:
       self.progressbar = self.progresstypes[options.progress]()
-    return allfiles
 
   def getfullinputpath(self, options, inputpath):
     """gets the absolute path to an input file"""
@@ -248,19 +262,19 @@ class ConvertOptionParser(optparse.OptionParser, object):
       if not self.isrecursive(options.output):
         self.error(optparse.OptionValueError("Cannot have recursive input and non-recursive output. check output exists"))
       if isinstance(options.input, list):
-        allfiles = self.recursefilelist(options)
+        inputfiles = self.recurseinputfilelist(options)
       else:
-        allfiles = self.recursefiles(options)
+        inputfiles = self.recurseinputfiles(options)
     else:
       if options.input:
-        allfiles = [os.path.basename(options.input)]
+        inputfiles = [os.path.basename(options.input)]
         options.input = os.path.dirname(options.input)
       else:
-        allfiles = [options.input]
+        inputfiles = [options.input]
     options.recursiveoutput = self.isrecursive(options.output)
     options.recursivetemplate = self.usetemplates and self.isrecursive(options.template)
-    allfiles = self.initprogressbar(allfiles, options)
-    for inputpath in allfiles:
+    self.initprogressbar(inputfiles, options)
+    for inputpath in inputfiles:
       templatepath = self.gettemplatename(options, inputpath)
       outputformat, convertmethod = self.getoutputoptions(inputpath, templatepath)
       fullinputpath = self.getfullinputpath(options, inputpath)
@@ -349,23 +363,24 @@ class ConvertOptionParser(optparse.OptionParser, object):
     if not os.path.isdir(fullpath):
       self.mkdir(parent, subdir)
 
-  def recursefilelist(self, options):
+  def recurseinputfilelist(self, options):
     """use a list of files, and find a common base directory for them"""
     # find a common base directory for the files to do everything relative to
     commondir = os.path.dirname(os.path.commonprefix(options.input))
-    allfiles = []
+    inputfiles = []
     for inputfile in options.input:
       if inputfile.startswith(commondir+os.sep):
         allfiles.append(inputfile.replace(commondir+os.sep, "", 1))
       else:
         allfiles.append(inputfile.replace(commondir, "", 1))
     options.input = commondir
-    return allfiles
+    return inputfiles
 
-  def recursefiles(self, options):
+  def recurseinputfiles(self, options):
     """recurse through directories and return files to be converted..."""
     dirstack = ['']
     join = os.path.join
+    inputfiles = []
     while dirstack:
       top = dirstack.pop(-1)
       names = os.listdir(join(options.input, top))
@@ -376,17 +391,15 @@ class ConvertOptionParser(optparse.OptionParser, object):
         # handle directories...
         if os.path.isdir(fullinputpath):
           dirs.append(inputpath)
-          fulltemplatepath = self.getfulltemplatepath(options, inputpath)
-          if fulltemplatepath and not os.path.isdir(fulltemplatepath):
-            self.warning("missing template directory %s" % fulltemplatepath)
         elif os.path.isfile(fullinputpath):
           if not self.isvalidinputname(options, name):
             # only handle names that match recognized input file extensions
             continue
-          yield inputpath
+          inputfiles.append(inputpath)
       # make sure the directories are processed next time round...
       dirs.reverse()
       dirstack.extend(dirs)
+    return inputfiles
 
   def splitinputext(self, inputpath):
     """splits an inputpath into name and extension"""
@@ -415,6 +428,17 @@ class ConvertOptionParser(optparse.OptionParser, object):
             templatepath = inputbase + os.extsep + templateext1
             if self.templateexists(options, templatepath):
               return templatepath
+      if "*" in self.inputformats:
+        for inputext1, templateext1 in self.outputoptions:
+          if (inputext == inputext1) or (inputext1 == "*"):
+            if templateext1 == "*":
+              templatepath = inputname
+              if self.templateexists(options, templatepath):
+                return templatepath
+            elif templateext1:
+              templatepath = inputbase + os.extsep + templateext1
+              if self.templateexists(options, templatepath):
+                return templatepath
     return None
 
   def getoutputname(self, options, inputname, outputformat):
@@ -430,5 +454,15 @@ class ConvertOptionParser(optparse.OptionParser, object):
     inputbase, inputext = self.splitinputext(inputname)
     if self.usepots and options.pot and inputext == "pot":
       inputext = "po"
-    return inputext in self.inputformats
+    return (inputext in self.inputformats) or ("*" in self.inputformats)
 
+def copyinput(inputfile, outputfile, templatefile, **kwargs):
+  """copies the input file to the output file"""
+  outputfile.write(inputfile.read())
+  return True
+
+def copytemplate(inputfile, outputfile, templatefile, **kwargs):
+  """copies the template file to the output file"""
+  outputfile.write(templatefile.read())
+  return True
+  
