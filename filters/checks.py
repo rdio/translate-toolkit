@@ -146,7 +146,7 @@ class StandardChecker(TranslationChecker):
     """checks whether a translation is basically identical to the original string"""
     str1 = self.filteraccelerators(str1)
     str2 = self.filteraccelerators(str2)
-    return str1.strip().lower() != str2.strip().lower()
+    return (str1.isdigit() or len(str1) < 2) or (str1.strip().lower() != str2.strip().lower())
 
   def blank(self, str1, str2):
     """checks whether a translation is totally blank"""
