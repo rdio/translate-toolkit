@@ -233,18 +233,12 @@ class PootleSession(session.LoginSession):
   def getprojects(self):
     """gets the user's projects"""
     userprojects = getattr(self.prefs, "projects", "")
-    if not userprojects:
-      return []
-    else:
-      return userprojects.split(",")
+    return [projectcode.strip() for projectcode in userprojects.split(',') if projectcode.strip()]
 
   def getlanguages(self):
     """gets the user's languages"""
     userlanguages = getattr(self.prefs, "languages", "")
-    if not userlanguages:
-      return []
-    else:
-      return userlanguages.split(",")
+    return [languagecode.strip() for languagecode in userlanguages.split(',') if languagecode.strip()]
 
   def getrights(self):
     """gets the user's rights"""
