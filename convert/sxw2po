@@ -33,8 +33,21 @@ class OpenOfficeDocument(xmlwrapper.XMLWrapper):
     if self.tag != "document-content": raise ValueError("root %r != 'document-content'" % self.tag)
     self.body = self.getchild("body")
 
+  def excludeiterator(self, obj, excludetags):
+    nodes = []
+    for node in obj._children:
+      if xmlwrapper.splitnamespace(node.tag)[1] not in excludetags:
+        nodes.append(node)
+        nodes.extend(self.excludeiterator(node, excludetags))
+    return nodes
+
   def getmessages(self):
-    paragraphs = self.body.getchildren("p")
+    nodes = self.excludeiterator(self.body.obj, ["tracked-changes"])
+    paragraphs = []
+    for node in nodes:
+      childns, childtag = xmlwrapper.splitnamespace(node.tag)
+      if childtag == "p":
+        paragraphs.append(xmlwrapper.XMLWrapper(node))
     messages = []
     for child in paragraphs:
       text = child.getplaintext().strip()
