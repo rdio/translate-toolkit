@@ -75,3 +75,18 @@ assignment:
       wordcounts would help
     at the end, not sure what to assign...
 
+feedback from Durban translatathon:
+  enable login in English
+  don't require Pootle po files to run
+  regenerate PO files on web
+  autocreate POT files when packaging
+  upload SA translations
+  word counts, not just string counts
+  make things like show assigns sticky
+  add show assigns to file URLs
+  some timeouts
+  automatic tips for things like accelerators
+  tutorial PO file
+  search failing on assigns, message is cryptic
+  stats on translation
+
