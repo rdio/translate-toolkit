@@ -336,15 +336,37 @@ if __name__ == '__main__':
     pass
   setupfiles = {}
   if len(sys.argv) < 3:
-    print >>sys.stderr, "usage: oosetupmerge mainlang/setup.ins lang2/setup.ins lang3/setup.ins ... output/setup.ins"
+    print >>sys.stderr, "usage: oosetupmerge maindir dir2 dir3 ... outputdir"
     sys.exit()
-  mainsetupfile = SetupIndex(sys.argv[1])
+  maindir = sys.argv[1]
+  otherdirs = sys.argv[2:-1]
+  outputdir = sys.argv[-1]
+  if os.path.isfile(os.path.join(maindir, 'setup.ins')):
+    setupname = 'setup.ins'
+  elif os.path.isfile(os.path.join(maindir, 'setup.inf')):
+    setupname = 'setup.inf'
+  else:
+    print >>sys.stderr, "could not find setup.ins or setup.inf in main input directory %s" % maindir
+    sys.exit()
+  mainsetupfile = SetupIndex(os.path.join(maindir, setupname))
   othersetupfiles = []
-  for arg in sys.argv[2:-1]:
-    othersetupfiles.append(SetupIndex(arg))
+  for otherdir in otherdirs:
+    othersetupfiles.append(SetupIndex(os.path.join(otherdir, setupname)))
   mainsetupfile.merge(othersetupfiles)
-  open(sys.argv[-1], 'w').write(mainsetupfile.getsource())
-  mainsetupfile.copyfiles(os.path.dirname(sys.argv[1]), os.path.dirname(sys.argv[-1]))
-  for othersetupfile in othersetupfiles:
-    othersetupfile.copyfiles(os.path.dirname(othersetupfile.filename), os.path.dirname(sys.argv[-1]), 1)
+  if not os.path.isdir(outputdir):
+    os.mkdir(outputdir)
+  open(os.path.join(outputdir, setupname), 'w').write(mainsetupfile.getsource())
+  mainsetupfile.copyfiles(maindir, outputdir)
+  for dirnum in range(len(otherdirs)):
+    otherdir = otherdirs[dirnum]
+    othersetupfile = othersetupfiles[dirnum]
+    othersetupfile.copyfiles(otherdir, outputdir, 1)
+  # copy other unmodified files
+  for filename in os.listdir(maindir):
+    if not filename.lower().startswith('f') and filename.lower() != setupname:
+      srcfile = os.path.join(maindir, filename)
+      destfile = os.path.join(outputdir, filename)
+      print '%s -> %s' % (srcfile, destfile)
+      os.system('cp -p %s %s' % (srcfile, destfile))
+
 
