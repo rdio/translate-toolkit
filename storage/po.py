@@ -26,7 +26,7 @@ from translate.misc import quote
 
 def getunquotedstr(lines):
   esc = '\\'
-  thestr = "\n".join([quote.extractwithoutquotes(line,'"','"',esc,includeescapes=0)[0] for line in lines])
+  thestr = "\n".join([quote.extractwithoutquotes(line,'"','"',esc,includeescapes=1)[0] for line in lines])
   if thestr[:1] == "\n": thestr = thestr[1:]
   if thestr[-1:] == "\n": thestr = thestr[:-1]
   return thestr
