@@ -26,8 +26,7 @@ class TranslatePage(pagelayout.PootlePage):
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     translateform = widgets.Form([translations, contextinfo], {"name": "translate", "action":""})
     title = "Pootle: translating %s into %s: %s" % (self.subproject.fullname, self.project.fullname, self.pofilename)
-    divstyle = {"font-family": "verdana, arial, sans-serif", "font-size": "small", "line-height": "100%"}
-    translatediv = widgets.Division(translateform, None, {"style": divstyle})
+    translatediv = pagelayout.TranslateForm(translateform)
     contents = widgets.Division([translatediv], "content")
     pagelayout.PootlePage.__init__(self, title, contents, session, bannerheight=81)
     self.links.addcontents(pagelayout.SidebarTitle("current file"))
@@ -44,9 +43,9 @@ class TranslatePage(pagelayout.PootlePage):
     self.transtable.setcell(rownum, 1, transcell)
 
   def gettranslations(self):
-    self.transtable = table.TableLayout({"width":"100%", "cellpadding":10, "cellspacing":1, "border":0})
-    origtitle = table.TableCell("<b>original</b>")
-    transtitle = table.TableCell("<b>translation</b>")
+    self.transtable = table.TableLayout({"class":"translate-table", "cellpadding":10})
+    origtitle = table.TableCell("original", {"class":"translate-table-title"})
+    transtitle = table.TableCell("translation", {"class":"translate-table-title"})
     self.addtransrow(-1, origtitle, transtitle)
     self.pofilename, item, theorig, thetrans = self.translationsession.getnextitem()
     translationsbefore = self.translationproject.getitemsbefore(self.pofilename, item, 3)
@@ -61,17 +60,21 @@ class TranslatePage(pagelayout.PootlePage):
     return self.transtable
 
   def getorigcell(self, row, orig, editable):
-    origdiv = widgets.Division([], "orig%d" % row)
+    origclass = "translate-original "
     if editable:
-      orig = "<b>%s</b>" % orig
+      origclass += "translate-original-focus "
     else:
-      origdiv.attribs["class"] = "autoexpand"
+      origclass += "autoexpand "
+    origdiv = widgets.Division([], "orig%d" % row, cls=origclass)
     origtext = widgets.Font(orig, {"color":self.textcolors[row % 2]})
     origdiv.addcontents(origtext)
-    return table.TableCell(origdiv, {"bgcolor":"#e0e0e0", "width":"50%"})
+    return table.TableCell(origdiv, {"class":"translate-original"})
 
   def gettranscell(self, row, trans, editable):
-    transdiv = widgets.Division([], "trans%d" % row)
+    transclass = "translate-translation "
+    if not editable:
+      transclass += "autoexpand "
+    transdiv = widgets.Division([], "trans%d" % row, cls=transclass)
     if editable:
       if isinstance(trans, str):
         trans = trans.decode("utf8")
@@ -80,9 +83,8 @@ class TranslatePage(pagelayout.PootlePage):
       contents = [textarea, submitbutton]
     else:
       contents = widgets.Font(trans, {"color":self.textcolors[row % 2]})
-      transdiv.attribs["class"] = "autoexpand"
     transdiv.addcontents(contents)
-    return table.TableCell(transdiv, {"width":"50%"})
+    return table.TableCell(transdiv, {"class":"translate-translation"})
 
   def addtranslationrow(self, row, orig, trans, editable=False):
     """returns an origcell and a transcell for displaying a translation"""
