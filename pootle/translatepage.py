@@ -233,19 +233,23 @@ class TranslatePage(pagelayout.PootlePage):
     self.transtable.shrinkrange()
     return self.transtable
 
+  def escapetext(self, text):
+    return self.escape(text).replace("\n", "</br>\n")
+
   def getorigdiv(self, item, orig, editable, itemclasses):
     origclass = "translate-original "
     if editable:
       origclass += "translate-original-focus "
     else:
       origclass += "autoexpand "
-    origdiv = widgets.Division(self.escape(orig), "orig%d" % item, cls=origclass)
+    origdiv = widgets.Division(self.escapetext(orig), "orig%d" % item, cls=origclass)
     return origdiv
 
   def geteditlink(self, item):
     """gets a link to edit the given item, if the user has permission"""
     if "translate" in self.rights or "suggest" in self.rights:
-      return pagelayout.TranslateActionLink("?translate=1&item=%d&pofilename=%s" % (item, self.pofilename), "Edit", "editlink%d" % item)
+      translateurl = "?translate=1&item=%d&pofilename=%s" % (item, self.quote(self.pofilename))
+      return pagelayout.TranslateActionLink(translateurl , "Edit", "editlink%d" % item)
     else:
       return ""
 
