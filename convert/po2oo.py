@@ -136,12 +136,13 @@ class reoo:
     if self.timestamp_str:
       part2.timestamp = self.timestamp_str
 
-  def convertfile(self, inputpo):
+  def convertfile(self, inputpo, includefuzzy=False):
     self.p = inputpo
     # translate the strings
     for thepo in self.p.poelements:
       # there may be more than one element due to msguniq merge
-      self.handlepoelement(thepo)
+      if includefuzzy or not thepo.isfuzzy():
+        self.handlepoelement(thepo)
     # return the modified oo file object
     return self.o
 
@@ -158,7 +159,7 @@ def getmtime(filename):
   import stat
   return time.localtime(os.stat(filename)[stat.ST_MTIME])
 
-def convertoo(inputfile, outputfile, templatefile, languagecode=None, timestamp=None):
+def convertoo(inputfile, outputfile, templatefile, languagecode=None, timestamp=None, includefuzzy=False):
   inputpo = po.pofile()
   inputpo.fromlines(inputfile.readlines())
   if templatefile is None:
@@ -166,7 +167,7 @@ def convertoo(inputfile, outputfile, templatefile, languagecode=None, timestamp=
     # convertor = po2oo()
   else:
     convertor = reoo(templatefile, timestamp=timestamp)
-  outputoo = convertor.convertfile(inputpo)
+  outputoo = convertor.convertfile(inputpo, includefuzzy)
   if languagecode is None:
     raise ValueError("must specify language code")
   else:
@@ -187,7 +188,12 @@ def main():
                     help="don't change the timestamps of the strings")
   parser.add_option("", "--nonrecursiveoutput", dest="allowrecursiveoutput", default=True, action="store_false", help="don't treat the output oo as a recursive store")
   parser.add_option("", "--nonrecursivetemplate", dest="allowrecursivetemplate", default=True, action="store_false", help="don't treat the template oo as a recursive store")
+  parser.add_option("", "--fuzzy", dest="includefuzzy", action="store_true", default=False,
+    help="use translations marked fuzzy")
+  parser.add_option("", "--nofuzzy", dest="includefuzzy", action="store_false", default=False,
+    help="don't use translations marked fuzzy (default)")
   parser.passthrough.append("languagecode")
   parser.passthrough.append("timestamp")
+  parser.passthrough.append("includefuzzy")
   parser.run()
 
