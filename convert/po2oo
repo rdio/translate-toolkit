@@ -38,12 +38,8 @@ def extractpoline(line):
   return extracted.replace('\\"', '"')
 
 def dounquotepo(thepo):
-  unquotedid = "\n".join([extractpoline(line) for line in thepo.msgid])
-  if unquotedid[:1] == "\n":
-    unquotedid = unquotedid[1:]
-  unquotedstr = "\n".join([extractpoline(line) for line in thepo.msgstr])
-  if unquotedstr[:1] == "\n":
-    unquotedstr = unquotedstr[1:]
+  unquotedid = "".join([extractpoline(line) for line in thepo.msgid])
+  unquotedstr = "".join([extractpoline(line) for line in thepo.msgstr])
   return unquotedid, unquotedstr
 
 class reoo:
