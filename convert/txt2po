@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+#
+# Copyright 2002-2004 Zuza Software Foundation
+# 
+# This file is part of translate.
+#
+# translate is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# translate is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with translate; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+"""script to convert a set of plain text message files to gettext .po localization files using the po module, and the txt2po convertor class which is in this module
+You can convert back to .txt using po2txt, but it doesn't exist yet"""
+
+# TODO: create po2txt
+# TODO: add options to do paragraphs instead of lines
+
+from translate.storage import po
+from translate.misc import quote
+from translate.convert import convert
+import os
+
+class txt2po:
+  def __init__(self, blankmsgstr=False):
+    """construct a txt2po converter"""
+    self.blankmsgstr = blankmsgstr
+
+  def convertfile(self, inputfile, filename, includeheader):
+    """converts a file to .po format"""
+    thepofile = po.pofile()
+    if includeheader:
+      headerpo = thepofile.makeheader(charset="ISO-8859-1")
+      thepofile.poelements.append(headerpo)
+    lines = inputfile.readlines()
+    for linenum in range(len(lines)):
+      line = lines[linenum]
+      if not line.strip(): continue
+      thepo = po.poelement()
+      thepo.sourcecomments.append("#: %s:%d\n" % (filename,linenum+1))
+      thepo.msgid = [quote.quotestr(quote.rstripeol(line))]
+      if len(thepo.msgid) > 1:
+        thepo.msgid = [quote.quotestr("")] + thepo.msgid
+      thepo.msgstr = []
+      thepofile.poelements.append(thepo)
+    return thepofile
+    
+def converttxt(inputfile, outputfile, templates, pot=False):
+  """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
+  convertor = txt2po(blankmsgstr=pot)
+  outputfilepos = outputfile.tell()
+  includeheader = outputfilepos == 0
+  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader)
+  outputpolines = outputpo.tolines()
+  outputfile.writelines(outputpolines)
+  return 1
+
+if __name__ == '__main__':
+  # handle command line options
+  formats = {"txt":("po",converttxt), "*":("po",converttxt)}
+  parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
+  parser.passthrough.append("pot")
+  parser.run()
+
