@@ -63,7 +63,14 @@ class PootleServer(users.OptionalLoginAppServer):
     self.defaultlanguage = defaultlanguage
     if self.defaultlanguage is None:
       self.defaultlanguage = localize.getdefaultlanguage(self.languagelist)
-    self.translation = self.potree.getproject(self.defaultlanguage, 'pootle')
+    if self.potree.hasproject(self.defaultlanguage, 'pootle'):
+      try:
+        self.translation = self.potree.getproject(self.defaultlanguage, 'pootle')
+        return
+      except:
+        self.errorhandler.logerror("Could not initialize translation")
+    # if no translation available, set up a blank translation
+    super(PootleServer, self).inittranslation()
 
   def gettranslation(self, language):
     """returns a translation object for the given language (or default if language is None)"""
