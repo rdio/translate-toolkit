@@ -27,8 +27,8 @@ class TranslationSession:
   def receivetranslation(self, pofilename, item, trans):
     """submits a new/changed translation from the user"""
     self.translationproject.receivetranslation(pofilename, item, trans)
-    if pofilename == self.pofilename:
-      self.lastitem = item
+    self.pofilename = pofilename
+    self.lastitem = item
 
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
