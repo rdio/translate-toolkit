@@ -90,7 +90,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def setinputformats(self, inputformats):
     """sets the input formats to the given list/single string"""
-    if isinstance(inputformats, basestring):
+    if isinstance(inputformats, (str, unicode)):
       inputformats = [inputformats]
     self.inputformats = inputformats
     inputformathelp = self.getformathelp(inputformats)
@@ -100,7 +100,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def setoutputformats(self, outputformats):
     """sets the output formats to the given list/single string"""
-    if isinstance(outputformats, basestring):
+    if isinstance(outputformats, (str, unicode)):
       outputformats = [outputformats]
     self.outputformats = outputformats
     outputformathelp = self.getformathelp(outputformats)
