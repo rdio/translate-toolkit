@@ -1,21 +1,24 @@
+--nofuzzies option
+  use original rather than fuzzies when converting back from po files
+
 --update option
   make recursive methods only run if input is newer than output
 --force option
   only overwrite files if this is given (work out which tools its applicable to)
+
 detect whether producing a .po or a .pot (make -P / --pot unneccessary)
 
 moz2po
   make strings fuzzy if original == translation
-  currently breaks if entity string starts on separate line (see firefox official l10ns)
+
 headers
-	charset=UTF-8
-	correct POT generation dates
+  charset=UTF-8
+  correct POT generation dates
+
 csv2po
-	--charset to allow setting of po header charset
-	change order of columns: original, translation, other stuff
+  --charset to allow setting of po header charset
+  change order of columns: original, translation, other stuff
 
 oo2po / po2oo
   fix problem with OOO_VENDOR and \" quoting in offmgr.po (see help - about)
 
-make po files of all existing translations
-take over the world
