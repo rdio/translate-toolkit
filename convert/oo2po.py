@@ -138,12 +138,9 @@ def main():
   parser = convert.ArchiveConvertOptionParser(formats, usepots=True, description=__doc__, archiveformats=archiveformats)
   parser.add_option("-l", "--languages", dest="languages", default=None,
     help="set languages to extract from oo file (comma-separated)", metavar="LANGUAGES")
-  parser.add_option("", "--duplicates", dest="duplicatestyle", default="msgid_comment",
-    type="choice", choices=["msgid_comment", "merge", "keep", "msgid_comment_all"],
-    help="what to do with duplicate strings (identical original text)", metavar="DUPLICATESTYLE")
   parser.add_option("", "--nonrecursiveinput", dest="allowrecursiveinput", default=True, action="store_false", help="don't treat the input oo as a recursive store")
+  parser.add_duplicates_option()
   parser.passthrough.append("pot")
   parser.passthrough.append("languages")
-  parser.passthrough.append("duplicatestyle")
   parser.run()
 

@@ -50,6 +50,13 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
     self.add_option("", "--nofuzzy", dest="includefuzzy", action="store_false", default=default, help=nofuzzyhelp)
     self.passthrough.append("includefuzzy")
 
+  def add_duplicates_option(self, default="msgid_comment"):
+    """adds an option to say what to do with duplicate strings"""
+    self.add_option("", "--duplicates", dest="duplicatestyle", default="msgid_comment",
+      type="choice", choices=["msgid_comment", "merge", "keep", "msgid_comment_all"],
+      help="what to do with duplicate strings (identical original text)", metavar="DUPLICATESTYLE")
+    self.passthrough.append("duplicatestyle")
+
   def potifyformat(self, fileformat):
     """converts a .po to a .pot where required"""
     if fileformat is None:
