@@ -542,8 +542,11 @@ class ProjectIndex(pagelayout.PootlePage):
       if total and assigncount:
         assignlink = widgets.Link(self.makelink(linkbase, assignedto=assignname), assignname)
         stats = self.localize("%d strings (%d%%) assigned") % (assigncount, (assigncount * 100 / total))
-        removetext = self.localize("Remove")
-        removelink = widgets.Link(self.makelink(removelinkbase, assignedto=assignname), removetext)
+        if "assign" in self.rights:
+          removetext = self.localize("Remove")
+          removelink = widgets.Link(self.makelink(removelinkbase, assignedto=assignname), removetext)
+        else:
+          removelink = []
         assignlinks += [[assignlink, ": ", stats, " ", removelink]]
     return assignlinks
 
