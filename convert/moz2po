@@ -98,21 +98,6 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
     else:
       return super(MozConvertOptionParser, self).openinputfile(options, fullinputpath)
 
-  def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
-    """run an invidividual conversion"""
-    if options.recursive != 'xpi':
-      return super(MozConvertOptionParser, self).convertfile \
-        (convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
-    inputfile = self.openinputfile(options, fullinputpath)
-    outputfile = self.openoutputfile(options, fulloutputpath)
-    templatefile = self.opentemplatefile(options, fulltemplatepath)
-    if convertmethod(inputfile, outputfile, templatefile):
-      return True
-    else:
-      outputfile.close()
-      os.unlink(fulloutputpath)
-      return False
-
   def getfullinputpath(self, options, inputpath):
     """gets the absolute path to an input file"""
     if options.recursive == 'xpi':

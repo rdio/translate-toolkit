@@ -26,6 +26,10 @@ except ImportError:
   from translate.misc import optparse
 from translate.misc import progressbar
 from translate import __version__
+try:
+  from cStringIO import StringIO
+except ImportError:
+  from StringIO import StringIO
 
 norecursion = 0
 optionalrecursion = 1
@@ -254,6 +258,18 @@ class ConvertOptionParser(optparse.OptionParser, object):
     """opens the output file"""
     return open(fulloutputpath, 'w')
 
+  def opentempoutputfile(self, options, fulloutputpath):
+    """opens a temporary output file"""
+    return StringIO()
+
+  def finalizetempoutputfile(self, options, outputfile, fulloutputpath):
+    """write the temp outputfile to its final destination"""
+    outputfile.reset()
+    outputstring = outputfile.read()
+    outputfile = self.openoutputfile(options, fulloutputpath)
+    outputfile.write(outputstring)
+    outputfile.close()
+
   def opentemplatefile(self, options, fulltemplatepath):
     """opens the template file (if required)"""
     if fulltemplatepath is not None:
@@ -265,26 +281,17 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def convertfile(self, convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath):
     """run an invidividual conversion"""
-    tempoutput = False
-    if fulloutputpath == fullinputpath:
-      tempoutput = True
-      origoutputpath = fulloutputpath
-      fulloutputpath += os.extsep + "tmp"
-    if fulloutputpath == fulltemplatepath:
-      tempoutput = True
-      origoutputpath = fulloutputpath
-      fulloutputpath += os.extsep + "tmp"
     inputfile = self.openinputfile(options, fullinputpath)
-    outputfile = self.openoutputfile(options, fulloutputpath)
-    if (fulloutputpath == fullinputpath) or (fulloutputpath == fulltemplatepath):
+    if fulloutputpath == fullinputpath or fulloutputpath == fulltemplatepath:
       outputfile = self.opentempoutputfile(options, fulloutputpath)
-    outputfile = self.openoutputfile(options, fulloutputpath)
+      tempoutput = True
+    else:
+      outputfile = self.openoutputfile(options, fulloutputpath)
+      tempoutput = False
     templatefile = self.opentemplatefile(options, fulltemplatepath)
     if convertmethod(inputfile, outputfile, templatefile):
       if tempoutput:
-        outputfile.close()
-        os.unlink(origoutputpath)
-        os.rename(fulloutputpath, origoutputpath)
+        self.finalizetempoutputfile(options, outputfile, fulloutputpath)
       return True
     else:
       outputfile.close()
