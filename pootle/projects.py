@@ -42,10 +42,13 @@ class TranslationSession:
 
 class TranslationProject:
   """Manages iterating through the translations in a particular project"""
-  def __init__(self, languagecode, projectcode, podir):
+  def __init__(self, languagecode, projectcode, potree):
     self.languagecode = languagecode
     self.projectcode = projectcode
-    self.podir = podir
+    self.potree = potree
+    self.languagename = self.potree.getlanguagename(self.languagecode)
+    self.projectname = self.potree.getprojectname(self.languagecode, self.projectcode)
+    self.podir = potree.getpodir(languagecode, projectcode)
     self.checker = checks.StandardChecker()
     self.pofilenames = []
     self.pofiles = {}
@@ -318,7 +321,7 @@ class POTree:
     language = self.getlanguage(languagecode)
     project = getattr(language.projects, projectcode)
     if (languagecode, projectcode) not in self.projects:
-      self.projects[languagecode, projectcode] = TranslationProject(languagecode, projectcode, project.podir)
+      self.projects[languagecode, projectcode] = TranslationProject(languagecode, projectcode, self)
     return self.projects[languagecode, projectcode]
 
   def getprojectname(self, languagecode, projectcode):
@@ -326,4 +329,11 @@ class POTree:
     language = self.getlanguage(languagecode)
     project = getattr(language.projects, projectcode)
     return getattr(project, "fullname", projectcode)
+
+  def getpodir(self, languagecode, projectcode):
+    """returns the full name of the project"""
+    language = self.getlanguage(languagecode)
+    project = getattr(language.projects, projectcode)
+    return project.podir
+
 

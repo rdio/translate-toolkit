@@ -7,18 +7,18 @@ from translate.pootle import projects
 
 class TranslatePage(pagelayout.PootlePage):
   """the page which lets people edit translations"""
-  def __init__(self, translationproject, session, argdict, dirfilter=None):
+  def __init__(self, project, session, argdict, dirfilter=None):
     self.argdict = argdict
     self.dirfilter = dirfilter
-    self.translationproject = translationproject
-    self.matchnames = self.getmatchnames(self.translationproject.checker)
-    self.translationsession = self.translationproject.gettranslationsession(session)
+    self.project = project
+    self.matchnames = self.getmatchnames(self.project.checker)
+    self.translationsession = self.project.gettranslationsession(session)
     self.instance = session.instance
     self.receivetranslations()
     translations = self.gettranslations()
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     translateform = widgets.Form([translations, contextinfo], {"name": "translate", "action":""})
-    title = "Pootle: translating %s into %s: %s" % (self.translationproject.projectcode, self.translationproject.languagecode, self.pofilename)
+    title = "Pootle: translating %s into %s: %s" % (self.project.projectcode, self.project.languagecode, self.pofilename)
     translatediv = pagelayout.TranslateForm(translateform)
     pagelayout.PootlePage.__init__(self, title, translatediv, session, bannerheight=81)
     self.links.addcontents(pagelayout.SidebarTitle("current file"))
@@ -32,7 +32,7 @@ class TranslatePage(pagelayout.PootlePage):
     else:
       currentfolderlink = widgets.Link("index.html", dirfilter)
     self.links.addcontents(pagelayout.SidebarText(currentfolderlink))
-    postats = self.translationproject.getpostats(self.pofilename)
+    postats = self.project.getpostats(self.pofilename)
     blank, fuzzy = postats["blank"], postats["fuzzy"]
     translated, total = postats["translated"], postats["total"]
     self.links.addcontents(pagelayout.SidebarText("%d/%d translated\n(%d blank, %d fuzzy)" % (translated, total, blank, fuzzy)))
@@ -83,8 +83,8 @@ class TranslatePage(pagelayout.PootlePage):
       item = int(item)
       self.pofilename = self.argdict.get("pofilename", None)
       theorig, thetrans = self.translationsession.getitem(self.pofilename, item)
-    translationsbefore = self.translationproject.getitemsbefore(self.pofilename, item, 3)
-    translationsafter = self.translationproject.getitemsafter(self.pofilename, item, 3)
+    translationsbefore = self.project.getitemsbefore(self.pofilename, item, 3)
+    translationsafter = self.project.getitemsafter(self.pofilename, item, 3)
     self.translations = translationsbefore + [(theorig, thetrans)] + translationsafter
     self.textcolors = ["#000000", "#000060"]
     for row, (orig, trans) in enumerate(self.translations):
