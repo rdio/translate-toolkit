@@ -20,29 +20,33 @@ class PootleIndex(pagelayout.PootlePage):
     introtext = pagelayout.IntroText("<strong>Pootle</strong> is a simple web portal that should allow you to <strong>translate</strong>!")
     nametext = pagelayout.IntroText('The name stands for <b>PO</b>-based <b>O</b>nline <b>T</b>ranslation / <b>L</b>ocalization <b>E</b>ngine, but you may need to read <a href="http://www.thechestnut.com/flumps.htm">this</a>.')
     languagelinks = self.getlanguagelinks()
-    contents = [introtext, nametext, languagelinks]
+    projectlinks = self.getprojectlinks()
+    contents = [introtext, nametext, languagelinks, projectlinks]
     pagelayout.PootlePage.__init__(self, "Pootle", contents, session)
 
   def getlanguagelinks(self):
     """gets the links to the languages"""
-    languageitems = [self.getlanguageitem(languagecode) for languagecode in self.potree.getlanguagecodes()]
-    return pagelayout.Contents(languageitems)
+    languagestitle = '<h3 class="title">Languages</h3>'
+    languagelinks = []
+    for languagecode in self.potree.getlanguagecodes():
+      languagename = self.potree.getlanguagename(languagecode)
+      languagelink = widgets.Link(languagecode+"/", languagename)
+      languagelinks.append(languagelink)
+    listwidget = widgets.SeparatedList(languagelinks, ", ")
+    bodydescription = pagelayout.ItemDescription(listwidget)
+    return pagelayout.Contents([languagestitle, bodydescription])
 
-  def getlanguageitem(self, languagecode):
-    languagename = self.potree.getlanguagename(languagecode)
-    bodytitle = '<h3 class="title">%s</h3>' % languagename
-    bodydescription = pagelayout.ItemDescription(widgets.Link(languagecode+"/", languagename))
-    body = pagelayout.ContentsItem([bodytitle, bodydescription])
-    projectcodes = self.potree.getprojectcodes(languagecode)
-    projectlist = [self.potree.getproject(languagecode, projectcode) for projectcode in projectcodes]
-    projectcount = len(projectlist)
-    projectstats = [project.calculatestats() for project in projectlist]
-    totalstats = summarizestats(projectstats, {"translated":0, "total":0})
-    translated = totalstats["translated"]
-    total = totalstats["total"]
-    percentfinished = (translated*100/max(total, 1))
-    stats = pagelayout.ItemStatistics("%d projects, %d%% translated" % (projectcount, percentfinished))
-    return pagelayout.Item([body, stats])
+  def getprojectlinks(self):
+    """gets the links to the projects"""
+    projectstitle = '<h3 class="title">Projects</h3>'
+    projectlinks = []
+    for projectcode in self.potree.getprojectcodes():
+      projectname = self.potree.getprojectname(projectcode)
+      projectlink = widgets.Link("projects/%s/" % projectcode, projectname)
+      projectlinks.append(projectlink)
+    listwidget = widgets.SeparatedList(projectlinks, ", ")
+    bodydescription = pagelayout.ItemDescription(listwidget)
+    return pagelayout.Contents([projectstitle, bodydescription])
 
 class LanguageIndex(pagelayout.PootlePage):
   """the main page"""
@@ -60,7 +64,7 @@ class LanguageIndex(pagelayout.PootlePage):
     return pagelayout.Contents(projectitems)
 
   def getprojectitem(self, projectcode):
-    projectname = self.potree.getprojectname(self.languagecode, projectcode)
+    projectname = self.potree.getprojectname(projectcode)
     bodytitle = '<h3 class="title">%s</h3>' % projectname
     bodydescription = pagelayout.ItemDescription(widgets.Link(projectcode+"/", '%s project' % projectname))
     body = pagelayout.ContentsItem([bodytitle, bodydescription])

@@ -39,7 +39,7 @@ class TranslationProject:
     self.projectcode = projectcode
     self.potree = potree
     self.languagename = self.potree.getlanguagename(self.languagecode)
-    self.projectname = self.potree.getprojectname(self.languagecode, self.projectcode)
+    self.projectname = self.potree.getprojectname(self.projectcode)
     self.podir = potree.getpodir(languagecode, projectcode)
     checkerclasses = [checks.projectcheckers.get(projectcode, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses)
@@ -411,7 +411,9 @@ class POTree:
   """Manages the tree of projects and languages"""
   def __init__(self, instance):
     self.languages = instance.languages
-    self.projects = {}
+    self.projects = instance.projects
+    self.directories = instance.directories
+    self.projectcache = {}
 
   def haslanguage(self, languagecode):
     """checks if this language exists"""
@@ -429,33 +431,50 @@ class POTree:
     """returns a list of valid languagecodes"""
     return [languagecode for languagecode, language in self.languages.iteritems()]
 
-  def getprojectcodes(self, languagecode):
-    """returns a list of project codes that are valid for the given languagecode"""
-    languageprefs = self.getlanguageprefs(languagecode)
-    return [projectcode for projectcode, projectprefs in languageprefs.projects.iteritems()]
+  def getprojectcodes(self, languagecode=None):
+    """returns a list of project codes that are valid for the given languagecode or all projects"""
+    projectcodes = [projectcode for projectcode, projectprefs in self.projects.iteritems()]
+    if languagecode is None:
+      return projectcodes
+    else:
+      return [projectcode for projectcode in projectcodes if self.hasproject(languagecode, projectcode)]
 
   def hasproject(self, languagecode, projectcode):
     """returns whether the project exists for the language"""
     if not self.haslanguage(languagecode):
       return False
-    languageprefs = self.getlanguageprefs(languagecode)
-    return hasattr(languageprefs.projects, projectcode)
+    try:
+      podir = self.getpodir(languagecode, projectcode)
+      return True
+    except IndexError:
+      return False
 
   def getproject(self, languagecode, projectcode):
     """returns the project object for the languagecode and projectcode"""
-    if (languagecode, projectcode) not in self.projects:
-      self.projects[languagecode, projectcode] = TranslationProject(languagecode, projectcode, self)
-    return self.projects[languagecode, projectcode]
+    if (languagecode, projectcode) not in self.projectcache:
+      self.projectcache[languagecode, projectcode] = TranslationProject(languagecode, projectcode, self)
+    return self.projectcache[languagecode, projectcode]
 
-  def getprojectname(self, languagecode, projectcode):
+  def getprojectname(self, projectcode):
     """returns the full name of the project"""
-    languageprefs = self.getlanguageprefs(languagecode)
-    projectprefs = getattr(languageprefs.projects, projectcode)
+    projectprefs = getattr(self.projects, projectcode)
     return getattr(projectprefs, "fullname", projectcode)
 
   def getpodir(self, languagecode, projectcode):
     """returns the full name of the project"""
-    languageprefs = self.getlanguageprefs(languagecode)
-    projectprefs = getattr(languageprefs.projects, projectcode)
-    return projectprefs.podir
+    for searchname, search in self.directories.iteritems():
+      if isinstance(search, (str, unicode)):
+        directoryname = search.replace("$project", projectcode).replace("$language", languagecode)
+      else:
+        directorypattern = search.directory
+        if hasattr(search, "projectcode"):
+          if search.projectcode != projectcode:
+            continue
+        if hasattr(search, "languagecode"):
+          if search.languagecode != languagecode:
+            continue
+        directoryname = search.directory.replace("$project", projectcode).replace("$language", languagecode)
+      if os.path.exists(directoryname):
+        return directoryname
+    raise IndexError("directory not found for language %s, project %s" % (languagecode, projectcode))
 

@@ -17,12 +17,24 @@ Pootle:
   users:
     # store user details here
     __dummy__ = 0
+  projects:
+    openoffice:
+      fullname = "OpenOffice.org"
+    mozilla:
+      fullname = "Mozilla"
+    firefox:
+      fullname = "Firefox"
+    xfce42:
+      fullname = "xfce 4.2"
+  directories:
+    mainsearch = "po/$project/$language"
+    xfce:
+      directory = "/share/translate.org.za/xfce/po/$language"
+      projectcode = "xfce42"
   languages:
-    # this is an example, please change...
     af:
       fullname = "Afrikaans"
-      projects:
-        openoffice:
-          fullname = "OpenOffice.org"
-          podir = "po/openoffice/af"
+    de:
+      fullname = "German"
+
 
