@@ -244,7 +244,7 @@ class MozillaChecker(StandardChecker):
   def __init__(self, **kwargs):
     StandardChecker.__init__(self,
       accelmarkers = ("&"),
-      varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None)),
+      varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None), ("#", None)),
       **kwargs
       )
 
