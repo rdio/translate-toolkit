@@ -142,11 +142,11 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
     fileext = self.splitext(fileoption)[1]
     return fileext in self.archiveformats
 
-  def openarchive(self, archivefilename):
+  def openarchive(self, archivefilename, **kwargs):
     """creates an archive object for the given file"""
     archiveext = self.splitext(archivefilename)[1]
     archiveclass = self.archiveformats[archiveext]
-    return archiveclass(archivefilename)
+    return archiveclass(archivefilename, **kwargs)
 
   def recurseinputfiles(self, options):
     """recurse through archive file / directories and return files to be converted"""
@@ -160,6 +160,8 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
     """recurse through archive files and convert files"""
     inputfiles = []
     for inputpath in options.inputarchive:
+      if self.isexcluded(options, inputpath):
+        continue
       top, name = os.path.split(inputpath)
       if not self.isvalidinputname(options, name):
         continue
@@ -243,9 +245,15 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
     if options.template and self.isarchive(options.template) and not hasattr(options, "templatearchive"):
       options.templatearchive = self.openarchive(options.template)
 
+  def initoutputarchive(self, options):
+    """creates an outputarchive if required"""
+    if options.output and self.isarchive(options.output, mustexist=False):
+      options.outputarchive = self.openarchive(options.output, mode="w")
+
   def recursiveprocess(self, options):
     """recurse through directories and convert files"""
     self.inittemplatearchive(options)
+    self.initoutputarchive(options)
     return super(ArchiveConvertOptionParser, self).recursiveprocess(options)
 
   def processfile(self, fileprocessor, options, fullinputpath, fulloutputpath, fulltemplatepath):
@@ -257,6 +265,7 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
       outputfile = self.openoutputfile(options, fulloutputpath)
       passthroughoptions = self.getpassthroughoptions(options)
       if fileprocessor(inputfile, outputfile, templatefile, **passthroughoptions):
+        outputfile.close()
         return True
       else:
         if fulloutputpath and os.path.isfile(fulloutputpath):

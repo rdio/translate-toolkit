@@ -34,8 +34,8 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
   def __init__(self, formats, usetemplates=False, usepots=False, description=None):
     convert.ArchiveConvertOptionParser.__init__(self, formats, usetemplates, usepots, description=description, archiveformats={"xpi": xpi.XpiFile})
 
-  def recursiveprocess(self, options):
-    """recurse through directories and convert files"""
+  def initoutputarchive(self, options):
+    """creates an outputarchive if required"""
     if options.output and self.isarchive(options.output, mustexist=False):
       if self.isarchive(options.template):
         newlang = None
@@ -44,11 +44,12 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
 	  if options.locale.count("-") != 1:
 	    raise ValueError("Invalid locale: %s - should be of the form xx-YY" % options.locale)
 	  newlang, newregion = options.locale.split("-")
-        # this won't have been opened yet so we do it early
-        self.inittemplatearchive(options)
         options.outputarchive = options.templatearchive.clone(options.output, "a", newlang=newlang, newregion=newregion)
       else:
         options.outputarchive = xpi.XpiFile(options.output)
+
+  def recursiveprocess(self, options):
+    """recurse through directories and convert files"""
     result = super(MozConvertOptionParser, self).recursiveprocess(options)
     if self.isarchive(options.output):
       if options.progress in ('console', 'verbose'):
