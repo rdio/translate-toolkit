@@ -101,19 +101,23 @@ class LanguageSelectionWindow(wx.Frame):
     wx.Frame.__init__(self, parent, id, title)
     self.config = ooconfigurator('.')
     self.panel = wx.Panel(self, wx.ID_ANY)
-    self.optionssizer = wx.BoxSizer(wx.HORIZONTAL)
     self.languagelabel = wx.StaticText(self.panel, wx.ID_ANY, "Select language:")
-    self.optionssizer.Add(self.languagelabel, 1)
     self.languages = availablelanguages
-    languagenames = self.languages.values()
-    languagenames.sort()
-    self.languagelist = wx.ListBox(self.panel, wx.ID_ANY, choices=languagenames)
-    currentisocode = self.getlanguage()
-    currentlanguagename = self.languages.get(currentisocode, None)
-    if currentlanguagename in languagenames:
-      self.languagelist.Select(languagenames.index(currentlanguagename))
+    self.languagenames = self.languages.values()
+    self.languagenames.sort()
+    self.languagelist = wx.ListBox(self.panel, wx.ID_ANY, choices=self.languagenames)
+
+    self.adminlabel = wx.StaticText(self.panel, wx.ID_ANY, "Set defaults:")
+    self.adminchoice = wx.CheckBox(self.panel, wx.ID_ANY, "")
+    wx.EVT_CHECKBOX(self, self.adminchoice.GetId(), self.OnSetAdmin)
     
-    self.optionssizer.Add(self.languagelist, 1, wx.EXPAND)
+    self.showcurrentlanguage()
+
+    self.optionssizer = wx.FlexGridSizer(0, 2, 0, 0)
+    self.optionssizer.Add(self.languagelabel, 0, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
+    self.optionssizer.Add(self.languagelist, 0, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+    self.optionssizer.Add(self.adminlabel, 1, wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL, 5)
+    self.optionssizer.Add(self.adminchoice, 1, wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
 
     self.applybutton = wx.Button(self.panel, wx.ID_ANY, "Apply Changes")
     self.applybutton.SetDefault()
@@ -132,10 +136,27 @@ class LanguageSelectionWindow(wx.Frame):
     self.Show(1)
 
   def getlanguage(self):
-    return self.config.getuserlanguage()
+    if self.adminchoice.GetValue():
+      return self.config.getadminlanguage()
+    else:
+      return self.config.getuserlanguage()
 
   def setlanguage(self, newisocode):
-    self.config.setuserlanguage(newisocode)
+    if self.adminchoice.GetValue():
+      self.config.setadminlanguage(newisocode)
+    else:
+      self.config.setuserlanguage(newisocode)
+
+  def showcurrentlanguage(self):
+    currentisocode = self.getlanguage()
+    currentlanguagename = self.languages.get(currentisocode, None)
+    if currentlanguagename in self.languagenames:
+      self.languagelist.Select(self.languagenames.index(currentlanguagename))
+
+  def OnSetAdmin(self, event):
+    """Sets whether or not we are using admin choices..."""
+    self.showcurrentlanguage()
+    event.Skip()
 
   def OnApply(self, event):
     """Apply the changes and quit"""
