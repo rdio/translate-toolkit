@@ -170,13 +170,18 @@ class ProjectIndex(pagelayout.PootlePage):
       currentfolder = "/".join(dirfilter.split("/")[:-1])
     else:
       currentfolder = dirfilter
+    if currentfolder:
+      depth = currentfolder.count("/") + 1
+      rootlink = "/".join([".."] * depth) + "/index.html"
+    else:
+      rootlink = "index.html"
+    roottext = self.localize("%s (%s)") % (self.project.projectname, self.project.languagename)
+    self.addfolderlinks(self.localize("project root"), roottext, rootlink, self.project.projectdescription)
     self.addfolderlinks(self.localize("current folder"), currentfolder, "index.html")
     if dirfilter is not None:
       parentfolder = "/".join(currentfolder.split("/")[:-1])
       if parentfolder:
         self.addfolderlinks(self.localize("parent folder"), parentfolder, "../index.html")
-      depth = currentfolder.count("/") + 1
-      self.addfolderlinks(self.localize("project root"), "/", "/".join([".."] * depth) + "/index.html")
 
   def getchilditems(self, dirfilter):
     """get all the items for directories and files viewable at this level"""

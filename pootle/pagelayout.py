@@ -138,10 +138,12 @@ class PootlePage(widgets.Page):
     searchform = widgets.Form([contextinfo, searchbox], {"action": action, "name":"searchform"})
     self.links.addcontents(searchform)
 
-  def addfolderlinks(self, title, foldername, folderlink):
+  def addfolderlinks(self, title, foldername, folderlink, tooltip=None):
     """adds a section on the current folder"""
     self.links.addcontents(SidebarTitle(title))
     currentfolderlink = widgets.Link(folderlink, foldername or "/")
+    if tooltip:
+      currentfolderlink.overrideattribs({"title": tooltip})
     self.links.addcontents(SidebarText(currentfolderlink))
 
   def getcontents(self):
