@@ -25,6 +25,10 @@ div.contents
 	width:84%;
 	padding:15px;
 }
+div.item
+{
+	margin-bottom:5px;
+}
 div.contentsitem
 {
 	font-family: verdana, arial, sans-serif;
@@ -43,7 +47,6 @@ div.item-statistics
 	font-family:verdana, arial, sans-serif; 
 	font-size: x-small; 
 	color: #000000; 
-	margin-bottom:5px;
 }
 div.translate-form
 {

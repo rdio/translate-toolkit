@@ -131,16 +131,25 @@ class ProjectIndex(pagelayout.PootlePage):
     self.showchecks = argdict.get("showchecks", 0)
     if isinstance(self.showchecks, str) and self.showchecks.isdigit():
       self.showchecks = int(self.showchecks)
-    pofilenames = self.project.browsefiles(dirfilter)
-    projectstats = self.project.calculatestats(pofilenames)
-    actionlinks = self.getactionlinks("", projectstats)
     message = argdict.get("message", "")
     if message:
       message = pagelayout.IntroText(message)
-    processlinks = pagelayout.IntroText(actionlinks)
+    bodytitle = '<h2 class="title">%s</h3>' % dirfilter
+    if dirfilter.endswith(".po"):
+      actionlinks = []
+    else:
+      pofilenames = self.project.browsefiles(dirfilter)
+      projectstats = self.project.calculatestats(pofilenames)
+      actionlinks = self.getactionlinks("", projectstats)
+      actionlinks = pagelayout.ActionLinks(actionlinks)
+    mainitem = pagelayout.Item([bodytitle, actionlinks])
     childitems = self.getchilditems(dirfilter)
-    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, processlinks, childitems], session, bannerheight=81)
+    pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, mainitem, childitems], session, bannerheight=81)
     self.addsearchbox(searchtext="", action="translate.html")
+    self.addnavlinks(dirfilter)
+
+  def addnavlinks(self, dirfilter):
+    """add navigation links to the sidebar"""
     if dirfilter and dirfilter.endswith(".po"):
       currentfolder = "/".join(dirfilter.split("/")[:-1])
     else:
@@ -173,8 +182,8 @@ class ProjectIndex(pagelayout.PootlePage):
   def getdiritem(self, direntry):
     """returns an item showing a directory entry"""
     pofilenames = self.project.browsefiles(direntry)
-    basename = os.path.basename(direntry)
     projectstats = self.project.calculatestats(pofilenames)
+    basename = os.path.basename(direntry)
     bodytitle = '<h3 class="title">%s</h3>' % basename
     actionlinks = self.getactionlinks(basename + "/", projectstats)
     bodydescription = pagelayout.ActionLinks(actionlinks)
@@ -185,8 +194,8 @@ class ProjectIndex(pagelayout.PootlePage):
   def getfileitem(self, fileentry):
     """returns an item showing a file entry"""
     basename = os.path.basename(fileentry)
-    bodytitle = '<h3 class="title">%s</h3>' % basename
     projectstats = self.project.calculatestats([fileentry])
+    bodytitle = '<h3 class="title">%s</h3>' % basename
     actionlinks = self.getactionlinks(basename, projectstats)
     downloadlink = widgets.Link(basename, 'PO file')
     csvname = basename.replace(".po", ".csv")

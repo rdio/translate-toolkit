@@ -21,7 +21,6 @@ other:
   handle project versions
 
 requirements for translatathon:
-  * only show review if there are suggestion
   assigning stuff to people (with permissions)
     - both translation and review
   attribution (based on login)
