@@ -23,7 +23,6 @@ either done using a template or just using the .po file"""
 
 import os.path
 import sys
-import translatepath
 from translate.convert import po2dtd
 from translate.convert import po2prop
 from translate.storage import xpi
@@ -47,7 +46,10 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
 	  newlang, newregion = options.locale.split("-")
         options.outputarchive = options.templatearchive.clone(options.output, "a", newlang=newlang, newregion=newregion)
       else:
-        options.outputarchive = xpi.XpiFile(options.output)
+        if os.path.exists(options.output):
+          options.outputarchive = xpi.XpiFile(options.output)
+        else:
+          options.outputarchive = xpi.XpiFile(options.output, "w")
 
   def recursiveprocess(self, options):
     """recurse through directories and convert files"""
