@@ -123,11 +123,7 @@ def convertfile(inputfile, outputfile, blankmsgstr):
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
 
-inputformat = "oo"
-# TODO: refactor, make it produce .pot files when --pot option is given
-outputformat = "po"
-
-def recurse(inputdir, outputdir, blankmsgstr):
+def recurse(inputdir, outputdir, inputformat, outputformat, blankmsgstr):
   dirstack = ['']
   while dirstack:
     top = dirstack.pop(-1)
@@ -155,9 +151,15 @@ def recurse(inputdir, outputdir, blankmsgstr):
     dirs.reverse()
     dirstack.extend(dirs)
 
+inputformat = "oo"
+outputformat = "po"
+
 def handleoptions(options):
   """handles the options, allocates files, and runs the neccessary functions..."""
   if options.recursive:
+    if options.pot:
+      global outputformat
+      outputformat = "pot"
     if options.inputfile is None:
       raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile")
     if not os.path.isdir(options.inputfile):
@@ -166,7 +168,7 @@ def handleoptions(options):
       raise optparse.OptionValueError("must specify output directory for recursive run.")
     if not os.path.isdir(options.outputfile):
       raise optparse.OptionValueError("output must be existing directory for recursive run.")
-    recurse(options.inputfile, options.outputfile, options.pot)
+    recurse(options.inputfile, options.outputfile, inputformat, outputformat, options.pot)
   else:
     if options.inputfile is None:
       inputfile = sys.stdin
