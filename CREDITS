@@ -15,6 +15,7 @@ David Fraser: main development, pootle
 Dwayne Bailey: added tests, checks in pofilter, some helpful bash scripts, testing
 Filip Miletic: fixes for unicode problems
 Javier Sola: documentation
+Marek Wieckowski: Qt ts file enhancements
 Pavel Janík: testing
 Thomas Fogwill: portal code
 

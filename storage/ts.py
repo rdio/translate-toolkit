@@ -76,7 +76,7 @@ class QtTsParser:
       self.document = minidom.parse(inputfile)
       assert self.document.documentElement.tagName == "TS"
 
-  def addtranslation(self, contextname, source, translation, createifmissing=False):
+  def addtranslation(self, contextname, source, translation, comment, type, createifmissing=False):
     """adds the given translation (will create the nodes required if asked). Returns success"""
     contextnode = self.getcontextnode(contextname)
     if contextnode is None:
@@ -103,10 +103,23 @@ class QtTsParser:
     sourcenode = self.document.createElement("source")
     sourcetext = self.document.createTextNode(source)
     sourcenode.appendChild(sourcetext)
+    messagenode.appendChild(sourcenode)
+    if len(comment) > 0 :
+        commentnode = self.document.createElement("comment")
+        commenttext = self.document.createTextNode(comment)
+        commentnode.appendChild(commenttext)
+        messagenode.appendChild(commentnode)
     translationnode = self.document.createElement("translation")
     translationtext = self.document.createTextNode(translation)
     translationnode.appendChild(translationtext)
-    messagenode.appendChild(sourcenode)
+    if len(type) > 0 :
+      translationnode.setAttribute("type",type)
+    # TEST ONLY:
+    #typenode = self.document.createElement("type")
+    #typetext = self.document.createTextNode(type)
+    #typenode.appendChild(typetext)
+    #messagenode.appendChild(typenode)
+    #
     messagenode.appendChild(translationnode)
     contextnode.appendChild(messagenode)
     return True
@@ -157,6 +170,21 @@ class QtTsParser:
     """returns the message translation for a given node"""
     translationnode = message.getElementsByTagName("translation")[0]
     return self.getnodetext(translationnode)
+
+  def getmessageattributes(self, message):
+    """returns the message translation attributes for a given node"""
+    translationnode = message.getElementsByTagName("translation")[0]
+    return translationnode.getAttribute("type")
+
+  def getmessagecomment(self, message):
+    """returns the message comment for a given node"""
+    commentnode = message.getElementsByTagName("comment")
+    # NOTE: handles only one comment per msgid (OK)
+    # and only one-line comments (can be VERY wrong) TODO!!!
+    if commentnode.length > 0 :
+      return self.getnodetext(commentnode[0])
+    else:
+      return ""
 
   def iteritems(self):
     """iterates through (contextname, messages)"""

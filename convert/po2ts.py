@@ -39,6 +39,20 @@ class po2ts:
         continue
       source = po.getunquotedstr(thepo.msgid, includeescapes=False)
       translation = po.getunquotedstr(thepo.msgstr, includeescapes=False)
+      if len(thepo.othercomments) >0 :
+        extractline = lambda line: line[2:-1]
+        joiner = "\n"
+        comment = joiner.join([extractline(line) for line in thepo.othercomments])
+        #comment = thepo.othercomments[0]
+      else:
+        comment = ""
+      if thepo.isfuzzy():
+        type = "unfinished"
+      elif len(thepo.visiblecomments) > 0:
+        if thepo.visiblecomments[0] == "#_ OBSOLETE\n":
+          type = "obsolete" 
+      else:
+        type = ""
       if isinstance(source, str):
         source = source.decode("utf-8")
       if isinstance(translation, str):
@@ -48,7 +62,7 @@ class po2ts:
           contextname = sourcelocation[:sourcelocation.find("#")]
         else:
           contextname = sourcelocation
-        tsfile.addtranslation(contextname, source, translation, createifmissing=True)
+        tsfile.addtranslation(contextname, source, translation, comment, type, createifmissing=True)
     return tsfile.getxml()
 
 def convertpo(inputfile, outputfile, templatefile):
