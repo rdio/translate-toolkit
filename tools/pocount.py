@@ -57,9 +57,10 @@ class summarizer:
         self.handledir(filename)
       else:
         self.handlefile(filename)
-    print "TOTAL:"
-    summarize(self.allelements)
-    print
+    if len(filenames) > 1:
+      print "TOTAL:"
+      summarize(self.allelements)
+      print
 
   def handlefile(self, filename):
     infile = open(filename)
