@@ -102,7 +102,7 @@ class ProjectIndex(pagelayout.PootlePage):
       fileentry = self.getfileitem(childfile)
       fileentries.append(fileentry)
     pagelayout.PootlePage.__init__(self, "Pootle: "+self.project.projectname, [message, processlinks, direntries, fileentries], session, bannerheight=81)
-    self.links.addsearchbox(searchtext="", action="translate.html")
+    self.addsearchbox(searchtext="", action="translate.html")
     self.addfolderlinks("current folder", dirfilter, "index.html")
     if dirfilter is not None:
       parentfolder = "/".join(dirfilter.split("/")[:-1])
@@ -110,12 +110,6 @@ class ProjectIndex(pagelayout.PootlePage):
         self.addfolderlinks("parent folder", parentfolder, "../index.html")
       depth = dirfilter.count("/") + 1
       self.addfolderlinks("project root", "/", "/".join([".."] * depth) + "/index.html")
-
-  def addfolderlinks(self, title, foldername, folderlink):
-    """adds a section on the current folder"""
-    self.links.addcontents(pagelayout.SidebarTitle(title))
-    currentfolderlink = widgets.Link(folderlink, foldername or "/")
-    self.links.addcontents(pagelayout.SidebarText(currentfolderlink))
 
   def getdiritem(self, direntry):
     basename = os.path.basename(direntry)
