@@ -71,11 +71,6 @@ class dtdelement:
             # plain comment
             self.commenttype = "comment"
 
-      if not self.inentity:
-        if line.find('<!ENTITY') <> -1:
-          self.inentity = 1
-          self.entitypart = "start"
-
       if self.incomment:
         # some kind of comment
         (comment, self.incomment) = quote.extract(line,"<!--","-->",None,self.continuecomment)
@@ -96,6 +91,12 @@ class dtdelement:
           self.locnotes.append(commentpair)
         elif self.commenttype == "comment":
           self.comments.append(commentpair)
+        line = line.replace(comment, "", 1)
+
+      if not self.inentity:
+        if line.find('<!ENTITY') <> -1:
+          self.inentity = 1
+          self.entitypart = "start"
 
       if self.inentity:
         if self.entitypart == "start":
