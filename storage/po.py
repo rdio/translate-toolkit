@@ -57,6 +57,8 @@ class poelement:
     self.visiblecomments = []
     self.msgidcomments = []
     self.msgid = []
+    self.msgid_pluralcomments = []
+    self.msgid_plural = []
     self.msgstr = []
 
   def merge(self, otherpo):
@@ -102,7 +104,9 @@ class poelement:
 
   def fromlines(self,lines):
     inmsgid = 0
+    inmsgid_plural = 0
     inmsgstr = 0
+    msgstr_pluralid = None
     linesprocessed = 0
     for line in lines:
       linesprocessed += 1
@@ -121,12 +125,22 @@ class poelement:
         else:
           self.othercomments.append(line)
       else:
-        if line[:5] == 'msgid':
-          inmsgid = 1
-          inmsgstr = 0
-        elif line[:6] == 'msgstr':
-          inmsgstr = 1
+        if line.startswith('msgid_plural'):
           inmsgid = 0
+          inmsgid_plural = 1
+          inmsgstr = 0
+        elif line.startswith('msgid'):
+          inmsgid = 1
+          inmsgid_plural = 0
+          inmsgstr = 0
+        elif line.startswith('msgstr'):
+          inmsgid = 0
+          inmsgid_plural = 0
+          inmsgstr = 1
+          if line.startswith('msgstr['):
+            msgstr_pluralid = int(line[len('msgstr['):line.find(']')].strip())
+          else:
+            msgstr_pluralid = None
       extracted = quote.extractstr(line)
       if not extracted is None:
         if inmsgid:
@@ -135,9 +149,48 @@ class poelement:
             self.msgidcomments.append(extracted)
           else:
             self.msgid.append(extracted)
+        elif inmsgid_plural:
+          if extracted.find('_:') != -1:
+            self.msgid_pluralcomments.append(extracted)
+          else:
+            self.msgid_plural.append(extracted)
         elif inmsgstr:
-          self.msgstr.append(extracted)
+          if msgstr_pluralid is None:
+            self.msgstr.append(extracted)
+          else:
+            if type(self.msgstr) == list:
+              self.msgstr = {0: self.msgstr}
+            if msgstr_pluralid not in self.msgstr:
+              self.msgstr[msgstr_pluralid] = []
+            self.msgstr[msgstr_pluralid].append(extracted)
     return linesprocessed
+
+  def getmsgpartstr(self, partname, partlines, partcomments=""):
+    if isinstance(partlines, dict):
+      partkeys = partlines.keys()
+      partkeys.sort()
+      return "".join([self.getmsgpartstr("%s[%d]" % (partname, partkey), partlines[partkey], partcomments) for partkey in partkeys])
+    partstr = partname + " "
+    partstartline = 0
+    if len(partlines) > 0 and len(partcomments) == 0:
+      partstr += partlines[0]
+      partstartline = 1
+    elif len(partcomments) > 0:
+      if len(partlines) > 0 and len(getunquotedstr(partlines[:1])) == 0:
+        # if there is a blank leader line, it must come before the comment
+        partstr += partlines[0] + '\n'
+        partstartline += 1
+      # comments first, no blank leader line needed
+      for partcomment in partcomment:
+        partstr += partcomment # + '\n'
+      partstr = quote.rstripeol(partstr)
+    else:
+      partstr += '""'
+    partstr += '\n'
+    # add the rest
+    for partline in partlines[partstartline:]:
+      partstr += partline + '\n'
+    return partstr
 
   def tolines(self):
     for othercomment in self.othercomments:
@@ -153,35 +206,10 @@ class poelement:
       yield typecomment
     for visiblecomment in self.visiblecomments:
       yield visiblecomment
-    msgidstr = "msgid "
-    msgidstartline = 0
-    if len(self.msgid) > 0 and len(self.msgidcomments) == 0:
-      msgidstr += self.msgid[0]
-      msgidstartline = 1
-    elif len(self.msgidcomments) > 0:
-      if len(self.msgid) > 0 and len(getunquotedstr([self.msgid[0]])) == 0:
-        # if there is a blank leader line, it must come before the comment
-        msgidstr += self.msgid[0] + '\n'
-        msgidstartline += 1
-      # comments first, no blank leader line needed
-      for msgidcomment in self.msgidcomments:
-        msgidstr += msgidcomment # + '\n'
-      msgidstr = quote.rstripeol(msgidstr)
-    else:
-      msgidstr += '""'
-    yield msgidstr + '\n'
-    # add the rest
-    for msgidline in self.msgid[msgidstartline:]:
-      yield msgidline + '\n'
-    msgstrstr = "msgstr "
-    if len(self.msgstr) > 0:
-      msgstrstr += self.msgstr[0]
-    else:
-      msgstrstr = '""'
-    yield msgstrstr + '\n'
-    # add the rest
-    for msgstrline in self.msgstr[1:]:
-      yield msgstrline + '\n'
+    yield self.getmsgpartstr("msgid", self.msgid, self.msgidcomments)
+    if self.msgid_plural or self.msgid_pluralcomments:
+      yield self.getmsgpartstr("msgid_plural", self.msgid_plural, self.msgid_pluralcomments)
+    yield self.getmsgpartstr("msgstr", self.msgstr)
 
   def getsources(self):
     """returns the list of sources from sourcecomments in the po element"""
