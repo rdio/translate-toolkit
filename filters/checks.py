@@ -27,9 +27,9 @@ from translate.filters import prefilters
 # actual test methods
 
 class TranslationChecker:
-  def __init__(self, accelerators=[], varmatches=[], excludefilters={}, limitfilters=None):
+  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None):
     """construct the TranslationChecker..."""
-    self.setaccelerators(accelerators)
+    self.setaccelmarkers(accelmarkers)
     self.setvarmatches(varmatches)
     # exclude functions defined in TranslationChecker from being treated as tests...
     self.helperfunctions = {}
@@ -53,11 +53,11 @@ class TranslationChecker:
       filters[functionname] = filterfunction
     return filters
 
-  def setaccelerators(self, accelerators):
+  def setaccelmarkers(self, accelmarkers):
     """sets the accelerator list"""
-    self.accelerators = accelerators
-    self.accfilters = [prefilters.filteraccelerators(accelmarker) for accelmarker in self.accelerators]
-    self.acccounters = [decoration.countaccelerators(accelmarker) for accelmarker in self.accelerators]
+    self.accelmarkers = accelmarkers
+    self.accfilters = [prefilters.filteraccelerators(accelmarker) for accelmarker in self.accelmarkers]
+    self.acccounters = [decoration.countaccelerators(accelmarker) for accelmarker in self.accelmarkers]
 
   def setvarmatches(self, varmatches):
     """sets the set of start and end markers to match variables by"""
@@ -235,7 +235,7 @@ class StandardChecker(TranslationChecker):
 class OpenOfficeChecker(StandardChecker):
   def __init__(self, **kwargs):
     StandardChecker.__init__(self,
-      accelerators = ("~"),
+      accelmarkers = ("~"),
       varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("#", "#")),
       **kwargs
       )
@@ -243,7 +243,7 @@ class OpenOfficeChecker(StandardChecker):
 class MozillaChecker(StandardChecker):
   def __init__(self, **kwargs):
     StandardChecker.__init__(self,
-      accelerators = ("&"),
+      accelmarkers = ("&"),
       varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None)),
       **kwargs
       )
@@ -251,7 +251,7 @@ class MozillaChecker(StandardChecker):
 class GnomeChecker(StandardChecker):
   def __init__(self, **kwargs):
     StandardChecker.__init__(self,
-      accelerators = ("_"),
+      accelmarkers = ("_"),
       varmatches = (("%", 1),),
       **kwargs
       )
@@ -261,7 +261,7 @@ class KdeChecker(StandardChecker):
 	# TODO allow setup of KDE plural and translator comments so that they do
 	# not create false postives
     StandardChecker.__init__(self,
-      accelerators = ("&"),
+      accelmarkers = ("&"),
       varmatches = (("%", 1),),
       **kwargs
       )
