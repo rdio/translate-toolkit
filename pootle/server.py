@@ -51,7 +51,7 @@ class OptionalLoginAppServer(server.LoginAppServer):
 class PootleServer(OptionalLoginAppServer):
   """the Server that serves the Pootle Pages"""
   def __init__(self, instance, sessioncache=None, errorhandler=None, loginpageclass=LoginPage, cachetables=None):
-    super(PootleServer, self).__init__(instance, sessioncache, errorhandler)
+    super(PootleServer, self).__init__(instance, sessioncache, errorhandler, loginpageclass)
     for projectcode, project in self.instance.projects.iteritems():
       if not hasattr(project, "fullname"):
         project.fullname = projectcode
