@@ -296,7 +296,7 @@ if __name__ == '__main__':
   from translate.convert import convert
   inputformat = "dtd"
   outputformat = "po"
-  parser = convert.ConvertOptionParser(convert.norecursion, inputformat, outputformat, usetemplates=True)
+  parser = convert.ConvertOptionParserExt(convert.norecursion, inputformat, outputformat, usetemplates=True)
   (options, args) = parser.parse_args()
   # open the appropriate files
   if options.input is None:

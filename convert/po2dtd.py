@@ -288,9 +288,8 @@ if __name__ == '__main__':
   from translate.convert import convert
   inputformat = "po"
   outputformats = {"dtd": convertdtd}
-  parser = convert.ConvertOptionParser(convert.defaultrecursion, inputformat, outputformats, usetemplates=True)
+  parser = convert.ConvertOptionParserExt(convert.defaultrecursion, inputformat, outputformats, usetemplates=True)
   (options, args) = parser.parse_args()
-  # recurse the appropriate directories...
   try:
     parser.runconversion(options, None)
   except convert.optparse.OptParseError, message:

@@ -66,11 +66,8 @@ if __name__ == '__main__':
   # TODO: add ability to import translations from another directory
   inputformats = {"dtd": convertdtd, "properties": convertprop}
   outputformat = "po"
-  parser = convert.ConvertOptionParser(convert.defaultrecursion, inputformats, outputformat, True)
-  parser.add_option("-P", "--pot", action="store_true", dest="pot", default=False, \
-                    help="produce PO template (.pot) with blank msgstrs")
+  parser = convert.ConvertOptionParserExt(convert.defaultrecursion, inputformats, outputformat, usetemplates=True, usepots=True)
   (options, args) = parser.parse_args()
-  # recurse the appropriate directories...
   try:
     parser.runconversion(options, None)
   except convert.optparse.OptParseError, message:
