@@ -151,7 +151,9 @@ def convertoo(inputfile, outputfile, templatefile, languagecode=None):
   else:
     convertor = reoo(templatefile)
   outputoo = convertor.convertfile(inputpo)
-  if languagecode is not None:
+  if languagecode is None:
+    raise ValueError("must specify language code")
+  else:
     convertor.renumberdest(languagecode)
   outputoolines = outputoo.tolines()
   outputfile.writelines(outputoolines)
