@@ -261,6 +261,8 @@ class pofile:
 
   def todict(self):
     """returns a dictionary of elements based on msgid"""
+    # NOTE: these elements are quoted strings
+    # TODO: make them unquoted strings, if useful...
     return dict([(" ".join(poel.msgid), poel) for poel in self.poelements])
 
 if __name__ == '__main__':
