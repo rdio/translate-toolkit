@@ -449,9 +449,10 @@ class TranslationProject:
     self.languagename = self.potree.getlanguagename(self.languagecode)
     self.projectname = self.potree.getprojectname(self.projectcode)
     self.projectdescription = self.potree.getprojectdescription(self.projectcode)
+    self.projectcheckerstyle = self.potree.getprojectcheckerstyle(self.projectcode)
     self.podir = potree.getpodir(languagecode, projectcode)
     self.pofilenames = potree.getpofiles(languagecode, projectcode)
-    checkerclasses = [checks.projectcheckers.get(projectcode, checks.StandardChecker), pofilter.StandardPOChecker]
+    checkerclasses = [checks.projectcheckers.get(self.projectcheckerstyle, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses, errorhandler=self.filtererrorhandler)
     self.pofiles = potimecache(15*60, self)
     self.initpootlefiles()
@@ -766,6 +767,12 @@ class POTree:
           projectdescription = self.getprojectdescription(projectcode)
           if projectdescription != value:
             self.setprojectdescription(projectcode, value)
+      elif key.startswith("projectcheckerstyle-"):
+        projectcode = key.replace("projectcheckerstyle-", "", 1)
+        if hasattr(self.projects, projectcode):
+          projectcheckerstyle = self.getprojectcheckerstyle(projectcode)
+          if projectcheckerstyle != value:
+            self.setprojectcheckerstyle(projectcode, value)
       elif key == "newprojectcode":
         projectcode = value.lower()
         if not projectcode.isalpha():
@@ -852,6 +859,16 @@ class POTree:
     """returns the project description"""
     projectprefs = getattr(self.projects, projectcode)
     setattr(projectprefs, "description", projectdescription)
+
+  def getprojectcheckerstyle(self, projectcode):
+    """returns the project checker style"""
+    projectprefs = getattr(self.projects, projectcode)
+    return getattr(projectprefs, "checkerstyle", projectcode)
+
+  def setprojectcheckerstyle(self, projectcode, projectcheckerstyle):
+    """sets the project checker style"""
+    projectprefs = getattr(self.projects, projectcode)
+    setattr(projectprefs, "checkerstyle", projectcheckerstyle)
 
   def getpodir(self, languagecode, projectcode):
     """returns the base directory containing po files for the project"""

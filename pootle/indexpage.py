@@ -205,12 +205,14 @@ class AdminPage(pagelayout.PootlePage):
       projectname = self.potree.getprojectname(projectcode)
       nametextbox = widgets.Input({"name": "projectname-%s" % projectcode, "value": projectname})
       descriptiontextbox = widgets.Input({"name": "projectdescription-%s" % projectcode, "value": projectdescription})
+      checkerstyletextbox = widgets.Input({"name": "projectcheckerstyle-%s" % projectcode, "value": projectcheckerstyle})
       removecheckbox = widgets.Input({"name": "projectremove-%s" % projectcode, "type": "checkbox"})
       rownum = projects.maxrownum()+1
       projects.setcell(rownum, 0, table.TableCell(projectcode))
       projects.setcell(rownum, 1, table.TableCell(nametextbox))
       projects.setcell(rownum, 2, table.TableCell(descriptiontextbox))
-      projects.setcell(rownum, 3, table.TableCell([removecheckbox, self.localize("Remove %s") % projectcode]))
+      projects.setcell(rownum, 3, table.TableCell(checkerstyletextbox))
+      projects.setcell(rownum, 4, table.TableCell([removecheckbox, self.localize("Remove %s") % projectcode]))
     rownum = projects.maxrownum()+1
     codetextbox = widgets.Input({"name": "newprojectcode", "value": "", "size": 6})
     nametextbox = widgets.Input({"name": "newprojectname", "value": self.localize("(add project here)")})

@@ -22,15 +22,19 @@ Pootle:
     openoffice:
       fullname = "OpenOffice.org"
       description = "Office productivity suite"
+      checkerstyle = "openoffice"
     mozilla:
       fullname = "Mozilla"
       description = "Web-browser, email program and HTML editor"
+      checkerstyle = "mozilla"
     firefox:
       fullname = "Firefox"
       description = "Lean and mean, standards compliant web-browser"
+      checkerstyle = "mozilla"
     xfce42:
       fullname = "xfce 4.2"
       description = "Linux desktop with good looks and speed to thrill"
+      checkerstyle = "gnome"
   directories:
     mainsearch = "po/$project/$language"
     xfce:
