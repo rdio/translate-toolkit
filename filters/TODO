@@ -1,4 +1,3 @@
-rearrange scripts into script/module parts
 use unicode strings throughout the pofilter program ...
 allow the user to mark strings fuzzy and write back into the input file
 provide options to handle true/false
