@@ -227,9 +227,11 @@ class PootleServer(users.OptionalLoginAppServer):
 	  elif argdict.get("index", 0):
             return indexpage.ProjectIndex(project, session, argdict, dirfilter=pofilename)
 	  else:
-	    contents = project.getsource(pofilename)
+            pofile = project.getpofile(pofilename)
+	    contents = pofile.getsource()
 	    page = widgets.PlainContents(contents)
-	    page.content_type = "text/plain; charset=UTF-8"
+            encoding = pofile.encoding or "UTF-8"
+	    page.content_type = "text/plain; charset=%s" % encoding
 	    return page
 	elif bottom.endswith(".csv"):
 	  csvfilename = os.path.join(*pathwords)
