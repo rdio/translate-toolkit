@@ -1,6 +1,14 @@
 current tasks:
-  assigning stuff to people (package + email too)
   upload submissions as po file / zip
+  assigning stuff to people (package + email too)
+  - upload completed work (by maintainer)
+  - what has been returned, what hasn't
+  - ability to send work to people
+  - let maintainer add people manually
+  - create / review goals
+  localize pootle
+  - create po files
+  - set language on login
   priorities (directory/file order)
   process (administrators/translators/reviewers)
   locking
@@ -21,7 +29,6 @@ requirements for translatathon:
 
 other:
   be able to add new projects / reconfigure without restarting the service
-  manage new users / registration
   add ability to mark/unmark things as fuzzy
   move the sidebar to be like distributed proofreaders (at the top, small)
   test with apache multiprocess
