@@ -97,7 +97,7 @@ if __name__ == '__main__':
   from translate.convert import convert
   inputformats = {"po": mergepo}
   outputformat = "po"
-  parser = convert.ConvertOptionParser(convert.defaultrecursion, inputformats, outputformat, usetemplates=True, templateslikeinput=False)
+  parser = convert.ConvertOptionParser(inputformats, outputformat, usetemplates=True, templateslikeinput=False)
   (options, args) = parser.parse_args()
   try:
     parser.runconversion(options)
