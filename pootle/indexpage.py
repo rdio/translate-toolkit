@@ -429,8 +429,8 @@ class ProjectAdminPage(pagelayout.PootlePage):
 
   def getlanguageitem(self, languagecode):
     languagename = self.potree.getlanguagename(languagecode)
-    bodydescription = pagelayout.ItemDescription(widgets.Link("../../%s/%s/" % (languagecode, self.projectcode), languagename))
-    return bodydescription
+    adminlink = widgets.Link("../../%s/%s/" % (languagecode, self.projectcode), languagename)
+    return pagelayout.ItemDescription(adminlink)
 
   def getnewlangform(self):
     """returns a box that lets the user add new languages"""
