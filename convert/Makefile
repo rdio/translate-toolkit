@@ -64,7 +64,7 @@ clean-openoffice:
 clean-csv:
 	rm -fR $(csvtests)
 
-test-moz2po: test-moz2po-notemplate test-moz2po-xpinotemplate test-moz2po-withtemplate
+test-moz2po: test-moz2po-notemplate test-moz2po-xpinotemplate test-moz2po-withtemplate test-moz2po-xpiwithtemplate
 
 # set the progress option...
 progress ?= none
