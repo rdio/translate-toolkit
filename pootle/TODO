@@ -1,8 +1,8 @@
 current tasks:
   assigning stuff to people (package + email too)
+  upload submissions as po file / zip
   priorities (directory/file order)
   process (administrators/translators/reviewers)
-  upload submissions as po file / zip
   locking
   allow search to display only items related to search (no context)
   add ability to email bug report
@@ -23,7 +23,6 @@ other:
   be able to add new projects / reconfigure without restarting the service
   can't currently detect GNU languages
   manage new users / registration
-    - should move user details into separate prefs file
   add ability to mark/unmark things as fuzzy
   move the sidebar to be like distributed proofreaders (at the top, small)
   test with apache multiprocess
