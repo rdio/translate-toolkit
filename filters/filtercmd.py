@@ -196,8 +196,7 @@ class FilterOptionParser(optparse.OptionParser):
   def reportprogress(self, filename, success):
     """shows that we are progressing..."""
     self.progressbar.amount += 1
-    if success:
-      self.progressbar.show(filename)
+    self.progressbar.show(filename)
     
   def checksubdir(self, parent, subdir):
     """checks to see if subdir under parent needs to be created, creates if neccessary"""
