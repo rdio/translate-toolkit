@@ -57,6 +57,7 @@ class TranslationProject:
       for name in matchnames:
         if postats[name]:
           return pofilename
+    raise IndexError("no more pofilenames could be found")
 
   def findnextitem(self, pofilename, item, matchnames):
     """finds the next item matching one of the given classification names"""
@@ -64,7 +65,6 @@ class TranslationProject:
     while not matches:
       pofilename, item = self.getnextitem(pofilename, item, matchnames)
       pofile = self.getpofile(pofilename)
-      thepo = pofile.transelements[item]
       matches = False
       for name in matchnames:
         if item in pofile.classify[name]:
@@ -145,7 +145,7 @@ class TranslationProject:
     try:
       postatsstring = "\n".join(["%s:%d" % (name, count) for name, count in postats.iteritems()])
       open(statsfilename, "w").write("%d\n%s" % (pomtime, postatsstring))
-    except IOError, e:
+    except IOError:
       pass
     return self.stats[pofilename]
 
