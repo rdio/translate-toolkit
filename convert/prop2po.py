@@ -32,12 +32,24 @@ eol = "\n"
 class prop2po:
   """convert a .properties file to a .po file for handling the translation..."""
   def convertfile(self, inputfile, outputfile):
+    """converts a .properties file to a .po file..."""
     thepropfile = properties.propfile(inputfile)
     thepofile = po.pofile()
     headerpo = self.makeheader(thepropfile.filename)
-    thepofile.poelements.append(headerpo)
+    # we try and merge the header po with any comments at the start of the properties file
+    appendedheader = 0
     for theprop in thepropfile.propelements:
       thepo = self.convertelement(theprop)
+      if not appendedheader:
+        if theprop.isblank():
+          if thepo is None:
+            headerpo.othercomments = theprop.comments + headerpo.othercomments
+          else:
+            headerpo.merge(thepo)
+          thepo = headerpo
+        else:
+          thepofile.poelements.append(headerpo)
+        appendedheader = 1
       if thepo is not None:
         thepofile.poelements.append(thepo)
     thepofile.removeduplicates()
@@ -70,7 +82,7 @@ class prop2po:
   def convertelement(self, theprop):
     """converts a .properties element to a .po element..."""
     # escape unicode
-    msgid = quote.escapeunicode(theprop.msgid)
+    msgid = quote.escapeunicode(theprop.msgid.strip())
     thepo = po.poelement()
     thepo.othercomments.extend(theprop.comments)
     # TODO: handle multiline msgid
