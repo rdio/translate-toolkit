@@ -58,11 +58,24 @@ class UserIndex(pagelayout.PootlePage):
     hiddenfields = widgets.HiddenFieldList([("allowmultikey","languages"), ("allowmultikey","projects")])
     formmembers = [self.getprojectoptions(), self.getlanguageoptions(), hiddenfields, submitbutton]
     useroptions = widgets.Form(formmembers, {"name": "useroptions", "action":""})
-    contents = [useroptions]
+    contents = [self.getquicklinks(), useroptions]
     pagelayout.PootlePage.__init__(self, self.localize("User Page for: %s") % session.username, contents, session)
 
+  def getquicklinks(self):
+    """gets a set of quick links to user's project-languages"""
+    quicklinkstitle = widgets.ContentWidget('h3', self.localize("Quick Links"), {"class":"title"})
+    quicklinks = []
+    for languagecode in self.session.getlanguages():
+      for projectcode in self.session.getprojects():
+        projectname = self.potree.getprojectname(projectcode)
+        languagename = self.potree.getlanguagename(languagecode)
+        projecturl = "../%s/%s/" % (languagecode, projectcode)
+        projecttitle = self.localize("%s %s" % (languagename, projectname))
+        quicklinks.append([widgets.Link(projecturl, projecttitle), "<br/>"])
+    return pagelayout.Contents([quicklinkstitle, pagelayout.ItemDescription(quicklinks)])
+
   def getprojectoptions(self):
-    """gets the links to the projects"""
+    """gets the options box to change the user's projects"""
     projectstitle = widgets.ContentWidget('h3', self.localize("My Projects"), {"class":"title"})
     projectoptions = []
     userprojects = self.session.getprojects()
@@ -74,7 +87,7 @@ class UserIndex(pagelayout.PootlePage):
     return pagelayout.Contents([projectstitle, bodydescription])
 
   def getlanguageoptions(self):
-    """gets the links to the languages"""
+    """gets the options box to change the user's languages"""
     languagestitle = widgets.ContentWidget('h3', self.localize("My Projects"), {"class":"title"})
     languageoptions = []
     userlanguages = self.session.getlanguages()
