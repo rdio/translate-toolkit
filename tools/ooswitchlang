@@ -171,8 +171,10 @@ class LanguageSelectionWindow(wx.Frame):
     self.optionssizer = wx.FlexGridSizer(0, 2, 0, 0)
 
     self.applybutton = wx.Button(self.panel, wx.ID_ANY, "Apply Changes")
+    self.applybutton.SetToolTipString("Apply the changes you have made")
     wx.EVT_BUTTON(self, self.applybutton.GetId(), self.OnApply)
     self.cancelbutton = wx.Button(self.panel, wx.ID_ANY, "Cancel")
+    self.cancelbutton.SetToolTipString("Exit without applying changes")
     wx.EVT_BUTTON(self, self.cancelbutton.GetId(), self.OnCancel)
     self.advancedbutton = wx.Button(self.panel, wx.ID_ANY, "")
     wx.EVT_BUTTON(self, self.advancedbutton.GetId(), self.OnSwitchAdvanced)
@@ -203,11 +205,14 @@ class LanguageSelectionWindow(wx.Frame):
     versionnames = self.versions.keys()
     versionnames.append("(other)")
     self.versionchoice = wx.Choice(self.panel, wx.ID_ANY, choices = versionnames)
+    self.versionchoice.SetToolTipString("The OpenOffice.org version to operate on")
     wx.EVT_CHOICE(self, self.versionchoice.GetId(), self.OnSetVersion)
 
     self.dirlabel = wx.StaticText(self.panel, wx.ID_ANY, "Installation directory:")
     self.dirbox = wx.TextCtrl(self.panel, wx.ID_ANY, style=wx.TE_PROCESS_ENTER, size=(200,-1))
+    self.dirbox.SetToolTipString("The OpenOffice.org installation directory")
     self.dirbrowse = wx.Button(self.panel, wx.ID_ANY, "Browse...")
+    self.dirbrowse.SetToolTipString("Find another OpenOffice.org directory")
     wx.EVT_BUTTON(self, self.dirbrowse.GetId(), self.OnBrowse)
     wx.EVT_TEXT_ENTER(self, self.dirbox.GetId(), self.OnSetInstallDir)
 
@@ -216,12 +221,15 @@ class LanguageSelectionWindow(wx.Frame):
     self.languagenames = self.languages.values()
     self.languagenames.sort()
     self.languagelist = wx.ListBox(self.panel, wx.ID_ANY, choices=self.languagenames)
+    self.languagelist.SetToolTipString("Select the language you would like to run OpenOffice.org in")
 
     self.adminlabel = wx.StaticText(self.panel, wx.ID_ANY, "Change system settings:")
     self.adminchoice = wx.CheckBox(self.panel, wx.ID_ANY, "")
+    self.adminchoice.SetToolTipString("Changes the default setting for all users (which the user setting overrides)")
     wx.EVT_CHECKBOX(self, self.adminchoice.GetId(), self.OnSetAdmin)
     self.forcelabel = wx.StaticText(self.panel, wx.ID_ANY, "Assume language is valid:")
     self.forcechoice = wx.CheckBox(self.panel, wx.ID_ANY, "")
+    self.forcechoice.SetToolTipString("Ignores the list of valid languages defined for this installation")
     self.forcechoice.SetValue(True)
 
   def arrangeoptioncontrols(self):
@@ -248,8 +256,10 @@ class LanguageSelectionWindow(wx.Frame):
       control.Show(self.advancedmode)
     if self.advancedmode:
       self.advancedbutton.SetLabel("Less...")
+      self.advancedbutton.SetToolTipString("Switch to a simpler set of options")
     else:
       self.advancedbutton.SetLabel("More...")
+      self.advancedbutton.SetToolTipString("Display the more advanced options")
     self.panel.Layout()
     self.AutoSize()
 
