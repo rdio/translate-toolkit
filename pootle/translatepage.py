@@ -24,6 +24,7 @@ class TranslatePage(pagelayout.PootlePage):
     if isinstance(self.searchtext, unicode):
       self.searchtext = self.searchtext.encode("utf8")
     self.session = self.project.gettranslationsession(session)
+    self.localize = session.localize
     self.rights = self.session.getrights()
     self.instance = session.instance
     self.pofilename = None
@@ -37,7 +38,7 @@ class TranslatePage(pagelayout.PootlePage):
     searchcontextinfo = widgets.HiddenFieldList({"searchtext": self.searchtext})
     contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     translateform = widgets.Form([self.transtable, searchcontextinfo, contextinfo], {"name": "translate", "action":""})
-    title = session.localize("Pootle: translating %s into %s: %s") % (self.project.projectname, self.project.languagename, self.pofilename)
+    title = self.localize("Pootle: translating %s into %s: %s") % (self.project.projectname, self.project.languagename, self.pofilename)
     if self.viewmode:
       pagelinks = self.getpagelinks("?translate=1&view=1", 10)
     else:
@@ -61,26 +62,26 @@ class TranslatePage(pagelayout.PootlePage):
       pagelinks.append(widgets.Link(baselink + "&item=%d" % linkitem, "Previous %d" % (self.firstitem - linkitem)))
     pofilelen = self.project.getpofilelen(self.pofilename)
     lastitem = min(pofilelen-1, self.firstitem + pagesize - 1)
-    pagelinks.append(session.localize("Items %d to %d of %d") % (self.firstitem+1, lastitem+1, pofilelen))
+    pagelinks.append(self.localize("Items %d to %d of %d") % (self.firstitem+1, lastitem+1, pofilelen))
     if self.firstitem + len(self.translations) < self.project.getpofilelen(self.pofilename):
       linkitem = self.firstitem + pagesize
       itemcount = min(pofilelen - linkitem, pagesize)
-      pagelinks.append(widgets.Link(baselink + "&item=%d" % linkitem, session.localize("Next %d") % itemcount))
+      pagelinks.append(widgets.Link(baselink + "&item=%d" % linkitem, self.localize("Next %d") % itemcount))
     return pagelayout.IntroText(widgets.SeparatedList(pagelinks, " | "))
 
   def addfilelinks(self, pofilename, matchnames):
     """adds a section on the current file, including any checks happening"""
     searchcontextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
     self.addsearchbox(self.searchtext, searchcontextinfo)
-    self.links.addcontents(pagelayout.SidebarTitle(session.localize("current file")))
+    self.links.addcontents(pagelayout.SidebarTitle(self.localize("current file")))
     self.links.addcontents(pagelayout.SidebarText(pofilename))
     if matchnames:
       checknames = [matchname.replace("check-", "", 1) for matchname in matchnames]
-      self.links.addcontents(pagelayout.SidebarText(session.localize("checking %s") % ", ".join(checknames)))
+      self.links.addcontents(pagelayout.SidebarText(self.localize("checking %s") % ", ".join(checknames)))
     postats = self.project.getpostats(self.pofilename)
     blank, fuzzy = postats["blank"], postats["fuzzy"]
     translated, total = postats["translated"], postats["total"]
-    self.links.addcontents(pagelayout.SidebarText(session.localize("%d/%d translated\n(%d blank, %d fuzzy)") % (translated, total, blank, fuzzy)))
+    self.links.addcontents(pagelayout.SidebarText(self.localize("%d/%d translated\n(%d blank, %d fuzzy)") % (translated, total, blank, fuzzy)))
 
   def receivetranslations(self):
     """receive any translations submitted by the user"""
@@ -181,9 +182,9 @@ class TranslatePage(pagelayout.PootlePage):
         self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, search).next()
       except StopIteration:
         if self.lastitem is None:
-          raise StopIteration(session.localize("There are no items matching that search ('%s')") % self.searchtext)
+          raise StopIteration(self.localize("There are no items matching that search ('%s')") % self.searchtext)
         else:
-          raise StopIteration(session.localize("You have finished going through the items you selected"))
+          raise StopIteration(self.localize("You have finished going through the items you selected"))
     else:
       if not item.isdigit():
         raise ValueError("Invalid item given")
@@ -309,7 +310,7 @@ class TranslatePage(pagelayout.PootlePage):
     """returns a widget for reviewing the given item's suggestions"""
     if isinstance(trans, str):
       trans = trans.decode("utf8")
-    currenttitle = widgets.Division(session.localize("<b>Current Translation:</b>"))
+    currenttitle = widgets.Division(self.localize("<b>Current Translation:</b>"))
     diffcodes = [difflib.SequenceMatcher(None, trans, suggestion).get_opcodes() for suggestion in suggestions]
     combineddiffs = reduce(list.__add__, diffcodes)
     transdiff = self.highlightdiffs(trans, combineddiffs, issrc=True)
@@ -324,14 +325,14 @@ class TranslatePage(pagelayout.PootlePage):
         suggestion = suggestion.decode("utf8")
       if len(suggestions) > 1:
         if suggestedby:
-          suggtitle = session.localize("Suggestion %d by %s:") % (suggid+1, suggestedby)
+          suggtitle = self.localize("Suggestion %d by %s:") % (suggid+1, suggestedby)
         else:
-          suggtitle = session.localize("Suggestion %d:") % (suggid+1)
+          suggtitle = self.localize("Suggestion %d:") % (suggid+1)
       else:
         if suggestedby:
-          suggtitle = sesssion.localize("Suggestion by %s:") % (suggestedby)
+          suggtitle = self.localize("Suggestion by %s:") % (suggestedby)
         else:
-          suggtitle = session.localize("Suggestion:")
+          suggtitle = self.localize("Suggestion:")
       suggtitle = widgets.Division("<b>%s</b>" % suggtitle)
       suggestiontext = pagelayout.TranslationText(suggdiff)
       suggestionhidden = widgets.Input({'type': 'hidden', "name": "sugg%d.%d" % (item, suggid), 'value': suggestion})

@@ -22,39 +22,41 @@ class LoginPage(server.LoginPage, pagelayout.PootlePage):
 class RegisterPage(pagelayout.PootlePage):
   """page for new registrations"""
   def __init__(self, session, argdict):
-    introtext = [pagelayout.IntroText(sesion.localize("Please enter your registration details"))]
+    self.localize = session.localize
+    introtext = [pagelayout.IntroText(self.localize("Please enter your registration details"))]
     if session.status:
       statustext = pagelayout.IntroText(session.status)
       introtext.append(statustext)
     self.argdict = argdict
     contents = [introtext, self.getform()]
-    pagelayout.PootlePage.__init__(self, session.localize("Pootle Registration"), contents, session)
+    pagelayout.PootlePage.__init__(self, self.localize("Pootle Registration"), contents, session)
 
   def getform(self):
-    columnlist = [("email", session.localize("Email Address"), session.localize("Must be a valid email address")),
-                  ("username", session.localize("Username"), sesssion.localize("Your requested username")),
-                  ("password", session.localize("Password"), session.localize("Your desired password"))]
+    columnlist = [("email", self.localize("Email Address"), self.localize("Must be a valid email address")),
+                  ("username", self.localize("Username"), sesssion.localize("Your requested username")),
+                  ("password", self.localize("Password"), self.localize("Your desired password"))]
     formlayout = {1:("email", ), 2:("username", ), 3:("password", )}
-    extrawidgets = [widgets.Input({'type': 'submit', 'name':'register', 'value':session.localize('Register')})]
+    extrawidgets = [widgets.Input({'type': 'submit', 'name':'register', 'value':self.localize('Register')})]
     record = dict([(column[0], self.argdict.get(column[0], "")) for column in columnlist])
     return form.SimpleForm(record, "register", columnlist, formlayout, {}, extrawidgets)
 
 class ActivatePage(pagelayout.PootlePage):
   """page for new registrations"""
   def __init__(self, session, argdict):
-    introtext = [pagelayout.IntroText(session.localize("Please enter your activation details"))]
+    self.localize = session.localize
+    introtext = [pagelayout.IntroText(self.localize("Please enter your activation details"))]
     if session.status:
       statustext = pagelayout.IntroText(session.status)
       introtext.append(statustext)
     self.argdict = argdict
     contents = [introtext, self.getform()]
-    pagelayout.PootlePage.__init__(self, session.localize("Pootle Account Activation"), contents, session)
+    pagelayout.PootlePage.__init__(self, self.localize("Pootle Account Activation"), contents, session)
 
   def getform(self):
-    columnlist = [("username", session.localize("Username"), session.localize("Your requested username")),
-                  ("activationcode", session.localize("Activation Code"), session.localize("The activation code you received"))]
+    columnlist = [("username", self.localize("Username"), self.localize("Your requested username")),
+                  ("activationcode", self.localize("Activation Code"), self.localize("The activation code you received"))]
     formlayout = {1:("username", ), 2:("activationcode", )}
-    extrawidgets = [widgets.Input({'type': 'submit', 'name':'activate', 'value':session.localize('Activate Account')})]
+    extrawidgets = [widgets.Input({'type': 'submit', 'name':'activate', 'value':self.localize('Activate Account')})]
     record = dict([(column[0], self.argdict.get(column[0], "")) for column in columnlist])
     return form.SimpleForm(record, "activate", columnlist, formlayout, {}, extrawidgets)
 

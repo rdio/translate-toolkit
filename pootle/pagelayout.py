@@ -121,6 +121,7 @@ class PootlePage(widgets.Page):
   def __init__(self, title, contents, session, bannerheight=135):
     if not hasattr(session.instance, "baseurl"):
       session.instance.baseurl = "/"
+    self.localize = session.localize
     stylesheets = [session.instance.baseurl + "pootle.css"]
     if hasattr(session.instance, "stylesheet"):
       stylesheets.append(session.instance.baseurl + session.instance.stylesheet)
@@ -132,7 +133,7 @@ class PootlePage(widgets.Page):
 
   def addsearchbox(self, searchtext, contextinfo="", action=""):
     """adds a simple search box"""
-    self.links.addcontents(SidebarTitle(session.localize("Search")))
+    self.links.addcontents(SidebarTitle(self.localize("Search")))
     searchbox = widgets.Input({"name": "searchtext", "value": searchtext})
     searchform = widgets.Form([contextinfo, searchbox], {"action": action, "name":"searchform"})
     self.links.addcontents(searchform)
