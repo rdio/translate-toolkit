@@ -84,7 +84,7 @@ def filtervariables(startmarker, endmarker, varfilter):
   else: endmarkerlen = len(endmarker)
   def filtermarkedvariables(str1):
     """modifies the variables in str1 marked with a given marker, using a given filter"""
-    varlocs = decoration.findmarkedvariables(str1, startmarker, endmarker, useignorelist=0)
+    varlocs = decoration.findmarkedvariables(str1, startmarker, endmarker)
     fstr1, pos = "", 0
     for varstart, variable in varlocs:
       fstr1 += str1[pos:varstart]

@@ -27,107 +27,123 @@ from translate.filters import prefilters
 
 # actual test methods
 
-def untranslated(str1, str2):
-  """checks whether a string has been translated at all"""
-  return not (len(str1.strip()) > 0 and len(str2) == 0)
+class TranslationChecker:
+  def __init__(self):
+    """construct the TranslationChecker..."""
+    self.prefilters = {}
+    for prefilter in (self.filtervariables, self.filteraccelerators, self.filterwordswithpunctuation):
+      self.prefilters[getattr(prefilter, 'name', prefilter.__name__)] = prefilter
+    self.helperfunctions = ("__init__", "run_all")
 
-def translationdifferent(str1, str2):
-  """checks whether a translation is basically identical to the original string"""
-  return str1.strip().lower() != str2.strip().lower()
+  def filtervariables(self, str1):
+    """filter out variables from str1"""
+    return helpers.multifilter(str1, prefilters.varfilters)
 
-def blanktranslation(str1, str2):
-  """checks whether a translation is totally blank"""
-  return not (len(str1.strip()) > 0 and len(str2) != 0 and len(str2.strip()) == 0)
+  def filteraccelerators(self, str1):
+    """filter out accelerators from str1"""
+    return helpers.multifilter(str1, prefilters.accfilters)
 
-def shorttranslation(str1, str2):
-  """checks whether a translation is much shorter than the original string"""
-  return not (len(str1.strip()) > 0 and 0 < len(str2.strip()) < len(str1.strip()) * 0.1)
+  def filterwordswithpunctuation(self, str1):
+    """replaces words with punctuation with their unpunctuated equivalents..."""
+    return prefilters.filterwordswithpunctuation(str1)
 
-def escapeconsistent(str1, str2):
-  """checks whether escaping is consistent between the two strings"""
-  return helpers.countsmatch(str1, str2, ("\\", "\\\\"))
+  def run_all(self, str1, str2, ignoretests={}):
+    """run all the tests in this suite"""
+    failures = []
+    for functionname in dir(self):
+      if functionname in self.prefilters or functionname in self.helperfunctions: continue
+      if functionname in ignoretests: continue
+      checkfunction = getattr(self, functionname)
+      if callable(checkfunction):
+        if not checkfunction(str1, str2):
+          checkname = getattr(checkfunction, 'name', checkfunction.__name__)
+          failures.append("%s: %s" % (checkname, checkfunction.__doc__))
+    return failures
 
-def quoteconsistent(str1, str2):
-  """checks whether quoting is consistent between the two strings"""
-  return helpers.countsmatch(str1, str2, ('"', "'", '""', "''", '\\"', "\\'"))
-quoteconsistent = prefilters.accvarpuncfiltertestmethod(quoteconsistent)
+  def untranslated(self, str1, str2):
+    """checks whether a string has been translated at all"""
+    return not (len(str1.strip()) > 0 and len(str2) == 0)
 
-def acceleratorsconsistent(str1, str2):
-  """checks whether accelerators are consistent between the two strings"""
-  return helpers.funcsmatch(str1, str2, acccounters)
-acceleratorsconsistent = prefilters.varfiltertestmethod(acceleratorsconsistent)
+  def translationdifferent(self, str1, str2):
+    """checks whether a translation is basically identical to the original string"""
+    return str1.strip().lower() != str2.strip().lower()
 
-def variablesconsistent(str1, str2):
-  """checks whether variables of various forms are consistent between the two strings"""
-  return helpers.funcsmatch(str1, str2, prefilters.varchecks)
+  def blanktranslation(self, str1, str2):
+    """checks whether a translation is totally blank"""
+    len1 = len(str1.strip())
+    len2 = len(str2.strip())
+    return not (len1 > 0 and len(str2) != 0 and len2 == 0)
 
-def startandend(str1, str2):
-  """checks whether punctuation at the beginning and end of the strings match"""
-  return helpers.funcsmatch(str1, str2, (decoration.puncstart, decoration.puncend))
-startandend = prefilters.accvarpuncfiltertestmethod(startandend)
+  def shorttranslation(self, str1, str2):
+    """checks whether a translation is much shorter than the original string"""
+    len1 = len(str1.strip())
+    len2 = len(str2.strip())
+    return not ((len1 > 0) and (0 < len2 < (len1 * 0.1)))
 
-def purepunctuationunchanged(str1, str2):
-  """checks that strings that are purely punctuation are not changed"""
-  # this test is a subset of startandend
-  if (decoration.ispurepunctuation(str1)):
-    return str1 == str2
-  return 1
+  def escapeconsistent(self, str1, str2):
+    """checks whether escaping is consistent between the two strings"""
+    return helpers.countsmatch(str1, str2, ("\\", "\\\\"))
 
-def simplecapitalisation(str1, str2):
-  """checks the capitalisation of two strings isn't wildly different"""
-  capitals1, capitals2 = helpers.filtercount(str1, str.isupper), helpers.filtercount(str2, str.isupper)
-  # some heuristic tests to try and see that the style of capitals is vaguely the same
-  if capitals1 == 0 or capitals1 == 1:
-    return capitals2 == capitals1
-  elif capitals1 < len(str1) / 10:
-    return capitals2 < len(str2) / 10
-  elif len(str1) < 10:
-    return abs(capitals1 - capitals2) < 3
-  elif capitals1 > len(str1) * 6 / 10:
-    return capitals2 > len(str2) * 6 / 10
-  else:
-    return abs(capitals1 - capitals2) < (len(str1) + len(str2)) / 6 
+  def quoteconsistent(self, str1, str2):
+    """checks whether quoting is consistent between the two strings"""
+    str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
+    str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
+    return helpers.countsmatch(str1, str2, ('"', "'", '""', "''", '\\"', "\\'"))
 
-alltests = (untranslated, escapeconsistent, quoteconsistent, acceleratorsconsistent, variablesconsistent,
-            startandend, purepunctuationunchanged, simplecapitalisation)
+  def acceleratorsconsistent(self, str1, str2):
+    """checks whether accelerators are consistent between the two strings"""
+    str1 = self.filtervariables(str1)
+    str2 = self.filtervariables(str2)
+    return helpers.funcsmatch(str1, str2, prefilters.acccounters)
 
-#alltests = (startandend,)
-#alltests = (variablesconsistent,)
-#alltests = (acceleratorsconsistent, variablesconsistent,)
-#alltests = (quoteconsistent,)
-#alltests = (purepunctuationunchanged,)
-#alltests = (escapeconsistent, quoteconsistent, variablesconsistent, acceleratorsconsistent, )
-alltests = (untranslated, escapeconsistent, acceleratorsconsistent, variablesconsistent,
-            purepunctuationunchanged, simplecapitalisation)
-#alltests = (untranslated, purepunctuationunchanged, escapeconsistent,)
-#ignoretests = (untranslated,)
-#alltests = (untranslated,)
-alltests = (translationdifferent,)
-ignoretests = ()
+  def variablesconsistent(self, str1, str2):
+    """checks whether variables of various forms are consistent between the two strings"""
+    return helpers.funcsmatch(str1, str2, prefilters.varchecks)
+
+  def startandend(self, str1, str2):
+    """checks whether punctuation at the beginning and end of the strings match"""
+    str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
+    str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
+    return helpers.funcsmatch(str1, str2, (decoration.puncstart, decoration.puncend))
+
+  def purepunctuationunchanged(self, str1, str2):
+    """checks that strings that are purely punctuation are not changed"""
+    # this test is a subset of startandend
+    if (decoration.ispurepunctuation(str1)):
+      return str1 == str2
+    return 1
+
+  def simplecapitalisation(self, str1, str2):
+    """checks the capitalisation of two strings isn't wildly different"""
+    capitals1, capitals2 = helpers.filtercount(str1, str.isupper), helpers.filtercount(str2, str.isupper)
+    # some heuristic tests to try and see that the style of capitals is vaguely the same
+    if capitals1 == 0 or capitals1 == 1:
+      return capitals2 == capitals1
+    elif capitals1 < len(str1) / 10:
+      return capitals2 < len(str2) / 10
+    elif len(str1) < 10:
+      return abs(capitals1 - capitals2) < 3
+    elif capitals1 > len(str1) * 6 / 10:
+      return capitals2 > len(str2) * 6 / 10
+    else:
+      return abs(capitals1 - capitals2) < (len(str1) + len(str2)) / 6 
 
 # code to actually run the tests (use unittest?)
 
-def runtests(str1, str2, testlist, ignorelist=()):
-  """verifies that a number of tests pass for a pair of strings"""
-  passed = 1
-  for test in ignorelist:
-    if not test(str1, str2):
-      ignored = 1
-  if not ignored:
-    for test in testlist:
-      if not test(str1, str2):
-        if passed:
-          passed = 0
-          print "failure on strings:\n  %r\n  %r" % (str1, str2)
-      print "test %s failed (%s)" % (test.__name__, test.__doc__)
-  if not passed: print
-  return passed
+def runtests(str1, str2, ignorelist=()):
+  """verifies that the tests pass for a pair of strings"""
+  checker = TranslationChecker()
+  failures = checker.run_all(str1, str2, ignorelist)
+  for failure in failures:
+    print "failure: %s\n  %r\n  %r" % (failure, str1, str2)
+  return failures
 
-def batchruntests(pairs, testlist):
+def batchruntests(pairs):
   """runs test on a batch of string pairs"""
   passed, numpairs = 0, len(pairs)
   for str1, str2 in pairs:
-    passed += runtests(str1, str2, testlist)
+    if runtests(str1, str2):
+      passed += 1
   print
   print "total: %d/%d pairs passed" % (passed, numpairs)
 
@@ -148,6 +164,6 @@ if __name__ == '__main__':
              (r"SIMPLE CAPITALS", r"ALL CAPITALS"),
              (r"forgot to translate", r"  ")
             ]
-  batchruntests(testset, alltests)
+  batchruntests(testset)
 
 
