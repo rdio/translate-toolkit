@@ -25,13 +25,24 @@ import zipfile
 import os.path
 from translate import __version__
 import StringIO
-NamedStringInput = StringIO.StringIO
-NamedStringOutput = StringIO.StringIO
+
+# we have some enhancements to zipfile in a file called zipfileext
+# hopefully they will be included in a future version of python
+from translate.misc import zipfileext
+ZipFileBase = zipfileext.ZipFileExt
+
+# this is a fix to the StringIO in Python 2.3.3
+# submitted as patch 951915 on sourceforge
+class FixedStringIO(StringIO.StringIO):
+  def truncate(self, size=None):
+    StringIO.StringIO.truncate(self, size)
+    self.len = len(self.buf)
+
+NamedStringInput = FixedStringIO
+NamedStringOutput = FixedStringIO
 
 # TODO: use jarfile names instead of trying to do intelligent common-prefix-stripping
 # TODO: pick up lang name etc from command-line param and rename en-US to lang-reg
-
-# TODO: work out how to prevent append from duplicating jars etc...
 
 def _commonprefix(itemlist):
   def cp(a, b):
@@ -98,7 +109,7 @@ class CatchPotentialOutput(NamedStringInput, object):
     if not self.closed:
       self.close()
 
-class ZipFileCatcher(zipfile.ZipFile, object):
+class ZipFileCatcher(ZipFileBase, object):
   """a ZipFile that calls any methods its instructed to before closing (useful for catching stream output)"""
   def __init__(self, *args, **kwargs):
     """initialize the ZipFileCatcher"""
@@ -125,6 +136,17 @@ class ZipFileCatcher(zipfile.ZipFile, object):
     else:
       super(ZipFileCatcher, self).close()
 
+  def overwritestr(self, zinfo_or_arcname, bytes):
+    """writes the string into the archive, overwriting the file if it exists...""" 
+    if isinstance(zinfo_or_arcname, zipfile.ZipInfo):
+      filename = zinfo_or_arcname.filename
+    else:
+      filename = zinfo_or_arcname
+    if filename in self.NameToInfo:
+      self.delete(filename)
+    self.writestr(zinfo_or_arcname, bytes)
+    self.writeendrec()
+
 class XpiFile(ZipFileCatcher):
   def __init__(self, *args, **kwargs):
     """sets up the xpi file"""
@@ -144,7 +166,7 @@ class XpiFile(ZipFileCatcher):
       if filename.lower().endswith('.jar'):
         if filename not in self.jarfiles:
           jarstream = self.openinputstream(None, filename)
-          jarfile = ZipFileCatcher(jarstream, self.mode)
+          jarfile = ZipFileCatcher(jarstream, mode=self.mode)
           self.jarfiles[filename] = jarfile
         else:
           jarfile = self.jarfiles[filename]
@@ -259,8 +281,10 @@ class XpiFile(ZipFileCatcher):
     if jarfilename is None:
       contents = self.read(filename)
       def onclose(contents):
-        self.writestr(filename, contents)
+        if contents != self.read(filename):
+          self.overwritestr(filename, contents)
       inputstream = CatchPotentialOutput(contents, onclose)
+      self.addcatcher(inputstream.slam)
     else:
       jarfile = self.jarfiles[jarfilename]
       contents = jarfile.read(filename)
@@ -274,7 +298,7 @@ class XpiFile(ZipFileCatcher):
     """opens a file for writing (possibly inside a jarfile as a StringIO"""
     if jarfilename is None:
       def onclose(contents):
-        self.writestr(filename, contents)
+        self.overwritestr(filename, contents)
     else:
       if jarfilename in self.jarfiles:
         jarfile = self.jarfiles[jarfilename]
@@ -284,7 +308,7 @@ class XpiFile(ZipFileCatcher):
         self.jarfiles[jarfilename] = jarfile
         self.addcatcher(jarstream.slam)
       def onclose(contents):
-        jarfile.writestr(filename, contents)
+        jarfile.overwritestr(filename, contents)
     outputstream = CatchStringOutput(onclose)
     outputstream.name = "%s %s" % (jarfilename, filename)
     if jarfilename is None:
@@ -298,6 +322,12 @@ class XpiFile(ZipFileCatcher):
     for jarfile in self.jarfiles.itervalues():
       jarfile.close()
     super(XpiFile, self).close()
+
+  def testzip(self):
+    """test the xpi zipfile and all enclosed jar files..."""
+    for jarfile in self.jarfiles.itervalues():
+      jarfile.testzip()
+    super(XpiFile, self).testzip()
 
   def clone(self, newfilename, newmode=None):
     """Create a new .xpi file with the same contents as this one..."""
