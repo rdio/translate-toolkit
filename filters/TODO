@@ -3,10 +3,8 @@ provide options to handle true/false
   return all that have empty translations
   return all that don't have empty translations
   return all msgid or msgstr that contain a regex
-provide preconditions
-  only use punctuationunchanged filter if translation is not empty
-  ignore KDE translator comments
-  handle KDE and Gettexdt plural forms
+ignore KDE translator comments
+handle KDE and Gettext plural forms
 other checks
   stop words - eg. OpenOffice or IMAP should not be translated.
   check words - liek stop words but check them in msgid ie force
