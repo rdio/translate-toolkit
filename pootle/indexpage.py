@@ -66,14 +66,18 @@ class UserIndex(pagelayout.PootlePage):
     quicklinkstitle = widgets.ContentWidget('h3', self.localize("Quick Links"), {"class":"title"})
     quicklinks = []
     for languagecode in self.session.getlanguages():
+      languagename = self.potree.getlanguagename(languagecode)
+      languagelink = widgets.Link("../%s/" % languagecode, languagename)
+      quicklinks.append(widgets.ContentWidget('h3', languagelink, {"class":"title"}))
+      languagelinks = []
       for projectcode in self.session.getprojects():
         if self.potree.hasproject(languagecode, projectcode):
           projectname = self.potree.getprojectname(projectcode)
-          languagename = self.potree.getlanguagename(languagecode)
           projecturl = "../%s/%s/" % (languagecode, projectcode)
           projecttitle = self.localize("%s %s" % (languagename, projectname))
-          quicklinks.append([widgets.Link(projecturl, projecttitle), "<br/>"])
-    return pagelayout.Contents([quicklinkstitle, pagelayout.ItemDescription(quicklinks)])
+          languagelinks.append([widgets.Link(projecturl, projecttitle), "<br/>"])
+      quicklinks.append(pagelayout.ItemDescription(languagelinks))
+    return pagelayout.Contents([quicklinkstitle, quicklinks])
 
   def getprojectoptions(self):
     """gets the options box to change the user's projects"""
