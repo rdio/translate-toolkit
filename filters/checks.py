@@ -137,6 +137,28 @@ class StandardChecker(TranslationChecker):
     str2 = self.filteraccelerators(self.filtervariables(str2))
     return helpers.countsmatch(str1, str2, ('"', '""', '\\"'))
 
+  def doublespacing(self, str1, str2):
+    """checks for bad double-spaces by comparing to original"""
+    str1 = self.filteraccelerators(self.filtervariables(str1))
+    str2 = self.filteraccelerators(self.filtervariables(str2))
+    return helpers.countmatch(str1, str2, "  ")
+
+  def puncspacing(self, str1, str2):
+    """checks for bad spacing after punctuation"""
+    str1 = self.filteraccelerators(self.filtervariables(str1))
+    str2 = self.filteraccelerators(self.filtervariables(str2))
+    for puncchar in ",.?!:;":
+      plaincount1 = str1.count(puncchar)
+      plaincount2 = str2.count(puncchar)
+      spacecount1 = str1.count(puncchar+" ")
+      spacecount2 = str2.count(puncchar+" ")
+      if plaincount1 == plaincount2 and spacecount1 != spacecount2:
+        # handle extra spaces that are because of transposed punctuation
+        if str1.endswith(puncchar) != str2.endswith(puncchar) and abs(spacecount1-spacecount2) == 1:
+          continue
+        return 0
+    return 1
+
   def accelerators(self, str1, str2):
     """checks whether accelerators are consistent between the two strings"""
     str1 = self.filtervariables(str1)
@@ -192,6 +214,7 @@ class StandardChecker(TranslationChecker):
       return abs(capitals1 - capitals2) < (len(str1) + len(str2)) / 6 
 
   preconditions = {"untranslated": ("escapes", "short", "unchanged", "singlequoting", "doublequoting",
+                                    "doublespacing", "puncspacing",
                                     "accelerators", "variables", "numbers", "whitespace",
                                     "startpunc", "endpunc", "purepunc", "simplecaps") }
 
