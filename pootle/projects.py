@@ -39,8 +39,6 @@ class TranslationProject:
     self.stats = {}
     os.path.walk(self.subproject.podir, self.addfiles, None)
     self.initstatscache()
-    for pofilename in self.pofiles:
-      self.getpofile(pofilename)
 
   def getnextpofilename(self, pofilename):
     """gets the pofilename that comes after the given one (or the first if pofilename is None)"""
@@ -124,11 +122,6 @@ class TranslationProject:
     if pofilename in self.stats:
       return self.stats[pofilename]
     pofile = self.getpofile(pofilename)
-    pofile.classify = {}
-    pofile.classify["fuzzy"] = [item for item, poel in enumerate(pofile.transelements) if poel.isfuzzy()]
-    pofile.classify["blank"] = [item for item, poel in enumerate(pofile.transelements) if poel.isblankmsgstr()]
-    pofile.classify["translated"] = [item for item, poel in enumerate(pofile.transelements) if item not in pofile.classify["fuzzy"] and item not in pofile.classify["blank"]]
-    pofile.classify["total"] = range(len(pofile.transelements))
     postats = dict([(name, len(items)) for name, items in pofile.classify.iteritems()])
     self.stats[pofilename] = postats
     abspofilename = os.path.join(self.subproject.podir, pofilename)
@@ -158,6 +151,12 @@ class TranslationProject:
     pofile = po.pofile(inputfile)
     # we ignore all the headers by using this filtered set
     pofile.transelements = [poel for poel in pofile.poelements if not (poel.isheader() or poel.isblank())]
+    # we always want to have the classifications available
+    pofile.classify = {}
+    pofile.classify["fuzzy"] = [item for item, poel in enumerate(pofile.transelements) if poel.isfuzzy()]
+    pofile.classify["blank"] = [item for item, poel in enumerate(pofile.transelements) if poel.isblankmsgstr()]
+    pofile.classify["translated"] = [item for item, poel in enumerate(pofile.transelements) if item not in pofile.classify["fuzzy"] and item not in pofile.classify["blank"]]
+    pofile.classify["total"] = range(len(pofile.transelements))
     self.pofiles[pofilename] = pofile
     return pofile
 
