@@ -31,9 +31,8 @@ eol = "\n"
 
 class prop2po:
   """convert a .properties file to a .po file for handling the translation..."""
-  def convertfile(self, inputfile, outputfile):
+  def convertfile(self, thepropfile):
     """converts a .properties file to a .po file..."""
-    thepropfile = properties.propfile(inputfile)
     thepofile = po.pofile()
     headerpo = self.makeheader(thepropfile.filename)
     # we try and merge the header po with any comments at the start of the properties file
@@ -54,7 +53,7 @@ class prop2po:
         waitingcomments = []
         thepofile.poelements.append(thepo)
     thepofile.removeduplicates()
-    outputfile.writelines(thepofile.tolines())
+    return thepofile
 
   def makeheader(self, filename):
     """create a header for the given filename"""
@@ -94,8 +93,13 @@ class prop2po:
     thepo.msgstr = ['""']
     return thepo
 
-def main(inputfile, outputfile):
+def main(inputfile, outputfile, templatefile):
+  """reads in inputfile using properties, converts using prop2po, writes to outputfile"""
+  inputprop = properties.propfile(inputfile)
   convertor = prop2po()
+  outputpo = convertor.convertfile(inputprop)
+  outputpolines = outputpo.tolines()
+  outputfile.writelines(outputpolines)
   convertor.convertfile(inputfile, outputfile)
 
 if __name__ == '__main__':
@@ -106,11 +110,14 @@ if __name__ == '__main__':
     from translate.misc import optparse
   inputformat = "properties"
   outputformat = "po"
+  templateformat = "properties"
   parser = optparse.OptionParser(usage="%prog [-i|--input-file inputfile] [-o|--output-file outputfile]")
   parser.add_option("-i", "--input-file", dest="inputfile", default=None,
                     help="read from inputfile in "+inputformat+" format", metavar="inputfile")
   parser.add_option("-o", "--output-file", dest="outputfile", default=None,
                     help="write to outputfile in "+outputformat+" format", metavar="outputfile")
+  parser.add_option("-t", "--template", dest="templatefile", default=None,
+                    help="read from template in "+templateformat+" format", metavar="template")
   (options, args) = parser.parse_args()
   # open the appropriate files
   if options.inputfile is None:
@@ -121,6 +128,10 @@ if __name__ == '__main__':
     outputfile = sys.stdout
   else:
     outputfile = open(options.outputfile, 'w')
-  main(inputfile, outputfile)
+  if options.templatefile is None:
+    templatefile = None
+  else:
+    templatefile = open(options.templatefile, 'r')
+  main(inputfile, outputfile, templatefile)
 
 

@@ -25,11 +25,11 @@ import os
 from translate.convert import dtd2po
 from translate.convert import prop2po
 from translate.storage import dtd
+from translate.storage import properties
 from translate.storage import po
 from translate.misc import quote
 
 def convertdtd(inputfile, outputfile, templatefile):
-  # TODO: pass filename to convertor, so it puts the filename in the comment...
   inputdtd = dtd.dtdfile(inputfile)
   convertor = dtd2po.dtd2po()
   if templatefile is None:
@@ -45,8 +45,13 @@ def convertdtd(inputfile, outputfile, templatefile):
 
 def convertprop(inputfile, outputfile, templatefile):
   # TODO: handle templates here...
+  inputprop = properties.propfile(inputfile)
   convertor = prop2po.prop2po()
-  outputpo = convertor.convertfile(inputfile, outputfile)
+  outputpo = convertor.convertfile(inputprop)
+  if outputpo.isempty():
+    return 0
+  outputpolines = outputpo.tolines()
+  outputfile.writelines(outputpolines)
   return 1
 
 inputformats = {"dtd": convertdtd, "properties": convertprop}
