@@ -149,7 +149,7 @@ if __name__ == '__main__':
   from translate.convert import convert
   inputformats = {"csv": convertcsv}
   outputformat = "po"
-  parser = convert.ConvertOptionParserExt(convert.defaultrecursion, inputformats, outputformat, usetemplates=True)
+  parser = convert.ConvertOptionParserExt(convert.optionalrecursion, inputformats, outputformat, usetemplates=True)
   (options, args) = parser.parse_args()
   try:
     parser.runconversion(options, None)
