@@ -618,6 +618,17 @@ class TranslationProject:
     """saves the project preferences"""
     self.prefs.savefile()
 
+  def getrightnames(self, session):
+    """gets the available rights and their localized names"""
+    localize = session.localize
+    return [("view", localize("View")),
+            ("suggest", localize("Suggest")),
+            ("translate", localize("Translate")),
+            ("review", localize("Review")),
+            ("archive", localize("Archive")),
+            ("pocompile", localize("Compile PO files")),
+           ]
+    
   def getrights(self, username):
     """gets the rights for the given username (or not-logged-in if username is None)"""
     if hasattr(self.prefs, "rights"):

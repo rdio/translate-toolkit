@@ -487,14 +487,7 @@ class TranslationProjectAdminPage(pagelayout.PootlePage):
     self.project = project
     self.session = session
     self.localize = session.localize
-    localize = self.localize
-    self.rightnames = [("view", localize("View")),
-                       ("suggest", localize("Suggest")),
-                       ("translate", localize("Translate")),
-                       ("review", localize("Review")),
-                       ("archive", localize("Archive")),
-                       ("pocompile", localize("Compile PO files")),
-                      ]
+    self.rightnames = self.project.getrightnames(session)
     description = self.project.projectdescription
     if self.session.issiteadmin():
       if "doupdaterights" in argdict:
