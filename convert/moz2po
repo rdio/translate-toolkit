@@ -46,33 +46,29 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
     super(MozConvertOptionParser, self).setrecursion(recursion)
     self.argumentdesc = "xpi file/dir"
 
+  def isrecursive(self, fileoption):
+    """checks if fileoption is a recursive file"""
+    if self.isxpi(fileoption): return True
+    return super(MozConvertOptionParser, self).isrecursive(fileoption)
+
   def runconversion(self, options):
     """runs the conversion method using the given commandline options..."""
-    if options.input is None:
-      self.error(optparse.OptionValueError("cannot use stdin for xpi/recursive run. please specify inputfile"))
-    elif os.path.isfile(options.input):
-      options.inputxpi = xpi.XpiFile(options.input, includenonloc=False)
-    elif not os.path.isdir(options.input):
-      self.error(optparse.OptionValueError("inputfile must be file for xpi run or directory for recursive run."))
-    if options.output is None:
-      self.error(optparse.OptionValueError("must specify output directory for xpi/recursive run."))
-    if not os.path.isdir(options.output):
-      self.error(optparse.OptionValueError("output must be existing directory for xpi/recursive run."))
-    if options.template and os.path.isfile(options.template):
-      options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
+    if self.isrecursive(options.input):
+      if not self.isrecursive(options.output):
+        self.error(optparse.OptionValueError("Cannot have recursive input and non-recursive output. check output exists"))
+      if os.path.isfile(options.input):
+        options.inputxpi = xpi.XpiFile(options.input, includenonloc=False)
+      if options.template and os.path.isfile(options.template):
+        options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
     self.recurseconversion(options)
 
-  def inputisxpi(self, options):
-    """returns whether the input is via an xpi file"""
-    return os.path.isfile(options.input)
-
-  def templateisxpi(self, options):
-    """returns whether the input is via an xpi file"""
-    return os.path.isfile(options.template)
+  def isxpi(self, fileoption):
+    """returns whether the file option is an xpi file"""
+    return fileoption and fileoption.endswith(os.extsep + "xpi") and os.path.isfile(fileoption)
 
   def recursefiles(self, options):
     """recurse through xpi file / directories and return files to be converted"""
-    if self.inputisxpi(options):
+    if self.isxpi(options.input):
       return self.recursexpifiles(options)
     else:
       return super(MozConvertOptionParser, self).recursefiles(options)
@@ -87,7 +83,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
 
   def openinputfile(self, options, fullinputpath):
     """opens the input file"""
-    if self.inputisxpi(options):
+    if self.isxpi(options.input):
       jarfilename, filename = options.inputxpi.ostojarpath(fullinputpath)
       return options.inputxpi.openinputstream(jarfilename, filename)
     else:
@@ -95,7 +91,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
 
   def getfullinputpath(self, options, inputpath):
     """gets the absolute path to an input file"""
-    if self.inputisxpi(options):
+    if self.isxpi(options.input):
       return inputpath
     else:
       return os.path.join(options.input, inputpath)
@@ -103,7 +99,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
   def opentemplatefile(self, options, fulltemplatepath):
     """opens the template file (if required)"""
     if fulltemplatepath is not None:
-      if self.templateisxpi(options):
+      if self.isxpi(options.template):
         # TODO: deal with different names in input/template xpis
         jarfilename, filename = options.templatexpi.ostojarpath(fulltemplatepath)
         if options.templatexpi.jarfileexists(jarfilename, filename):
@@ -115,7 +111,7 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
   def getfulltemplatepath(self, options, templatepath):
     """gets the absolute path to a template file"""
     if templatepath is not None and self.usetemplates and options.template:
-      if self.templateisxpi(options):
+      if self.isxpi(options.template):
         return templatepath
       else:
         return os.path.join(options.template, templatepath)
