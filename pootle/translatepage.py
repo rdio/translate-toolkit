@@ -14,18 +14,29 @@ class TranslationIterator:
 
   def gettranslations(self, contextbefore=3, contextafter=3):
     """returns (a set of translations before, the next translation, a set of translations after)"""
-    return self.translations[min(self.item-contextbefore,0):self.item], self.translations[self.item], self.translations[self.item+1:self.item+1+contextafter]
+    return self.translations[max(self.item-contextbefore,0):self.item], self.translations[self.item], self.translations[self.item+1:self.item+1+contextafter]
+
+  def receivetranslation(self, item, trans):
+    self.translations[item] = (self.translations[item][0], trans)
+    self.item = item + 1
 
 translationiterators = {}
 
 class TranslatePage(pagelayout.PootlePage):
   """the main page"""
-  def __init__(self, project, subproject, session):
+  def __init__(self, project, subproject, session, argdict):
     self.project = project
     self.subproject = subproject
     if (self.project, self.subproject) not in translationiterators:
       translationiterators[self.project, self.subproject] = TranslationIterator(self.project, self.subproject)
     self.translationiterator = translationiterators[self.project, self.subproject]
+    for key, value in argdict.iteritems():
+      if key.startswith("trans"):
+        try:
+          item = int(key.replace("trans",""))
+        except:
+          continue
+        self.translationiterator.receivetranslation(item, value)
     self.instance = session.instance
     title = "Pootle: translating %s into %s" % (self.subproject.fullname, self.project.fullname)
     translateform = widgets.Form(self.gettranslations(), {"name": "translate", "action":""})
@@ -47,15 +58,14 @@ class TranslatePage(pagelayout.PootlePage):
     self.addtransrow(-1, origtitle, transtitle)
     translationsbefore, currenttranslation, translationsafter = self.translationiterator.gettranslations()
     self.textcolors = ["#000000", "#000060"]
-    rowoffset = 0
+    rowoffset = self.translationiterator.item
     for row, (orig, trans) in enumerate(translationsbefore):
-      self.addtranslationrow(rowoffset + row, orig, trans)
-    rowoffset += len(translationsbefore)
+      self.addtranslationrow(rowoffset - len(translationsbefore) + row, orig, trans)
     orig, trans = currenttranslation
     self.addtranslationrow(rowoffset, orig, trans, True)
-    rowoffset += 1
     for row, (orig, trans) in enumerate(translationsafter):
-      self.addtranslationrow(rowoffset + row, orig, trans)
+      self.addtranslationrow(rowoffset + 1 + row, orig, trans)
+    self.transtable.shrinkrange()
     return self.transtable
 
   def getorigcell(self, row, orig, editable):

@@ -35,7 +35,7 @@ class PootleServer(server.AppServer):
         else:
           top = ""
         if not top or top == "index.html":
-          return translatepage.TranslatePage(project, subproject, session)
+          return translatepage.TranslatePage(project, subproject, session, argdict)
     elif top == "test.html":
       contents = repr(session.status)
       page = widgets.PlainContents(contents)
