@@ -60,8 +60,8 @@ class TranslatePage(pagelayout.PootlePage):
       linkitem = max(self.firstitem - pagesize, 0)
       pagelinks.append(widgets.Link(baselink + "&item=%d" % linkitem, "Previous %d" % (self.firstitem - linkitem)))
     pofilelen = self.project.getpofilelen(self.pofilename)
-    lastitem = min(pofilelen, self.firstitem + pagesize - 1)
-    pagelinks.append("Items %d to %d" % (self.firstitem+1, lastitem+1))
+    lastitem = min(pofilelen-1, self.firstitem + pagesize - 1)
+    pagelinks.append("Items %d to %d of %d" % (self.firstitem+1, lastitem+1, pofilelen))
     if self.firstitem + len(self.translations) < self.project.getpofilelen(self.pofilename):
       linkitem = self.firstitem + pagesize
       itemcount = min(pofilelen - linkitem, pagesize)
