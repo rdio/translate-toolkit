@@ -76,12 +76,9 @@ def filtervariables(startmarker, endmarker, varfilter):
     return fstr1
   return filtermarkedvariables
 
-# TODO: rather just check for a ' in the middle of alphabetic characters...
-wordswithpunctuation = ["can't", "couldn't", "doesn't", "don't", "wasn't", "won't", "you're",
-                        "user's", "system's", "writer's",  "isn't", "it's", "I'll", "you've", 
-			"window's", "folder's", "viewer's", "haven't", "today's", "I've", 
-                        "Didn't",  "didn't", "that's", # english
-                        "'n", "makro's", "scenario's", "jy't", "URL'e"   # afrikaans
+# a list of special words with punctuation 
+# all apostrophes in the middle of the word are handled already
+wordswithpunctuation = ["'n" # afrikaans
                        ]
 # map all the words to their non-punctified equivalent
 wordswithpunctuation = dict([(word, filter(str.isalnum, word)) for word in wordswithpunctuation])
@@ -93,9 +90,15 @@ def filterwordswithpunctuation(str1):
   replacements = []
   for n in range(len(words)):
     testword = words[n]
+    if len(testword) > 1:
+      # remove any ' in the middle of a word...
+      removeapostrophe = testword[:1] + testword[1:-1].replace("'","") + testword[-1:]
+      if removeapostrophe != testword:
+        replacements.append((sparse.findtokenpos(str1, words, n), testword, removeapostrophe))
+        continue
     npword = wordswithpunctuation.get(testword.lower(), None)
     if npword is not None:
-      replacements.append((sparse.findtokenpos(str1, words, n), words[n], npword))
+      replacements.append((sparse.findtokenpos(str1, words, n), testword, npword))
   newstr1 = ""
   lastpos = 0
   for pos, origword, newword in replacements:
