@@ -55,11 +55,12 @@ class txt2po:
     startline = 0
     for linenum in range(len(lines)):
       line = lines[linenum]
-      if not line.strip() and block:
+      isbreak = not line.strip()
+      if isbreak and block:
         thepo = self.convertblock(filename, block, startline)
         thepofile.poelements.append(thepo)
         block = []
-      else:
+      elif not isbreak:
         if not block:
           startline = linenum
         block.append(line)
