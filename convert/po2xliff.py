@@ -27,6 +27,55 @@ from translate.storage import xliff
 from translate.misc import quote
 from xml.dom import minidom
 
+class PoXliffParser(xliff.XliffParser):
+  """a parser for the po variant of Xliff files"""
+  def createfilenode(self, filename):
+    """creates a filenode with the given filename"""
+    filenode = super(PoXliffParser, self).createfilenode(filename)
+    filenode.setAttribute("datatype", "po")
+    filenode.setAttribute("source-language", "en-US")
+    return filenode
+
+  def addtransunit(self, filename, transunitnode, createifmissing=False):
+    """adds the given trans-unit (will create the nodes required if asked). Returns success"""
+    filenode = self.getfilenode(filename)
+    if filenode is None:
+      if not createifmissing:
+        return False
+      filenode = self.createfilenode(filename)
+      self.document.documentElement.appendChild(filenode)
+    for transunit in self.gettransunitnodes(filenode):
+      pass
+    if not createifmissing:
+      return False
+    bodynode = self.getbodynode(filenode, createifmissing=createifmissing)
+    if bodynode is None: return False
+    bodynode.appendChild(transunitnode)
+    # transunitnode.setIdAttribute("message1")
+    return True
+
+  def getheadernode(self, filenode, createifmissing=False):
+    """finds the header node for the given filenode"""
+    headernodes = filenode.getElementsByTagName("header")
+    if headernodes:
+      return headernodes[0]
+    if not createifmissing:
+      return None
+    headernode = minidom.Element("header")
+    filenode.appendChild(headernode)
+    return headernode
+
+  def getbodynode(self, filenode, createifmissing=False):
+    """finds the body node for the given filenode"""
+    bodynodes = filenode.getElementsByTagName("body")
+    if bodynodes:
+      return bodynodes[0]
+    if not createifmissing:
+      return None
+    bodynode = self.document.createElement("body")
+    filenode.appendChild(bodynode)
+    return bodynode
+
 class po2xliff:
   def createtransunit(self, thepo):
     """creates a transunit node"""
@@ -80,9 +129,9 @@ class po2xliff:
   def convertfile(self, inputfile, templatefile):
     """converts a .po file to .xliff format"""
     if templatefile is None: 
-      xlifffile = xliff.XliffParser()
+      xlifffile = PoXliffParser()
     else:
-      xlifffile = xliff.XliffParser(templatefile)
+      xlifffile = PoXliffParser(templatefile)
     thepofile = po.pofile(inputfile)
     filename = thepofile.filename
     for thepo in thepofile.poelements:

@@ -66,7 +66,8 @@ for elementclassname in dir(minidom):
 # TODO: handle comments
 # TODO: handle translation types
 
-class XliffParser:
+class XliffParser(object):
+  """a parser for xliff files"""
   def __init__(self, inputfile=None):
     """make a new XliffParser, reading from the given inputfile if required"""
     self.filename = getattr(inputfile, "filename", None)
@@ -82,8 +83,7 @@ class XliffParser:
     if filenode is None:
       if not createifmissing:
         return False
-      filenode = self.document.createElement("file")
-      filenode.setAttribute("original", filename)
+      filenode = self.createfilenode(filename)
       self.document.documentElement.appendChild(filenode)
     for transunit in self.gettransunitnodes(filenode):
       pass
@@ -92,6 +92,12 @@ class XliffParser:
     filenode.appendChild(transunitnode)
     # transunitnode.setIdAttribute("message1")
     return True
+
+  def createfilenode(self, filename):
+    """creates a filenode with the given filename"""
+    filenode = self.document.createElement("file")
+    filenode.setAttribute("original", filename)
+    return filenode
 
   def getnodetext(self, node):
     """returns the node's text by iterating through the child nodes"""
