@@ -7,6 +7,7 @@ from translate.misc import quote
 from translate.filters import checks
 from translate.filters import pofilter
 from translate.convert import po2csv
+from translate.tools import pogrep
 import os
 
 class TranslationSession:
@@ -16,11 +17,6 @@ class TranslationSession:
     self.project = project
     self.pofilename = None
     self.lastitem = None
-
-  def getnextitem(self, dirfilter=None, matchnames=[]):
-    """gives the user the next item to be translated"""
-    self.pofilename, item = self.project.searchpoitems(self.pofilename, self.lastitem, matchnames, dirfilter).next()
-    return self.pofilename, item
 
   def receivetranslation(self, pofilename, item, trans):
     """submits a new/changed translation from the user"""
@@ -120,12 +116,19 @@ class TranslationProject:
           yield item
       item += 1
 
-  def searchpoitems(self, pofilename, item, matchnames, dirfilter):
+  def searchpoitems(self, pofilename, item, matchnames, dirfilter, searchstring):
     """finds the next item matching one of the given classification names"""
+    if searchstring:
+      pogrepfilter = pogrep.pogrepfilter(searchstring, None, True, False, False)
     for pofilename in self.searchpofilenames(pofilename, matchnames, dirfilter, includelast=True):
       pofile = self.getpofile(pofilename)
       for item in self.iterpoitems(pofile, item, matchnames):
-        yield pofilename, item
+        if searchstring:
+          thepo = pofile.transelements[item]
+          if pogrepfilter.filterelement(thepo):
+            yield pofilename, item
+        else:
+          yield pofilename, item
 
   def gettranslationsession(self, session):
     """gets the user's translationsession"""
@@ -232,7 +235,7 @@ class TranslationProject:
 
   def getitem(self, pofilename, item):
     """returns a particular item from a particular po file's orig, trans strings as a tuple"""
-    pofile = self.project.getpofile(pofilename)
+    pofile = self.getpofile(pofilename)
     thepo = pofile.transelements[item]
     orig, trans = po.getunquotedstr(thepo.msgid), po.getunquotedstr(thepo.msgstr)
     return orig, trans

@@ -12,8 +12,14 @@ class TranslatePage(pagelayout.PootlePage):
     self.dirfilter = dirfilter
     self.project = project
     self.matchnames = self.getmatchnames(self.project.checker)
+    self.searchtext = self.argdict.get("searchtext", "")
+    # TODO: fix this in jToolkit
+    if isinstance(self.searchtext, unicode):
+      self.searchtext = self.searchtext.encode("utf8")
     self.translationsession = self.project.gettranslationsession(session)
     self.instance = session.instance
+    self.pofilename = None
+    self.lastitem = None
     self.receivetranslations()
     self.viewmode = self.argdict.get("view", 0)
     self.finditem()
@@ -43,6 +49,11 @@ class TranslatePage(pagelayout.PootlePage):
 
   def addfilelinks(self, pofilename, matchnames):
     """adds a section on the current file, including any checks happening"""
+    self.links.addcontents(pagelayout.SidebarTitle("search"))
+    contextinfo = widgets.HiddenFieldList({"pofilename": self.pofilename})
+    searchbox = widgets.Input({"name": "searchtext", "value": self.searchtext})
+    searchform = widgets.Form([contextinfo, searchbox])
+    self.links.addcontents(searchform)
     self.links.addcontents(pagelayout.SidebarTitle("current file"))
     self.links.addcontents(pagelayout.SidebarText(pofilename))
     if matchnames:
@@ -72,11 +83,12 @@ class TranslatePage(pagelayout.PootlePage):
         except:
           continue
         # submit the actual translation back to the project...
-        pofilename = self.argdict["pofilename"]
+        self.pofilename = self.argdict["pofilename"]
 	if skip:
-          self.translationsession.skiptranslation(pofilename, item)
+          self.translationsession.skiptranslation(self.pofilename, item)
 	else:
-          self.translationsession.receivetranslation(pofilename, item, value)
+          self.translationsession.receivetranslation(self.pofilename, item, value)
+        self.lastitem = item
 
   def getmatchnames(self, checker): 
     """returns any checker filters the user has asked to match..."""
@@ -110,7 +122,7 @@ class TranslatePage(pagelayout.PootlePage):
     item = self.argdict.get("item", None)
     if item is None:
       try:
-        self.pofilename, self.item = self.translationsession.getnextitem(self.dirfilter, self.matchnames)
+        self.pofilename, self.item = self.project.searchpoitems(self.pofilename, self.lastitem, self.matchnames, self.dirfilter, self.searchtext).next()
       except StopIteration:
         if self.translationsession.lastitem is None:
           raise StopIteration("There are no items matching that search")
