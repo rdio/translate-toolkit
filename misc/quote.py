@@ -230,7 +230,16 @@ def mozillapropertiesdecode(source):
       s += digits
       output += unichr2(x)
     elif c == "N":
-      raise NotImplementedError("Can't handle \N{name} yet")
+      if source[s] != "{":
+        raise ValueError("Invalid named unicode escape")
+      s += 1
+      e = source.find("}", s)
+      if e == -1:
+        raise ValueError("Invalid named unicode escape")
+      import unicodedata
+      name = source[s:e]
+      output += unicodedata.lookup(name)
+      s = e + 1
     elif s >= len(source):
       raise ValueError("\\ at end of string")
     else:
