@@ -27,7 +27,7 @@ from translate import __version__
 class po2csv:
   def convertstring(self, postr):
     unquotedstr = po.getunquotedstr(postr)
-    if len(unquotedstr) >= 1 and unquotedstr[:1] in "-+": unquotedstr = "\\" + unquotedstr
+    if len(unquotedstr) >= 1 and unquotedstr[:1] in "-+'": unquotedstr = "\\" + unquotedstr
     return unquotedstr
 
   def convertsource(self,thepo):
