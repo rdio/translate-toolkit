@@ -151,14 +151,10 @@ def recurse(inputdir, outputdir, inputformat, outputformat, blankmsgstr):
     dirs.reverse()
     dirstack.extend(dirs)
 
-inputformat = "oo"
-outputformat = "po"
-
-def handleoptions(options):
+def handleoptions(options, inputformat, outputformat):
   """handles the options, allocates files, and runs the neccessary functions..."""
   if options.recursive:
     if options.pot:
-      global outputformat
       outputformat = "pot"
     if options.inputfile is None:
       raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputfile")
@@ -186,6 +182,8 @@ if __name__ == '__main__':
     import optparse
   except ImportError:
     from translate.misc import optparse
+  inputformat = "oo"
+  outputformat = "po"
   parser = optparse.OptionParser(usage="%prog [options] [-i|--input-file inputfile] [-o|--output-file outputfile]")
   parser.add_option("-R", "--recursive", action="store_true", dest="recursive", default=False, \
                     help="recurse subdirectories")
@@ -198,7 +196,7 @@ if __name__ == '__main__':
   (options, args) = parser.parse_args()
   # open the appropriate files
   try:
-    handleoptions(options)
+    handleoptions(options, inputformat, outputformat)
   except optparse.OptParseError, message:
     parser.error(message)
 
