@@ -67,11 +67,12 @@ class UserIndex(pagelayout.PootlePage):
     quicklinks = []
     for languagecode in self.session.getlanguages():
       for projectcode in self.session.getprojects():
-        projectname = self.potree.getprojectname(projectcode)
-        languagename = self.potree.getlanguagename(languagecode)
-        projecturl = "../%s/%s/" % (languagecode, projectcode)
-        projecttitle = self.localize("%s %s" % (languagename, projectname))
-        quicklinks.append([widgets.Link(projecturl, projecttitle), "<br/>"])
+        if self.potree.hasproject(languagecode, projectcode):
+          projectname = self.potree.getprojectname(projectcode)
+          languagename = self.potree.getlanguagename(languagecode)
+          projecturl = "../%s/%s/" % (languagecode, projectcode)
+          projecttitle = self.localize("%s %s" % (languagename, projectname))
+          quicklinks.append([widgets.Link(projecturl, projecttitle), "<br/>"])
     return pagelayout.Contents([quicklinkstitle, pagelayout.ItemDescription(quicklinks)])
 
   def getprojectoptions(self):
