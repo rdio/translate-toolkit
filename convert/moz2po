@@ -51,17 +51,6 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
     if self.isxpi(fileoption): return True
     return super(MozConvertOptionParser, self).isrecursive(fileoption)
 
-  def runconversion(self, options):
-    """runs the conversion method using the given commandline options..."""
-    if self.isrecursive(options.input):
-      if not self.isrecursive(options.output):
-        self.error(optparse.OptionValueError("Cannot have recursive input and non-recursive output. check output exists"))
-      if os.path.isfile(options.input):
-        options.inputxpi = xpi.XpiFile(options.input, includenonloc=False)
-      if options.template and os.path.isfile(options.template):
-        options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
-    self.recurseconversion(options)
-
   def isxpi(self, fileoption):
     """returns whether the file option is an xpi file"""
     return fileoption and fileoption.endswith(os.extsep + "xpi") and os.path.isfile(fileoption)
@@ -75,6 +64,9 @@ class MozConvertOptionParser(convert.ConvertOptionParserExt):
 
   def recursexpifiles(self, options):
     """recurse through xpi files and convert files"""
+    options.inputxpi = xpi.XpiFile(options.input, includenonloc=False)
+    if options.template and self.isxpi(options.template):
+      options.templatexpi = xpi.XpiFile(options.template, includenonloc=False)
     for inputpath in options.inputxpi.iterextractnames():
       top, name = os.path.split(inputpath)
       if not self.isvalidinputname(options, name):

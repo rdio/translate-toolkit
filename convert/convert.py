@@ -229,14 +229,16 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def getfulloutputpath(self, options, outputpath):
     """gets the absolute path to an output file"""
-    if options.output:
+    if options.recursiveoutput and options.output:
       return os.path.join(options.output, outputpath)
     else:
       return outputpath
 
   def getfulltemplatepath(self, options, templatepath):
     """gets the absolute path to a template file"""
-    if templatepath is not None and self.usetemplates and options.template:
+    if not options.recursivetemplate:
+      return templatepath
+    elif templatepath is not None and self.usetemplates and options.template:
       return os.path.join(options.template, templatepath)
     else:
       return None
@@ -249,23 +251,17 @@ class ConvertOptionParser(optparse.OptionParser, object):
       if options.input:
         allfiles = [os.path.basename(options.input)]
         options.input = os.path.dirname(options.input)
-    recursiveoutput = self.isrecursive(options.output)
-    recursivetemplate = self.isrecursive(options.template)
+    options.recursiveoutput = self.isrecursive(options.output)
+    options.recursivetemplate = self.usetemplates and self.isrecursive(options.template)
     allfiles = self.initprogressbar(allfiles, options)
     for inputpath in allfiles:
       fullinputpath = self.getfullinputpath(options, inputpath)
-      if recursiveoutput:
-        outputpath = self.getoutputname(options, inputpath)
-        fulloutputpath = self.getfulloutputpath(options, outputpath)
-        if outputpath:
-          self.checksubdir(options.output, os.path.dirname(outputpath))
-      else:
-        fulloutputpath = options.output
-      if recursivetemplate:
-        templatepath = self.gettemplatename(options, inputpath)
-        fulltemplatepath = self.getfulltemplatepath(options, templatepath)
-      else:
-        fulltemplatepath = options.template
+      outputpath = self.getoutputname(options, inputpath)
+      fulloutputpath = self.getfulloutputpath(options, outputpath)
+      if options.recursiveoutput and outputpath:
+        self.checksubdir(options.output, os.path.dirname(outputpath))
+      templatepath = self.gettemplatename(options, inputpath)
+      fulltemplatepath = self.getfulltemplatepath(options, templatepath)
       convertmethod = self.getconvertmethod(fullinputpath, fulloutputpath)
       success = self.convertfile(convertmethod, options, fullinputpath, fulloutputpath, fulltemplatepath)
       self.reportprogress(inputpath, success)
@@ -391,7 +387,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
 
   def getoutputname(self, options, inputname):
     """gets an output filename based on the input filename"""
-    if not inputname: return options.output
+    if not inputname or not options.recursiveoutput: return options.output
     inputbase, ext = os.path.splitext(inputname)
     outputformat = iter(self.outputformats).next()
     if self.usepots and options.pot and outputformat == "po":
@@ -410,6 +406,7 @@ class ConvertOptionParserExt(ConvertOptionParser):
   """an extended ConvertOptionParser that does clever things with input and output formats"""
   def getoutputname(self, options, inputname):
     """gets an output filename based on the input filename"""
+    if not inputname or not options.recursiveoutput: return options.output
     if isinstance(self.outputformats, dict):
       # if there is a dictionary of outputformats, assume it is encoded in the inputname...
       inputbase, ext = os.path.splitext(inputname)
