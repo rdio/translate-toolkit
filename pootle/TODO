@@ -38,4 +38,5 @@ other:
     order to browse and fixup things like af KDE.
   integrate with KBabel/POEdit
   allow XLIFF version of files to be downloaded/uploaded
+  show KDE and other PO comments in some uncluttered but accesible way
 
