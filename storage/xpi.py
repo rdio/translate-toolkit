@@ -74,7 +74,7 @@ class XpiFile(zipfile.ZipFile):
   def islocfile(self, filename):
     """returns whether the given file is needed for localization (basically .dtd and .properties)"""
     base, ext = os.path.splitext(filename)
-    return ext in (os.path.extsep + "dtd", os.path.extsep + "properties")
+    return ext in (os.extsep + "dtd", os.extsep + "properties")
 
   def iterjarcontents(self):
     """iterate through all the localization files stored inside the jars"""
@@ -128,7 +128,7 @@ class XpiFile(zipfile.ZipFile):
 
   def ostozippath(self, ospath):
     """converts an os-style filepath to a zipfile filepath"""
-    return '/'.join(ospath.split(os.path.sep))
+    return '/'.join(ospath.split(os.sep))
 
   def jartoospath(self, jarfilename, filename):
     """converts a filename from within a jarfile to an os-style filepath"""
@@ -140,7 +140,7 @@ class XpiFile(zipfile.ZipFile):
 
   def ostojarpath(self, ospath):
     """converts an extracted os-style filepath to a jarfilename and filename"""
-    zipparts = ospath.split(os.path.sep)
+    zipparts = ospath.split(os.sep)
     prefix = zipparts[0] + '/'
     if prefix in self.reverseprefixes:
       jarfilename = self.reverseprefixes[prefix]
@@ -229,7 +229,7 @@ if __name__ == '__main__':
       os.mkdir(options.extractdir)
     for name in xpifile.iterextractnames(includenonjars=True, includedirs=True):
       abspath = os.path.join(options.extractdir, name)
-      if abspath.endswith(os.path.sep):
+      if abspath.endswith(os.sep):
         if not os.path.isdir(abspath):
           os.mkdir(abspath)
         continue

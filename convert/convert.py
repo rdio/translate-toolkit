@@ -324,7 +324,7 @@ class ConvertOptionParser(optparse.OptionParser, object):
     if not os.path.isdir(parent):
       raise ValueError("cannot make child directory %r if parent %r does not exist" % (subdir, parent))
     currentpath = parent
-    subparts = subdir.split(os.path.sep)
+    subparts = subdir.split(os.sep)
     for part in subparts:
       currentpath = os.path.join(currentpath, part)
       if not os.path.isdir(currentpath):
