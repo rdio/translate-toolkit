@@ -6,7 +6,10 @@ import ConfigParser
 import urlparse
 import urllib
 import operator
-from translate.misc import xmlwrapper
+try:
+  from translate.misc import xmlwrapper
+except ImportError:
+  import xmlwrapper
 
 availablelanguages = {'en-US': 'English (US)', 'af': 'Afrikaans', 'ns': 'Sipedi', 'tn': 'Tswana', 'zu': 'Zulu'}
 
