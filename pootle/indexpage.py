@@ -5,6 +5,14 @@ from translate.pootle import pagelayout
 from translate.pootle import projects
 import os
 
+def summarizestats(statslist, totalstats=None):
+  if totalstats is None:
+    totalstats = {}
+  for statsdict in statslist:
+    for name, count in statsdict.iteritems():
+      totalstats[name] = totalstats.get(name, 0) + count
+  return totalstats
+
 class PootleIndex(pagelayout.PootlePage):
   """the main page"""
   def __init__(self, session):
@@ -28,11 +36,8 @@ class PootleIndex(pagelayout.PootlePage):
     body = pagelayout.ContentsItem([bodytitle, bodydescription])
     projectlist = [projects.getproject(project) for (projectcode, project) in language.projects.iteritems()]
     projectcount = len(projectlist)
-    totalstats = {"translated":0, "total":0}
-    for project in projectlist:
-      projectstats = project.calculatestats()
-      for name, count in projectstats.iteritems():
-        totalstats[name] = totalstats.get(name, 0) + count
+    projectstats = [project.calculatestats() for project in projectlist]
+    totalstats = summarizestats(projectstats, {"translated":0, "total":0})
     translated = totalstats["translated"]
     total = totalstats["total"]
     percentfinished = (translated*100/max(total, 1))
