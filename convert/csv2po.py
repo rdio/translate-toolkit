@@ -126,14 +126,15 @@ class repo:
       # there may be more than one element due to msguniq merge
       self.handlecsvelement(thecsv)
       self.mightbeheader = 0
-    print >>sys.stderr, "%d unmatched out of %d strings" % (self.unmatched, len(self.p.poelements))
+    # returned the transformed po
+    return self.p
+    # TODO: work out how to do the following if in verbose mode
+    # print >>sys.stderr, "%d unmatched out of %d strings" % (self.unmatched, len(self.p.poelements))
     missing = 0
     for thepo in self.p.poelements:
       if len(po.getunquotedstr(thepo.msgstr).strip()) == 0:
         missing += 1
-    print >>sys.stderr, "%d still missing out of %d strings" % (missing, len(self.p.poelements))
-    # returned the transformed po
-    return self.p
+    # print >>sys.stderr, "%d still missing out of %d strings" % (missing, len(self.p.poelements))
 
 def convertcsv(inputfile, outputfile, templatefile):
   """reads in inputfile using csvl10n, converts using csv2po, writes to outputfile"""
