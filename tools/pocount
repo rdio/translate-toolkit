@@ -20,9 +20,9 @@ def wordcount(postr):
 def summarize(elements):
   # ignore totally blank or header elements
   elements = filter(lambda poel: not (poel.isblank() or poel.isheader()), elements)
-  translated = filter(lambda poel: po.getunquotedstr(poel.msgstr).strip() and not poel.isfuzzy(), elements)
-  fuzzy = filter(lambda poel: poel.isfuzzy() and po.getunquotedstr(poel.msgstr).strip(), elements)
-  untranslated = filter(lambda poel: not (po.getunquotedstr(poel.msgstr).strip()), elements)
+  translated = filter(lambda poel: not poel.isblankmsgstr() and not poel.isfuzzy(), elements)
+  fuzzy = filter(lambda poel: poel.isfuzzy() and not poel.isblankmsgstr(), elements)
+  untranslated = filter(lambda poel: poel.isblankmsgstr(), elements)
   print "type           strings words (source) words (translation)"
   print "translated:   %5d %10d %15d" % (len(translated), sum(map(lambda poel: wordcount(poel.msgid), translated)), sum(map(lambda poel: wordcount(poel.msgstr), translated)))
   print "fuzzy:        %5d %10d             n/a" % (len(fuzzy), sum(map(lambda poel: wordcount(poel.msgid), fuzzy)))

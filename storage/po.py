@@ -72,7 +72,8 @@ class poelement:
 
   def msgstrlen(self):
     if isinstance(self.msgstr, dict):
-      return len(getunquotedstr("\n".join(self.msgstr)).strip())
+      combinedstr = "\n".join([getunquotedstr(msgstr).strip() for msgstr in self.msgstr.itervalues()])
+      return len(combinedstr.strip())
     else:
       return len(getunquotedstr(self.msgstr).strip())
 
