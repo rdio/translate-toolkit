@@ -111,19 +111,24 @@ class dtdelement:
         if self.entitypart == "start":
           # the entity definition
           e = quote.findend(line,'<!ENTITY')
+          line = line[e:]
+          self.entitypart = "name"
+        if self.entitypart == "name":
+          e = 0
           while (e < len(line) and line[e].isspace()): e += 1
           self.entity = ''
           while (e < len(line) and not line[e].isspace()):
             self.entity += line[e]
             e += 1
           while (e < len(line) and line[e].isspace()): e += 1
-          self.entitypart = "definition"
-          # remember the start position and the quote character
-          if e == len(line):
-            self.entityhelp = None
-            continue
-          self.entityhelp = (e,line[e])
-          self.instring = 0
+          if self.entity:
+            self.entitypart = "definition"
+            # remember the start position and the quote character
+            if e == len(line):
+              self.entityhelp = None
+              continue
+            self.entityhelp = (e,line[e])
+            self.instring = 0
         if self.entitypart == "definition":
           if self.entityhelp is None:
             e = 0
