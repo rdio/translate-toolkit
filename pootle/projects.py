@@ -124,7 +124,7 @@ class TranslationProject:
   def searchpoitems(self, pofilename, item, matchnames, dirfilter, searchstring):
     """finds the next item matching one of the given classification names"""
     if searchstring:
-      pogrepfilter = pogrep.pogrepfilter(searchstring, None, True, False, False)
+      pogrepfilter = pogrep.pogrepfilter(searchstring, None, ignorecase=True)
     for pofilename in self.searchpofilenames(pofilename, matchnames, dirfilter, includelast=True):
       pofile = self.getpofile(pofilename)
       for item in self.iterpoitems(pofile, item, matchnames):
