@@ -103,7 +103,7 @@ class LanguageSelectionWindow(wx.Frame):
     self.panel = wx.Panel(self, wx.ID_ANY)
     self.optionssizer = wx.BoxSizer(wx.HORIZONTAL)
     self.languagelabel = wx.StaticText(self.panel, wx.ID_ANY, "Select language:")
-    self.optionssizer.Add(self.languagelabel)
+    self.optionssizer.Add(self.languagelabel, 1)
     self.languages = availablelanguages
     languagenames = self.languages.values()
     languagenames.sort()
@@ -113,7 +113,7 @@ class LanguageSelectionWindow(wx.Frame):
     if currentlanguagename in languagenames:
       self.languagelist.Select(languagenames.index(currentlanguagename))
     
-    self.optionssizer.Add(self.languagelist)
+    self.optionssizer.Add(self.languagelist, 1, wx.EXPAND)
 
     self.applybutton = wx.Button(self.panel, wx.ID_ANY, "Apply Changes")
     self.applybutton.SetDefault()
@@ -121,12 +121,12 @@ class LanguageSelectionWindow(wx.Frame):
     self.cancelbutton = wx.Button(self.panel, wx.ID_ANY, "Cancel")
     wx.EVT_BUTTON(self, self.cancelbutton.GetId(), self.OnCancel)
     self.buttonsizer = wx.BoxSizer(wx.HORIZONTAL)
-    self.buttonsizer.Add(self.applybutton, 0)
-    self.buttonsizer.Add(self.cancelbutton, 0)
+    self.buttonsizer.Add(self.applybutton)
+    self.buttonsizer.Add(self.cancelbutton)
 
     self.sizer = wx.BoxSizer(wx.VERTICAL)
-    self.sizer.Add(self.optionssizer, 0)
-    self.sizer.Add(self.buttonsizer, 0)
+    self.sizer.Add(self.optionssizer)
+    self.sizer.Add(self.buttonsizer)
     self.panel.SetAutoLayout(1)
     self.panel.SetSizer(self.sizer)
     self.Show(1)
