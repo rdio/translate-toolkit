@@ -38,7 +38,7 @@ class pocheckfilter:
     unquotedstr = po.getunquotedstr(thepo.msgstr)
     if thepo.isfuzzy():
       return []
-    failures = self.checker.run_all(unquotedid, unquotedstr)
+    failures = self.checker.run_filters(unquotedid, unquotedstr)
     if includereview and not failures and thepo.hastypecomment("review"):
       failures.append("marked for review")
     return failures
@@ -55,6 +55,7 @@ class pocheckfilter:
         thenewpofile.poelements.append(thepo)
     return thenewpofile
 
+# TODO: work out how to psas in options like includereview here...
 def runpofilter(inputfile, outputfile, includereview=1):
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
   fromfile = po.pofile(inputfile)
@@ -69,7 +70,7 @@ def runpofilter(inputfile, outputfile, includereview=1):
 if __name__ == '__main__':
   from translate.filters import filtercmd
   inputformats = {"po":runpofilter, "pot":runpofilter}
-  parser = filtercmd.FilterOptionParser(filter.optionalrecursion, inputformats)
+  parser = filtercmd.FilterOptionParser(filtercmd.optionalrecursion, inputformats)
   parser.add_option("", "--includereview", dest="includereview", default=True, action="store_true",
     help="include elements marked for review...")
   options, args = parser.parse_args()
@@ -78,8 +79,8 @@ if __name__ == '__main__':
     if len(args) == 0:
       parser.runfilter(options, runpofilter)
     else:
-      for input in args:
-        options.input = input
+      for inputarg in args:
+        options.input = inputarg
         parser.runfilter(options, runpofilter)
   else:
     if len(args) != 0:
