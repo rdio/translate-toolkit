@@ -97,6 +97,10 @@ class TranslationChecker(object):
       # this filterfunction may only be defined on another checker if using TeeChecker
       if filterfunction is None:
         continue
+      try:
+        filterresult = filterfunction(str1, str2)
+      except Exception, e:
+        raise ValueError("error in filter %s: %r, %r, %s" % (functionname, str1, str2, e))
       if not filterfunction(str1, str2):
         # we test some preconditions that aren't actually a cause for failure...
         if functionname in self.defaultfilters:
