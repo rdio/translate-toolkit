@@ -209,12 +209,13 @@ class ConvertOptionParser(optparse.OptionParser):
       print "processing %d files..." % len(allfiles)
     else:
       self.progressbar = self.progresstypes[options.progress]()
+    return allfiles
 
   def recurseconversion(self, options):
     """recurse through directories and convert files"""
     join = os.path.join
     allfiles = self.recursefiles(options)
-    self.initprogressbar(allfiles, options)
+    allfiles = self.initprogressbar(allfiles, options)
     for inputext, inputpath, outputext, outputpath, templatepath in allfiles:
       convertmethod = self.getconvertmethod(inputext, outputext)
       fullinputpath = join(options.input, inputpath)
