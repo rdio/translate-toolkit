@@ -32,6 +32,7 @@ optionalrecursion = 1
 defaultrecursion = 2
 
 # TODO: handle input/output without needing -i/-o
+# TODO: refactor this and filters.filtercmd so they share code
 
 class ConvertOptionParser(optparse.OptionParser):
   """a specialized Option Parser for convertor tools..."""
@@ -122,7 +123,8 @@ class ConvertOptionParser(optparse.OptionParser):
     self.progresstypes = {"none": progressbar.NoProgressBar, "simple": progressbar.SimpleProgressBar,
                           "console": progressbar.ConsoleProgressBar, "curses": progressbar.CursesProgressBar,
                           "verbose": progressbar.VerboseProgressBar}
-    progressoption = optparse.Option(None, "--progress", dest="progress", default="console", metavar="PROGRESS",
+    progressoption = optparse.Option(None, "--progress", dest="progress", default="console",
+                      choices = self.progresstypes.keys(), metavar="PROGRESS",
                       help="set progress type to one of %s" % (", ".join(self.progresstypes)))
     self.define_option(progressoption)
 
