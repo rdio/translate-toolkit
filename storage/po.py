@@ -79,7 +79,7 @@ class poelement:
     self.msgidcomments.extend(otherpo.msgidcomments)
     if self.isblankmsgstr():
       self.msgstr = otherpo.msgstr
-    elif not other.isblankmsgstr():
+    elif not otherpo.isblankmsgstr():
       if self.msgstr != otherpo.msgstr:
         if not self.isfuzzy():
           self.typecomments.append("#, fuzzy\n")
@@ -191,7 +191,7 @@ class poelement:
         partstr += partlines[0] + '\n'
         partstartline += 1
       # comments first, no blank leader line needed
-      for partcomment in partcomment:
+      for partcomment in partcomments:
         partstr += partcomment # + '\n'
       partstr = quote.rstripeol(partstr)
     else:
