@@ -198,17 +198,17 @@ class dtd2po:
         # mixed entity
         if thedtdfile.index.has_key(entitybase + ".accesskey"):
           # add both versions to the list of mixed entities
-          self.mixedentities[entity] = 0
-          self.mixedentities[entitybase+".accesskey"] = 0
+          self.mixedentities[entity] = {}
+          self.mixedentities[entitybase+".accesskey"] = {}
       # check if this could be a mixed entity (".label" and ".accesskey")
 
-  def convertdtdelement(self, thedtdfile, thedtd):
+  def convertdtdelement(self, thedtdfile, thedtd, mixbucket="dtd"):
     """converts a dtd element from thedtdfile to a po element, handling mixed entities along the way..."""
     # keep track of whether acceskey and label were combined
     if thedtd.entity in self.mixedentities:
       # use special convertmixed element which produces one poelement with
       # both combined for the label and None for the accesskey
-      alreadymixed = self.mixedentities[thedtd.entity]
+      alreadymixed = mixbucket in self.mixedentities[thedtd.entity]
       if alreadymixed:
         # we are successfully throwing this away...
         return None
@@ -224,8 +224,8 @@ class dtd2po:
           labeldtd = thedtdfile.index[labelentity]
         thepo = self.convertmixedelement(labeldtd, accesskeydtd)
         if thepo is not None:
-          self.mixedentities[accesskeyentity] = 1
-          self.mixedentities[labelentity] = 1
+          self.mixedentities[accesskeyentity][mixbucket] = 1
+          self.mixedentities[labelentity][mixbucket] = 1
           return thepo
         # otherwise the mix failed. add each one separately...
     if thedtd.entity:
@@ -259,10 +259,10 @@ class dtd2po:
     self.findmixedentities(translateddtdfile)
     # go through the dtd files and convert each element
     for origdtd in origdtdfile.dtdelements:
-      origpo = self.convertdtdelement(origdtdfile, origdtd)
+      origpo = self.convertdtdelement(origdtdfile, origdtd, mixbucket="orig")
       if origdtd.entity in translateddtdfile.index:
         translateddtd = translateddtdfile.index[origdtd.entity]
-        translatedpo = self.convertdtdelement(translateddtdfile, translateddtd)
+        translatedpo = self.convertdtdelement(translateddtdfile, translateddtd, mixbucket="translate")
       else:
         translatedpo = None
       if origpo is not None:
