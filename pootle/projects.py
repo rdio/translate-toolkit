@@ -430,6 +430,7 @@ class POTree:
   def getlanguagecodes(self, projectcode=None):
     """returns a list of valid languagecodes for a given project or all projects"""
     languagecodes = [languagecode for languagecode, language in self.languages.iteritems()]
+    languagecodes.sort()
     if projectcode is None:
       return languagecodes
     else:
@@ -438,6 +439,7 @@ class POTree:
   def getprojectcodes(self, languagecode=None):
     """returns a list of project codes that are valid for the given languagecode or all projects"""
     projectcodes = [projectcode for projectcode, projectprefs in self.projects.iteritems()]
+    projectcodes.sort()
     if languagecode is None:
       return projectcodes
     else:
