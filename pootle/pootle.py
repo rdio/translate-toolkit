@@ -289,7 +289,7 @@ def main_is_frozen():
           hasattr(sys, "importers") # old py2exe
           or imp.is_frozen("__main__")) # tools/freeze
 
-if __name__ == '__main__':
+def main():
   # run the web server
   from jToolkit.web import simplewebserver
   parser = simplewebserver.WebOptionParser()
@@ -310,4 +310,6 @@ if __name__ == '__main__':
   elif options.action == "refreshstats":
     server.refreshstats()
 
+if __name__ == '__main__':
+  main()
 
