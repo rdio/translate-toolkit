@@ -9,7 +9,11 @@ mozilla - automate
 mozilla - migrate from one version to another
 moz2po
   make strings fuzzy if original == translation
+headers
+	charset=UTF-8
+	correct POT generation dates
+csv2po
+	--charset to allow setting of po header charset
 
 make po files of all existing translations
 take over the world
-
