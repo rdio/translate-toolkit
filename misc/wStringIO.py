@@ -129,6 +129,8 @@ class StringIO:
         self.buf.flush()
 
     def getvalue(self):
+        if self.closed:
+            raise ValueError, "I/O operation on closed file"
         return self.buf.getvalue()
 
 class CatchStringOutput(StringIO, object):
