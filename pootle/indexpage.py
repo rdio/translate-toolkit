@@ -500,8 +500,17 @@ class ProjectIndex(pagelayout.PootlePage):
     self.showtracks = self.getboolarg("showtracks")
     self.showchecks = self.getboolarg("showchecks")
     self.showassigns = self.getboolarg("showassigns")
+    currentfolder = dirfilter
+    if currentfolder:
+      depth = currentfolder.count("/") + 1
+      rootlink = "/".join([".."] * depth) + "/index.html"
+    else:
+      rootlink = "index.html"
+    language = widgets.Link("../" + rootlink, self.project.languagename)
+    project = widgets.Link( self.getbrowseurl(rootlink), self.project.projectname)
+    baselinks = ["[ ", language, "] [ ", project, "]"]
+    pathlinks = []
     if dirfilter:
-      bodytitle = []
       dirs = self.dirfilter.split("/")
       count = len(dirs)
       for dir in dirs:
@@ -510,13 +519,10 @@ class ProjectIndex(pagelayout.PootlePage):
           backlinks = backlinks + "../"
         count = count - 1
         dirlink = widgets.Link(self.getbrowseurl(backlinks + dir + "/"), dir)
-        bodytitle.append(dirlink)
+        pathlinks.append(dirlink)
         if count != 0:
-          bodytitle.append("/ ")
-      bodytitle = pagelayout.Title(bodytitle)
-    else:
-      bodytitle = pagelayout.Title(dirfilter or self.project.projectname)
-      bodytitle = widgets.Link(self.getbrowseurl(""), bodytitle)
+          pathlinks.append("/ ")
+    navbarpath = pagelayout.Title(baselinks + [" "] + pathlinks)
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []
@@ -528,7 +534,7 @@ class ProjectIndex(pagelayout.PootlePage):
       actionlinks = pagelayout.ActionLinks(actionlinks)
       mainstats = self.getitemstats("", projectstats, len(pofilenames))
       mainicon = pagelayout.Icon("folder.png")
-    mainitem = pagelayout.MainItem([mainicon, bodytitle, actionlinks, mainstats])
+    mainitem = pagelayout.MainItem([mainicon, navbarpath, actionlinks, mainstats])
     childitems = self.getchilditems(dirfilter)
     pagetitle = self.localize("Pootle: Project %s, Language %s") % (self.project.projectname, self.project.languagename)
     pagelayout.PootlePage.__init__(self, pagetitle, [message, mainitem, childitems], session, bannerheight=81)
@@ -611,15 +617,6 @@ class ProjectIndex(pagelayout.PootlePage):
       currentfolder = "/".join(dirfilter.split("/")[:-1])
     else:
       currentfolder = dirfilter
-    if currentfolder:
-      depth = currentfolder.count("/") + 1
-      rootlink = "/".join([".."] * depth) + "/index.html"
-    else:
-      rootlink = "index.html"
-    roottext = self.localize("%s (%s)") % (self.project.projectname, self.project.languagename)
-    self.addfolderlinks(self.localize("project root"), roottext, rootlink, self.project.projectdescription)
-    if dirfilter is not None:
-      parentfolder = "/".join(currentfolder.split("/")[:-1])
     if "archive" in self.rights:
       if currentfolder:
         archivename = "%s-%s-%s.zip" % (self.project.projectcode, self.project.languagecode, currentfolder.replace("/", "-"))
