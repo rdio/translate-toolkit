@@ -35,7 +35,7 @@ def quotecsvstr(source):
   return '"' + replacestrings(source, ('\\"','"'), ('"','\\"'), ("\\\\'", "\\'"), ('\\\\n', '\\n')) + '"'
 
 def simplify(string):
-  return filter(str.isalnum, string)
+  return filter(type(string).isalnum, string)
   tokens = sparse.SimpleParser().tokenize(string)
   return " ".join(tokens)
 
