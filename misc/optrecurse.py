@@ -171,6 +171,10 @@ class RecursiveOptionParser(optparse.OptionParser, object):
       self.error("You have used an invalid combination of --input, --output and freestanding args")
     if isinstance(options.input, list) and len(options.input) == 1:
       options.input = options.input[0]
+    if options.input is None:
+      self.error("You need to give an inputfile or use - for stdin ; use --help for full usage instructions")
+    elif options.input == '-':
+      options.input = None
     return (options, args)
 
   def getpassthroughoptions(self, options):
