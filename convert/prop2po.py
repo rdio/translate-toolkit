@@ -83,7 +83,7 @@ class prop2po:
         translatedpo = None
       # if we have a valid po element, get the translation and add it...
       if origpo is not None:
-        if translatedprop is not None:
+        if translatedpo is not None:
           origpo.msgstr = translatedpo.msgid
         origpo.othercomments = waitingcomments + origpo.othercomments
         waitingcomments = []

@@ -30,6 +30,7 @@ from translate.storage import po
 from translate.misc import quote
 
 def convertdtd(inputfile, outputfile, templatefile):
+  """reads in inputfile and templatefile using dtd, converts using dtd2po, writes to outputfile"""
   inputdtd = dtd.dtdfile(inputfile)
   convertor = dtd2po.dtd2po()
   if templatefile is None:
@@ -44,20 +45,22 @@ def convertdtd(inputfile, outputfile, templatefile):
   return 1
 
 def convertprop(inputfile, outputfile, templatefile):
-  # TODO: handle templates here...
+  """reads in inputfile using properties, converts using prop2po, writes to outputfile"""
   inputprop = properties.propfile(inputfile)
   convertor = prop2po.prop2po()
-  outputpo = convertor.convertfile(inputprop)
+  if templatefile is None:
+    outputpo = convertor.convertfile(inputprop)
+  else:
+    templateprop = properties.propfile(templatefile)
+    outputpo = convertor.mergefiles(templateprop, inputprop)
   if outputpo.isempty():
     return 0
   outputpolines = outputpo.tolines()
   outputfile.writelines(outputpolines)
   return 1
 
-inputformats = {"dtd": convertdtd, "properties": convertprop}
-outputformat = "po"
-
-def recurse(inputdir, outputdir, templatedir, outputformat):
+def recurse(inputdir, outputdir, templatedir, inputformats, outputformat):
+  """convert files in input/template dirs to files in outputformat in outputdir using inputformats"""
   dirstack = ['']
   # discreated contains all the directories created, mapped to whether they've been used or not...
   dirscreated = {}
@@ -113,7 +116,7 @@ def recurse(inputdir, outputdir, templatedir, outputformat):
     if not used:
       os.rmdir(os.path.join(outputdir, createddir))
 
-def handleoptions(options):
+def handleoptions(options, inputformats, outputformat):
   """handles the options, and runs the neccessary functions..."""
   if options.inputdir is None:
     raise optparse.OptionValueError("cannot use stdin for recursive run. please specify inputdir")
@@ -127,9 +130,8 @@ def handleoptions(options):
     if not os.path.isdir(options.templatedir):
       raise optparse.OptionValueError("template must be existing directory for recursive run.")
   if options.pot:
-    global outputformat
     outputformat = "pot"
-  recurse(options.inputdir, options.outputdir, options.templatedir, outputformat)
+  recurse(options.inputdir, options.outputdir, options.templatedir, inputformats, outputformat)
 
 if __name__ == '__main__':
   # handle command line options
@@ -138,6 +140,8 @@ if __name__ == '__main__':
   except ImportError:
     from translate.misc import optparse
   # TODO: add ability to import translations from another directory
+  inputformats = {"dtd": convertdtd, "properties": convertprop}
+  outputformat = "po"
   parser = optparse.OptionParser(usage="%prog [-P|--pot] [-i|--input-dir inputdir] [-o|--output-dir outputdir] [-t|--template-dir templatedir]")
   parser.add_option("-i", "--input-dir", dest="inputdir", default=None,
                     help="read from inputdir in "+", ".join(inputformats)+" formats", metavar="inputdir")
@@ -150,7 +154,7 @@ if __name__ == '__main__':
   (options, args) = parser.parse_args()
   # recurse the appropriate directories...
   try:
-    handleoptions(options)
+    handleoptions(options, inputformats, outputformat)
   except optparse.OptParseError, message:
     parser.error(message)
 
