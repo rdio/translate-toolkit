@@ -188,7 +188,7 @@ class TranslatePage(pagelayout.PootlePage):
       if item in skips or item not in translations:
         continue
       value = translations[item]
-      self.project.updatetranslation(self.pofilename, item, trans, self.session)
+      self.project.updatetranslation(self.pofilename, item, value, self.session)
       self.lastitem = item
     for item, suggid in rejects:
       value = suggestions[item, suggid]
