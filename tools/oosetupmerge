@@ -274,10 +274,11 @@ class SetupIndex(SetupParser):
           if index != self:
             self.addforeignconfigitem(index, configitem, suffix)
 
-  def addmanualfile(self, fileentry, direntry, filename, packedname, baseentry):
+  def addmanualfile(self, fileentry, filename, packedname, baseentry):
     """Inserts an external file into the build system"""
     fileinfo = os.stat_result(os.stat(filename))
     filedate = datetime.datetime.fromtimestamp(fileinfo.st_mtime)
+    direntry = self.getfieldvalue(baseentry, "Dir")
     filesectionlines = ["File %s" % fileentry]
     def addparam(paramname, paramstr):
       filesectionlines.append("        %s%s = %s;" % (paramname, " "*(16-len(paramname)), paramstr))
@@ -344,13 +345,15 @@ class SetupIndex(SetupParser):
         packedname = sparse.stringeval(self.getfieldvalue(fileentry, "PackedName"))
         self.setfieldvalue(fileentry, "PackedName", '"%s"' % (packedname+suffix))
 
-  def makepackedname(self, prefix):
+  def makepackedname(self, prefix, offset=1):
     """finds a new packedname starting with prefix in the sequence"""
     packednames = [self.getfieldvalue(fileentry, "PackedName", '""') for fileentry in self.bytype['File']]
     packednames = map(sparse.stringeval, packednames)
     packednames = [packedname.replace(prefix,"",1) for packedname in packednames if packedname.startswith(prefix)]
-    packednums = [int(filter(str.isdigit, packedname)) for packedname in packednames]
-    return "%s%d" % (prefix, max(packednums)+1)
+    packednums = [filter(str.isdigit, packedname) for packedname in packednames]
+    formatstring = '%s%0' + str(max(map(len, packednums))) + 'd'
+    packednums = map(int, packednums)
+    return formatstring % (prefix, max(packednums)+offset)
 
   def copyfiles(self, srcdirectory, destdirectory, onlychanged=0):
     """copy all the [changed] files listed in this setup file from srcdirectory to destdirectory"""
@@ -367,7 +370,9 @@ class SetupIndex(SetupParser):
           print '%s -> %s' % (srcfile, destfile)
         os.system('cp -p %s %s' % (srcfile, destfile))
     for filename, packedname in self.manualfiles:
-      os.system('zip %s %s' % (os.path.join(destdirectory, packedname), filename))
+      packedpath = os.path.join(destdirectory, packedname)
+      os.system('zip %s.zip %s' % (packedpath, filename))
+      os.system('mv %s.zip %s' % (packedpath, packedpath))
 
 if __name__ == '__main__':
   try:
@@ -399,7 +404,7 @@ if __name__ == '__main__':
   mainsetupfile.merge(othersetupfiles)
   if os.path.exists("ooswitchlang.exe"):
     packedname = mainsetupfile.makepackedname("f_")
-    mainsetupfile.addmanualfile("gid_File_Bin_switchlang", "gid_Dir_Program", "ooswitchlang.exe", packedname, "gid_File_Bin_Setofficelang")
+    mainsetupfile.addmanualfile("gid_File_Bin_switchlang", "ooswitchlang.exe", packedname, "gid_File_Bin_Setofficelang")
   if not os.path.isdir(outputdir):
     os.mkdir(outputdir)
   open(os.path.join(outputdir, setupname), 'w').write(mainsetupfile.getsource())
