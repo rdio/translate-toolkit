@@ -15,5 +15,8 @@ headers
 csv2po
 	--charset to allow setting of po header charset
 
+oo2po / po2oo
+  fix problem with OOO_VENDOR and \" quoting in offmgr.po (see help - about)
+
 make po files of all existing translations
 take over the world

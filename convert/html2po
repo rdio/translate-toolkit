@@ -19,9 +19,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-"""Converts HTML files to Gettext .po files (Note: po2html does not exist yet)"""
-
-# TODO: create po2html
+"""Converts HTML files to Gettext .po files
+You can convert them back using po2html"""
 
 from translate.storage import po
 from translate.misc import quote
