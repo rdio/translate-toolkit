@@ -1,0 +1,20 @@
+current tasks:
+  assigning stuff to people (package + email too)
+  priorities (directory/file order)
+  process (administrators/translators/reviewers)
+  upload submissions as po file / zip
+  locking
+  nav bar (in checks/unchanged, go back...)
+  openoffice / mozilla checks
+  rename "start translate" to "speed translate"
+  be able to browse translations
+  search at any point in the hierarchy / email bug report
+
+other:
+  manage new users / registration
+    - need to make emailing more robust, add hash check to verify address
+  add ability to turn off client ip lookup
+  add ability to mark/unmark things as fuzzy
+  move the sidebar to be like distributed proofreaders (at the top, small)
+  test with apache multiprocess
+
