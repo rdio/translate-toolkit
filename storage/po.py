@@ -68,7 +68,7 @@ def unquotefrompo(postr, joinwithlinebreak=True):
     joiner = "\n"
   else:
     joiner = ""
-  return joiner.join([extractpoline(line) for line in postr.msgid])
+  return joiner.join([extractpoline(line) for line in postr])
 
 """
 From the GNU gettext manual:
