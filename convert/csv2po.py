@@ -22,6 +22,7 @@
 
 import sys
 from translate.misc import quote
+from translate.misc import sparse
 from translate.storage import po
 from translate.storage import csvl10n
 
@@ -111,7 +112,7 @@ class repo:
       print >>sys.stderr, "could not find csv entry in po: %r, %r, %r" % (thecsv.source, thecsv.msgid, thecsv.msgstr)
       self.unmatched += 1
       return
-    thepo.msgstr = [quotecsvstr(extract.doencode(line)) for line in thecsv.msgstr.split('\n')]
+    thepo.msgstr = [quotecsvstr(quote.doencode(line)) for line in thecsv.msgstr.split('\n')]
 
   def convertfile(self, csvfile):
     """takes the translations from the given csvfile and puts them into the pofile"""
@@ -149,7 +150,7 @@ if __name__ == '__main__':
   from translate.convert import convert
   inputformats = {"csv": convertcsv}
   outputformat = "po"
-  parser = convert.ConvertOptionParserExt(convert.optionalrecursion, inputformats, outputformat, usetemplates=True)
+  parser = convert.ConvertOptionParser(convert.optionalrecursion, inputformats, outputformat, usetemplates=True, templateslikeinput=False)
   (options, args) = parser.parse_args()
   try:
     parser.runconversion(options, None)
