@@ -107,7 +107,14 @@ class csvelement:
     if self.msgstr[:2] in ("\\+", "\\-"): self.msgstr = self.msgstr[1:]
 
   def todict(self, encoding='utf-8'):
-    return {'source':self.source.encode(encoding), 'msgid':self.msgid.encode(encoding), 'msgstr':self.msgstr.encode(encoding)}
+    source, msgid, msgstr = self.source, self.msgid, self.msgstr
+    if isinstance(source, unicode):
+      source = source.encode(encoding)
+    if isinstance(msgid, unicode):
+      msgid = msgid.encode(encoding)
+    if isinstance(msgstr, unicode):
+      msgstr = msgstr.encode(encoding)
+    return {'source':source, 'msgid': msgid, 'msgstr': msgstr}
 
 class csvfile:
   def __init__(self, inputfile=None):
