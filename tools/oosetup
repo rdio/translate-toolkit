@@ -22,6 +22,7 @@ class SetupIndex(sparse.SimpleParser):
     self.definitions = {}
     self.bytype = {}
     self.referrals = []
+    # insert after the given tokennums
     self.insertions = {}
     for sectiontype in self.sectiontypes:
       self.bytype[sectiontype] = {}
@@ -153,6 +154,13 @@ class SetupIndex(sparse.SimpleParser):
       end += 1
     return (start, start+end)
 
+  def getmoduleentrytokennum(self, modulename, fileentry):
+    start, end = self.getsectiontokenrange(modulename)
+    for tokennum in range(start, end):
+      if self.originaltokens[tokennum] == fileentry:
+        return tokennum
+    return None
+
   def merge(self, otherindexes):
     """merges this with another index... hmmm ...."""
     indexes = [self] + otherindexes
@@ -182,6 +190,20 @@ class SetupIndex(sparse.SimpleParser):
           index.directoryfiles[directory] = [fileentry]
         else:
           index.directoryfiles[directory].append(fileentry)
+      # make an index of which modules files belong to...
+      index.filemodules = {}
+      for module in index.bytype["Module"]:
+        try:
+          filelist = index.getfieldvalue(module, 'Files')
+        except KeyError:
+          # not all modules have a file list
+          continue
+        filelist = [fileentry.strip() for fileentry in filelist[1:-1].split(",")]
+        for fileentry in filelist:
+          if fileentry not in index.filemodules:
+            index.filemodules[fileentry] = [module]
+          else:
+            index.filemodules[fileentry].append(module)
     for index in indexes:
       for directory in directoriestorename:
         suffix = "_" + sparse.stringeval(index.getfieldvalue(directory, "HostName"))
@@ -198,7 +220,32 @@ class SetupIndex(sparse.SimpleParser):
               fileentrysection = index.definitions[fileentry]
               # the file will already have been renamed by the index.renamedirectory
               self.insertforeignsection(fileentry, fileentry + suffix, fileentrysection, index, tokenrange)
-    # TODO: handle changing the module list of items...
+              if fileentry in self.filemodules:
+                for modulename in self.filemodules[fileentry]:
+                  tokennum = self.getmoduleentrytokennum(modulename, fileentry)
+                  indextokennum = index.getmoduleentrytokennum(modulename, fileentry)
+                  if tokennum is None or indextokennum is None:
+                    print >>sys.stderr, "could not find Files entry: modulename %s, fileentry %s, tokennum %r, indextokennum %r (index %s)" % (modulename, fileentry, tokennum, indextokennum, index.filename)
+                    continue
+                  commaafter = (self.tokens[tokennum + 1] == ',')
+                  indexcommaafter = (index.tokens[indextokennum + 1] == ',')
+                  commabefore = (self.tokens[tokennum - 1] == ',')
+                  indexcommabefore = (index.tokens[indextokennum - 1] == ',')
+                  if not (commaafter or commabefore) or not (indexcommaafter or indexcommabefore):
+                    print >>sys.stderr, "could not insert into modules: not enough commas for module %s, fileentry %s" % (modulename, fileentry)
+                  # cleverly combine the commas...
+                  if commaafter and indexcommaafter:
+                    insertion = (index, (indextokennum, indextokennum + 2))
+                    tokennum += 1
+                  elif indexcommabefore:
+                    insertion = (index, (indextokennum - 1, indextokennum + 1))
+                  elif commabefore and indexcommaafter:
+                    insertion = (index, (indextokennum, indextokennum + 2))
+                    tokennum -= 1
+                  if tokennum not in self.insertions:
+                    self.insertions[tokennum] = [insertion]
+                  else:
+                    self.insertions[tokennum].append(insertion)
 
   def renamedirectory(self, directory, newname, suffix):
     self.rename(directory, newname)
@@ -225,12 +272,14 @@ class SetupIndex(sparse.SimpleParser):
       if not onlychanged or packedname != originalpackedname:
         srcfile = os.path.join(srcdirectory, originalpackedname)
         destfile = os.path.join(destdirectory, packedname)
-        print 'cp -p %s %s' % (srcfile, destfile)
+        # print '%s -> %s' % (srcfile, destfile)
+        print ".",
         os.system('cp -p %s %s' % (srcfile, destfile))
      except Exception, e:
       print "error in %r %r" % (self.filename, fileentry)
       print e
       continue
+    print "done copying files"
 
 if __name__ == '__main__':
   import sys
