@@ -309,6 +309,8 @@ class pootlefile(po.pofile):
       classes.append("translated")
     unquotedid = po.getunquotedstr(poel.msgid, joinwithlinebreak=False)
     unquotedstr = po.getunquotedstr(poel.msgstr, joinwithlinebreak=False)
+    if isinstance(unquotedid, str) and isinstance(unquotedstr, unicode):
+      unquotedid = unquotedid.decode("utf-8")
     failures = self.checker.run_filters(poel, unquotedid, unquotedstr)
     for failure in failures:
       functionname = failure.split(":",2)[0]
@@ -793,7 +795,7 @@ class POTree:
     return pofilenames
 
   def refreshstats(self):
-    """manually refreshes all the stats files"""
+    """manually refreshes (all or missing) the stats files"""
     for projectcode in self.getprojectcodes():
       print "Project %s:" % (projectcode)
       for languagecode in self.getlanguagecodes(projectcode):
@@ -802,6 +804,8 @@ class POTree:
         translationproject.stats = {}
         for pofilename in translationproject.pofilenames:
           translationproject.getpostats(pofilename)
+          translationproject.pofiles[pofilename] = pootlefile(translationproject, pofilename)
           print ".",
         print
+        self.projectcache = {}
 
