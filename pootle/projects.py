@@ -774,6 +774,8 @@ class POTree:
             self.setprojectcheckerstyle(projectcode, value)
       elif key == "newprojectcode":
         projectcode = value.lower()
+        if not projectcode:
+          continue
         if not (projectcode[:1].isalpha() and projectcode.isalphanum()):
           raise ValueError("Project code must be alphanumeric and start with an alphabetic character (got %r)" % projectcode)
         if hasattr(self.projects, projectcode):
