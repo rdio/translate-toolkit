@@ -21,6 +21,10 @@ other:
   handle project versions
   have clickable characters to add for a language (mostly useful for diacritics)
   allow user to copy original to translation
+  a reviewer can mark as string as fuzzy but not provide a translation (in
+    order to browse and fixup things like af KDE.
+  integrate with KBabel/POEdit
+  allow XLIFF version of files to be downloaded/uploaded
 
 requirements for translatathon:
   assigning stuff to people (with permissions)
