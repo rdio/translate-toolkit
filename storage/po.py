@@ -351,7 +351,7 @@ class pofile:
       inputfile.close()
       self.fromlines(polines)
 
-  def makeheader(self, charset="CHARSET", encoding="ENCODING", projectid=None, creationdate=None, revisiondate=None, lasttranslator=None, languageteam=None, mimeversion=None, **kwargs):
+  def makeheader(self, charset="CHARSET", encoding="ENCODING", projectid=None, creationdate=None, revisiondate=None, lasttranslator=None, languageteam=None, mimeversion=None, pluralform=None, msgidbugs=None, **kwargs):
     """create a header for the given filename. arguments are specially handled, kwargs added as key: value
     creationdate can be None (current date) or a value (datetime or string)
     revisiondate can be None (form), False (=creationdate), True (=now), or a value (datetime or string)"""
@@ -380,8 +380,13 @@ class pofile:
       languageteam = "LANGUAGE <LL@li.org>"
     if mimeversion is None:
       mimeversion = "1.0"
+    if pluralform is None:
+      pluralform = "nplurals=INTEGER; plural=EXPRESSION;"
+    if msgidbugs is None:
+      msgidbugs = ""
     addheader = lambda key, value: (key in kwargs) or headeritems.append("%s: %s\\n" % (key, value))
     addheader("Project-Id-Version",  projectid)
+    addheader("Report-Msgid-Bugs-To",  msgidbugs)
     addheader("POT-Creation-Date",  creationdate)
     addheader("PO-Revision-Date",  revisiondate)
     addheader("Last-Translator",  lasttranslator)
@@ -389,6 +394,7 @@ class pofile:
     addheader("MIME-Version",  mimeversion)
     addheader("Content-Type", "text/plain; charset=%s" % charset)
     addheader("Content-Transfer-Encoding",  encoding)
+    addheader("Plural-Forms",  pluralform)
     for key, value in kwargs.iteritems():
       headeritems.append("%s: %s\\n" % (key, value))
     headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
