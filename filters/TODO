@@ -5,6 +5,10 @@ provide options to handle true/false
 handle KDE and Gettext plural forms
 skip entries that have #-#-#-#-# gettext conflicts
 
+bugs
+	simplcaps shoudl detect sentences that do not have matching starting
+	capital.
+
 other checks
   stop words - 
 	same: eg. OpenOffice or IMAP should not be translated.
@@ -17,3 +21,4 @@ other checks
   punc count - .,: all add up.  Simple way to see if all sentences where
 	translated.
   detect french style end punc ie [space][!?]
+  simple sentence count - count the number of fullstops
