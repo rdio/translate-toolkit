@@ -20,7 +20,6 @@
 
 """simpler wrapper to the elementtree XML parser"""
 
-from elementtree import XMLTreeBuilder
 from elementtree import ElementTree
 
 basicfixtag = ElementTree.fixtag
@@ -116,7 +115,7 @@ class XMLWrapper:
     e.write(file, encoding)
 
 def BuildTree(xmlstring):
-  parser = XMLTreeBuilder.TreeBuilder()
+  parser = ElementTree.XMLTreeBuilder()
   parser.feed(xmlstring)
   return parser.close()
 
