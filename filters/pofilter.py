@@ -73,11 +73,12 @@ class StandardPOChecker(POChecker):
     return not thepo.hastypecomment("review")
 
 class pocheckfilter:
-  def __init__(self, checkerclasses=None, excludefilters={}, limitfilters=None):
+  def __init__(self, checkerclasses=None, excludefilters={}, limitfilters=None, includeheader=False):
     """builds a pocheckfilter using the given checker (a list is allowed too)"""
     if checkerclasses is None:
       checkerclasses = [checks.StandardChecker, StandardPOChecker]
     self.checker = POTeeChecker(excludefilters=excludefilters, limitfilters=limitfilters, checkerclasses=checkerclasses)
+    self.includeheader = includeheader
 
   def getfilterdocs(self):
     """lists the docs for filters available on checker..."""
@@ -111,6 +112,8 @@ class pocheckfilter:
         thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in failures])
         thepo.markfuzzy()
         thenewpofile.poelements.append(thepo)
+    if self.includeheader and thenewpofile.poelements > 0:
+      thenewpofile.poelements.insert(0, thenewpofile.makeheader("UTF-8", "8bit"))
     return thenewpofile
 
 class FilterOptionParser(optrecurse.RecursiveOptionParser):
@@ -135,7 +138,7 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
       checkerclasses = [checks.StandardChecker, StandardPOChecker]
     else:
       checkerclasses = [options.filterclass, StandardPOChecker]
-    options.checkfilter = pocheckfilter(checkerclasses, options.excludefilters, options.limitfilters)
+    options.checkfilter = pocheckfilter(checkerclasses, options.excludefilters, options.limitfilters, options.includeheader)
     if not options.checkfilter.checker.combinedfilters:
       self.error("No valid filters were specified")
     options.inputformats = self.inputformats
@@ -171,6 +174,9 @@ def main():
   parser.add_option("", "--nofuzzy", dest="includefuzzy",
     action="store_false", default=True,
     help="exclude elements marked fuzzy")
+  parser.add_option("", "--header", dest="includeheader",
+    action="store_true", default=False,
+    help="include a PO header in the output")
   parser.add_option("", "--openoffice", dest="filterclass",
     action="store_const", default=None, const=checks.OpenOfficeChecker,
     help="use the standard checks for OpenOffice translations")
