@@ -63,7 +63,6 @@ class propfile:
     newpe = propelement()
     inmultilinemsgid = 0
     for line in lines:
-      finished = 0
       # handle multiline msgid if we're in one
       if inmultilinemsgid:
         newpe.msgid += quote.rstripeol(line).lstrip()

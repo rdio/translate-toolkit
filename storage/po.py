@@ -205,8 +205,8 @@ class pofile:
     if not (header.isheader() or header.isblank()):
       return 0
     # if there are any other elements, this is only empty if they are blank
-    for poelement in self.poelements[1:]:
-      if not poelement.isblank():
+    for thepo in self.poelements[1:]:
+      if not thepo.isblank():
         return 0
     return 1
 
