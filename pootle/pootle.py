@@ -72,6 +72,8 @@ class PootleServer(users.OptionalLoginAppServer):
         return indexpage.ProjectsIndex(self.potree, session)
       else:
         projectcode = top
+        if not self.potree.hasproject(None, projectcode):
+          return None
         pathwords = pathwords[1:]
         if pathwords:
           top = pathwords[0]

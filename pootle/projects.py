@@ -710,6 +710,8 @@ class POTree:
 
   def hasproject(self, languagecode, projectcode):
     """returns whether the project exists for the language"""
+    if languagecode is None:
+      return hasattr(self.projects, projectcode)
     if not self.haslanguage(languagecode):
       return False
     try:
