@@ -92,7 +92,7 @@ class TranslatePage(pagelayout.PootlePage):
     else:
       pagelinks.append("Next %d" % pagesize)
     if pofilelen > pagesize and (self.item + pagesize) < pofilelen:
-      pagelinks.append(widgets.Link(baselink + "&item=%d" % (pofilelen - pagesize), "End"))
+      pagelinks.append(widgets.Link(baselink + "&item=%d" % max(pofilelen - pagesize, 0), "End"))
     else:
       pagelinks.append("End")
     return pagelayout.IntroText(widgets.SeparatedList(pagelinks, " | "))
