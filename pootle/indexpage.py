@@ -433,7 +433,9 @@ class ProjectIndex(pagelayout.PootlePage):
     allchildren = []
     for childname in self.project.browsefiles(dirfilter=dirfilter, depth=depth, includedirs=True, includefiles=True):
       allchildren.append(childname)
-    for goalname, goalfiles in self.project.getgoals(dirfilter):
+    for goalname in self.project.getgoalnames():
+      goalfiles = self.project.getgoalfiles(goalname, dirfilter)
+      if not goalfiles: continue
       goalitem = self.getgoalitem(goalname, goalfiles)
       allitems.append(goalitem)
       if self.argdict.get("goal", None) == goalname:
@@ -466,7 +468,7 @@ class ProjectIndex(pagelayout.PootlePage):
     folderimage = pagelayout.Icon("goal.png")
     browseurl = self.makelink("index.html", goal=goalname)
     bodytitle = widgets.Link(browseurl, bodytitle)
-    actionlinks = self.getactionlinks("index.html", projectstats, linksrequired=["check", "assign", "review", "zip"], goal=goalname)
+    actionlinks = self.getactionlinks("index.html", projectstats, linksrequired=["review", "translate", "zip"], goal=goalname)
     bodydescription = pagelayout.ActionLinks(actionlinks)
     body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
     stats = self.getitemstats(goalname, projectstats, len(pofilenames))
@@ -554,7 +556,7 @@ class ProjectIndex(pagelayout.PootlePage):
     addoptionlink("goal", "admin", "showgoals", self.localize("Show Goals"), self.localize("Hide Goals"))
     addoptionlink("assign", "translate", "showassigns", self.localize("Show Assigns"), self.localize("Hide Assigns"))
     if "setgoal" in linksrequired and "admin" in self.rights:
-      goaloptions = [(goalname, goalname) for goalname, goalfiles in self.project.getgoals()]
+      goaloptions = [(goalname, goalname) for goalname in self.project.getgoalnames()]
       goalselect = widgets.Select({"name": "setgoal"}, goaloptions)
       goalfile = widgets.HiddenFieldList({"setgoalfile": basename})
       submitbutton = widgets.Input({"type": "submit", "name": "dosetgoal", "value": self.localize("Set Goal")})

@@ -131,34 +131,31 @@ class TranslationProject:
     setattr(self.prefs.rights, username, rights)
     self.saveprefs()
 
-  def getgoals(self, dirfilter=None):
+  def getgoalnames(self):
     """gets the goals and associated files for the project"""
-    if hasattr(self.prefs, "goals"):
-      goals = self.prefs.goals
-    else:
-      goals = {}
+    goals = getattr(self.prefs, "goals", {})
     goallist = []
     for goalname, goalnode in goals.iteritems():
+      goallist.append(goalname)
+    return goallist
+
+  def getgoalfiles(self, goalname, dirfilter=None):
+    """gets the files for the given goal"""
+    goals = getattr(self.prefs, "goals", {})
+    for testgoalname, goalnode in goals.iteritems():
+      if goalname != testgoalname: continue
       goalfiles = getattr(goalnode, "files", "")
       goalfiles = [goalfile.strip() for goalfile in goalfiles.split(",") if goalfile.strip()]
       if dirfilter:
         if not dirfilter.endswith(os.path.sep) and not dirfilter.endswith(os.path.extsep + "po"):
           dirfilter += os.path.sep
         goalfiles = [goalfile for goalfile in goalfiles if goalfile.startswith(dirfilter)]
-      goallist.append((goalname, goalfiles))
-    return goallist
-
-  def getgoal(self, goalname, dirfilter=None):
-    """gets the files for the given goal"""
-    goals = self.getgoals(dirfilter)
-    for testgoalname, goalfiles in goals:
-      if testgoalname == goalname:
-        return goalfiles
+      return goalfiles
     return []
 
   def addfiletogoal(self, goalname, filename):
     """adds the given file to the goal"""
-    goalfiles = self.getgoal(goalname)
+    goalfiles = self.getgoalfiles(goalname)
     if filename not in goalfiles:
       goalfiles.append(filename)
       self.setgoal(goalname, goalfiles)
@@ -166,7 +163,7 @@ class TranslationProject:
   def setgoal(self, goalname, goalfiles):
     """sets the goalfiles for the given goalname"""
     if isinstance(goalfiles, list):
-      goalfiles = [goalfile.strip() for goalfile in goalfiles()]
+      goalfiles = [goalfile.strip() for goalfile in goalfiles() if goalfile.strip()]
       goalfiles = ", ".join(goalfiles)
     if not hasattr(self.prefs, "goals"):
       self.prefs.goals = prefs.PrefNode(self.prefs, "goals")
@@ -717,7 +714,7 @@ class TranslationProject:
       pofile = self.getpofile(pofilename)
     pofile.track(item, "suggestion by %s accepted by %s" % (self.getsuggester(pofile, item, suggitem), session.username))
     pofile.deletesuggestion(item, suggitem)
-    self.updatetranslation(pofilename, item, newtrans, username)
+    self.updatetranslation(pofilename, item, newtrans, session)
 
   def getsuggester(self, pofile, item, suggitem):
     """returns who suggested the given item's suggitem if recorded, else None"""
