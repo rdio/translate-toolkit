@@ -163,6 +163,9 @@ class SetupIndex(SetupParser):
   def __init__(self, filename=None):
     SetupParser.__init__(self)
     self.manualfiles = []
+    self.filemodules = {}
+    self.directorychildren = {}
+    self.directoryfiles = {}
     if filename is not None:
       self.readfile(filename)
 
@@ -215,8 +218,6 @@ class SetupIndex(SetupParser):
     # see http://installation.openoffice.org/pics/scpitem_helptext.html
     directoriestorename = {}
     for index in indexes:
-      index.directorychildren = {}
-      index.directoryfiles = {}
       for directory in index.bytype["Directory"]:
         hostname = index.getfieldvalue(directory, 'HostName')
         hostname = sparse.stringeval(hostname)
@@ -244,7 +245,6 @@ class SetupIndex(SetupParser):
         else:
           index.directoryfiles[directory].append(fileentry)
       # make an index of which modules files belong to...
-      index.filemodules = {}
       for module in index.bytype["Module"]:
         filelist = index.getfieldvalue(module, 'Files', None)
         if filelist is None:
@@ -439,6 +439,47 @@ class SetupIndex(SetupParser):
       os.system('zip -j %s.zip %s' % (packedpath, filename))
       os.system('mv %s.zip %s' % (packedpath, packedpath))
 
+  def adddesktopentries(self, desktopentries, outputdir):
+    """add desktop (menu) entries and icons for KDE and Gnome"""
+    # add desktop (menu) entries and icons for KDE
+    # icons require file icons/ooo_languageselector.png
+    if "gid_File_Extra_Kdeapplnk" in self.definitions:
+      self.addtozipfile(outputdir, "gid_File_Extra_Kdeapplnk", "languageselector.desktop", desktopentries["kde"])
+    if "gid_File_Extra_Kdeicons" in self.definitions and os.path.exists("icons/ooo_languageselector.png"):
+      os.system("for f in hicolor/{16x16,22x22,32x32,48x48} locolor/{16x16,22x22,32x32} ; do mkdir -p share/icons/$f/apps ; convert icons/ooo_languageselector.png -scale `basename $f` share/icons/$f/apps/ooo_languageselector.xpm ; done")
+      for scale in [16,22,32,48]:
+        xpmfilename = os.path.join("share", "icons", "hicolor", "%dx%d" % (scale, scale), "apps", "ooo_languageselector.xpm")
+        xpmcontents = open(xpmfilename, "rb").read()
+        self.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename, xpmcontents)
+      for scale in [16,22,32]:
+        xpmfilename = os.path.join("share", "icons", "locolor", "%dx%d" % (scale, scale), "apps", "ooo_languageselector.xpm")
+        xpmcontents = open(xpmfilename, "rb").read()
+        self.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename, xpmcontents)
+    # add desktop (menu) entries and icons for Gnome and Gnome2
+    if "gid_File_Extra_Gnome_Apps" in self.definitions:
+      ordercontents = self.readfromzipfile("gid_File_Extra_Gnome_Apps", ".order")
+      ordercontents += "languageselector.desktop\n"
+      self.addtozipfile(outputdir, "gid_File_Extra_Gnome_Apps", "languageselector.desktop", desktopentries["gnome"])
+      self.addtozipfile(outputdir, "gid_File_Extra_Gnome_Apps", ".order", ordercontents)
+    if "gid_File_Extra_Gnome_Icons" in self.definitions and os.path.exists("icons/ooo_languageselector.png"):
+      pngcontents = open("icons/ooo_languageselector.png", "rb").read()
+      self.addtozipfile(outputdir, "gid_File_Extra_Gnome_Icons", "icons/ooo_languageselector.png", pngcontents)
+    if "gid_File_Extra_Gnome2_Apps" in self.definitions:
+      self.addtozipfile(outputdir, "gid_File_Extra_Gnome2_Apps", "ooo645_languageselector.desktop", desktopentries["gnome2"])
+
+setuplaunchscript = """#!/bin/bash
+# this is a script to launch OpenOffice.org setup in the appropriate language
+# name it setup-nn where nn is the ISO code for the language
+scriptpath=$0
+setupdir=`dirname $0`
+scriptname=`basename $0`
+LANG=${scriptname/setup-/}
+LANGUAGE=$LANG
+LC_MESSAGES=$LANG
+export LANG LANGUAGE LC_MESSAGES
+$setupdir/setup
+"""
+
 desktopentries = {
 "kde" :
 """[Desktop Entry]
@@ -516,8 +557,10 @@ if __name__ == '__main__':
       mainsetupfile.addmanualshortcut("gid_Folderitem_Switchlang", "gid_File_Bin_Switchlang", 0, "gid_Folderitem_Opendocument")
   if not os.path.isdir(outputdir):
     os.mkdir(outputdir)
-  open(os.path.join(outputdir, setupname), 'w').write(mainsetupfile.getsource())
   mainsetupfile.copyfiles(maindir, outputdir)
+  if options.switchlangexe is not None:
+    mainsetupfile.adddesktopentries(desktopentries, outputdir)
+  open(os.path.join(outputdir, setupname), 'w').write(mainsetupfile.getsource())
   for dirnum in range(len(otherdirs)):
     otherdir = otherdirs[dirnum]
     othersetupfile = othersetupfiles[dirnum]
@@ -559,30 +602,10 @@ if __name__ == '__main__':
         destfile = os.path.join(outputdir, destname)
         print '%s -> %s' % (srcfile, destfile)
         os.system('cp -p %s %s' % (srcfile, destfile))
-  if options.switchlangexe is not None:
-    # add desktop (menu) entries and icons for KDE
-    # icons require file icons/ooo_languageselector.png
-    if "gid_File_Extra_Kdeapplnk" in mainsetupfile.definitions:
-      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Kdeapplnk", "languageselector.desktop", desktopentries["kde"])
-    if "gid_File_Extra_Kdeicons" in mainsetupfile.definitions and os.path.exists("icons/ooo_languageselector.png"):
-      os.system("for f in hicolor/{16x16,22x22,32x32,48x48} locolor/{16x16,22x22,32x32} ; do mkdir -p share/icons/$f/apps ; convert icons/ooo_languageselector.png -scale `basename $f` share/icons/$f/apps/ooo_languageselector.xpm ; done")
-      for scale in [16,22,32,48]:
-        xpmfilename = os.path.join("share", "icons", "hicolor", "%dx%d" % (scale, scale), "apps", "ooo_languageselector.xpm")
-        xpmcontents = open(xpmfilename, "rb").read()
-        mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename, xpmcontents)
-      for scale in [16,22,32]:
-        xpmfilename = os.path.join("share", "icons", "locolor", "%dx%d" % (scale, scale), "apps", "ooo_languageselector.xpm")
-        xpmcontents = open(xpmfilename, "rb").read()
-        mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Kdeicons", xpmfilename, xpmcontents)
-    # add desktop (menu) entries and icons for Gnome and Gnome2
-    if "gid_File_Extra_Gnome_Apps" in mainsetupfile.definitions:
-      ordercontents = mainsetupfile.readfromzipfile("gid_File_Extra_Gnome_Apps", ".order")
-      ordercontents += "languageselector.desktop\n"
-      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Gnome_Apps", "languageselector.desktop", desktopentries["gnome"])
-      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Gnome_Apps", ".order", ordercontents)
-    if "gid_File_Extra_Gnome_Icons" in mainsetupfile.definitions and os.path.exists("icons/ooo_languageselector.png"):
-      pngcontents = open("icons/ooo_languageselector.png", "rb").read()
-      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Gnome_Icons", "icons/ooo_languageselector.png", pngcontents)
-    if "gid_File_Extra_Gnome2_Apps" in mainsetupfile.definitions:
-      mainsetupfile.addtozipfile(outputdir, "gid_File_Extra_Gnome2_Apps", "ooo645_languageselector.desktop", desktopentries["gnome2"])
+  # on posix, create setup-lang scripts
+  if os.name == 'posix':
+    for setupfile in [mainsetupfile] + othersetupfiles:
+      destfile = os.path.join(outputdir, "setup-%s" % setupfile.isocode)
+      open(destfile, 'w').write(setuplaunchscript)
+      os.system('chmod a+x %s' % destfile)
 
