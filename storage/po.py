@@ -187,6 +187,7 @@ class poelement:
 class pofile:
   def __init__(self, inputfile=None):
     self.poelements = []
+    self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
       polines = inputfile.readlines()
       inputfile.close()
