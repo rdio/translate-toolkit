@@ -591,6 +591,8 @@ class ProjectIndex(pagelayout.PootlePage):
         quicklink = self.localize("View Untranslated")
       if projectstats.get("translated", 0) < projectstats.get("total", 0):
         quicklink = widgets.Link(self.makelink(baseactionlink, fuzzy=1, blank=1), quicklink)
+      else:
+        quicklink = widgets.Tooltip(self.localize("No untranslated items"), quicklink)
       actionlinks.append(quicklink)
     if "all" in linksrequired and "translate" in self.rights:
       translatelink = widgets.Link(self.makelink(baseactionlink), self.localize('Translate All'))
