@@ -43,6 +43,8 @@ class pootlefile(po.pofile):
 
   def readpofile(self):
     """reads and parses the main po file"""
+    # make sure encoding is reset so it is read from the file
+    self.encoding = None
     self.poelements = []
     pomtime = getmodtime(self.filename)
     self.parse(open(self.filename, 'r'))

@@ -268,7 +268,7 @@ class TranslationProject:
       # reading new version of file
       versioncontrol.updatefile(pathname)
       newpofile = pootlefile.pootlefile(self, popath)
-      newpofile.readpofile()
+      newpofile.pofreshen()
       if not hasattr(newpofile, "msgidindex"):
         newpofile.makeindex()
       newmatches = []
