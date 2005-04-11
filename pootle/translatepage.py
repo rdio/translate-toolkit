@@ -387,6 +387,10 @@ class TranslatePage(pagelayout.PootlePage):
     """returns a widget for reviewing the given item's suggestions"""
     if isinstance(trans, str):
       trans = trans.decode("utf8")
+    for suggid in range(len(suggestions)):
+      suggestion = suggestions[suggid]
+      if isinstance(suggestion, str):
+        suggestions[suggid] = suggestion.decode("utf8")
     currenttitle = widgets.Division(self.localize("<b>Current Translation:</b>"))
     diffcodes = [difflib.SequenceMatcher(None, trans, suggestion).get_opcodes() for suggestion in suggestions]
     combineddiffs = reduce(list.__add__, diffcodes, [])
