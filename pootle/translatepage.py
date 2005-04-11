@@ -183,23 +183,23 @@ class TranslatePage(pagelayout.PootlePage):
       if item in skips or item not in translations:
         continue
       value = translations[item]
-      self.project.suggesttranslation(self.pofilename, item, value, self.session)
+      self.project.suggesttranslation(pofilename, item, value, self.session)
       self.lastitem = item
     for item in submits:
       if item in skips or item not in translations:
         continue
       value = translations[item]
-      self.project.updatetranslation(self.pofilename, item, value, self.session)
+      self.project.updatetranslation(pofilename, item, value, self.session)
       self.lastitem = item
     for item, suggid in rejects:
       value = suggestions[item, suggid]
-      self.project.rejectsuggestion(self.pofilename, item, suggid, self.session)
+      self.project.rejectsuggestion(pofilename, item, suggid, self.session)
       self.lastitem = item
     for item, suggid in accepts:
       if (item, suggid) in rejects or (item, suggid) not in suggestions:
         continue
       value = suggestions[item, suggid]
-      self.project.acceptsuggestion(self.pofilename, item, suggid, value, self.session)
+      self.project.acceptsuggestion(pofilename, item, suggid, value, self.session)
       self.lastitem = item
 
   def getmatchnames(self, checker): 
