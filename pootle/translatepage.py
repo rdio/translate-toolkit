@@ -107,15 +107,16 @@ class TranslatePage(pagelayout.PootlePage):
     self.addsearchbox(self.searchtext, searchcontextinfo)
     if self.showassigns and "assign" in self.rights:
       self.addassignbox()
-    self.links.addcontents(pagelayout.SidebarTitle(self.localize("current file")))
-    self.links.addcontents(pagelayout.SidebarText(pofilename))
-    if matchnames:
-      checknames = [matchname.replace("check-", "", 1) for matchname in matchnames]
-      self.links.addcontents(pagelayout.SidebarText(self.localize("checking %s") % ", ".join(checknames)))
-    postats = self.project.getpostats(self.pofilename)
-    blank, fuzzy = postats["blank"], postats["fuzzy"]
-    translated, total = postats["translated"], postats["total"]
-    self.links.addcontents(pagelayout.SidebarText(self.localize("%d/%d translated\n(%d blank, %d fuzzy)") % (translated, total, blank, fuzzy)))
+    if self.pofilename is not None:
+      self.links.addcontents(pagelayout.SidebarTitle(self.localize("current file")))
+      self.links.addcontents(pagelayout.SidebarText(pofilename))
+      if matchnames:
+        checknames = [matchname.replace("check-", "", 1) for matchname in matchnames]
+        self.links.addcontents(pagelayout.SidebarText(self.localize("checking %s") % ", ".join(checknames)))
+      postats = self.project.getpostats(self.pofilename)
+      blank, fuzzy = postats["blank"], postats["fuzzy"]
+      translated, total = postats["translated"], postats["total"]
+      self.links.addcontents(pagelayout.SidebarText(self.localize("%d/%d translated\n(%d blank, %d fuzzy)") % (translated, total, blank, fuzzy)))
 
   def addassignbox(self):
     """adds a box that lets the user assign strings"""
