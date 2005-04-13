@@ -100,18 +100,23 @@ class reoo:
 
   def applytranslation(self, key, subkey, theoo, thepo):
     """applies the translation for entity in the po element to the dtd element"""
+    if not self.includefuzzy and thepo.isfuzzy():
+      return
+    makecopy = False
     if self.languages is None:
       part1 = theoo.lines[0]
       if len(theoo.lines) > 1:
         part2 = theoo.lines[1]
       else:
-        part2 = oo.ooline(part1.getparts())
-        theoo.addline(part2)
+        makecopy = True
     else:
       part1 = theoo.languages[self.languages[0]]
-      part2 = theoo.languages[self.languages[1]]
-    if not self.includefuzzy and thepo.isfuzzy():
-      return
+      if self.languages[1] in theoo.languages:
+        part2 = theoo.languages[self.languages[1]]
+      else:
+        makecopy = True
+    if makecopy:
+      part2 = oo.ooline(part1.getparts())
     # this converts the po-style string to a dtd-style string
     unquotedid = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False)
     unquotedstr = po.unquotefrompo(thepo.msgstr, joinwithlinebreak=False)
@@ -126,6 +131,10 @@ class reoo:
     # set the modified time
     if self.timestamp_str:
       part2.timestamp = self.timestamp_str
+    if self.languages:
+      part2.languageid = self.languages[1]
+    if makecopy:
+      theoo.addline(part2)
 
   def convertfile(self, inputpo):
     self.p = inputpo
@@ -136,34 +145,28 @@ class reoo:
     # return the modified oo file object
     return self.o
 
-  def renumberdest(self, newcode):
-    """change the language code oldcode to newcode"""
-    for theooelement in self.o.ooelements:
-      try:
-        theooline = theooelement.lines[1]
-        theooline.languageid = newcode
-      except IndexError:
-        theooline = theooelement.lines[0]
-        if theooline.text or theooline.quickhelptext or theooline.title:
-          print >> sys.stderr, "could not switch language code on ", "/".join(theooline.getkey())
-
 def getmtime(filename):
   import stat
   return time.localtime(os.stat(filename)[stat.ST_MTIME])
 
-def convertoo(inputfile, outputfile, templatefile, languagecode=None, timestamp=None, includefuzzy=False):
+def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetlanguage=None, timestamp=None, includefuzzy=False):
   inputpo = po.pofile()
   inputpo.fromlines(inputfile.readlines())
+  if not targetlanguage:
+    raise ValueError("You must specify the target language")
+  if not sourcelanguage:
+    if targetlanguage.isdigit():
+      sourcelanguage = "01"
+    else:
+      sourcelanguage = "en-US"
+  languages = (sourcelanguage, targetlanguage)
   if templatefile is None:
     raise ValueError("must have template file for oo files")
     # convertor = po2oo()
   else:
-    convertor = reoo(templatefile, timestamp=timestamp, includefuzzy=includefuzzy)
+    convertor = reoo(templatefile, languages=languages, timestamp=timestamp, includefuzzy=includefuzzy)
   outputoo = convertor.convertfile(inputpo)
-  if languagecode is None:
-    raise ValueError("must specify language code")
-  else:
-    convertor.renumberdest(languagecode)
+  # TODO: check if we need to manually delete missing items
   outputoolines = outputoo.tolines()
   outputfile.writelines(outputoolines)
   return True
@@ -174,14 +177,17 @@ def main():
   # always treat the input as an archive unless it is a directory
   archiveformats = {(None, "output"): oo.oomultifile, (None, "template"): oo.oomultifile}
   parser = convert.ArchiveConvertOptionParser(formats, usetemplates=True, description=__doc__, archiveformats=archiveformats)
-  parser.add_option("-l", "--language-code", dest="languagecode", default=None, 
-                    help="set language code of destination (e.g. 27, 99)", metavar="languagecode")
+  parser.add_option("-l", "--language", dest="targetlanguage", default=None, 
+                    help="set target language code (e.g. af-ZA) [required]", metavar="LANG")
+  parser.add_option("", "--source-language", dest="sourcelanguage", default=None, 
+                    help="set source language code (default en-US)", metavar="LANG")
   parser.add_option("-T", "--keeptimestamp", dest="timestamp", default=None, action="store_const", const=0,
                     help="don't change the timestamps of the strings")
   parser.add_option("", "--nonrecursiveoutput", dest="allowrecursiveoutput", default=True, action="store_false", help="don't treat the output oo as a recursive store")
   parser.add_option("", "--nonrecursivetemplate", dest="allowrecursivetemplate", default=True, action="store_false", help="don't treat the template oo as a recursive store")
   parser.add_fuzzy_option()
-  parser.passthrough.append("languagecode")
+  parser.passthrough.append("sourcelanguage")
+  parser.passthrough.append("targetlanguage")
   parser.passthrough.append("timestamp")
   parser.run()
 

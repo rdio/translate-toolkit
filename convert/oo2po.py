@@ -77,13 +77,16 @@ class oo2po:
         else:
           part2 = oo.ooline()
       else:
-        try:
+        if self.languages[0] in theoo.languages:
           part1 = theoo.languages[self.languages[0]]
-          part2 = theoo.languages[self.languages[1]]
-        except KeyError, e:
-          # TODO: handle this more gracefully...
-          print theoo.lines[0].getkey(), "language not found: %s" % e
+        else:
+          print "/".join(theoo.lines[0].getkey()), "language not found: %s" % (self.languages[0])
           return []
+        if self.languages[1] in theoo.languages:
+          part2 = theoo.languages[self.languages[1]]
+        else:
+          # if the language doesn't exist, the translation is missing ... so make it blank
+          part2 = oo.ooline()
     key = self.makekey(part1.getkey())
     textpo = self.makepo(part1, part2, key, 'text')
     quickhelppo = self.makepo(part1, part2, key, 'quickhelptext')
