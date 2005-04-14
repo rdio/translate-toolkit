@@ -23,6 +23,18 @@ except:
 class RightsError(ValueError):
   pass
 
+class InternalAdminSession:
+  """A fake session used for doing internal admin jobs"""
+  def __init__(self):
+    self.username = "internal"
+    self.isopen = True
+
+  def localize(self, message):
+    return message
+
+  def issiteadmin(self):
+    return True
+
 class potimecache(timecache.timecache):
   """caches pootlefile objects, remembers time, and reverts back to statistics when neccessary..."""
   def __init__(self, expiryperiod, project):
@@ -61,7 +73,7 @@ class TranslationProject:
     checkerclasses = [checks.projectcheckers.get(self.projectcheckerstyle, checks.StandardChecker), pofilter.StandardPOChecker]
     self.checker = pofilter.POTeeChecker(checkerclasses=checkerclasses, errorhandler=self.filtererrorhandler)
     if create:
-      self.converttemplates()
+      self.converttemplates(InternalAdminSession())
     self.podir = potree.getpodir(languagecode, projectcode)
     if self.potree.hasgnufiles(self.podir, self.languagecode):
       self.filestyle = "gnu"
@@ -100,6 +112,9 @@ class TranslationProject:
 
   def getrights(self, session=None, username=None):
     """gets the rights for the given user (name or session, or not-logged-in if username is None)"""
+    # internal admin sessions have all rights
+    if isinstance(session, InternalAdminSession):
+      return [right for right, localizedright in self.getrightnames(session)]
     if session is not None and session.isopen and username is None:
       username = session.username
     if hasattr(self.prefs, "rights"):
@@ -174,27 +189,29 @@ class TranslationProject:
           continue
     return filegoals
 
-  def addfiletogoal(self, goalname, filename, exclusive=False):
+  def addfiletogoal(self, session, goalname, filename, exclusive=False):
     """adds the given file to the goal"""
     if exclusive:
       filegoals = self.getfilegoals(filename)
       for othergoalname in filegoals:
         if othergoalname != goalname:
-          self.removefilefromgoal(othergoalname, filename)
+          self.removefilefromgoal(session, othergoalname, filename)
     goalfiles = self.getgoalfiles(goalname)
     if filename not in goalfiles:
       goalfiles.append(filename)
-      self.setgoal(goalname, goalfiles)
+      self.setgoal(session, goalname, goalfiles)
 
-  def removefilefromgoal(self, goalname, filename):
+  def removefilefromgoal(self, session, goalname, filename):
     """removes the given file from the goal"""
     goalfiles = self.getgoalfiles(goalname)
     if filename in goalfiles:
       goalfiles.remove(filename)
-      self.setgoal(goalname, goalfiles)
+      self.setgoal(session, goalname, goalfiles)
 
-  def setgoal(self, goalname, goalfiles):
+  def setgoal(self, session, goalname, goalfiles):
     """sets the goalfiles for the given goalname"""
+    if "admin" not in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to alter goals here"))
     if isinstance(goalfiles, list):
       goalfiles = [goalfile.strip() for goalfile in goalfiles if goalfile.strip()]
       goalfiles = ", ".join(goalfiles)
@@ -233,8 +250,10 @@ class TranslationProject:
         os.mkdir(dircheck)
     return os.path.join(self.podir, dirname, pofilename)  
 
-  def uploadpofile(self, dirname, pofilename, contents):
+  def uploadpofile(self, session, dirname, pofilename, contents):
     """uploads an individual PO files"""
+    if "admin" not in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to upload files here"))
     pathname = self.getuploadpath(dirname, pofilename)
     if os.path.exists(pathname):
       origpofile = self.getpofile(os.path.join(dirname, pofilename))
@@ -249,8 +268,10 @@ class TranslationProject:
       outfile.close()
       self.scanpofiles()
 
-  def updatepofile(self, dirname, pofilename):
+  def updatepofile(self, session, dirname, pofilename):
     """updates an individual PO file from version control"""
+    if "admin" not in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to update files here"))
     pathname = self.getuploadpath(dirname, pofilename)
     # read from version control
     if os.path.exists(pathname):
@@ -318,7 +339,7 @@ class TranslationProject:
       versioncontrol.updatefile(pathname)
       self.scanpofiles()
 
-  def converttemplates(self):
+  def converttemplates(self, session):
     """creates PO files from the templates"""
     projectdir = os.path.join(self.potree.podirectory, self.projectcode)
     templatesdir = os.path.join(projectdir, "templates")
@@ -346,7 +367,7 @@ class TranslationProject:
         pofilename = self.languagecode + os.extsep + "po"
       else:
         pofilename = potfilename[:-len(os.extsep+"pot")] + os.extsep + "po"
-      self.uploadpofile(dirname, pofilename, outputfile.getvalue())
+      self.uploadpofile(session, dirname, pofilename, outputfile.getvalue())
 
   def filtererrorhandler(self, functionname, str1, str2, e):
     print "error in filter %s: %r, %r, %s" % (functionname, str1, str2, e)
@@ -372,7 +393,7 @@ class TranslationProject:
     archive.close()
     return archivecontents.getvalue()
 
-  def uploadarchive(self, dirname, archivecontents):
+  def uploadarchive(self, session, dirname, archivecontents):
     """uploads the files inside the archive"""
     try:
       tempzipfile = os.tmpnam()
@@ -396,7 +417,7 @@ class TranslationProject:
       subdirname, pofilename = os.path.dirname(filename), os.path.basename(filename)
       try:
         # TODO: use zipfile info to set the time and date of the file
-        self.uploadpofile(os.path.join(dirname, subdirname), pofilename, contents)
+        self.uploadpofile(session, os.path.join(dirname, subdirname), pofilename, contents)
       except ValueError, e:
         print "error adding %s" % filename, e
         continue

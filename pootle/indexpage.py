@@ -280,9 +280,9 @@ class ProjectIndex(pagelayout.PootlePage):
       if not uploadfile:
         raise ValueError("cannot upload file, no file attached")
       if uploadfile.filename.endswith(".po"):
-        self.project.uploadpofile(self.dirname, uploadfile.filename, uploadfile.contents)
+        self.project.uploadpofile(self.session, self.dirname, uploadfile.filename, uploadfile.contents)
       elif uploadfile.filename.endswith(".zip"):
-        self.project.uploadarchive(self.dirname, uploadfile.contents)
+        self.project.uploadarchive(self.session, self.dirname, uploadfile.contents)
       else:
         raise ValueError("can only upload PO files and zips of PO files")
       del self.argdict["doupload"]
@@ -291,7 +291,7 @@ class ProjectIndex(pagelayout.PootlePage):
       if not updatefile:
         raise ValueError("cannot update file, no file specified")
       if updatefile.endswith(".po"):
-        self.project.updatepofile(self.dirname, updatefile)
+        self.project.updatepofile(self.session, self.dirname, updatefile)
       else:
         raise ValueError("can only update PO files")
       del self.argdict["doupdate"]
@@ -300,7 +300,7 @@ class ProjectIndex(pagelayout.PootlePage):
       if not goalname:
         raise ValueError("cannot add goal, no name given")
       # TODO: check that its a valid goalname (alphanumeric etc)
-      self.project.setgoal(goalname.strip(), "")
+      self.project.setgoal(self.session, goalname.strip(), "")
       del self.argdict["doaddgoal"]
     if "doeditgoal" in self.argdict:
       goalname = self.argdict.pop("editgoal", None)
@@ -312,7 +312,7 @@ class ProjectIndex(pagelayout.PootlePage):
       # TODO: check that its a valid goalname (alphanumeric etc)
       if self.dirname:
         goalfile = os.path.join(self.dirname, goalfile)
-      self.project.addfiletogoal(goalname.strip(), goalfile, True)
+      self.project.addfiletogoal(self.session, goalname.strip(), goalfile, True)
       del self.argdict["doeditgoal"]
 
   def getboolarg(self, argname, default=False):

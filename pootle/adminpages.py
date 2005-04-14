@@ -216,7 +216,7 @@ class ProjectAdminPage(pagelayout.PootlePage):
         if not languagecode:
           raise ValueError("No languagecode given in doupdatelanguage")
         translationproject = self.potree.getproject(languagecode, self.projectcode)
-        translationproject.converttemplates()
+        translationproject.converttemplates(self.session)
       languagestitle = pagelayout.Title(self.localize("Existing languages"))
       languagelinks = self.getlanguagelinks()
       existing = pagelayout.ContentsItem([languagestitle, languagelinks])
