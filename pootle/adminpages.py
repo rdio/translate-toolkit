@@ -258,7 +258,9 @@ class TranslationProjectAdminPage(pagelayout.PootlePage):
     self.session = session
     self.localize = session.localize
     self.rightnames = self.project.getrightnames(session)
-    description = self.project.projectdescription
+    title = self.localize("Pootle Admin: %s %s") % (self.project.languagename, self.project.projectname)
+    mainlink = widgets.Link("index.html", self.localize("Project home page"))
+    links = [pagelayout.Title(title), pagelayout.IntroText(mainlink)]
     if "admin" in self.project.getrights(self.session):
       if "doupdaterights" in argdict:
         for key, value in argdict.iteritems():
@@ -275,7 +277,7 @@ class TranslationProjectAdminPage(pagelayout.PootlePage):
       contents = [self.getoptions()]
     else:
       contents = pagelayout.IntroText(self.localize("You do not have the rights to administer this project."))
-    pagelayout.PootlePage.__init__(self, self.localize("Pootle Admin: %s") % description, contents, session, bannerheight=81)
+    pagelayout.PootlePage.__init__(self, title, [links, contents], session, bannerheight=81)
 
   def getoptions(self):
     """returns a box that describes the options"""
