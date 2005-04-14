@@ -484,7 +484,8 @@ class pofile:
     else:
       charset = sre.search("charset=([^ ]*)", charsetline)
       if charset is None:
-        if not charsetline.strip().endswith(";"):
+        newcharsetline = charsetline
+        if not newcharsetline.strip().endswith(";"):
           newcharsetline += ";"
         newcharsetline += " charset=%s" % self.encoding
       else:
