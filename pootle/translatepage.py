@@ -193,7 +193,7 @@ class TranslatePage(pagelayout.PootlePage):
       self.lastitem = item
     for item, suggid in rejects:
       value = suggestions[item, suggid]
-      self.project.rejectsuggestion(pofilename, item, suggid, self.session)
+      self.project.rejectsuggestion(pofilename, item, suggid, value, self.session)
       self.lastitem = item
     for item, suggid in accepts:
       if (item, suggid) in rejects or (item, suggid) not in suggestions:

@@ -252,17 +252,21 @@ class TranslationProject:
 
   def uploadpofile(self, session, dirname, pofilename, contents):
     """uploads an individual PO files"""
-    if "admin" not in self.getrights(session):
-      raise RightsError(session.localize("You do not have rights to upload files here"))
     pathname = self.getuploadpath(dirname, pofilename)
     if os.path.exists(pathname):
       origpofile = self.getpofile(os.path.join(dirname, pofilename))
       newpofile = po.pofile()
       infile = cStringIO.StringIO(contents)
       newpofile.parse(infile)
-      # TODO: get the real username here
-      origpofile.mergefile(newpofile, "merged") 
+      if "admin" in self.getrights(session):
+        origpofile.mergefile(newpofile, session.username)
+      elif "translate" in self.getrights(session):
+        origpofile.mergefile(newpofile, session.username, allownewstrings=False)
+      else:
+        raise RightsError(session.localize("You do not have rights to upload files here"))
     else:
+      if "admin" not in self.getrights(session):
+        raise RightsError(session.localize("You do not have rights to upload new files here"))
       outfile = open(pathname, "wb")
       outfile.write(contents)
       outfile.close()

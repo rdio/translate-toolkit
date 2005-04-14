@@ -221,7 +221,7 @@ class pootlefile(po.pofile):
       userassigns[action] = items
     return poassigns
 
-  def assignto(self, session, item, username, action):
+  def assignto(self, item, username, action):
     """assigns the item to the given username for the given action"""
     userassigns = self.assigns.setdefault(username, {})
     items = userassigns.setdefault(action, [])
@@ -480,20 +480,21 @@ class pootlefile(po.pofile):
           return
       raise KeyError("Could not find item for merge")
 
-  def mergefile(self, newpofile, username):
+  def mergefile(self, newpofile, username, allownewstrings=True):
     """make sure each msgid is unique ; merge comments etc from duplicates into original"""
     self.makeindex()
     matches = self.matchitems(newpofile)
     for oldpo, newpo in matches:
       if oldpo is None:
-        self.poelements.append(newpo)
-        continue
-      if newpo is None:
+        if allownewstrings:
+          self.poelements.append(newpo)
+      elif newpo is None:
         # TODO: mark the old one as obsolete
-        continue
-      self.mergeitem(oldpo, newpo, username)
-      # we invariably want to get the sources from the newpo
-      oldpo.sourcecomments = newpo.sourcecomments
+        pass
+      else:
+        self.mergeitem(oldpo, newpo, username)
+        # we invariably want to get the sources from the newpo
+        oldpo.sourcecomments = newpo.sourcecomments
     self.savepofile()
     # the easiest way to recalculate everythign
     self.readpofile()
