@@ -207,12 +207,15 @@ class ProjectIndex(pagelayout.PootlePage):
     currentfolder = dirfilter
     if currentfolder:
       depth = currentfolder.count("/") + 1
-      rootlink = "/".join([".."] * depth) + "/index.html"
+      rootlink = "/".join([".."] * depth) + "/"
     else:
-      rootlink = "index.html"
-    language = widgets.Link("../" + rootlink, self.project.languagename)
-    project = widgets.Link( self.getbrowseurl(rootlink), self.project.projectname)
-    baselinks = ["[ ", language, "] [ ", project, "]"]
+      rootlink = ""
+    language = widgets.Link("../" + rootlink + "index.html", self.project.languagename)
+    project = widgets.Link(self.getbrowseurl(rootlink), self.project.projectname)
+    baselinks = ["[", language, "]", "[", project, "]"]
+    if "admin" in self.project.getrights(self.session):
+      adminlink = widgets.Link(rootlink + "admin.html", self.localize("Admin"))
+      baselinks += ["[", adminlink, "]"]
     pathlinks = []
     if dirfilter:
       dirs = self.dirfilter.split("/")
@@ -224,7 +227,7 @@ class ProjectIndex(pagelayout.PootlePage):
         pathlinks.append(dirlink)
         if count != 0:
           pathlinks.append("/ ")
-    navbarpath = pagelayout.Title(baselinks + [" "] + pathlinks)
+    navbarpath = pagelayout.Title(widgets.SeparatedList(baselinks + pathlinks, " "))
     if dirfilter and dirfilter.endswith(".po"):
       actionlinks = []
       mainstats = []
@@ -249,6 +252,7 @@ class ProjectIndex(pagelayout.PootlePage):
     if "admin" in self.rights:
       if self.showgoals:
         self.addgoalbox()
+    if "admin" in self.rights or "translate" in self.rights:
       self.adduploadbox()
 
   def handleactions(self):
