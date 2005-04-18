@@ -80,6 +80,8 @@ class PootleSidebar(widgets.Division):
     baseurl = session.instance.baseurl
     title = SidebarTitle(getattr(session.instance, "title", session.localize("Pootle Demo")))
     doclink = widgets.Link(baseurl+"doc/index.html", session.localize("Docs & Help"))
+    projectslink = [" | ", widgets.Link(baseurl+"projects/", session.localize("All Projects"))]
+    languageslink = [" | ", widgets.Link(baseurl+"languages/", session.localize("All Languages"))]
     if session.status:
       loginstatus = session.status
     else:
@@ -95,7 +97,7 @@ class PootleSidebar(widgets.Division):
       homelink = []
     loginimage = Icon("person.png")
     loginstatus = SidebarText([loginimage, loginstatus])
-    quicklinks = SidebarText([doclink, homelink, adminlink])
+    quicklinks = SidebarText([doclink, projectslink, languageslink, homelink, adminlink])
     loginlink = SidebarText(loginlinks)
     widgets.Division.__init__(self, [title, quicklinks, loginstatus, loginlink], "links")
 
