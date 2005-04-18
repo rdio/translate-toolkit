@@ -364,7 +364,7 @@ class OpenOfficeChecker(StandardChecker):
   def __init__(self, **kwargs):
     StandardChecker.__init__(self,
       accelmarkers = ("~"),
-      varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#")),
+      varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("($", ")")),
       **kwargs
       )
 
