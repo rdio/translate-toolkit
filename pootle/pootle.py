@@ -138,6 +138,14 @@ class PootleServer(users.OptionalLoginAppServer):
           return indexpage.ProjectLanguageIndex(self.potree, projectcode, session)
         elif top == "admin.html":
           return adminpages.ProjectAdminPage(self.potree, projectcode, session, argdict)
+    elif top == "languages":
+      pathwords = pathwords[1:]
+      if pathwords:
+        top = pathwords[0]
+      else:
+        top = ""
+      if not top or top == "index.html":
+        return indexpage.LanguagesIndex(self.potree, session)
     elif top == "home":
       pathwords = pathwords[1:]
       if pathwords:

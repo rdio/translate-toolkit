@@ -43,7 +43,7 @@ class PootleIndex(pagelayout.PootlePage):
 
   def getlanguagelinks(self):
     """gets the links to the languages"""
-    languagestitle = pagelayout.Title(self.localize('Languages'))
+    languagestitle = pagelayout.Title(widgets.Link("languages/", self.localize('Languages')))
     languagelinks = []
     for languagecode in self.potree.getlanguagecodes():
       languagename = self.potree.getlanguagename(languagecode)
@@ -118,6 +118,25 @@ class ProjectsIndex(PootleIndex):
     listwidget = widgets.SeparatedList(projectlinks, ", ")
     bodydescription = pagelayout.ItemDescription(listwidget)
     return pagelayout.Contents([projectstitle, bodydescription])
+
+class LanguagesIndex(PootleIndex):
+  """the list of languages"""
+
+  def getlanguagelinks(self):
+    """gets the links to the languages"""
+    languagestitle = pagelayout.Title(self.localize("Languages"))
+    languagelinks = []
+    for languagecode in self.potree.getlanguagecodes():
+      languagename = self.potree.getlanguagename(languagecode)
+      languagelink = widgets.Link("../%s/" % languagecode, languagename)
+      languagelinks.append(languagelink)
+    listwidget = widgets.SeparatedList(languagelinks, ", ")
+    bodydescription = pagelayout.ItemDescription(listwidget)
+    return pagelayout.Contents([languagestitle, bodydescription])
+
+  def getprojectlinks(self):
+    """we don't need project links on the language page"""
+    return ""
 
 class LanguageIndex(pagelayout.PootlePage):
   """the main page"""
