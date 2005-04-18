@@ -162,6 +162,10 @@ class OptionalLoginAppServer(server.LoginAppServer):
           useremail = getattr(users, username + ".email", None)
           if useremail != value:
             setattr(users, username + ".email", value)
+      elif key.startswith("useractivated-"):
+        username = key.replace("useractivated-", "", 1)
+        if hasattr(users, username):
+          setattr(users, username + ".activated", 1)
       elif key == "newusername":
         username = value.lower()
         if not username:
