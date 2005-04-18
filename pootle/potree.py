@@ -37,6 +37,26 @@ class POTree:
           languagename = self.getlanguagename(languagecode)
           if languagename != value:
             self.setlanguagename(languagecode, value)
+      elif key.startswith("languagespecialchars-"):
+        languagecode = key.replace("languagespecialchars-", "", 1)
+        if self.haslanguage(languagecode):
+          languagespecialchars = self.getlanguagespecialchars(languagecode)
+          if isinstance(value, unicode):
+            value = value.encode('utf8')
+          if languagespecialchars != value:
+            self.setlanguagespecialchars(languagecode, value)
+      elif key.startswith("languagenplurals-"):
+        languagecode = key.replace("languagenplurals-", "", 1)
+        if self.haslanguage(languagecode):
+          languagenplurals = self.getlanguagenplurals(languagecode)
+          if languagenplurals != value:
+            self.setlanguagenplurals(languagecode, value)
+      elif key.startswith("languagepluralequation-"):
+        languagecode = key.replace("languagepluralequation-", "", 1)
+        if self.haslanguage(languagecode):
+          languagepluralequation = self.getlanguagepluralequation(languagecode)
+          if languagepluralequation != value:
+            self.setlanguagepluralequation(languagecode, value)
       elif key == "newlanguagecode":
         languagecode = value.lower()
         if not languagecode.strip():
@@ -46,7 +66,25 @@ class POTree:
         if self.haslanguage(languagecode):
           raise ValueError("Already have language with the code %s" % languagecode)
         languagename = argdict.get("newlanguagename", languagecode)
+        languagespecialchars = argdict.get("newlanguagespecialchars", "")
+        languagenplurals = argdict.get("newlanguagenplurals", "")
+        languagepluralequation = argdict.get("newlanguagepluralequation", "")
+        # FIXME need to check that default values are not present
+        # if languagename == self.localize("(add language here)"):
+        #   raise ValueError("Please set a value for the language name")
+        print "nplurals: %s" % languagenplurals
+        if not languagenplurals.isdigit() and not languagenplurals == "":
+          raise ValueError("Number of plural forms must be numeric")
+        # if languagenplurals == self.localize("(number of plurals)"):
+        #   raise ValueError("Please set a value for the number of plural forms")
+        # if languagepluralequation == self.localize("(plural equation)"):
+        #   raise ValueError("Please set a value for the plural equation")
+        if not languagenplurals == "" and languagepluralequation == "":
+          raise ValueError("Please set both the number of plurals and the plural equation OR leave both blank")
         setattr(self.languages, languagecode + ".fullname", languagename)
+        setattr(self.languages, languagecode + ".specialchars", languagespecialchars)
+        setattr(self.languages, languagecode + ".nplurals", languagenplurals)
+        setattr(self.languages, languagecode + ".pluralequation", languagepluralequation)
     self.saveprefs()
 
   def changeprojects(self, argdict):
@@ -112,8 +150,32 @@ class POTree:
     return getattr(self.getlanguageprefs(languagecode), "fullname", languagecode)
 
   def setlanguagename(self, languagecode, languagename):
-    """returns the language's full name"""
+    """stes the language's full name"""
     setattr(self.getlanguageprefs(languagecode), "fullname", languagename)
+
+  def getlanguagespecialchars(self, languagecode):
+    """returns the language's special characters"""
+    return getattr(self.getlanguageprefs(languagecode), "specialchars", "")
+
+  def setlanguagespecialchars(self, languagecode, languagespecialchars):
+    """sets the language's special characters"""
+    setattr(self.getlanguageprefs(languagecode), "specialchars", languagespecialchars)
+
+  def getlanguagenplurals(self, languagecode):
+    """returns the language's number of plural forms"""
+    return getattr(self.getlanguageprefs(languagecode), "nplurals", "")
+
+  def setlanguagenplurals(self, languagecode, languagenplurals):
+    """sets the language's number of plural forms"""
+    setattr(self.getlanguageprefs(languagecode), "nplurals", languagenplurals)
+
+  def getlanguagepluralequation(self, languagecode):
+    """returns the language's number of plural forms"""
+    return getattr(self.getlanguageprefs(languagecode), "pluralequation", "")
+
+  def setlanguagepluralequation(self, languagecode, languagepluralequation):
+    """sets the language's number of plural forms"""
+    setattr(self.getlanguageprefs(languagecode), "pluralequation", languagepluralequation)
 
   def getlanguagecodes(self, projectcode=None):
     """returns a list of valid languagecodes for a given project or all projects"""
