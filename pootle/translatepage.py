@@ -308,21 +308,24 @@ class TranslatePage(pagelayout.PootlePage):
     """gets buttons for actions on translation"""
     buttons = []
     if "skip" in desiredbuttons:
-      skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, "skip")
+      skipbutton = widgets.Input({"type":"submit", "name":"skip%d" % item, "value":"skip"}, self.localize("skip"))
       buttons.append(skipbutton)
     if "copy" in desiredbuttons:
       copyscript = "document.forms.translate.trans%d.value = document.getElementById('orig%d').innerHTML" % (item, item)
-      copybutton = widgets.Button({"onclick": copyscript}, "copy")
+      copybutton = widgets.Button({"onclick": copyscript}, self.localize("copy"))
       buttons.append(copybutton)
     if "suggest" in desiredbuttons and "suggest" in self.rights:
-      suggestbutton = widgets.Input({"type":"submit", "name":"submitsuggest%d" % item, "value":"suggest"}, "suggest")
+      suggestbutton = widgets.Input({"type":"submit", "name":"submitsuggest%d" % item, "value":"suggest"}, self.localize("suggest"))
       buttons.append(suggestbutton)
     if "translate" in desiredbuttons and "translate" in self.rights:
-      submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, "submit")
+      submitbutton = widgets.Input({"type":"submit", "name":"submit%d" % item, "value":"submit"}, self.localize("submit"))
       buttons.append(submitbutton)
     if "translate" in desiredbuttons or "suggest" in desiredbuttons:
       specialchars = getattr(getattr(self.session.instance.languages, self.project.languagecode, None), "specialchars", "")
       buttons.append(specialchars)
+    growlink = widgets.Link('#', self.localize("Grow"), newattribs={"onclick": 'return expandtextarea(this)'})
+    shrinklink = widgets.Link('#', self.localize("Shrink"), newattribs={"onclick": 'return contracttextarea(this)'})
+    buttons += [growlink, shrinklink]
     return buttons
 
   def gettransedit(self, item, orig, trans):
