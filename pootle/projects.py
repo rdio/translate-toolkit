@@ -189,17 +189,17 @@ class TranslationProject:
           continue
     return filegoals
 
-  def addfiletogoal(self, session, goalname, filename, exclusive=False):
-    """adds the given file to the goal"""
-    if exclusive:
-      filegoals = self.getfilegoals(filename)
-      for othergoalname in filegoals:
-        if othergoalname != goalname:
-          self.removefilefromgoal(session, othergoalname, filename)
-    goalfiles = self.getgoalfiles(goalname)
-    if filename not in goalfiles:
-      goalfiles.append(filename)
-      self.setgoalfiles(session, goalname, goalfiles)
+  def setfilegoals(self, session, goalnames, filename):
+    """sets the given file to belong to the given goals exactly"""
+    filegoals = self.getfilegoals(filename)
+    for othergoalname in filegoals:
+      if othergoalname not in goalnames:
+        self.removefilefromgoal(session, othergoalname, filename)
+    for goalname in goalnames:
+      goalfiles = self.getgoalfiles(goalname)
+      if filename not in goalfiles:
+        goalfiles.append(filename)
+        self.setgoalfiles(session, goalname, goalfiles)
 
   def removefilefromgoal(self, session, goalname, filename):
     """removes the given file from the goal"""
@@ -218,6 +218,7 @@ class TranslationProject:
     if not hasattr(self.prefs, "goals"):
       self.prefs.goals = prefs.PrefNode(self.prefs, "goals")
     if not hasattr(self.prefs.goals, goalname):
+      # TODO: check that its a valid goalname (alphanumeric etc)
       setattr(self.prefs.goals, goalname, prefs.PrefNode(self.prefs.goals, goalname))
     goalnode = getattr(self.prefs.goals, goalname)
     goalnode.files = goalfiles
