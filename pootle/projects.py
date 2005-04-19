@@ -287,8 +287,7 @@ class TranslationProject:
       originfile = cStringIO.StringIO(origcontents)
       origpofile.parse(originfile)
       # matching current file with BASE version
-      usesources = False
-      matches = origpofile.matchitems(currentpofile, usesources)
+      matches = origpofile.matchitems(currentpofile, usesources=False)
       # TODO: add some locking here...
       # reading new version of file
       versioncontrol.updatefile(pathname)
