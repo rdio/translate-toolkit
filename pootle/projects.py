@@ -199,16 +199,16 @@ class TranslationProject:
     goalfiles = self.getgoalfiles(goalname)
     if filename not in goalfiles:
       goalfiles.append(filename)
-      self.setgoal(session, goalname, goalfiles)
+      self.setgoalfiles(session, goalname, goalfiles)
 
   def removefilefromgoal(self, session, goalname, filename):
     """removes the given file from the goal"""
     goalfiles = self.getgoalfiles(goalname)
     if filename in goalfiles:
       goalfiles.remove(filename)
-      self.setgoal(session, goalname, goalfiles)
+      self.setgoalfiles(session, goalname, goalfiles)
 
-  def setgoal(self, session, goalname, goalfiles):
+  def setgoalfiles(self, session, goalname, goalfiles):
     """sets the goalfiles for the given goalname"""
     if "admin" not in self.getrights(session):
       raise RightsError(session.localize("You do not have rights to alter goals here"))
@@ -221,6 +221,62 @@ class TranslationProject:
       setattr(self.prefs.goals, goalname, prefs.PrefNode(self.prefs.goals, goalname))
     goalnode = getattr(self.prefs.goals, goalname)
     goalnode.files = goalfiles
+    self.saveprefs()
+
+  def getgoalusers(self, goalname):
+    """gets the users for the given goal"""
+    goals = getattr(self.prefs, "goals", {})
+    for testgoalname, goalnode in goals.iteritems():
+      if goalname != testgoalname: continue
+      goalusers = getattr(goalnode, "users", "")
+      goalusers = [goaluser.strip() for goaluser in goalusers.split(",") if goaluser.strip()]
+      return goalusers
+    return []
+
+  def getusergoals(self, username):
+    """gets the goals the given user is part of"""
+    goals = getattr(self.prefs, "goals", {})
+    usergoals = []
+    for goalname, goalnode in goals.iteritems():
+      goalusers = getattr(goalnode, "users", "")
+      goalusers = [goaluser.strip() for goaluser in goalusers.split(",") if goaluser.strip()]
+      if username in goalusers:
+        usergoals.append(goalname)
+        continue
+    return usergoals
+
+  def addusertogoal(self, session, goalname, username, exclusive=False):
+    """adds the given user to the goal"""
+    if exclusive:
+      usergoals = self.getusergoals(username)
+      for othergoalname in usergoals:
+        if othergoalname != goalname:
+          self.removeuserfromgoal(session, othergoalname, username)
+    goalusers = self.getgoalusers(goalname)
+    if username not in goalusers:
+      goalusers.append(username)
+      self.setgoalusers(session, goalname, goalusers)
+
+  def removeuserfromgoal(self, session, goalname, username):
+    """removes the given user from the goal"""
+    goalusers = self.getgoalusers(goalname)
+    if username in goalusers:
+      goalusers.remove(username)
+      self.setgoalusers(session, goalname, goalusers)
+
+  def setgoalusers(self, session, goalname, goalusers):
+    """sets the goalusers for the given goalname"""
+    if "admin" not in self.getrights(session):
+      raise RightsError(session.localize("You do not have rights to alter goals here"))
+    if isinstance(goalusers, list):
+      goalusers = [goaluser.strip() for goaluser in goalusers if goaluser.strip()]
+      goalusers = ", ".join(goalusers)
+    if not hasattr(self.prefs, "goals"):
+      self.prefs.goals = prefs.PrefNode(self.prefs, "goals")
+    if not hasattr(self.prefs.goals, goalname):
+      setattr(self.prefs.goals, goalname, prefs.PrefNode(self.prefs.goals, goalname))
+    goalnode = getattr(self.prefs.goals, goalname)
+    goalnode.users = goalusers
     self.saveprefs()
 
   def scanpofiles(self):

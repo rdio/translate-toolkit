@@ -323,7 +323,7 @@ class ProjectIndex(pagelayout.PootlePage):
       if not goalname:
         raise ValueError("cannot add goal, no name given")
       # TODO: check that its a valid goalname (alphanumeric etc)
-      self.project.setgoal(self.session, goalname.strip(), "")
+      self.project.setgoalfiles(self.session, goalname.strip(), "")
       del self.argdict["doaddgoal"]
     if "doeditgoal" in self.argdict:
       goalname = self.argdict.pop("editgoal", None)
@@ -589,10 +589,11 @@ class ProjectIndex(pagelayout.PootlePage):
     addoptionlink("check", "translate", "showchecks", self.localize("Show Checks"), self.localize("Hide Checks"))
     addoptionlink("goal", "admin", "showgoals", self.localize("Show Goals"), self.localize("Hide Goals"))
     addoptionlink("assign", "translate", "showassigns", self.localize("Show Assigns"), self.localize("Hide Assigns"))
-    if self.showgoals and "admin" in self.rights:
+    if self.showgoals and "admin" in self.rights and not goal:
       goalfile = os.path.join(self.dirname, basename)
       filegoals = self.project.getfilegoals(goalfile)
-      actionlinks.append(self.localize("Goals: %s" % (", ".join(filegoals))))
+      if filegoals and len(filegoals) > 1:
+        actionlinks.append(self.localize("All Goals: %s" % (", ".join(filegoals))))
     if "editgoal" in linksrequired and "admin" in self.rights:
       goaloptions = [(goalname, goalname) for goalname in self.project.getgoalnames()]
       goalselect = widgets.Select({"name": "editgoal"}, goaloptions)
