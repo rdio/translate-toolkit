@@ -322,7 +322,6 @@ class ProjectIndex(pagelayout.PootlePage):
       goalname = self.argdict.pop("newgoal", None)
       if not goalname:
         raise ValueError("cannot add goal, no name given")
-      # TODO: check that its a valid goalname (alphanumeric etc)
       self.project.setgoalfiles(self.session, goalname.strip(), "")
       del self.argdict["doaddgoal"]
     if "doeditgoal" in self.argdict:
@@ -337,6 +336,15 @@ class ProjectIndex(pagelayout.PootlePage):
       goalnames = [goalname.strip() for goalname in goalnames if goalname.strip()]
       self.project.setfilegoals(self.session, goalnames, goalfile)
       del self.argdict["doeditgoal"]
+    if "doeditgoalusers" in self.argdict:
+      goalname = self.argdict.pop("editgoalname", "").strip()
+      if not goalname:
+        raise ValueError("cannot edit goal, no name given")
+      goalusers = self.project.getgoalusers(goalname)
+      addusername = self.argdict.pop("newgoaluser", "").strip()
+      if addusername:
+        self.project.addusertogoal(self.session, goalname, addusername)
+      del self.argdict["doeditgoalusers"]
 
   def getboolarg(self, argname, default=False):
     """gets a boolean argument from self.argdict"""
@@ -469,7 +477,8 @@ class ProjectIndex(pagelayout.PootlePage):
       # TODO: fix the problem where the current directory in a goal displays as ""
       if initial:
         goalfiles = [goalfile.replace(initial, "", 1) for goalfile in goalfiles]
-      goalitem = self.getgoalitem(goalname, goalfiles)
+      goalusers = self.project.getgoalusers(goalname)
+      goalitem = self.getgoalitem(goalname, goalfiles, goalusers)
       allitems.append(goalitem)
       if self.argdict.get("goal", None) == goalname:
         goalchilditems = self.getitems(goalfiles, linksrequired=["editgoal"])
@@ -491,7 +500,7 @@ class ProjectIndex(pagelayout.PootlePage):
       allitems.extend(goallessitems)
     return allitems
 
-  def getgoalitem(self, goalname, goalfiles):
+  def getgoalitem(self, goalname, goalfiles, goalusers):
     """returns an item showing a goal entry"""
     pofilenames = []
     for goalfile in goalfiles:
@@ -504,7 +513,20 @@ class ProjectIndex(pagelayout.PootlePage):
     bodytitle = widgets.Link(browseurl, bodytitle)
     actionlinks = self.getactionlinks("index.html", projectstats, linksrequired=["review", "translate", "zip"], goal=goalname)
     bodydescription = pagelayout.ActionLinks(actionlinks)
-    body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription])
+    usericon = pagelayout.Icon("person.png")
+    if goalusers:
+      goalusers = widgets.SeparatedList(goalusers)
+    if self.argdict.get("goal", "") == goalname:
+      adduser = widgets.Input({"type": "text", "name": "newgoaluser", "size": 8})
+      editgoalname = widgets.HiddenFieldList({"editgoalname": goalname})
+      submitbutton = widgets.Input({"type": "submit", "name": "doeditgoalusers", "value": self.localize("Add User")})
+      userwidgets = [usericon, editgoalname, goalusers, adduser, submitbutton]
+      userlist = widgets.Division(widgets.Form(userwidgets, {"action": "", "name": "goaluserform"}))
+    elif goalusers:
+      userlist = widgets.Division([usericon, goalusers])
+    else:
+      userlist = []
+    body = pagelayout.ContentsItem([folderimage, bodytitle, bodydescription, userlist])
     stats = self.getitemstats(goalname, projectstats, len(pofilenames))
     return pagelayout.GoalItem([body, stats])
 
