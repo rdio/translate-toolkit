@@ -107,12 +107,17 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
                       help="output PO Templates (.pot) rather than PO files (.po)")
       self.define_option(potoption)
 
+  def verifyoptions(self, options):
+    """verifies that the options are valid (required options are present, etc)"""
+    pass
+
   def run(self):
     """parses the command line options and runs the conversion"""
     (options, args) = self.parse_args()
     options.inputformats = self.filterinputformats(options)
     options.outputoptions = self.filteroutputoptions(options)
     self.usepsyco(options)
+    self.verifyoptions(options)
     self.recursiveprocess(options)
 
 def copyinput(inputfile, outputfile, templatefile, **kwargs):
