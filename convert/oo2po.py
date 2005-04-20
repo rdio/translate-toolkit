@@ -29,10 +29,10 @@ from translate import __version__
 # TODO: support using one GSI file as template, another as input (for when English is in one and translation in another)
 
 class oo2po:
-  def __init__(self, languages=None, blankmsgstr=False):
+  def __init__(self, sourcelanguage, targetlanguage, blankmsgstr=False):
     """construct an oo2po converter for the specified languages"""
-    # languages is a pair of language ids
-    self.languages = languages
+    self.sourcelanguage = sourcelanguage
+    self.targetlanguage = targetlanguage
     self.blankmsgstr = blankmsgstr
 
   def makepo(self, part1, part2, key, subkey):
@@ -62,31 +62,20 @@ class oo2po:
 
   def convertelement(self, theoo):
     """convert an oo element into a list of po elements"""
+    if self.sourcelanguage in theoo.languages:
+      part1 = theoo.languages[self.sourcelanguage]
+    else:
+      print "/".join(theoo.lines[0].getkey()), "language not found: %s" % (self.sourcelanguage)
+      return []
     if self.blankmsgstr:
-      if self.languages is None:
-        part1 = theoo.lines[0]
-      else:
-        part1 = theoo.languages[self.languages[0]]
       # use a blank part2
       part2 = oo.ooline()
     else:
-      if self.languages is None:
-        part1 = theoo.lines[0]
-        if len(theoo.lines) > 1:
-          part2 = theoo.lines[1]
-        else:
-          part2 = oo.ooline()
+      if self.targetlanguage in theoo.languages:
+        part2 = theoo.languages[self.targetlanguage]
       else:
-        if self.languages[0] in theoo.languages:
-          part1 = theoo.languages[self.languages[0]]
-        else:
-          print "/".join(theoo.lines[0].getkey()), "language not found: %s" % (self.languages[0])
-          return []
-        if self.languages[1] in theoo.languages:
-          part2 = theoo.languages[self.languages[1]]
-        else:
-          # if the language doesn't exist, the translation is missing ... so make it blank
-          part2 = oo.ooline()
+        # if the language doesn't exist, the translation is missing ... so make it blank
+        part2 = oo.ooline()
     key = self.makekey(part1.getkey())
     textpo = self.makepo(part1, part2, key, 'text')
     quickhelppo = self.makepo(part1, part2, key, 'quickhelptext')
@@ -111,16 +100,29 @@ class oo2po:
     thepofile.removeduplicates(duplicatestyle)
     return thepofile
 
-def convertoo(inputfile, outputfile, templates, pot=False, languages=None, duplicatestyle="msgid_comment"):
+def verifyoptions(options):
+  """verifies the commandline options"""
+  if not options.pot and not options.targetlanguage:
+    raise ValueError("You must specify the target language unless generating POT files (-P)")
+
+def convertoo(inputfile, outputfile, templates, pot=False, sourcelanguage=None, targetlanguage=None, duplicatestyle="msgid_comment"):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   fromfile = oo.oofile()
   if hasattr(inputfile, "filename"):
     fromfile.filename = inputfile.filename
   filelines = inputfile.readlines()
   fromfile.fromlines(filelines)
-  if languages is not None:
-    languages = [language.strip() for language in languages.split(",") if language.strip()]
-  convertor = oo2po(blankmsgstr=pot, languages=languages)
+  if not sourcelanguage:
+    testlangtype = targetlanguage or (fromfile and fromfile.languages[0]) or ""
+    if testlangtype.isdigit():
+      sourcelanguage = "01"
+    else:
+      sourcelanguage = "en-US"
+  if not sourcelanguage in fromfile.languages:
+    print "Warning: sourcelanguage %s not found in inputfile (contains %s)" % (sourcelanguage, ", ".join(fromfile.languages))
+  if targetlanguage and targetlanguage not in fromfile.languages:
+    print "Warning: targetlanguage %s not found in inputfile (contains %s)" % (targetlanguage, ", ".join(fromfile.languages))
+  convertor = oo2po(sourcelanguage, targetlanguage, blankmsgstr=pot)
   outputpo = convertor.convertfile(fromfile, duplicatestyle)
   if outputpo.isempty():
     return 0
@@ -134,11 +136,15 @@ def main():
   # always treat the input as an archive unless it is a directory
   archiveformats = {(None, "input"): oo.oomultifile}
   parser = convert.ArchiveConvertOptionParser(formats, usepots=True, description=__doc__, archiveformats=archiveformats)
-  parser.add_option("-l", "--languages", dest="languages", default=None,
-    help="set languages to extract from oo file (comma-separated)", metavar="LANGUAGES")
+  parser.add_option("-l", "--language", dest="targetlanguage", default=None,
+    help="set language to extract from oo file (e.g. af-ZA)", metavar="LANG")
+  parser.add_option("", "--source-language", dest="sourcelanguage", default=None, 
+                    help="set source language code (default en-US)", metavar="LANG")
   parser.add_option("", "--nonrecursiveinput", dest="allowrecursiveinput", default=True, action="store_false", help="don't treat the input oo as a recursive store")
   parser.add_duplicates_option()
   parser.passthrough.append("pot")
-  parser.passthrough.append("languages")
+  parser.passthrough.append("sourcelanguage")
+  parser.passthrough.append("targetlanguage")
+  parser.verifyoptions = verifyoptions
   parser.run()
 
