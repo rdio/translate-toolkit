@@ -116,6 +116,7 @@ class oofile:
     self.ooelements = []
     self.ookeys = {}
     self.filename = "(unknown file)"
+    self.languages = []
 
   def addline(self, thisline):
     """adds a parsed line to the file"""
@@ -127,7 +128,9 @@ class oofile:
       self.ookeys[key] = element
     element.addline(thisline)
     self.oolines.append(thisline)
-    
+    if thisline.languageid not in self.languages:
+      self.languages.append(thisline.languageid)
+
   def fromlines(self, lines):
     """parses lines and adds them to the file"""
     for line in lines:
