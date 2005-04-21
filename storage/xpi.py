@@ -166,7 +166,22 @@ class XpiFile(ZipFileCatcher):
   def findlangreg(self):
     """finds the common prefix of all the files stored in the jar files"""
     dirstructure = {}
+    locale = None
+    region = None
+    localematch = sre.compile("[a-z]{2,3}-[a-zA-Z]{2,3}")
+    regmatch = sre.compile("[a-zA-Z]{2,3}")
     for jarfilename, jarfile in self.iterjars():
+      jarname = "".join(jarfilename.split('/')[-1:]).replace(".jar", "", 1)
+      if localematch.match(jarname):
+        if locale is None:
+          locale = jarname
+        else:
+          locale = 0
+      elif regionmatch.match(jarname):
+        if region is None:
+          region = jarname
+        else:
+          region = 0
       for filename in jarfile.namelist():
         if filename.endswith('/'): continue
         if not self.islocfile(filename) and not self.includenonloc: continue
@@ -179,10 +194,6 @@ class XpiFile(ZipFileCatcher):
           else:
             treepoint[part] = {}
             treepoint = treepoint[part]
-    localematch = sre.compile("[a-z]{2,3}-[a-zA-Z]{2,3}")
-    regmatch = sre.compile("[a-zA-Z]{2,3}")
-    locale = None
-    region = None
     localeentries = {}
     if 'locale' in dirstructure:
       for dirname in dirstructure['locale']:
@@ -197,9 +208,9 @@ class XpiFile(ZipFileCatcher):
             region = dirname
           else:
             region = 0
-    if locale:
+    if locale and locale in localeentries:
       del localeentries[locale]
-    if region:
+    if region and region in localeentries:
       del localeentries[region]
     if locale and not region:
       region = locale.split("-", 1)[1]
