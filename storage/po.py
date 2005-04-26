@@ -58,9 +58,12 @@ def quoteforpo(text):
 def isnewlineescape(escape):
   return escape == "\\n"
 
+def isnewlineortabescape(escape):
+  return escape == "\\n" or escape == "\\t"
+
 def extractpoline(line):
   backslash = '\\'
-  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=isnewlineescape)[0]
+  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=isnewlineortabescape)[0]
   return extracted # .replace('\\"', '"')
 
 def unquotefrompo(postr, joinwithlinebreak=True):
@@ -429,14 +432,15 @@ class pofile:
       lineitem = ""
     return headervalues
 
-  def updateheader(self, **kwargs):
+  def updateheader(self, add=False, **kwargs):
     """update field(s) in the PO header"""
     headeritems = self.parseheader()
     if headeritems == {}:
       return
     for key, value in kwargs.items():
       key = key.replace("_", "-")
-      headeritems[key] = value
+      if headeritems.has_key(key) or add:
+        headeritems[key] = value
     headerlines = [""]
     for key, value in headeritems.items():
       headerlines.append("%s: %s\\n" % (key, value))
