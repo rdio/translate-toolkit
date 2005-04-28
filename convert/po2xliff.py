@@ -201,13 +201,12 @@ class po2xliff:
       contextgroupnode.appendChild(linenumbernode)
     return contextgroupnode
 
-  def convertfile(self, inputfile, templatefile):
+  def convertfile(self, thepofile, templatefile):
     """converts a .po file to .xliff format"""
     if templatefile is None: 
       xlifffile = PoXliffParser()
     else:
       xlifffile = PoXliffParser(templatefile)
-    thepofile = po.pofile(inputfile)
     filename = thepofile.filename
     for thepo in thepofile.poelements:
       if thepo.isblank():
@@ -218,8 +217,11 @@ class po2xliff:
 
 def convertpo(inputfile, outputfile, templatefile):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
+  inputpo = po.pofile(inputfile)
+  if inputpo.isempty():
+    return 0
   convertor = po2xliff()
-  outputxliff = convertor.convertfile(inputfile, templatefile)
+  outputxliff = convertor.convertfile(inputpo, templatefile)
   outputfile.write(outputxliff)
   return 1
 
