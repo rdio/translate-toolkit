@@ -69,6 +69,7 @@ def extractpoline(line):
 def unquotefrompo(postr, joinwithlinebreak=True):
   if joinwithlinebreak:
     joiner = "\n"
+    if postr and postr[0] == '""': postr = postr[1:]
   else:
     joiner = ""
   return joiner.join([extractpoline(line) for line in postr])
