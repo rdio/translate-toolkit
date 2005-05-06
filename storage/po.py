@@ -126,7 +126,10 @@ class poelement:
     return newpo
 
   def msgidlen(self):
-    return len(getunquotedstr(self.msgid).strip())
+    if self.hasplural():
+      return len(getunquotedstr(self.msgid).strip()) + len(getunquotedstr(self.msgid_plural).strip())
+    else:
+      return len(getunquotedstr(self.msgid).strip())
 
   def msgstrlen(self):
     if isinstance(self.msgstr, dict):
