@@ -108,7 +108,7 @@ class poelement:
     self.msgstr = []
 
   def copy(self):
-    newpo = poelement()
+    newpo = self.__class__()
     newpo.othercomments = self.othercomments[:]
     newpo.sourcecomments = self.sourcecomments[:]
     newpo.typecomments = self.typecomments[:]
@@ -347,9 +347,10 @@ class poelement:
 
 class pofile:
   """this represents a .po file containing various poelements"""
-  def __init__(self, inputfile=None, encoding=None):
+  def __init__(self, inputfile=None, encoding=None, elementclass=poelement):
     """construct a pofile, optionally reading in from inputfile.
     encoding can be specified but otherwise will be read from the PO header"""
+    self.elementclass = elementclass
     self.poelements = []
     self.filename = ''
     self.encoding = encoding
@@ -369,7 +370,7 @@ class pofile:
     creationdate can be None (current date) or a value (datetime or string)
     revisiondate can be None (form), False (=creationdate), True (=now), or a value (datetime or string)"""
     # TODO: clean this up, make it handle all the properties...
-    headerpo = poelement()
+    headerpo = self.elementclass()
     headerpo.markfuzzy()
     headerpo.msgid = ['""']
     headeritems = [""]
@@ -526,7 +527,7 @@ class pofile:
       if (end == len(lines)) or (lines[end] == '\n'):   # end of lines or just a carriage return
         finished = 0
         while not finished:
-          newpe = poelement()
+          newpe = self.elementclass()
           linesprocessed = newpe.fromlines(lines[start:end])
           start += linesprocessed
           if linesprocessed > 1:
@@ -546,7 +547,7 @@ class pofile:
 
   def removeblanks(self):
     """remove any poelements which say they are blank"""
-    self.poelements = filter(poelement.isnotblank, self.poelements)
+    self.poelements = filter(self.elementclass.isnotblank, self.poelements)
 
   def removeduplicates(self, duplicatestyle="merge"):
     """make sure each msgid is unique ; merge comments etc from duplicates into original"""
