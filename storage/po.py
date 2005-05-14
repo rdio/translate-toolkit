@@ -460,7 +460,9 @@ class pofile:
 
   def getheaderplural(self):
     """returns the nplural and plural values from the header"""
-    pluralformvalue = self.parseheader()['Plural-Forms']
+    pluralformvalue = self.parseheader().get('Plural-Forms', None)
+    if pluralformvalue is None:
+      return None, None
     nplural = sre.findall("nplurals=(.+?);", pluralformvalue)
     plural = sre.findall("plural=(.+?);", pluralformvalue)
     if nplural[0] == "INTEGER":
