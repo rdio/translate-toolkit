@@ -131,27 +131,31 @@ def _getPhMatches(text):
 class po2xliff:
   def createtransunit(self, thepo):
     """creates a transunit node"""
-    source = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False).replace("\\n", "\n")
-    translation = po.unquotefrompo(thepo.msgstr, joinwithlinebreak=False).replace("\\n", "\n")
-    if isinstance(source, str):
-      source = source.decode("utf-8")
-    if isinstance(translation, str):
-      translation = translation.decode("utf-8")
-    transunitnode = minidom.Element("trans-unit")
-    sourcenode = self.createXliffNode("source",source)
-    transunitnode.appendChild(sourcenode)
-    if translation:
-      targetnode = self.createXliffNode("target",translation)
-      transunitnode.appendChild(targetnode)
-      if thepo.isfuzzy():
-        targetnode.setAttribute("state", "needs-review-translation")
-        targetnode.setAttribute("state-qualifier", "fuzzy-match")
-      else:
-        targetnode.setAttribute("state", "translated")
+    if not thepo.hasplural():
+      source = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False).replace("\\n", "\n")
+      translation = po.unquotefrompo(thepo.msgstr, joinwithlinebreak=False).replace("\\n", "\n")
+      if isinstance(source, str):
+        source = source.decode("utf-8")
+      if isinstance(translation, str):
+        translation = translation.decode("utf-8")
+      transunitnode = minidom.Element("trans-unit")
+      sourcenode = self.createXliffNode("source",source)
+      transunitnode.appendChild(sourcenode)
+      if translation:
+        targetnode = self.createXliffNode("target",translation)
+        transunitnode.appendChild(targetnode)
+        if thepo.isfuzzy():
+          targetnode.setAttribute("state", "needs-review-translation")
+          targetnode.setAttribute("state-qualifier", "fuzzy-match")
+        else:
+          targetnode.setAttribute("state", "translated")
+      for sourcelocation in thepo.getsources():
+        transunitnode.appendChild(self.createcontextgroup(sourcelocation))
+      return transunitnode
+    else:
+      print "po2xliff does not currently handle plural messages"
+      return None
         
-    for sourcelocation in thepo.getsources():
-      transunitnode.appendChild(self.createcontextgroup(sourcelocation))
-    return transunitnode
 
   def maketextnode(self, text):
     textnode = minidom.Text()
@@ -212,7 +216,8 @@ class po2xliff:
       if thepo.isblank():
         continue
       transunitnode = self.createtransunit(thepo)
-      xlifffile.addtransunit(filename, transunitnode, True)
+      if transunitnode:
+        xlifffile.addtransunit(filename, transunitnode, True)
     return xlifffile.getxml(pretty=False)
 
 def convertpo(inputfile, outputfile, templatefile):
