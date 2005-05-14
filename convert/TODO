@@ -23,6 +23,7 @@ csv2po
   making it difficult to check files
   * allow a --no-wrap option so that we remove PO line breaks that mess with 
   translators segmentation tools.
+  * We do not handle languages with N != 2 plural forms
 
 oo2po / po2oo
   fix problem with OOO_VENDOR and \" quoting in offmgr.po (see help - about)
@@ -43,3 +44,6 @@ docs
 po2dtd
   when reporting ampersand check failures should tell you the file not just the
     name of the bad PO file not just the command line output name
+
+po2xliff
+  * Handle PO plural conversion
