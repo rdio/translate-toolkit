@@ -454,9 +454,11 @@ class pofile:
     header.markfuzzy(False)
     return header
 
-  def updateheaderplural(self, nplural, plural):
+  def updateheaderplural(self, nplurals, plural):
     """update the Plural-Form PO header"""
-    self.updateheader( Plural_Forms = "nplurals=%d; plural=%s;" % (nplural, plural) )
+    if isinstance(nplurals, str):
+      nplurals = int(nplurals)
+    self.updateheader( Plural_Forms = "nplurals=%d; plural=%s;" % (nplurals, plural) )
 
   def getheaderplural(self):
     """returns the nplural and plural values from the header"""
