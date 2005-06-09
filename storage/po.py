@@ -377,17 +377,17 @@ class pofile:
     if projectid is None:
       projectid = "PACKAGE VERSION"
     if creationdate is None or creationdate == True:
-      creationdate = time.strftime("%F %H:%M%z")
+      creationdate = time.strftime("%Y-%m-%d %H:%M%z")
     if isinstance(creationdate, time.struct_time):
-      creationdate = creationdate.strftime("%F %H:%M%z")
+      creationdate = creationdate.strftime("%Y-%m-%d %H:%M%z")
     if revisiondate is None:
       revisiondate = "YEAR-MO-DA HO:MI+ZONE"
     elif revisiondate == False:
       revisiondate = creationdate
     elif revisiondate == True:
-      revisiondate = time.strftime("%F %H:%M%z")
+      revisiondate = time.strftime("%Y-%m-%d %H:%M%z")
     if isinstance(revisiondate, time.struct_time):
-      revisiondate = revisiondate.strftime("%F %H:%M%z")
+      revisiondate = revisiondate.strftime("%Y-%m-%d %H:%M%z")
     if lasttranslator is None:
       lasttranslator = "FULL NAME <EMAIL@ADDRESS>"
     if languageteam is None:
