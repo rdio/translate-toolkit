@@ -78,7 +78,19 @@ class xliff2po:
         sources = self.gettransunitsources(transunit)
         source = xlifffile.gettransunitsource(transunit)
         target = xlifffile.gettransunittarget(transunit)
+
+        if target is None:
+          target = ''
         thepo = self.converttransunit(sources, source, target)
+
+        # Check if fuzzy
+        try:
+          targetnode = transunit.getElementsByTagName("target")[0]
+          if targetnode.getAttribute("state-qualifier") == "fuzzy-match":
+            thepo.markfuzzy()
+        except IndexError,e:
+          pass
+
         thepofile.poelements.append(thepo)
     return thepofile
 
