@@ -23,6 +23,7 @@
 import os.path
 from translate.convert import dtd2po
 from translate.convert import prop2po
+from translate.convert import mozfunny2prop
 from translate.storage import xpi
 from translate import __version__
 from translate.convert import convert
@@ -32,6 +33,10 @@ def main():
              ("properties", "properties"): ("properties.po", prop2po.convertprop),
              "dtd": ("dtd.po", dtd2po.convertdtd),
              "properties": ("properties.po", prop2po.convertprop),
+             ("it", "it"): ("it.po", mozfunny2prop.it2po),
+             ("inc", "inc"): ("inc.po", mozfunny2prop.inc2po),
+             "it": ("it.po", mozfunny2prop.it2po),
+             "inc": ("inc.po", mozfunny2prop.inc2po),
              (None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}

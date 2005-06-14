@@ -25,6 +25,7 @@ import os.path
 import sys
 from translate.convert import po2dtd
 from translate.convert import po2prop
+from translate.convert import prop2mozfunny
 from translate.storage import xpi
 from translate import __version__
 from translate.convert import convert
@@ -64,6 +65,8 @@ def main():
   # handle command line options
   formats = {("dtd.po", "dtd"): ("dtd", po2dtd.convertdtd),
              ("properties.po", "properties"): ("properties", po2prop.convertprop),
+             ("it.po", "it"): ("it", prop2mozfunny.po2it),
+             ("inc.po", "inc"): ("inc", prop2mozfunny.po2inc),
              (None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}
