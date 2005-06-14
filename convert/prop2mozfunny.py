@@ -34,7 +34,7 @@ def prop2it(pf):
         definition = definition.encode("UTF-8")
       yield definition
 
-def prop2funny(lines):
+def prop2funny(lines, itencoding="cp1252"):
   header = lines[0]
   if not header.startswith("# converted from "):
     waspseudoprops = len([line for line in lines if line.startswith("# section:")])
@@ -50,12 +50,12 @@ def prop2funny(lines):
   if wasdefines:
     return prop2defines(pf)
   elif waspseudoprops:
-    # TODO: get encoding from charset.mk, using parameter
     for line in prop2it(pf):
-      yield line.decode("utf-8").encode("cp1252")
+      yield line.decode("utf-8").encode(itencoding)
 
 if __name__ == "__main__":
   import sys
+  # TODO: get encoding from charset.mk, using parameter
   lines = sys.stdin.readlines()
   for line in prop2funny(lines):
     sys.stdout.write(line)
