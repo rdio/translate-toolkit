@@ -4,8 +4,10 @@
 
 import string
 from translate.misc import quote
+from translate.convert import prop2po
+from translate.misc.wStringIO import StringIO
 
-def defines2prop(lines):
+def inc2prop(lines):
   """convert a .inc file with #defines in it to a properties file"""
   yield "# converted from #defines file\n"
   for line in lines:
@@ -43,16 +45,44 @@ def it2prop(lines, encoding="cp1252"):
 def funny2prop(lines, itencoding="cp1252"):
   hashstarts = len([line for line in lines if line.startswith("#")])
   if hashstarts:
-    for line in defines2prop(lines):
+    for line in inc2prop(lines):
       yield quote.mozillapropertiesencode(line)
   else:
     for line in it2prop(lines, encoding=itencoding):
       yield quote.mozillapropertiesencode(line)
 
-if __name__ == "__main__":
-  # TODO: get encoding from charset.mk, using parameter
+def inc2po(inputfile, outputfile, templatefile, encoding=None, pot=False, duplicatestyle="msgid_comment"):
+  """wraps prop2po but converts input/template files to properties first"""
+  inputlines = inputfile.readlines()
+  inputproplines = [quote.mozillapropertiesencode(line) for line in inc2prop(inputlines)]
+  inputpropfile = StringIO("".join(inputproplines))
+  if templatefile is not None:
+    templatelines = templatefile.readlines()
+    templateproplines = [quote.mozillapropertiesencode(line) for line in inc2prop(templatelines)]
+    templatepropfile = StringIO("".join(templateproplines))
+  else:
+    templatepropfile = None
+  return prop2po.convertprop(inputpropfile, outputfile, templatepropfile, pot=pot, duplicatestyle=duplicatestyle)
+
+def it2po(inputfile, outputfile, templatefile, encoding="cp1252", pot=False, duplicatestyle="msgid_comment"):
+  """wraps prop2po but converts input/template files to properties first"""
+  inputlines = inputfile.readlines()
+  inputproplines = [quote.mozillapropertiesencode(line) for line in it2prop(inputlines, encoding=encoding)]
+  inputpropfile = StringIO("".join(inputproplines))
+  if templatefile is not None:
+    templatelines = templatefile.readlines()
+    templateproplines = [quote.mozillapropertiesencode(line) for line in it2prop(templatelines, encoding=encoding)]
+    templatepropfile = StringIO("".join(templateproplines))
+  else:
+    templatepropfile = None
+  return prop2po.convertprop(inputpropfile, outputfile, templatepropfile, pot=pot, duplicatestyle=duplicatestyle)
+
+def main():
   import sys
   lines = sys.stdin.readlines()
   for line in funny2prop(lines):
     sys.stdout.write(line)
+
+if __name__ == "__main__":
+  main()
 

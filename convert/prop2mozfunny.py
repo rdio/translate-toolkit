@@ -2,10 +2,12 @@
 
 """converts properties files back to funny mozilla files"""
 
-from translate.storage import properties
 import string
+from translate.storage import properties
+from translate.convert import po2prop
+from translate.misc.wStringIO import StringIO
 
-def prop2defines(pf):
+def prop2inc(pf):
   """convert a properties file back to a .inc file with #defines in it"""
   for pe in pf.propelements:
     for comment in pe.comments:
@@ -48,15 +50,43 @@ def prop2funny(lines, itencoding="cp1252"):
   pf = properties.propfile()
   pf.fromlines(lines)
   if wasdefines:
-    return prop2defines(pf)
+    for line in prop2inc(pf):
+      yield line
   elif waspseudoprops:
     for line in prop2it(pf):
       yield line.decode("utf-8").encode(itencoding)
 
-if __name__ == "__main__":
+def po2inc(inputfile, outputfile, templatefile, encoding=None, includefuzzy=False):
+  """wraps po2prop but converts outputfile to properties first"""
+  outputpropfile = StringIO()
+  result = po2prop.convertprop(inputfile, outputpropfile, templatefile, includefuzzy=includefuzzy)
+  if result:
+    outputpropfile.seek(0)
+    pf = properties.propfile(outputpropfile)
+    outputlines = prop2inc(pf)
+    outputfile.writelines(outputlines)
+  return result
+
+def po2it(inputfile, outputfile, templatefile, encoding="cp1252", includefuzzy=False):
+  """wraps po2prop but converts outputfile to properties first"""
+  outputpropfile = StringIO()
+  result = po2prop.convertprop(inputfile, outputpropfile, templatefile, includefuzzy=includefuzzy)
+  if result:
+    outputpropfile.seek(0)
+    pf = properties.propfile(outputpropfile)
+    outputlines = prop2it(pf)
+    for line in outputlines:
+      line = line.decode("utf-8").encode(encoding)
+      outputfile.write(line)
+  return result
+
+def main():
   import sys
   # TODO: get encoding from charset.mk, using parameter
   lines = sys.stdin.readlines()
   for line in prop2funny(lines):
     sys.stdout.write(line)
+
+if __name__ == "__main__":
+  main()
 
