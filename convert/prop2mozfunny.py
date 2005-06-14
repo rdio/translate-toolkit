@@ -5,6 +5,8 @@
 import string
 from translate.storage import properties
 from translate.convert import po2prop
+from translate.convert import mozfunny2prop
+from translate.misc import quote
 from translate.misc.wStringIO import StringIO
 
 def prop2inc(pf):
@@ -70,7 +72,13 @@ def po2inc(inputfile, outputfile, templatefile, encoding=None, includefuzzy=Fals
 def po2it(inputfile, outputfile, templatefile, encoding="cp1252", includefuzzy=False):
   """wraps po2prop but converts outputfile to properties first"""
   outputpropfile = StringIO()
-  result = po2prop.convertprop(inputfile, outputpropfile, templatefile, includefuzzy=includefuzzy)
+  if templatefile is not None:
+    templatelines = templatefile.readlines()
+    templateproplines = [quote.mozillapropertiesencode(line) for line in mozfunny2prop.it2prop(templatelines, encoding=encoding)]
+    templatepropfile = StringIO("".join(templateproplines))
+  else:
+    templatepropfile = None
+  result = po2prop.convertprop(inputfile, outputpropfile, templatepropfile, includefuzzy=includefuzzy)
   if result:
     outputpropfile.seek(0)
     pf = properties.propfile(outputpropfile)
