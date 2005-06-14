@@ -13,7 +13,10 @@ def prop2inc(pf):
   """convert a properties file back to a .inc file with #defines in it"""
   for pe in pf.propelements:
     for comment in pe.comments:
-      yield comment
+      if comment.startswith("# converted from") and "#defines" in comment:
+        pass
+      else:
+        yield comment
     if pe.isblank():
       yield "\n"
     else:
@@ -26,7 +29,9 @@ def prop2it(pf):
   """convert a properties file back to a pseudo-properties .it file"""
   for pe in pf.propelements:
     for comment in pe.comments:
-      if comment.startswith("# section: "):
+      if comment.startswith("# converted from") and "pseudo-properties" in comment:
+        pass
+      elif comment.startswith("# section: "):
         yield comment.replace("# section: ", "", 1)
       else:
         yield comment.replace("#", ";", 1)
@@ -61,7 +66,13 @@ def prop2funny(lines, itencoding="cp1252"):
 def po2inc(inputfile, outputfile, templatefile, encoding=None, includefuzzy=False):
   """wraps po2prop but converts outputfile to properties first"""
   outputpropfile = StringIO()
-  result = po2prop.convertprop(inputfile, outputpropfile, templatefile, includefuzzy=includefuzzy)
+  if templatefile is not None:
+    templatelines = templatefile.readlines()
+    templateproplines = [quote.mozillapropertiesencode(line) for line in mozfunny2prop.inc2prop(templatelines)]
+    templatepropfile = StringIO("".join(templateproplines))
+  else:
+    templatepropfile = None
+  result = po2prop.convertprop(inputfile, outputpropfile, templatepropfile, includefuzzy=includefuzzy)
   if result:
     outputpropfile.seek(0)
     pf = properties.propfile(outputpropfile)
