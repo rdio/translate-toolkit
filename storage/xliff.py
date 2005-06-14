@@ -63,6 +63,16 @@ for elementclassname in dir(minidom):
     continue
   elementclass.writexml = writexml
 
+def getText(nodelist):
+  """joins together the text from all the text nodes in the nodelist and their children"""
+  rc = []
+  for node in nodelist:
+    if node.nodeType == node.TEXT_NODE:
+      rc.append(node.data)
+    elif node.nodeType == node.ELEMENT_NODE:
+      rc += getText(node.childNodes)
+  return ''.join(rc)
+
 # TODO: handle comments
 # TODO: handle translation types
 
@@ -101,7 +111,7 @@ class XliffParser(object):
 
   def getnodetext(self, node):
     """returns the node's text by iterating through the child nodes"""
-    return "".join([getattr(t, "data", "") for t in node.childNodes if t.nodeType == t.TEXT_NODE])
+    return getText(node.childNodes)
 
   def getxml(self,pretty=True):
     """return the ts file as xml"""
@@ -143,7 +153,10 @@ class XliffParser(object):
 
   def gettransunittarget(self, transunit):
     """returns the transunit target for a given node"""
-    translationnode = transunit.getElementsByTagName("target")[0]
+    try:
+        translationnode = transunit.getElementsByTagName("target")[0]
+    except IndexError,e:
+        return None
     return self.getnodetext(translationnode)
 
   def iteritems(self):
