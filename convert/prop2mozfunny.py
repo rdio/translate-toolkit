@@ -50,7 +50,9 @@ def prop2funny(lines):
   if wasdefines:
     return prop2defines(pf)
   elif waspseudoprops:
-    return prop2it(pf)
+    # TODO: get encoding from charset.mk, using parameter
+    for line in prop2it(pf):
+      yield line.decode("utf-8").encode("cp1252")
 
 if __name__ == "__main__":
   import sys
