@@ -2,51 +2,59 @@
 
 """converts properties files back to funny mozilla files"""
 
-import sys
+from translate.storage import properties
 import string
 
-lines = sys.stdin.readlines()
-
-header = lines[0]
-if not header.startswith("# converted from "):
-  waspseudoprops = len([line for line in lines if line.startswith("# section:")])
-  wasdefines = len([line for line in lines if line.startswith("#filter") or line.startswith("#unfilter")])
-else:
-  waspseudoprops = "pseudo-properties" in header
-  wasdefines = "#defines" in header
-  lines = lines[1:]
-if not (waspseudoprops ^ wasdefines):
-  print >>sys.stderr, "could not determine file type"
-  sys.exit()
-
-from translate.storage import properties
-pf = properties.propfile()
-pf.fromlines(lines)
-if wasdefines:
-  # this was a .inc file with #defines in it
+def prop2defines(pf):
+  """convert a properties file back to a .inc file with #defines in it"""
   for pe in pf.propelements:
     for comment in pe.comments:
-      sys.stdout.write(comment)
+      yield comment
     if pe.isblank():
-      sys.stdout.write("\n")
+      yield "\n"
     else:
       definition = "#define %s %s\n" % (pe.name, pe.msgid.replace("\n", "\\n"))
       if isinstance(definition, unicode):
         definition = definition.encode("UTF-8")
-      sys.stdout.write(definition)
-elif waspseudoprops:
-  # this was a pseudo-properties .it file
+      yield definition
+
+def prop2it(pf):
+  """convert a properties file back to a pseudo-properties .it file"""
   for pe in pf.propelements:
     for comment in pe.comments:
       if comment.startswith("# section: "):
-        sys.stdout.write(comment.replace("# section: ", "", 1))
+        yield comment.replace("# section: ", "", 1)
       else:
-        sys.stdout.write(comment.replace("#", ";", 1))
+        yield comment.replace("#", ";", 1)
     if pe.isblank():
-      sys.stdout.write("\n")
+      yield "\n"
     else:
       definition = "%s=%s\n" % (pe.name, pe.msgid)
       if isinstance(definition, unicode):
         definition = definition.encode("UTF-8")
-      sys.stdout.write(definition)
+      yield definition
+
+def prop2funny(lines):
+  header = lines[0]
+  if not header.startswith("# converted from "):
+    waspseudoprops = len([line for line in lines if line.startswith("# section:")])
+    wasdefines = len([line for line in lines if line.startswith("#filter") or line.startswith("#unfilter")])
+  else:
+    waspseudoprops = "pseudo-properties" in header
+    wasdefines = "#defines" in header
+    lines = lines[1:]
+  if not (waspseudoprops ^ wasdefines):
+    raise ValueError("could not determine file type as pseudo-properties or defines file")
+  pf = properties.propfile()
+  pf.fromlines(lines)
+  if wasdefines:
+    return prop2defines(pf)
+  elif waspseudoprops:
+    return prop2it(pf)
+
+if __name__ == "__main__":
+  import sys
+  lines = sys.stdin.readlines()
+  for line in prop2funny(lines):
+    sys.stdout.write(line)
 
