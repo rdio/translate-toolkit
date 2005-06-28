@@ -350,6 +350,19 @@ class poelement:
 class pofile:
   """this represents a .po file containing various poelements"""
   x_generator = "Translate Toolkit %s" % __version__.ver
+  header_order = [
+    "Project-Id-Version",
+    "Report-Msgid-Bugs-To",
+    "POT-Creation-Date",
+    "PO-Revision-Date",
+    "Last-Translator",
+    "Language-Team",
+    "MIME-Version",
+    "Content-Type",
+    "Content-Transfer-Encoding",
+    "Plural-Forms",
+    "X-Generator",
+    ]
   def __init__(self, inputfile=None, encoding=None, elementclass=poelement):
     """construct a pofile, optionally reading in from inputfile.
     encoding can be specified but otherwise will be read from the PO header"""
@@ -406,21 +419,22 @@ class pofile:
       plural_forms = "nplurals=INTEGER; plural=EXPRESSION;"
     if report_msgid_bugs_to is None:
       report_msgid_bugs_to = ""
-    def adddefaultheader(key, value):
-      """adds a default header value if the key is not in headerargs"""
-      if key not in headerargs:
-        headeritems.append("%s: %s\\n" % (key, value))
-    adddefaultheader("Project-Id-Version",  project_id_version)
-    adddefaultheader("Report-Msgid-Bugs-To",  report_msgid_bugs_to)
-    adddefaultheader("POT-Creation-Date",  pot_creation_date)
-    adddefaultheader("PO-Revision-Date",  po_revision_date)
-    adddefaultheader("Last-Translator",  last_translator)
-    adddefaultheader("Language-Team",  language_team)
-    adddefaultheader("MIME-Version",  mime_version)
-    adddefaultheader("Content-Type", "text/plain; charset=%s" % charset)
-    adddefaultheader("Content-Transfer-Encoding",  encoding)
-    adddefaultheader("Plural-Forms",  plural_forms)
-    adddefaultheader("X-Generator", self.x_generator)
+    defaultargs = {
+      "Project-Id-Version":  project_id_version,
+      "Report-Msgid-Bugs-To":  report_msgid_bugs_to,
+      "POT-Creation-Date":  pot_creation_date,
+      "PO-Revision-Date":  po_revision_date,
+      "Last-Translator":  last_translator,
+      "Language-Team":  language_team,
+      "MIME-Version":  mime_version,
+      "Content-Type": "text/plain; charset=%s" % charset,
+      "Content-Transfer-Encoding":  encoding,
+      "Plural-Forms":  plural_forms,
+      "X-Generator": self.x_generator,
+      }
+    for key in self.header_order:
+      value = headerargs.pop(key, defaultargs[key])
+      headeritems.append("%s: %s\\n" % (key, value))
     for key, value in headerargs.iteritems():
       headeritems.append("%s: %s\\n" % (key, value))
     headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
