@@ -473,12 +473,22 @@ class pofile:
       header = self.makeheader(**kwargs)
       self.poelements.insert(0, header)
       headeritems = self.parseheader()
-    for key, value in kwargs.items():
-      key = key.replace("_", "-")
-      if key.islower():
-        key = key.title()
-      if headeritems.has_key(key) or add:
-        headeritems[key] = value
+    else:
+      headerargs = dictutils.ordereddict()
+      fixedargs = dictutils.cidict()
+      for key, value in kwargs.items():
+        key = key.replace("_", "-")
+        if key.islower():
+          key = key.title()
+        fixedargs[key] = value
+      for key in self.header_order:
+        if key in fixedargs:
+          headerargs[key] = fixedargs.pop(key)
+      for key in fixedargs:
+        headerargs[key] = kwargs[key]
+      for key, value in headerargs.iteritems():
+        if headeritems.has_key(key) or add:
+          headeritems[key] = value
     headerlines = [""]
     for key, value in headeritems.items():
       headerlines.append("%s: %s\\n" % (key, value))
