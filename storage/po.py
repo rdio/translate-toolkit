@@ -23,6 +23,8 @@ gettext-style .po (or .pot) files are used in translations for KDE et al (see kb
 
 from __future__ import generators
 from translate.misc import quote
+from translate.misc import dictutils
+from translate import __version__
 import sre
 import time
 
@@ -347,6 +349,7 @@ class poelement:
 
 class pofile:
   """this represents a .po file containing various poelements"""
+  x_generator = "Translate Toolkit %s" % __version__.ver
   def __init__(self, inputfile=None, encoding=None, elementclass=poelement):
     """construct a pofile, optionally reading in from inputfile.
     encoding can be specified but otherwise will be read from the PO header"""
@@ -365,58 +368,67 @@ class pofile:
       inputfile.close()
       self.fromlines(polines)
 
-  def makeheader(self, charset="CHARSET", encoding="ENCODING", projectid=None, creationdate=None, revisiondate=None, lasttranslator=None, languageteam=None, mimeversion=None, pluralform=None, msgidbugs=None, **kwargs):
+  def makeheader(self, charset="CHARSET", encoding="ENCODING", project_id_version=None, pot_creation_date=None, po_revision_date=None, last_translator=None, language_team=None, mime_version=None, plural_forms=None, report_msgid_bugs_to=None, **kwargs):
     """create a header for the given filename. arguments are specially handled, kwargs added as key: value
-    creationdate can be None (current date) or a value (datetime or string)
-    revisiondate can be None (form), False (=creationdate), True (=now), or a value (datetime or string)"""
-    # TODO: clean this up, make it handle all the properties...
+    pot_creation_date can be None (current date) or a value (datetime or string)
+    po_revision_date can be None (form), False (=pot_creation_date), True (=now), or a value (datetime or string)"""
+    headerargs = dictutils.cidict()
+    for key, value in kwargs.iteritems():
+      key = key.replace("_", "-")
+      if key.islower():
+        key = key.title()
+      headerargs[key] = value
     headerpo = self.elementclass()
     headerpo.markfuzzy()
     headerpo.msgid = ['""']
     headeritems = [""]
-    if projectid is None:
-      projectid = "PACKAGE VERSION"
-    if creationdate is None or creationdate == True:
-      creationdate = time.strftime("%Y-%m-%d %H:%M%z")
-    if isinstance(creationdate, time.struct_time):
-      creationdate = creationdate.strftime("%Y-%m-%d %H:%M%z")
-    if revisiondate is None:
-      revisiondate = "YEAR-MO-DA HO:MI+ZONE"
-    elif revisiondate == False:
-      revisiondate = creationdate
-    elif revisiondate == True:
-      revisiondate = time.strftime("%Y-%m-%d %H:%M%z")
-    if isinstance(revisiondate, time.struct_time):
-      revisiondate = revisiondate.strftime("%Y-%m-%d %H:%M%z")
-    if lasttranslator is None:
-      lasttranslator = "FULL NAME <EMAIL@ADDRESS>"
-    if languageteam is None:
-      languageteam = "LANGUAGE <LL@li.org>"
-    if mimeversion is None:
-      mimeversion = "1.0"
-    if pluralform is None:
-      pluralform = "nplurals=INTEGER; plural=EXPRESSION;"
-    if msgidbugs is None:
-      msgidbugs = ""
-    addheader = lambda key, value: (key in kwargs) or headeritems.append("%s: %s\\n" % (key, value))
-    addheader("Project-Id-Version",  projectid)
-    addheader("Report-Msgid-Bugs-To",  msgidbugs)
-    addheader("POT-Creation-Date",  creationdate)
-    addheader("PO-Revision-Date",  revisiondate)
-    addheader("Last-Translator",  lasttranslator)
-    addheader("Language-Team",  languageteam)
-    addheader("MIME-Version",  mimeversion)
-    addheader("Content-Type", "text/plain; charset=%s" % charset)
-    addheader("Content-Transfer-Encoding",  encoding)
-    addheader("Plural-Forms",  pluralform)
-    for key, value in kwargs.iteritems():
+    if project_id_version is None:
+      project_id_version = "PACKAGE VERSION"
+    if pot_creation_date is None or pot_creation_date == True:
+      pot_creation_date = time.strftime("%Y-%m-%d %H:%M%z")
+    if isinstance(pot_creation_date, time.struct_time):
+      pot_creation_date = pot_creation_date.strftime("%Y-%m-%d %H:%M%z")
+    if po_revision_date is None:
+      po_revision_date = "YEAR-MO-DA HO:MI+ZONE"
+    elif po_revision_date == False:
+      po_revision_date = pot_creation_date
+    elif po_revision_date == True:
+      po_revision_date = time.strftime("%Y-%m-%d %H:%M%z")
+    if isinstance(po_revision_date, time.struct_time):
+      po_revision_date = po_revision_date.strftime("%Y-%m-%d %H:%M%z")
+    if last_translator is None:
+      last_translator = "FULL NAME <EMAIL@ADDRESS>"
+    if language_team is None:
+      language_team = "LANGUAGE <LL@li.org>"
+    if mime_version is None:
+      mime_version = "1.0"
+    if plural_forms is None:
+      plural_forms = "nplurals=INTEGER; plural=EXPRESSION;"
+    if report_msgid_bugs_to is None:
+      report_msgid_bugs_to = ""
+    def adddefaultheader(key, value):
+      """adds a default header value if the key is not in headerargs"""
+      if key not in headerargs:
+        headeritems.append("%s: %s\\n" % (key, value))
+    adddefaultheader("Project-Id-Version",  project_id_version)
+    adddefaultheader("Report-Msgid-Bugs-To",  report_msgid_bugs_to)
+    adddefaultheader("POT-Creation-Date",  pot_creation_date)
+    adddefaultheader("PO-Revision-Date",  po_revision_date)
+    adddefaultheader("Last-Translator",  last_translator)
+    adddefaultheader("Language-Team",  language_team)
+    adddefaultheader("MIME-Version",  mime_version)
+    adddefaultheader("Content-Type", "text/plain; charset=%s" % charset)
+    adddefaultheader("Content-Transfer-Encoding",  encoding)
+    adddefaultheader("Plural-Forms",  plural_forms)
+    adddefaultheader("X-Generator", self.x_generator)
+    for key, value in headerargs.iteritems():
       headeritems.append("%s: %s\\n" % (key, value))
     headerpo.msgstr = [quote.quotestr(headerstr) for headerstr in headeritems]
     return headerpo
 
   def parseheader(self):
     """parses the values in the header into a dictionary"""
-    headervalues = {}
+    headervalues = dictutils.ordereddict()
     if len(self.poelements) == 0:
       return headervalues
     header = self.poelements[0]
@@ -440,16 +452,22 @@ class pofile:
   def updateheader(self, add=False, **kwargs):
     """update field(s) in the PO header"""
     headeritems = self.parseheader()
-    if headeritems == {}:
+    if not headeritems and not add:
       return
+    header = self.poelements[0]
+    if not header.isheader():
+      header = self.makeheader(**kwargs)
+      self.poelements.insert(0, header)
+      headeritems = self.parseheader()
     for key, value in kwargs.items():
       key = key.replace("_", "-")
+      if key.islower():
+        key = key.title()
       if headeritems.has_key(key) or add:
         headeritems[key] = value
     headerlines = [""]
     for key, value in headeritems.items():
       headerlines.append("%s: %s\\n" % (key, value))
-    header = self.poelements[0]
     header.msgstr = [quote.quotestr(headerline) for headerline in headerlines]
     header.markfuzzy(False)
     return header
