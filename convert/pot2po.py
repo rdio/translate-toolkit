@@ -29,11 +29,11 @@ def convertpot(inputfile, outputfile, templatefile):
   # header values
   charset = "UTF-8"
   encoding = "8bit"
-  projectid = None
-  creationdate = None
-  revisiondate = True
-  lasttranslator = None
-  languageteam = None
+  project_id_version = None
+  pot_creation_date = None
+  po_revision_date = True
+  last_translator = None
+  language_team = None
   mimeversion = None
   kwargs = {}
   if templatefile is not None:
@@ -42,11 +42,11 @@ def convertpot(inputfile, outputfile, templatefile):
     templateheadervalues = templatepo.parseheader()
     for key, value in templateheadervalues.iteritems():
       if key == "Project-Id-Version":
-        projectid = value
+        project_id_version = value
       elif key == "Last-Translator":
-        lasttranslator = value
+        last_translator = value
       elif key == "Language-Team":
-        languageteam = value
+        language_team = value
       elif key in ("POT-Creation-Date", "PO-Revision-Date", "MIME-Version"):
         # don't know how to handle these keys, or ignoring them
         pass
@@ -59,19 +59,19 @@ def convertpot(inputfile, outputfile, templatefile):
   inputheadervalues = inputpo.parseheader()
   for key, value in inputheadervalues.iteritems():
     if key == "Project-Id-Version":
-      projectid = value
+      project_id_version = value
     elif key in ("Last-Translator", "Language-Team", "PO-Revision-Date", "Content-Type", "Content-Transfer-Encoding"):
       # don't know how to handle these keys, or ignoring them
       pass
     elif key == "POT-Creation-Date":
-      creationdate = value
+      pot_creation_date = value
     elif key == "MIME-Version":
       mimeversion = value
     else:
       kwargs[key] = value
-  outputheaderpo = outputpo.makeheader(charset=charset, encoding=encoding, projectid=projectid,
-    creationdate=creationdate, revisiondate=revisiondate, lasttranslator=lasttranslator,
-    languageteam=languageteam, **kwargs)
+  outputheaderpo = outputpo.makeheader(charset=charset, encoding=encoding, project_id_version=project_id_version,
+    pot_creation_date=pot_creation_date, po_revision_date=po_revision_date, last_translator=last_translator,
+    language_team=language_team, **kwargs)
   outputpo.poelements.append(outputheaderpo)
   for thepo in inputpo.poelements:
     if not thepo.isheader():
