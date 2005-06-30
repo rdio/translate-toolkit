@@ -27,14 +27,13 @@ from translate.storage import ts
 from translate.misc import quote
 
 class po2ts:
-  def convertfile(self, inputfile, templatefile):
+  def convertfile(self, inputpo, templatefile):
     """converts a .po file to .ts format (using a template .ts file if given)"""
     if templatefile is None: 
       tsfile = ts.QtTsParser()
     else:
       tsfile = ts.QtTsParser(templatefile)
-    thepofile = po.pofile(inputfile)
-    for thepo in thepofile.poelements:
+    for thepo in inputpo.poelements:
       if thepo.isheader() or thepo.isblank():
         continue
       source = po.getunquotedstr(thepo.msgid, includeescapes=False)
@@ -65,8 +64,11 @@ class po2ts:
 
 def convertpo(inputfile, outputfile, templatefile):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
+  inputpo = po.pofile(inputfile)
+  if inputpo.isempty():
+    return 0
   convertor = po2ts()
-  outputts = convertor.convertfile(inputfile, templatefile)
+  outputts = convertor.convertfile(inputpo, templatefile)
   outputfile.write(outputts)
   return 1
 
