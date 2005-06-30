@@ -43,7 +43,8 @@ def summarize(title, elements, CSVstyle=False):
     print "%s, " % title,
     print "%d, %d, %d," % (len(translated), msgidwords(translated), msgstrwords(translated)),
     print "%d, %d," % (len(fuzzy), msgidwords(fuzzy)),
-    print "%d, %d" % (len(untranslated), msgidwords(untranslated)),
+    print "%d, %d," % (len(untranslated), msgidwords(untranslated)),
+    print "%d, %d" % (len(translated) + len(fuzzy) + len(untranslated), msgidwords(translated) + msgidwords(fuzzy) + msgidwords(untranslated)),
     if len(review) > 0:
       print ", %d, %d" % (len(review), msgidwords(review)),
     print
@@ -66,7 +67,8 @@ class summarizer:
     if self.CSVstyle:
       print "Filename, Translated Messages, Translated Source Words, Translated \
 Target Words, Fuzzy Messages, Fuzzy Source Words, Untranslated Messages, \
-Untranslated Source Words, Review Messages, Review Source Words"
+Untranslated Source Words, Total Message, Total Source Words, \
+Review Messages, Review Source Words"
     for filename in filenames:
       if not os.path.exists(filename):
         print >>sys.stderr, "cannot process %s: does not exist" % filename
