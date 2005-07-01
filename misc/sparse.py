@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """simple parser / string tokenizer
 rather than returning a list of token types etc, we simple return a list of tokens...

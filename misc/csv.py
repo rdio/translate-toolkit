@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 """
 csv.py - read/write/investigate CSV files

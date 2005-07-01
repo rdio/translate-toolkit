@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """optparse - a powerful, extensible, and easy-to-use option parser.
 
 By Greg Ward <gward@python.net>
