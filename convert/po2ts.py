@@ -28,7 +28,7 @@ from translate.storage import ts
 from translate.misc import quote
 
 class po2ts:
-  def convertfile(self, inputpo, templatefile):
+  def convertfile(self, inputpo, templatefile=None):
     """converts a .po file to .ts format (using a template .ts file if given)"""
     if templatefile is None: 
       tsfile = ts.QtTsParser()

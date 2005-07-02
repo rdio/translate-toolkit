@@ -206,7 +206,7 @@ class po2xliff:
       contextgroupnode.appendChild(linenumbernode)
     return contextgroupnode
 
-  def convertfile(self, thepofile, templatefile):
+  def convertfile(self, thepofile, templatefile=None):
     """converts a .po file to .xliff format"""
     if templatefile is None: 
       xlifffile = PoXliffParser()
