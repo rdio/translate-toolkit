@@ -36,7 +36,7 @@ class prop2po:
   def convertfile(self, thepropfile, duplicatestyle="msgid_comment"):
     """converts a .properties file to a .po file..."""
     thepofile = po.pofile()
-    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
+    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit", x_accelerator_marker="&")
     headerpo.othercomments.append("# extracted from %s\n" % thepropfile.filename)
     # we try and merge the header po with any comments at the start of the properties file
     appendedheader = 0

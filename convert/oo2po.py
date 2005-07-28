@@ -88,7 +88,7 @@ class oo2po:
     """converts an entire oo file to .po format"""
     thepofile = po.pofile()
     # create a header for the file
-    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
+    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit", x_accelerator_marker="~")
     headerpo.othercomments.append("# extracted from %s\n" % theoofile.filename)
     thepofile.poelements.append(headerpo)
     # go through the oo and convert each element
