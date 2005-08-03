@@ -90,9 +90,10 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     file.write(self.format_manpage())
 
   def setpsycooption(self):
+    psycomodes=["none", "full", "profile"]
     psycooption = optparse.Option(None, "--psyco", dest="psyco", default=None,
-                    choices=("none", "full", "profile"), metavar="PSYCO",
-                    help="use psyco to speed up the operation (set mode)")
+                    choices=psycomodes, metavar="MODE",
+                    help="use psyco to speed up the operation, modes: %s" % (", ".join(psycomodes)))
     self.define_option(psycooption)
 
   def usepsyco(self, options):

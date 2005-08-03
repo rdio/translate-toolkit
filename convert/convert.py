@@ -53,9 +53,10 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
 
   def add_duplicates_option(self, default="msgid_comment"):
     """adds an option to say what to do with duplicate strings"""
+    duplicatestyles=["msgid_comment", "merge", "keep", "msgid_comment_all"]
     self.add_option("", "--duplicates", dest="duplicatestyle", default="msgid_comment",
-      type="choice", choices=["msgid_comment", "merge", "keep", "msgid_comment_all"],
-      help="what to do with duplicate strings (identical original text)", metavar="DUPLICATESTYLE")
+      type="choice", choices=duplicatestyles,
+      help="what to do with duplicate strings (identical source text), styles: %s" % (", ".join(duplicatestyles)), metavar="DUPLICATESTYLE")
     self.passthrough.append("duplicatestyle")
 
   def potifyformat(self, fileformat):
