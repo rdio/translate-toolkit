@@ -39,6 +39,9 @@ class TranslationChecker(object):
     self.setvarmatches(varmatches)
     # exclude functions defined in TranslationChecker from being treated as tests...
     self.helperfunctions = {}
+    # TODO: allow user configuration of untranslatable words
+    self.untranslatablewords = ["Mozilla"]
+    self.untranslatablewords = dict.fromkeys([key.lower() for key in self.untranslatablewords])
     for functionname in dir(TranslationChecker):
       function = getattr(self, functionname)
       if callable(function):
@@ -317,6 +320,13 @@ class StandardChecker(TranslationChecker):
         return False
       lastword = word
     return True
+
+  def untranslatable(self, str1, str2):
+    """checks that words configured as untranslatable appear in the translation too"""
+    words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").lower().split()
+    words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").lower().split()
+    stopwords = [word for word in words1 if word in self.untranslatablewords and word not in words2]
+    return stopwords or False
 
   def filepaths(self, str1, str2):
     """checks that file paths have not been translated"""
