@@ -30,16 +30,18 @@ import sre
 
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
-  def __init__(self, accelmarkers=[], varmatches=[], untranslatablewords=[]):
+  def __init__(self, accelmarkers=[], varmatches=[], notranslatewords=[], musttranslatewords=[]):
     self.accelmarkers = accelmarkers
     self.varmatches = varmatches
     # TODO: allow user configuration of untranslatable words
-    self.untranslatablewords = dict.fromkeys([key.lower() for key in untranslatablewords])
+    self.notranslatewords = dict.fromkeys([key.lower() for key in notranslatewords])
+    self.musttranslatewords = dict.fromkeys([key.lower() for key in musttranslatewords])
   def update(self, otherconfig):
     """combines the info in otherconfig into this config object"""
     self.accelmarkers.extend(otherconfig.accelmarkers)
     self.varmatches.extend(otherconfig.varmatches)
-    self.untranslatablewords.update(otherconfig.untranslatablewords)
+    self.notranslatewords.update(otherconfig.notranslatewords)
+    self.musttranslatewords.update(otherconfig.musttranslatewords)
 
 class TranslationChecker(object):
   """Base Checker class which does the checking based on functions available in derived classes"""
@@ -329,13 +331,22 @@ class StandardChecker(TranslationChecker):
       lastword = word
     return True
 
-  def untranslatable(self, str1, str2):
+  def notranslatewords(self, str1, str2):
     """checks that words configured as untranslatable appear in the translation too"""
-    if not self.config.untranslatablewords:
+    if not self.config.notranslatewords:
       return True
     words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").lower().split()
     words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").lower().split()
-    stopwords = [word for word in words1 if word in self.config.untranslatablewords and word not in words2]
+    stopwords = [word for word in words1 if word in self.config.notranslatewords and word not in words2]
+    return not stopwords
+
+  def musttranslatewords(self, str1, str2):
+    """checks that words configured as definitely translatable don't appear in the translation"""
+    if not self.config.musttranslatewords:
+      return True
+    words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").lower().split()
+    words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").lower().split()
+    stopwords = [word for word in words1 if word in self.config.musttranslatewords and word in words2]
     return not stopwords
 
   def filepaths(self, str1, str2):

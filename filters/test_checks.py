@@ -9,13 +9,27 @@ def test_construct():
     gnomechecker = checks.GnomeChecker()
     kdechecker = checks.KdeChecker()
 
-def test_untranslatable():
+def test_notranslatewords():
     """tests stopwords"""
-    stdchecker = checks.StandardChecker(checks.CheckerConfig(untranslatablewords=[]))
-    assert stdchecker.untranslatable("This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
-    stdchecker = checks.StandardChecker(checks.CheckerConfig(untranslatablewords=["Mozilla"]))
-    assert not stdchecker.untranslatable("This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
-    assert stdchecker.untranslatable("This uses Mozilla of course", "hierdie gebruik Mozilla natuurlik")
-    assert not stdchecker.untranslatable("This uses Mozilla. Don't you?", "hierdie gebruik le mozille soos jy")
-    assert stdchecker.untranslatable("This uses Mozilla. Don't you?", "hierdie gebruik Mozilla soos jy")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=[]))
+    assert stdchecker.notranslatewords("This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["Mozilla"]))
+    assert not stdchecker.notranslatewords("This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
+    assert stdchecker.notranslatewords("This uses Mozilla of course", "hierdie gebruik Mozilla natuurlik")
+    assert not stdchecker.notranslatewords("This uses Mozilla. Don't you?", "hierdie gebruik le mozille soos jy")
+    assert stdchecker.notranslatewords("This uses Mozilla. Don't you?", "hierdie gebruik Mozilla soos jy")
+    # should always pass if there are no stopwords in the original
+    assert stdchecker.notranslatewords("This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
+
+def test_musttranslatewords():
+    """tests stopwords"""
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(musttranslatewords=[]))
+    assert stdchecker.musttranslatewords("This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(musttranslatewords=["Mozilla"]))
+    assert stdchecker.musttranslatewords("This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
+    assert not stdchecker.musttranslatewords("This uses Mozilla of course", "hierdie gebruik Mozilla natuurlik")
+    assert stdchecker.musttranslatewords("This uses Mozilla. Don't you?", "hierdie gebruik le mozille soos jy")
+    assert not stdchecker.musttranslatewords("This uses Mozilla. Don't you?", "hierdie gebruik Mozilla soos jy")
+    # should always pass if there are no stopwords in the original
+    assert stdchecker.notranslatewords("This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
 
