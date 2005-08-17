@@ -336,7 +336,7 @@ class StandardChecker(TranslationChecker):
     words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").lower().split()
     words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").lower().split()
     stopwords = [word for word in words1 if word in self.config.untranslatablewords and word not in words2]
-    return stopwords or False
+    return not stopwords
 
   def filepaths(self, str1, str2):
     """checks that file paths have not been translated"""
