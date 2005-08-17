@@ -11,7 +11,7 @@ def test_construct():
 
 def test_untranslatable():
     """tests stopwords"""
-    stdchecker = checks.StandardChecker()
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(untranslatablewords=["Mozilla"]))
     assert stdchecker.untranslatable("This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
     assert not stdchecker.untranslatable("This uses Mozilla of course", "hierdie gebruik Mozilla natuurlik")
     assert stdchecker.untranslatable("This uses Mozilla. Don't you?", "hierdie gebruik le mozille soos jy")

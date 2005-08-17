@@ -26,9 +26,9 @@ from translate.misc import optrecurse
 
 class POChecker(checks.TranslationChecker):
   """allows advanced checks that have access to the whole po element, not just strings"""
-  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None, errorhandler=None):
+  def __init__(self, checkerconfig, excludefilters={}, limitfilters=None, errorhandler=None):
     """construct the POChecker..."""
-    super(POChecker, self).__init__(accelmarkers, varmatches, excludefilters, limitfilters, errorhandler)
+    super(POChecker, self).__init__(checkerconfig, excludefilters, limitfilters, errorhandler)
 
   def run_filters(self, thepo):
     """run all the tests in this suite"""

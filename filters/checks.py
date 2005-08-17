@@ -28,20 +28,27 @@ import sre
 
 # actual test methods
 
+class CheckerConfig(object):
+  """object representing the configuration of a checker"""
+  def __init__(self, accelmarkers=[], varmatches=[], untranslatablewords=[]):
+    self.accelmarkers = accelmarkers
+    self.varmatches = varmatches
+    # TODO: allow user configuration of untranslatable words
+    self.untranslatablewords = dict.fromkeys([key.lower() for key in untranslatablewords])
+
 class TranslationChecker(object):
   """Base Checker class which does the checking based on functions available in derived classes"""
   preconditions = {}
 
-  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None, errorhandler=None):
+  def __init__(self, checkerconfig=None, excludefilters={}, limitfilters=None, errorhandler=None):
     """construct the TranslationChecker..."""
     self.errorhandler = errorhandler
-    self.setaccelmarkers(accelmarkers)
-    self.setvarmatches(varmatches)
+    if checkerconfig is None:
+      self.setconfig(CheckerConfig())
+    else:
+      self.setconfig(checkerconfig)
     # exclude functions defined in TranslationChecker from being treated as tests...
     self.helperfunctions = {}
-    # TODO: allow user configuration of untranslatable words
-    self.untranslatablewords = ["Mozilla"]
-    self.untranslatablewords = dict.fromkeys([key.lower() for key in self.untranslatablewords])
     for functionname in dir(TranslationChecker):
       function = getattr(self, functionname)
       if callable(function):
@@ -63,19 +70,15 @@ class TranslationChecker(object):
       filters[functionname] = filterfunction
     return filters
 
-  def setaccelmarkers(self, accelmarkers):
+  def setconfig(self, config):
     """sets the accelerator list"""
-    self.accelmarkers = accelmarkers
-    self.accfilters = [prefilters.filteraccelerators(accelmarker) for accelmarker in self.accelmarkers]
-    self.acccounters = [decoration.countaccelerators(accelmarker) for accelmarker in self.accelmarkers]
-
-  def setvarmatches(self, varmatches):
-    """sets the set of start and end markers to match variables by"""
-    self.varmatches = varmatches
+    self.config = config
+    self.accfilters = [prefilters.filteraccelerators(accelmarker) for accelmarker in self.config.accelmarkers]
+    self.acccounters = [decoration.countaccelerators(accelmarker) for accelmarker in self.config.accelmarkers]
     self.varfilters =  [prefilters.filtervariables(startmatch, endmatch, prefilters.varname)
-                        for startmatch, endmatch in self.varmatches]
+                        for startmatch, endmatch in self.config.varmatches]
     self.varchecks = [decoration.getvariables(startmarker, endmarker)
-                      for startmarker, endmarker in self.varmatches]
+                      for startmarker, endmarker in self.config.varmatches]
 
   def filtervariables(self, str1):
     """filter out variables from str1"""
@@ -121,12 +124,12 @@ class TranslationChecker(object):
 
 class TeeChecker:
   """A Checker that controls multiple checkers..."""
-  def __init__(self, accelmarkers=[], varmatches=[], excludefilters={}, limitfilters=None, checkerclasses=None, errorhandler=None):
+  def __init__(self, checkerconfig=None, excludefilters={}, limitfilters=None, checkerclasses=None, errorhandler=None):
     """construct a TeeChecker from the given checkers"""
     self.limitfilters = limitfilters
     if checkerclasses is None:
       checkerclasses = [StandardChecker]
-    self.checkers = [checkerclass(excludefilters=excludefilters, limitfilters=limitfilters, errorhandler=errorhandler) for checkerclass in checkerclasses]
+    self.checkers = [checkerclass(checkerconfig=checkerconfig, excludefilters=excludefilters, limitfilters=limitfilters, errorhandler=errorhandler) for checkerclass in checkerclasses]
     self.combinedfilters = self.getfilters(excludefilters, limitfilters)
 
   def getfilters(self, excludefilters={}, limitfilters=None):
@@ -323,9 +326,11 @@ class StandardChecker(TranslationChecker):
 
   def untranslatable(self, str1, str2):
     """checks that words configured as untranslatable appear in the translation too"""
+    if not self.config.untranslatablewords:
+      return True
     words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").lower().split()
     words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").lower().split()
-    stopwords = [word for word in words1 if word in self.untranslatablewords and word not in words2]
+    stopwords = [word for word in words1 if word in self.config.untranslatablewords and word not in words2]
     return stopwords or False
 
   def filepaths(self, str1, str2):
@@ -373,37 +378,37 @@ class StandardChecker(TranslationChecker):
 
 class OpenOfficeChecker(StandardChecker):
   def __init__(self, **kwargs):
-    StandardChecker.__init__(self,
+    kwargs["checkerconfig"] = CheckerConfig(
       accelmarkers = ("~"),
-      varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("($", ")"), ("$[", "]")),
-      **kwargs
+      varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("($", ")"), ("$[", "]"))
       )
+    StandardChecker.__init__(self, **kwargs)
 
 class MozillaChecker(StandardChecker):
   def __init__(self, **kwargs):
-    StandardChecker.__init__(self,
+    kwargs["checkerconfig"] = CheckerConfig(
       accelmarkers = ("&"),
-      varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None), ("#", 1)),
-      **kwargs
+      varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None), ("#", 1))
       )
+    StandardChecker.__init__(self, **kwargs)
 
 class GnomeChecker(StandardChecker):
   def __init__(self, **kwargs):
-    StandardChecker.__init__(self,
+    kwargs["checkerconfig"] = CheckerConfig(
       accelmarkers = ("_"),
-      varmatches = (("%", 1), ("$(", ")")),
-      **kwargs
+      varmatches = (("%", 1), ("$(", ")"))
       )
+    StandardChecker.__init__(self, **kwargs)
 
 class KdeChecker(StandardChecker):
   def __init__(self, **kwargs):
 	# TODO allow setup of KDE plural and translator comments so that they do
 	# not create false postives
-    StandardChecker.__init__(self,
+    kwargs["checkerconfig"] = CheckerConfig(
       accelmarkers = ("&"),
-      varmatches = (("%", 1),),
-      **kwargs
+      varmatches = (("%", 1),)
       )
+    StandardChecker.__init__(self, **kwargs)
 
 projectcheckers = {
   "openoffice": OpenOfficeChecker,
