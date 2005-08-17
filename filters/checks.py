@@ -35,6 +35,11 @@ class CheckerConfig(object):
     self.varmatches = varmatches
     # TODO: allow user configuration of untranslatable words
     self.untranslatablewords = dict.fromkeys([key.lower() for key in untranslatablewords])
+  def update(self, otherconfig):
+    """combines the info in otherconfig into this config object"""
+    self.accelmarkers.extend(otherconfig.accelmarkers)
+    self.varmatches.extend(otherconfig.varmatches)
+    self.untranslatablewords.update(otherconfig.untranslatablewords)
 
 class TranslationChecker(object):
   """Base Checker class which does the checking based on functions available in derived classes"""
@@ -376,38 +381,62 @@ class StandardChecker(TranslationChecker):
 
 # code to actually run the tests (use unittest?)
 
+openofficeconfig = CheckerConfig(
+  accelmarkers = ("~"),
+  varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("($", ")"), ("$[", "]"))
+  )
+
 class OpenOfficeChecker(StandardChecker):
   def __init__(self, **kwargs):
-    kwargs["checkerconfig"] = CheckerConfig(
-      accelmarkers = ("~"),
-      varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("($", ")"), ("$[", "]"))
-      )
+    checkerconfig = kwargs.get("checkerconfig", None)
+    if checkerconfig is None:
+      checkerconfig = CheckerConfig()
+      kwargs["checkerconfig"] = checkerconfig
+    checkerconfig.update(openofficeconfig)
     StandardChecker.__init__(self, **kwargs)
+
+mozillaconfig = CheckerConfig(
+  accelmarkers = ("&"),
+  varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None), ("#", 1))
+  )
 
 class MozillaChecker(StandardChecker):
   def __init__(self, **kwargs):
-    kwargs["checkerconfig"] = CheckerConfig(
-      accelmarkers = ("&"),
-      varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None), ("#", 1))
-      )
+    checkerconfig = kwargs.get("checkerconfig", None)
+    if checkerconfig is None:
+      checkerconfig = CheckerConfig()
+      kwargs["checkerconfig"] = checkerconfig
+    checkerconfig.update(mozillaconfig)
     StandardChecker.__init__(self, **kwargs)
+
+gnomeconfig = CheckerConfig(
+  accelmarkers = ("_"),
+  varmatches = (("%", 1), ("$(", ")"))
+  )
 
 class GnomeChecker(StandardChecker):
   def __init__(self, **kwargs):
-    kwargs["checkerconfig"] = CheckerConfig(
-      accelmarkers = ("_"),
-      varmatches = (("%", 1), ("$(", ")"))
-      )
+    checkerconfig = kwargs.get("checkerconfig", None)
+    if checkerconfig is None:
+      checkerconfig = CheckerConfig()
+      kwargs["checkerconfig"] = checkerconfig
+    checkerconfig.update(gnomeconfig)
     StandardChecker.__init__(self, **kwargs)
+
+kdeconfig = CheckerConfig(
+  accelmarkers = ("&"),
+  varmatches = (("%", 1),)
+  )
 
 class KdeChecker(StandardChecker):
   def __init__(self, **kwargs):
 	# TODO allow setup of KDE plural and translator comments so that they do
 	# not create false postives
-    kwargs["checkerconfig"] = CheckerConfig(
-      accelmarkers = ("&"),
-      varmatches = (("%", 1),)
-      )
+    checkerconfig = kwargs.get("checkerconfig", None)
+    if checkerconfig is None:
+      checkerconfig = CheckerConfig()
+      kwargs["checkerconfig"] = checkerconfig
+    checkerconfig.update(kdeconfig)
     StandardChecker.__init__(self, **kwargs)
 
 projectcheckers = {
