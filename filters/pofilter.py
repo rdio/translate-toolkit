@@ -23,6 +23,7 @@
 from translate.storage import po
 from translate.filters import checks
 from translate.misc import optrecurse
+import os
 
 class POChecker(checks.TranslationChecker):
   """allows advanced checks that have access to the whole po element, not just strings"""
@@ -73,11 +74,11 @@ class StandardPOChecker(POChecker):
     return not thepo.hastypecomment("review")
 
 class pocheckfilter:
-  def __init__(self, checkerclasses=None, excludefilters={}, limitfilters=None, includeheader=False, includefuzzy=True, includereview=True):
+  def __init__(self, checkerclasses=None, checkerconfig=None, excludefilters={}, limitfilters=None, includeheader=False, includefuzzy=True, includereview=True):
     """builds a pocheckfilter using the given checker (a list is allowed too)"""
     if checkerclasses is None:
       checkerclasses = [checks.StandardChecker, StandardPOChecker]
-    self.checker = POTeeChecker(excludefilters=excludefilters, limitfilters=limitfilters, checkerclasses=checkerclasses)
+    self.checker = POTeeChecker(checkerconfig=checkerconfig, excludefilters=excludefilters, limitfilters=limitfilters, checkerclasses=checkerclasses)
     self.includeheader = includeheader
     self.includefuzzy = includefuzzy
     self.includereview = includereview
@@ -142,7 +143,20 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
       checkerclasses = [checks.StandardChecker, StandardPOChecker]
     else:
       checkerclasses = [options.filterclass, StandardPOChecker]
-    options.checkfilter = pocheckfilter(checkerclasses, options.excludefilters, options.limitfilters, options.includeheader, options.includefuzzy, options.includereview)
+    checkerconfig = checks.CheckerConfig()
+    if options.notranslatefile:
+      if not os.path.exists(options.notranslatefile):
+        self.error("notranslatefile %r does not exist" % options.notranslatefile)
+      notranslatewords = [line.strip() for line in open(options.notranslatefile).readlines()]
+      notranslatewords = dict.fromkeys([key.lower() for key in notranslatewords])
+      checkerconfig.notranslatewords.update(notranslatewords)
+    if options.musttranslatefile:
+      if not os.path.exists(options.musttranslatefile):
+        self.error("musttranslatefile %r does not exist" % options.musttranslatefile)
+      musttranslatewords = [line.strip() for line in open(options.musttranslatefile).readlines()]
+      musttranslatewords = dict.fromkeys([key.lower() for key in musttranslatewords])
+      checkerconfig.musttranslatewords.update(musttranslatewords)
+    options.checkfilter = pocheckfilter(checkerclasses, checkerconfig, options.excludefilters, options.limitfilters, options.includeheader, options.includefuzzy, options.includereview)
     if not options.checkfilter.checker.combinedfilters:
       self.error("No valid filters were specified")
     options.inputformats = self.inputformats
@@ -199,6 +213,12 @@ def main():
   parser.add_option("-t", "--test", dest="limitfilters",
     action="append", default=None, type="string", metavar="FILTER",
     help="only use test FILTERs specified with this option when filtering")
+  parser.add_option("", "--notranslatefile", dest="notranslatefile",
+    default=None, type="string", metavar="FILE",
+    help="read list of untranslatable words from FILE (must not be translated)")
+  parser.add_option("", "--musttranslatefile", dest="musttranslatefile",
+    default=None, type="string", metavar="FILE",
+    help="read list of translatable words from FILE (must be translated)")
   parser.passthrough.append('checkfilter')
   parser.run()
 
