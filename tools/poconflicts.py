@@ -145,27 +145,19 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
   def outputconflicts(self, options):
     """saves the result of the conflict match"""
     print "%d/%d different strings have conflicts" % (len(self.conflictmap), len(self.textmap))
-    # open("conflict-msgids", "w").writelines([msgid.encode("utf-8")+"\n" for msgid in self.conflictmap])
-    # reduction = {}
-    # for msgid in self.conflictmap:
-    #   containsmsgid = sre.compile("\\b" + msgid + "\\b")
-    #   for othermsgid in self.conflictmap:
-    #     if msgid != othermsgid and containsmsgid.search(othermsgid):
-    #       reduction.setdefault(othermsgid, []).append(msgid)
     reducedmap = {}
     for msgid, translations in self.conflictmap.iteritems():
       words = msgid.split()
       words.sort(lambda x, y: cmp(len(x), len(y)))
       msgid = words[-1]
-      # if msgid in reduction:
-      #   submsgids = reduction[msgid]
-      #   # try and find the msgid with the fewest words, but the longest words
-      #   getwordlens = lambda words: tuple(sorted([-len(word) for word in words]))
-      #   submsgids.sort(lambda x, y: cmp(getwordlens(x.split()), getwordlens(y.split())))
-      #   # work out ff the msgids really map together...
-      #   if len(submsgids) > 1: print submsgids
-      #   msgid = submsgids[0]
       reducedmap.setdefault(msgid, []).extend(translations)
+    # reduce plurals
+    plurals = {}
+    for word in reducedmap:
+      if word + "s" in reducedmap:
+        plurals[word] = word + "s"
+    for word, pluralword in plurals.iteritems():
+      reducedmap[word].extend(reducedmap.pop(pluralword))
     for msgid, translations in reducedmap.iteritems():
       flatmsgid = self.flatten(msgid, "-")
       fulloutputpath = os.path.join(options.output, flatmsgid + os.extsep + "po")
