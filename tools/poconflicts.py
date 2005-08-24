@@ -52,7 +52,8 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
   def set_usage(self, usage=None):
     """sets the usage string - if usage not given, uses getusagestring for each option"""
     if usage is None:
-      self.usage = "%prog searchstring " + " ".join([self.getusagestring(option) for option in self.option_list])
+      self.usage = "%prog " + " ".join([self.getusagestring(option) for option in self.option_list]) + \
+        "\n  input directory is searched for PO files, PO files with name of conflicting string are output in output directory"
     else:
       super(ConflictOptionParser, self).set_usage(usage)
 
@@ -140,6 +141,7 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
           flatmsgid += c
         elif flatmsgid[-1:].isalnum():
           flatmsgid += "-"
+      flatmsgid = flatmsgid.rstrip("-") or "conflicts"
       fulloutputpath = os.path.join(options.output, flatmsgid + os.extsep + "po")
       conflictfile = po.pofile()
       for msgstr, thepo in translations:
