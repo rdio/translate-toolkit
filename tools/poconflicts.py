@@ -26,6 +26,7 @@ from translate.misc import optrecurse
 import optparse
 import sys
 import os
+import sre
 
 class ConflictOptionParser(optrecurse.RecursiveOptionParser):
   """a specialized Option Parser for the conflict tool..."""
@@ -122,6 +123,16 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
         msgstr = self.unquote(thepo.msgstr, options)
         self.textmap.setdefault(msgid, []).append((msgstr, thepo))
 
+  def flatten(self, text, joinchar):
+    """flattens text to just be words"""
+    flattext = ""
+    for c in text:
+      if c.isalnum():
+        flattext += c
+      elif flattext[-1:].isalnum():
+        flattext += joinchar
+    return flattext.rstrip(joinchar)
+
   def buildconflictmap(self):
     """work out which strings are conflicting"""
     self.conflictmap = {}
@@ -129,19 +140,34 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
       if len(translations) > 1:
         uniquetranslations = dict.fromkeys([msgstr for msgstr, thepo in translations])
         if len(uniquetranslations) > 1:
-          self.conflictmap[msgid] = translations
+          self.conflictmap[self.flatten(msgid, " ")] = translations
 
   def outputconflicts(self, options):
     """saves the result of the conflict match"""
     print "%d/%d different strings have conflicts" % (len(self.conflictmap), len(self.textmap))
+    # open("conflict-msgids", "w").writelines([msgid.encode("utf-8")+"\n" for msgid in self.conflictmap])
+    # reduction = {}
+    # for msgid in self.conflictmap:
+    #   containsmsgid = sre.compile("\\b" + msgid + "\\b")
+    #   for othermsgid in self.conflictmap:
+    #     if msgid != othermsgid and containsmsgid.search(othermsgid):
+    #       reduction.setdefault(othermsgid, []).append(msgid)
+    reducedmap = {}
     for msgid, translations in self.conflictmap.iteritems():
-      flatmsgid = ""
-      for c in msgid:
-        if c.isalnum():
-          flatmsgid += c
-        elif flatmsgid[-1:].isalnum():
-          flatmsgid += "-"
-      flatmsgid = flatmsgid.rstrip("-") or "conflicts"
+      words = msgid.split()
+      words.sort(lambda x, y: cmp(len(x), len(y)))
+      msgid = words[-1]
+      # if msgid in reduction:
+      #   submsgids = reduction[msgid]
+      #   # try and find the msgid with the fewest words, but the longest words
+      #   getwordlens = lambda words: tuple(sorted([-len(word) for word in words]))
+      #   submsgids.sort(lambda x, y: cmp(getwordlens(x.split()), getwordlens(y.split())))
+      #   # work out ff the msgids really map together...
+      #   if len(submsgids) > 1: print submsgids
+      #   msgid = submsgids[0]
+      reducedmap.setdefault(msgid, []).extend(translations)
+    for msgid, translations in reducedmap.iteritems():
+      flatmsgid = self.flatten(msgid, "-")
       fulloutputpath = os.path.join(options.output, flatmsgid + os.extsep + "po")
       conflictfile = po.pofile()
       for msgstr, thepo in translations:
