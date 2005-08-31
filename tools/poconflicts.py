@@ -119,8 +119,12 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
       if not (thepo.isheader() or thepo.isblankmsgstr()):
         if thepo.hasplural():
           continue
-        msgid = self.unquote(thepo.msgid, options)
-        msgstr = self.unquote(thepo.msgstr, options)
+        if not options.invert:
+          msgid = self.unquote(thepo.msgid, options)
+          msgstr = self.unquote(thepo.msgstr, options)
+        else:
+          msgstr = self.unquote(thepo.msgid, options)
+          msgid = self.unquote(thepo.msgstr, options)
         self.textmap.setdefault(msgid, []).append((msgstr, thepo))
 
   def flatten(self, text, joinchar):
@@ -171,6 +175,8 @@ def main():
   parser = ConflictOptionParser(formats)
   parser.add_option("-I", "--ignore-case", dest="ignorecase",
     action="store_true", default=False, help="ignore case distinctions")
+  parser.add_option("-v", "--invert", dest="invert",
+    action="store_true", default=False, help="invert the conflicts thus extracting conflicting destination words")
   parser.add_option("", "--accelerator", dest="accelchars", default="",
     metavar="ACCELERATORS", help="ignores the given accelerator characters when matching")
   parser.set_usage()
