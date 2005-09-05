@@ -394,7 +394,7 @@ class StandardChecker(TranslationChecker):
 
 openofficeconfig = CheckerConfig(
   accelmarkers = ("~"),
-  varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("($", ")"), ("$[", "]"))
+  varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("($", ")"), ("$[", "]"), ("[", "]"))
   )
 
 class OpenOfficeChecker(StandardChecker):
