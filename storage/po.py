@@ -676,7 +676,10 @@ class pofile:
     newlines = []
     for line in lines:
       if isinstance(line, str) and self.encoding is not None and self.encoding.lower() != "charset":
-        line = line.decode(self.encoding)
+        try:
+          line = line.decode(self.encoding)
+        except UnicodeError, e:
+          raise UnicodeError("Error decoding line with encoding %r: %s. Line is %r" % (self.encoding, e, line))
       newlines.append(line)
     return newlines
 
