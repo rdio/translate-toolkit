@@ -61,8 +61,8 @@ class po2csv:
     thecsv.msgstr = self.convertstring(thepo.msgstr[1])
     return thecsv
 
-  def convertfile(self,thepofile):
-    thecsvfile = csvl10n.csvfile()
+  def convertfile(self,thepofile,columnorder):
+    thecsvfile = csvl10n.csvfile(fieldnames=columnorder)
     for thepo in thepofile.poelements:
       thecsv = self.convertelement(thepo)
       if thecsv is not None:
@@ -73,14 +73,14 @@ class po2csv:
           thecsvfile.csvelements.append(thecsv)
     return thecsvfile
 
-def convertcsv(inputfile, outputfile, templatefile):
+def convertcsv(inputfile, outputfile, templatefile, columnorder=None):
   """reads in inputfile using po, converts using po2csv, writes to outputfile"""
   # note that templatefile is not used, but it is required by the converter...
   inputpo = po.pofile(inputfile)
   if inputpo.isempty():
     return 0
   convertor = po2csv()
-  outputcsv = convertor.convertfile(inputpo)
+  outputcsv = convertor.convertfile(inputpo,columnorder)
   outputcsvlines = outputcsv.tolines()
   outputfile.writelines(outputcsvlines)
   return 1
@@ -89,5 +89,8 @@ def main():
   from translate.convert import convert
   formats = {"po":("csv", convertcsv)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
+  parser.add_option("", "--columnorder", dest="columnorder", default=None,
+    help="specify the order and position of columns (source,msgid,msgstr)")
+  parser.passthrough.append("columnorder")
   parser.run()
 

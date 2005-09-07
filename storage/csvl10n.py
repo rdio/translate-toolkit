@@ -118,9 +118,14 @@ class csvelement:
     return {'source':source, 'msgid': msgid, 'msgstr': msgstr}
 
 class csvfile:
-  def __init__(self, inputfile=None):
+  def __init__(self, inputfile=None, fieldnames=None):
     self.csvelements = []
-    self.fieldnames = ['source', 'msgid', 'msgstr']
+    if fieldnames is None:
+      self.fieldnames = ['source', 'msgid', 'msgstr']
+    else:
+      if isinstance(fieldnames, basestring):
+        fieldnames = [fieldname.strip() for fieldname in fieldnames.split(",")]
+      self.fieldnames = fieldnames
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
       csvlines = inputfile.readlines()

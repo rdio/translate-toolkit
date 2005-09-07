@@ -171,9 +171,9 @@ class csv2po:
       if thepo.isblankmsgstr():
         missing += 1
 
-def convertcsv(inputfile, outputfile, templatefile, charset=None):
+def convertcsv(inputfile, outputfile, templatefile, charset=None, columnorder=None):
   """reads in inputfile using csvl10n, converts using csv2po, writes to outputfile"""
-  inputcsv = csvl10n.csvfile(inputfile)
+  inputcsv = csvl10n.csvfile(inputfile, fieldnames=columnorder)
   if templatefile is None:
     convertor = csv2po(charset=charset)
   else:
@@ -193,6 +193,9 @@ def main():
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.add_option("", "--charset", dest="charset", default=None,
     help="set charset to decode from csv files", metavar="CHARSET")
+  parser.add_option("", "--columnorder", dest="columnorder", default=None,
+    help="specify the order and position of columns (source,msgid,msgstr)")
   parser.passthrough.append("charset")
+  parser.passthrough.append("columnorder")
   parser.run()
 
