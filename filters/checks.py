@@ -34,8 +34,8 @@ class CheckerConfig(object):
     self.accelmarkers = accelmarkers
     self.varmatches = varmatches
     # TODO: allow user configuration of untranslatable words
-    self.notranslatewords = dict.fromkeys([key.lower() for key in notranslatewords])
-    self.musttranslatewords = dict.fromkeys([key.lower() for key in musttranslatewords])
+    self.notranslatewords = dict.fromkeys([key for key in notranslatewords])
+    self.musttranslatewords = dict.fromkeys([key for key in musttranslatewords])
   def update(self, otherconfig):
     """combines the info in otherconfig into this config object"""
     self.accelmarkers.extend(otherconfig.accelmarkers)
@@ -335,8 +335,8 @@ class StandardChecker(TranslationChecker):
     """checks that words configured as untranslatable appear in the translation too"""
     if not self.config.notranslatewords:
       return True
-    words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").lower().split()
-    words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").lower().split()
+    words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").split()
+    words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").split()
     stopwords = [word for word in words1 if word in self.config.notranslatewords and word not in words2]
     return not stopwords
 
@@ -344,8 +344,8 @@ class StandardChecker(TranslationChecker):
     """checks that words configured as definitely translatable don't appear in the translation"""
     if not self.config.musttranslatewords:
       return True
-    words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").lower().split()
-    words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").lower().split()
+    words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").split()
+    words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").split()
     stopwords = [word for word in words1 if word in self.config.musttranslatewords and word in words2]
     return not stopwords
 

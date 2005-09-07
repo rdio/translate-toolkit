@@ -148,13 +148,13 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
       if not os.path.exists(options.notranslatefile):
         self.error("notranslatefile %r does not exist" % options.notranslatefile)
       notranslatewords = [line.strip() for line in open(options.notranslatefile).readlines()]
-      notranslatewords = dict.fromkeys([key.lower() for key in notranslatewords])
+      notranslatewords = dict.fromkeys([key for key in notranslatewords])
       checkerconfig.notranslatewords.update(notranslatewords)
     if options.musttranslatefile:
       if not os.path.exists(options.musttranslatefile):
         self.error("musttranslatefile %r does not exist" % options.musttranslatefile)
       musttranslatewords = [line.strip() for line in open(options.musttranslatefile).readlines()]
-      musttranslatewords = dict.fromkeys([key.lower() for key in musttranslatewords])
+      musttranslatewords = dict.fromkeys([key for key in musttranslatewords])
       checkerconfig.musttranslatewords.update(musttranslatewords)
     options.checkfilter = pocheckfilter(checkerclasses, checkerconfig, options.excludefilters, options.limitfilters, options.includeheader, options.includefuzzy, options.includereview)
     if not options.checkfilter.checker.combinedfilters:
