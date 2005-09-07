@@ -28,6 +28,17 @@ import sre
 
 # actual test methods
 
+class FilterFailure(Exception):
+  def __init__(self, messages):
+    if isinstance(messages, list):
+      strmessages = []
+      for message in messages:
+        if isinstance(message, unicode):
+          message = message.encode("utf-8")
+        strmessages.append(message)
+      messages = ", ".join(messages)
+    Exception.__init__(self, messages)
+
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
   def __init__(self, accelmarkers=[], varmatches=[], notranslatewords=[], musttranslatewords=[]):
@@ -81,11 +92,8 @@ class TranslationChecker(object):
     """sets the accelerator list"""
     self.config = config
     self.accfilters = [prefilters.filteraccelerators(accelmarker) for accelmarker in self.config.accelmarkers]
-    self.acccounters = [decoration.countaccelerators(accelmarker) for accelmarker in self.config.accelmarkers]
     self.varfilters =  [prefilters.filtervariables(startmatch, endmatch, prefilters.varname)
                         for startmatch, endmatch in self.config.varmatches]
-    self.varchecks = [decoration.getvariables(startmarker, endmarker)
-                      for startmarker, endmarker in self.config.varmatches]
 
   def filtervariables(self, str1):
     """filter out variables from str1"""
@@ -113,8 +121,12 @@ class TranslationChecker(object):
       # this filterfunction may only be defined on another checker if using TeeChecker
       if filterfunction is None:
         continue
+      filtermessage = filterfunction.__doc__
       try:
         filterresult = filterfunction(str1, str2)
+      except FilterFailure, e:
+        filterresult = False
+        filtermessage = str(e)
       except Exception, e:
         if self.errorhandler is None:
           raise ValueError("error in filter %s: %r, %r, %s" % (functionname, str1, str2, e))
@@ -123,7 +135,7 @@ class TranslationChecker(object):
       if not filterresult:
         # we test some preconditions that aren't actually a cause for failure...
         if functionname in self.defaultfilters:
-          failures.append("%s: %s" % (functionname, filterfunction.__doc__))
+          failures.append("%s: %s" % (functionname, filtermessage))
         if functionname in self.preconditions:
           for ignoredfunctionname in self.preconditions[functionname]:
             ignores.append(ignoredfunctionname)
@@ -232,11 +244,57 @@ class StandardChecker(TranslationChecker):
     """checks whether accelerators are consistent between the two strings"""
     str1 = self.filtervariables(str1)
     str2 = self.filtervariables(str2)
-    return helpers.funcsmatch(str1, str2, self.acccounters)
+    messages = []
+    for accelmarker in self.config.accelmarkers:
+      counter = decoration.countaccelerators(accelmarker)
+      count1 = counter(str1)
+      count2 = counter(str2)
+      if count1 == count2:
+        continue
+      if count1 == 1 and count2 == 0:
+        messages.append("accelerator %s is missing from translation" % accelmarker)
+      elif count1 == 0:
+        messages.append("accelerator %s does not occur in original and should not be in translation" % accelmarker)
+      elif count1 == 1 and count2 > count1:
+        messages.append("accelerator %s is repeated in translation" % accelmarker)
+      else:
+        messages.append("accelerator %s occurs %d time(s) in original and %d time(s) in translation" % (accelmarker, count1, count2))
+    if messages:
+      raise FilterFailure(messages)
+    return True
 
   def variables(self, str1, str2):
     """checks whether variables of various forms are consistent between the two strings"""
-    return helpers.funcsmatch(str1, str2, self.varchecks)
+    messages = []
+    mismatch1, mismatch2 = [], []
+    varnames1, varnames2 = [], []
+    for startmarker, endmarker in self.config.varmatches:
+      varchecker = decoration.getvariables(startmarker, endmarker)
+      if startmarker and endmarker:
+        redecorate = lambda var: startmarker + var + endmarker
+      elif startmarker:
+        redecorate = lambda var: startmarker + var
+      else:
+        redecorate = lambda var: var
+      vars1 = varchecker(str1)
+      vars2 = varchecker(str2)
+      if vars1 != vars2:
+        vars1, vars2 = [var for var in vars1 if var not in vars2], [var for var in vars2 if var not in vars1]
+        # filter variable names we've already seen, so they aren't matched by more than one filter...
+        vars1, vars2 = [var for var in vars1 if var not in varnames1], [var for var in vars2 if var not in varnames2]
+        varnames1.extend(vars1)
+        varnames2.extend(vars2)
+        vars1 = map(redecorate, vars1)
+        vars2 = map(redecorate, vars2)
+        mismatch1.extend(vars1)
+        mismatch2.extend(vars2)
+    if mismatch1:
+      messages.append("do not translate: %s" % ", ".join(mismatch1))
+    elif mismatch2:
+      messages.append("translation contains variables not in original: %s" % ", ".join(mismatch2))
+    if messages:
+      raise FilterFailure(messages)
+    return True
 
   def numbers(self, str1, str2):
     """checks whether numbers of various forms are consistent between the two strings"""
@@ -381,7 +439,7 @@ class StandardChecker(TranslationChecker):
                                     "escapes", "doublequoting", "singlequoting", 
                                     "filepaths", "purepunc", "doublespacing",
                                     "sentencecount", "numbers", "isfuzzy",
-                                    "isreview"),
+                                    "isreview", "notranslatewords", "musttranslatewords"),
                    "compendiumconflicts": ("accelerators", "brackets", "escapes", 
                                     "numbers", "startpunc", "long", "variables", 
                                     "startcaps", "sentencecount", "simplecaps",
@@ -394,7 +452,7 @@ class StandardChecker(TranslationChecker):
 
 openofficeconfig = CheckerConfig(
   accelmarkers = ("~"),
-  varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("($", ")"), ("$[", "]"), ("[", "]"))
+  varmatches = (("&", ";"), ("%", "%"), ("%", None), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("($", ")"), ("$[", "]"), ("[", "]"), ("$", None))
   )
 
 class OpenOfficeChecker(StandardChecker):
