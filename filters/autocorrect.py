@@ -23,7 +23,7 @@
 
 def simplecorrect(msgid, msgstr):
   """runs a set of easy automatic corrections"""
-  if msgid.endswith("...") and msgstr.endswith(u"…"):
+  if "..." in msgid and u"…" in msgstr:
     return msgstr.replace(u"…", "...")
   return None
 

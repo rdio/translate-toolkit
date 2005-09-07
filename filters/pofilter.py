@@ -109,6 +109,9 @@ class pocheckfilter:
       unquotedstr = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False)
       failures = self.checker.run_filters(thepo, unquotedid, unquotedstr)
       if failures and self.autocorrect:
+        # we can't get away with bad unquoting / requoting if we're going to change the result...
+        unquotedid = po.unquotefrompo(thepo.msgid)
+        unquotedstr = po.unquotefrompo(thepo.msgstr)
         correction = autocorrect.correct(unquotedid, unquotedstr)
         if correction:
           thepo.msgstr = po.quoteforpo(correction)
