@@ -22,6 +22,7 @@
 
 from translate.storage import po
 from translate.filters import checks
+from translate.filters import autocorrect
 from translate.misc import optrecurse
 import os
 
@@ -74,7 +75,7 @@ class StandardPOChecker(POChecker):
     return not thepo.hastypecomment("review")
 
 class pocheckfilter:
-  def __init__(self, checkerclasses=None, checkerconfig=None, excludefilters={}, limitfilters=None, includeheader=False, includefuzzy=True, includereview=True):
+  def __init__(self, checkerclasses=None, checkerconfig=None, excludefilters={}, limitfilters=None, includeheader=False, includefuzzy=True, includereview=True, autocorrect=False):
     """builds a pocheckfilter using the given checker (a list is allowed too)"""
     if checkerclasses is None:
       checkerclasses = [checks.StandardChecker, StandardPOChecker]
@@ -82,6 +83,7 @@ class pocheckfilter:
     self.includeheader = includeheader
     self.includefuzzy = includefuzzy
     self.includereview = includereview
+    self.autocorrect = autocorrect
 
   def getfilterdocs(self):
     """lists the docs for filters available on checker..."""
@@ -106,16 +108,25 @@ class pocheckfilter:
       unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
       unquotedstr = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False)
       failures = self.checker.run_filters(thepo, unquotedid, unquotedstr)
+      if failures and self.autocorrect:
+        correction = autocorrect.correct(unquotedid, unquotedstr)
+        if correction:
+          thepo.msgstr = po.quoteforpo(correction)
+          return autocorrect
+        else:
+          # ignore failures we can't correct when in autocorrect mode
+          return []
     return failures
 
   def filterfile(self, thepofile):
     """runs filters on a file"""
     thenewpofile = po.pofile()
     for thepo in thepofile.poelements:
-      failures = self.filterelement(thepo)
-      if failures:
-        thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in failures])
-        thepo.markfuzzy()
+      filterresult = self.filterelement(thepo)
+      if filterresult:
+        if filterresult != autocorrect:
+          thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in filterresult])
+          thepo.markfuzzy()
         thenewpofile.poelements.append(thepo)
     if self.includeheader and thenewpofile.poelements > 0:
       thenewpofile.poelements.insert(0, thenewpofile.makeheader("UTF-8", "8bit"))
@@ -156,7 +167,7 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
       musttranslatewords = [line.strip() for line in open(options.musttranslatefile).readlines()]
       musttranslatewords = dict.fromkeys([key for key in musttranslatewords])
       checkerconfig.musttranslatewords.update(musttranslatewords)
-    options.checkfilter = pocheckfilter(checkerclasses, checkerconfig, options.excludefilters, options.limitfilters, options.includeheader, options.includefuzzy, options.includereview)
+    options.checkfilter = pocheckfilter(checkerclasses, checkerconfig, options.excludefilters, options.limitfilters, options.includeheader, options.includefuzzy, options.includereview, options.autocorrect)
     if not options.checkfilter.checker.combinedfilters:
       self.error("No valid filters were specified")
     options.inputformats = self.inputformats
@@ -195,6 +206,9 @@ def main():
   parser.add_option("", "--header", dest="includeheader",
     action="store_true", default=False,
     help="include a PO header in the output")
+  parser.add_option("", "--autocorrect", dest="autocorrect",
+    action="store_true", default=False,
+    help="output automatic corrections where possible rather than describing issues")
   parser.add_option("", "--openoffice", dest="filterclass",
     action="store_const", default=None, const=checks.OpenOfficeChecker,
     help="use the standard checks for OpenOffice translations")
