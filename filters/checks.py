@@ -25,6 +25,24 @@ from translate.filters import helpers
 from translate.filters import decoration
 from translate.filters import prefilters
 import sre
+try:
+  from enchant import checker
+  checkers = {}
+  def dospellcheck(text, lang):
+    if lang in checkers:
+      c = checkers[lang]
+    else:
+      checkers[lang] = checker.SpellChecker(lang)
+      c = checkers[lang]
+    c.set_text(text)
+    for err in c:
+      yield err.word, err.wordpos, err.suggest()
+except ImportError:
+  from jToolkit import spellcheck
+  dospellcheck = spellcheck.check
+except ImportError:
+  def dospellcheck(text, lang):
+    return []
 
 # actual test methods
 
@@ -36,12 +54,13 @@ class FilterFailure(Exception):
         if isinstance(message, unicode):
           message = message.encode("utf-8")
         strmessages.append(message)
-      messages = ", ".join(messages)
+      messages = ", ".join(strmessages)
     Exception.__init__(self, messages)
 
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
-  def __init__(self, accelmarkers=[], varmatches=[], notranslatewords=[], musttranslatewords=[]):
+  def __init__(self, targetlanguage=None, accelmarkers=[], varmatches=[], notranslatewords=[], musttranslatewords=[]):
+    self.targetlanguage = targetlanguage
     self.accelmarkers = accelmarkers
     self.varmatches = varmatches
     # TODO: allow user configuration of untranslatable words
@@ -49,6 +68,7 @@ class CheckerConfig(object):
     self.musttranslatewords = dict.fromkeys([key for key in musttranslatewords])
   def update(self, otherconfig):
     """combines the info in otherconfig into this config object"""
+    self.targetlanguage = otherconfig.targetlanguage or self.targetlanguage
     self.accelmarkers.extend(otherconfig.accelmarkers)
     self.varmatches.extend(otherconfig.varmatches)
     self.notranslatewords.update(otherconfig.notranslatewords)
@@ -129,6 +149,7 @@ class TranslationChecker(object):
         filtermessage = str(e)
       except Exception, e:
         if self.errorhandler is None:
+          raise
           raise ValueError("error in filter %s: %r, %r, %s" % (functionname, str1, str2, e))
         else:
           filterresult = self.errorhandler(functionname, str1, str2, e)
@@ -335,7 +356,23 @@ class StandardChecker(TranslationChecker):
     """checks that the number of brackets in both strings match"""
     str1 = self.filtervariables(prefilters.removekdecomments(str1))
     str2 = self.filtervariables(str2)
-    return helpers.countsmatch(str1, str2, ("[", "]", "{", "}", "(", ")"))
+    messages = []
+    missing = []
+    extra = []
+    for bracket in ("[", "]", "{", "}", "(", ")"):
+      count1 = str1.count(bracket)
+      count2 = str2.count(bracket)
+      if count2 < count1:
+        missing.append("'%s'" % bracket)
+      elif count2 > count1:
+        extra.append("'%s'" % bracket)
+    if missing:
+      messages.append("translation is missing %s" % ", ".join(missing))
+    if extra:
+      messages.append("translation has extra %s" % ", ".join(extra))
+    if messages:
+      raise FilterFailure(messages)
+    return True
 
   def sentencecount(self, str1, str2):
     """checks that the number of sentences in both strings match"""
@@ -371,11 +408,15 @@ class StandardChecker(TranslationChecker):
 
   def acronyms(self, str1, str2):
     """checks that acronyms that appear are unchanged"""
+    acronyms = []
+    vars1 = helpers.multifilter(str1, self.varfilters)
     for word in self.filteraccelerators(self.filtervariables(str1)).split():
       word = word.strip(":;.,()'\"")
-      if word.isupper() and len(word) > 1:
+      if word.isupper() and len(word) > 1 and word not in vars1:
         if self.filteraccelerators(self.filtervariables(str2)).find(word) == -1:
-	  return False
+	  acronyms.append(word)
+    if acronyms:
+      raise FilterFailure("acronyms should not be translated: " + ", ".join(acronyms))
     return True
 
   def doublewords(self, str1, str2):
@@ -431,6 +472,27 @@ class StandardChecker(TranslationChecker):
   def compendiumconflicts(self, str1, str2):
     """checks for Gettext compendium conflicts (#-#-#-#-#)"""
     return str2.find("#-#-#-#-#") == -1
+
+  def spellcheck(self, str1, str2):
+    """checks words that don't pass a spell check"""
+    if not self.config.targetlanguage:
+      return True
+    str1 = self.filteraccelerators(self.filtervariables(str1))
+    str2 = self.filteraccelerators(self.filtervariables(str2))
+    ignore1 = []
+    messages = []
+    for word, index, suggestions in dospellcheck(str1, lang="en"):
+      ignore1.append(word)
+    for word, index, suggestions in dospellcheck(str2, lang=self.config.targetlanguage):
+      if word in ignore1:
+        continue
+      # hack to ignore hyphenisation rules
+      if word in suggestions:
+        continue
+      messages.append(u"check spelling of %s (could be %s)" % (word, u" / ".join(suggestions)))
+    if messages:
+      raise FilterFailure(messages)
+    return True
 
   preconditions = {"untranslated": ("simplecaps", "variables", "startcaps",
                                     "accelerators", "brackets", "endpunc",

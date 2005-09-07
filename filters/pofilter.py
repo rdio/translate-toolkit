@@ -75,15 +75,13 @@ class StandardPOChecker(POChecker):
     return not thepo.hastypecomment("review")
 
 class pocheckfilter:
-  def __init__(self, checkerclasses=None, checkerconfig=None, excludefilters={}, limitfilters=None, includeheader=False, includefuzzy=True, includereview=True, autocorrect=False):
+  def __init__(self, options, checkerclasses=None, checkerconfig=None):
+    # excludefilters={}, limitfilters=None, includeheader=False, includefuzzy=True, includereview=True, autocorrect=False):
     """builds a pocheckfilter using the given checker (a list is allowed too)"""
     if checkerclasses is None:
       checkerclasses = [checks.StandardChecker, StandardPOChecker]
-    self.checker = POTeeChecker(checkerconfig=checkerconfig, excludefilters=excludefilters, limitfilters=limitfilters, checkerclasses=checkerclasses)
-    self.includeheader = includeheader
-    self.includefuzzy = includefuzzy
-    self.includereview = includereview
-    self.autocorrect = autocorrect
+    self.checker = POTeeChecker(checkerconfig=checkerconfig, excludefilters=options.excludefilters, limitfilters=options.limitfilters, checkerclasses=checkerclasses)
+    self.options = options
 
   def getfilterdocs(self):
     """lists the docs for filters available on checker..."""
@@ -95,8 +93,8 @@ class pocheckfilter:
   def filterelement(self, thepo):
     """runs filters on an element"""
     if thepo.isheader(): return []
-    if not self.includefuzzy and thepo.isfuzzy(): return []
-    if not self.includereview and thepo.isreview(): return []
+    if not self.options.includefuzzy and thepo.isfuzzy(): return []
+    if not self.options.includereview and thepo.isreview(): return []
     if thepo.hasplural():
       unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
       unquotedstr = po.getunquotedstr(thepo.msgstr[0], joinwithlinebreak=False)
@@ -108,7 +106,7 @@ class pocheckfilter:
       unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
       unquotedstr = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False)
       failures = self.checker.run_filters(thepo, unquotedid, unquotedstr)
-      if failures and self.autocorrect:
+      if failures and self.options.autocorrect:
         # we can't get away with bad unquoting / requoting if we're going to change the result...
         unquotedid = po.unquotefrompo(thepo.msgid)
         unquotedstr = po.unquotefrompo(thepo.msgstr)
@@ -131,7 +129,7 @@ class pocheckfilter:
           thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in filterresult])
           thepo.markfuzzy()
         thenewpofile.poelements.append(thepo)
-    if self.includeheader and thenewpofile.poelements > 0:
+    if self.options.includeheader and thenewpofile.poelements > 0:
       thenewpofile.poelements.insert(0, thenewpofile.makeheader("UTF-8", "8bit"))
     return thenewpofile
 
@@ -157,7 +155,7 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
       checkerclasses = [checks.StandardChecker, StandardPOChecker]
     else:
       checkerclasses = [options.filterclass, StandardPOChecker]
-    checkerconfig = checks.CheckerConfig()
+    checkerconfig = checks.CheckerConfig(targetlanguage=options.targetlanguage)
     if options.notranslatefile:
       if not os.path.exists(options.notranslatefile):
         self.error("notranslatefile %r does not exist" % options.notranslatefile)
@@ -170,7 +168,7 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
       musttranslatewords = [line.strip() for line in open(options.musttranslatefile).readlines()]
       musttranslatewords = dict.fromkeys([key for key in musttranslatewords])
       checkerconfig.musttranslatewords.update(musttranslatewords)
-    options.checkfilter = pocheckfilter(checkerclasses, checkerconfig, options.excludefilters, options.limitfilters, options.includeheader, options.includefuzzy, options.includereview, options.autocorrect)
+    options.checkfilter = pocheckfilter(options, checkerclasses, checkerconfig)
     if not options.checkfilter.checker.combinedfilters:
       self.error("No valid filters were specified")
     options.inputformats = self.inputformats
@@ -212,6 +210,8 @@ def main():
   parser.add_option("", "--autocorrect", dest="autocorrect",
     action="store_true", default=False,
     help="output automatic corrections where possible rather than describing issues")
+  parser.add_option("", "--language", dest="targetlanguage", default=None, 
+                    help="set target language code (e.g. af-ZA) [required for spell check]", metavar="LANG")
   parser.add_option("", "--openoffice", dest="filterclass",
     action="store_const", default=None, const=checks.OpenOfficeChecker,
     help="use the standard checks for OpenOffice translations")
