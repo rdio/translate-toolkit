@@ -21,10 +21,25 @@
 
 """a set of autocorrect functions that make resolving common problems more automatic..."""
 
+from translate.filters import decoration
+
 def simplecorrect(msgid, msgstr):
   """runs a set of easy automatic corrections"""
   if "..." in msgid and u"…" in msgstr:
     return msgstr.replace(u"…", "...")
+  if decoration.spacestart(msgid) != decoration.spacestart(msgstr) or decoration.spaceend(msgid) != decoration.spaceend(msgstr):
+    return decoration.spacestart(msgid) + msgstr.strip() + decoration.spaceend(msgid)
+  puncendid = decoration.puncend(msgid)
+  puncendstr = decoration.puncend(msgstr)
+  if puncendid != puncendstr:
+    if puncendid in (".", ":", ". ", ": ", "?"):
+      if not puncendstr:
+        return msgstr + puncendid
+  if msgid[:1].isalpha() and msgstr[:1].isalpha():
+    if msgid[:1].isupper() and msgstr[:1].islower():
+      return msgstr[:1].upper() + msgstr[1:]
+    elif msgid[:1].islower() and msgstr[:1].isupper():
+      return msgstr[:1].lower() + msgstr[1:]
   return None
 
 def correct(msgid, msgstr):
