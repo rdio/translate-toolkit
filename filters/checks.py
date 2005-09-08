@@ -230,7 +230,13 @@ class StandardChecker(TranslationChecker):
 
   def escapes(self, str1, str2):
     """checks whether escaping is consistent between the two strings"""
-    return helpers.countsmatch(prefilters.removekdecomments(str1), str2, ("\\", "\\\\"))
+    str1 = prefilters.removekdecomments(str1)
+    if not helpers.countsmatch(str1, str2, ("\\", "\\\\")):
+      escapes1 = ", ".join(["'%s'" % word for word in str1.split() if "\\" in word])
+      escapes2 = ", ".join(["'%s'" % word for word in str2.split() if "\\" in word])
+      raise SeriousFilterFailure("escapes in original (%s) don't match escapes in translation (%s)" % (escapes1, escapes2))
+    else:
+      return True
 
   def singlequoting(self, str1, str2):
     """checks whether singlequoting is consistent between the two strings"""
