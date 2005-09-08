@@ -99,14 +99,15 @@ class csv2po:
     elif simplify(thecsv.msgid) in self.simpleindex:
       thepolist = self.simpleindex[simplify(thecsv.msgid)]
       if len(thepolist) > 1:
-        print >>sys.stderr, "trying to match by duplicate simpleid: original %s, simplified %s" % (thecsv.msgid, simplify(thecsv.msgid))
-        print >>sys.stderr, "\n".join(["possible match: " + po.getunquotedstr(thepo.msgid) for thepo in thepolist])
+        pofilename = getattr(self.pofile, "filename", "(unknown)")
+        matches = "\n  ".join(["possible match: " + po.getunquotedstr(thepo.msgid) for thepo in thepolist])
+        print >>sys.stderr, "%s - csv entry not found in pofile, multiple matches found:\n  location\t%s\n  original\t%s\n  translation\t%s\n  %s" % (pofilename, thecsv.source, thecsv.msgid, thecsv.msgstr, matches)
         self.unmatched += 1
         return
       thepo = thepolist[0]
     else:
-      print >>sys.stderr, "could not find csv entry in po: %r, %r, %r" % \
-        (thecsv.source, thecsv.msgid, thecsv.msgstr)
+      pofilename = getattr(self.pofile, "filename", "(unknown)")
+      print >>sys.stderr, "%s - csv entry not found in pofile:\n  location\t%s\n  original\t%s\n  translation\t%s" % (pofilename, thecsv.source, thecsv.msgid, thecsv.msgstr)
       self.unmatched += 1
       return
     csvmsgstr = [quotecsvstr(line) for line in thecsv.msgstr.split('\n')]
