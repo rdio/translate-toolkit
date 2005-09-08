@@ -78,7 +78,7 @@ class StandardPOChecker(POChecker):
 
   def isreview(self, thepo):
     """check if the po element has been marked review"""
-    return not thepo.isreview()
+    return not (thepo.isreview() or thepo.hasmarkedcomment("pofilter"))
 
 class pocheckfilter:
   def __init__(self, options, checkerclasses=None, checkerconfig=None):
