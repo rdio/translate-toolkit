@@ -208,7 +208,9 @@ class StandardChecker(TranslationChecker):
     """checks whether a translation is basically identical to the original string"""
     str1 = self.filteraccelerators(str1)
     str2 = self.filteraccelerators(str2)
-    return (str1.isdigit() or len(str1) < 2) or (str1.strip().lower() != str2.strip().lower())
+    if not (str1.isdigit() or len(str1) < 2) or (str1.strip().lower() != str2.strip().lower()):
+      raise FilterFailure("please translate")
+    return True
 
   def blank(self, str1, str2):
     """checks whether a translation is totally blank"""
@@ -450,7 +452,9 @@ class StandardChecker(TranslationChecker):
     words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").split()
     words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").split()
     stopwords = [word for word in words1 if word in self.config.notranslatewords and word not in words2]
-    return not stopwords
+    if stopwords:
+      raise FilterFailure("do not translate: %s" % (", ".join(stopwords)))
+    return True
 
   def musttranslatewords(self, str1, str2):
     """checks that words configured as definitely translatable don't appear in the translation"""
@@ -459,7 +463,9 @@ class StandardChecker(TranslationChecker):
     words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").split()
     words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").split()
     stopwords = [word for word in words1 if word in self.config.musttranslatewords and word in words2]
-    return not stopwords
+    if stopwords:
+      raise FilterFailure("please translate: %s" % (", ".join(stopwords)))
+    return True
 
   def filepaths(self, str1, str2):
     """checks that file paths have not been translated"""
