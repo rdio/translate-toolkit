@@ -183,6 +183,14 @@ class poelement:
     # check for word boundaries properly by using a regular expression...
     return sum(map(lambda tcline: len(sre.findall("\\b%s\\b" % typecomment, tcline)), self.typecomments)) != 0
 
+  def hasmarkedcomment(self, commentmarker):
+    """check whether the given comment marker is present as # (commentmarker) ..."""
+    commentmarker = "(%s)" % commentmarker
+    for comment in self.othercomments:
+      if comment.replace("#", "", 1).strip().startswith(commentmarker):
+        return True
+    return False
+
   def settypecomment(self, typecomment, present=True):
     """alters whether a given typecomment is present"""
     if self.hastypecomment(typecomment) != present:
@@ -200,7 +208,7 @@ class poelement:
     self.settypecomment("fuzzy", present)
 
   def isreview(self):
-    return self.hastypecomment("review")
+    return self.hastypecomment("review") or self.hasmarkedcomment("review")
 
   def isnotblank(self):
     return not self.isblank()
@@ -317,6 +325,7 @@ class poelement:
     return partstr
 
   def tolines(self):
+    """return this po element as a set of lines"""
     for othercomment in self.othercomments:
       yield othercomment
     if self.isobsolete():
