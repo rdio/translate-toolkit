@@ -43,10 +43,16 @@ class POChecker(checks.TranslationChecker):
       if functionname in ignores:
         continue
       filterfunction = getattr(self, functionname)
-      if not filterfunction(thepo):
+      filtermessage = filterfunction.__doc__
+      try:
+        filterresult = filterfunction(thepo)
+      except checks.FilterFailure, e:
+        filterresult = False
+        filtermessage = e
+      if not filterresult:
         # we test some preconditions that aren't actually a cause for failure...
         if functionname in self.defaultfilters:
-          failures.append("%s: %s" % (functionname, filterfunction.__doc__))
+          failures.append((functionname, filtermessage))
         if functionname in self.preconditions:
           for ignoredfunctionname in self.preconditions[functionname]:
             ignores.append(ignoredfunctionname)
@@ -126,8 +132,10 @@ class pocheckfilter:
       filterresult = self.filterelement(thepo)
       if filterresult:
         if filterresult != autocorrect:
-          thepo.visiblecomments.extend(["#_ %s\n" % failure for failure in filterresult])
-          thepo.markfuzzy()
+          thepo.visiblecomments.extend(["# (pofilter) %s: %s\n" % (filtername, filtermessage) for filtername, filtermessage in filterresult])
+          for filtername, filtermessage in filterresult:
+            if isinstance(filtermessage, checks.SeriousFilterFailure):
+              thepo.markfuzzy()
         thenewpofile.poelements.append(thepo)
     if self.options.includeheader and thenewpofile.poelements > 0:
       thenewpofile.poelements.insert(0, thenewpofile.makeheader("UTF-8", "8bit"))

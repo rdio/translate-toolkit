@@ -47,6 +47,7 @@ except ImportError:
 # actual test methods
 
 class FilterFailure(Exception):
+  """This exception signals that a Filter didn't pass, and gives an explanation / comment"""
   def __init__(self, messages):
     if isinstance(messages, list):
       strmessages = []
@@ -56,6 +57,10 @@ class FilterFailure(Exception):
         strmessages.append(message)
       messages = ", ".join(strmessages)
     Exception.__init__(self, messages)
+
+class SeriousFilterFailure(FilterFailure):
+  """This exception signals that a Filter didn't pass, and the bad translation might break an application (so the string will be marked fuzzy)"""
+  pass
 
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
@@ -128,7 +133,7 @@ class TranslationChecker(object):
     return prefilters.filterwordswithpunctuation(str1)
 
   def run_filters(self, str1, str2):
-    """run all the tests in this suite"""
+    """run all the tests in this suite, return failures as testname, message_or_exception"""
     failures = []
     ignores = []
     functionnames = self.defaultfilters.keys()
@@ -146,7 +151,7 @@ class TranslationChecker(object):
         filterresult = filterfunction(str1, str2)
       except FilterFailure, e:
         filterresult = False
-        filtermessage = str(e)
+        filtermessage = e
       except Exception, e:
         if self.errorhandler is None:
           raise
@@ -156,7 +161,7 @@ class TranslationChecker(object):
       if not filterresult:
         # we test some preconditions that aren't actually a cause for failure...
         if functionname in self.defaultfilters:
-          failures.append("%s: %s" % (functionname, filtermessage))
+          failures.append((functionname, filtermessage))
         if functionname in self.preconditions:
           for ignoredfunctionname in self.preconditions[functionname]:
             ignores.append(ignoredfunctionname)
@@ -313,7 +318,9 @@ class StandardChecker(TranslationChecker):
       messages.append("do not translate: %s" % ", ".join(mismatch1))
     elif mismatch2:
       messages.append("translation contains variables not in original: %s" % ", ".join(mismatch2))
-    if messages:
+    if messages and mismatch1:
+      raise SeriousFilterFailure(messages)
+    elif messages:
       raise FilterFailure(messages)
     return True
 
@@ -581,8 +588,8 @@ def runtests(str1, str2, ignorelist=()):
   """verifies that the tests pass for a pair of strings"""
   checker = StandardChecker(excludefilters=ignorelist)
   failures = checker.run_filters(str1, str2)
-  for failure in failures:
-    print "failure: %s\n  %r\n  %r" % (failure, str1, str2)
+  for testname, message in failures:
+    print "failure: %s: %s\n  %r\n  %r" % (testname, message, str1, str2)
   return failures
 
 def batchruntests(pairs):
