@@ -78,7 +78,7 @@ class StandardPOChecker(POChecker):
 
   def isreview(self, thepo):
     """check if the po element has been marked review"""
-    return not thepo.hastypecomment("review")
+    return not thepo.isreview()
 
 class pocheckfilter:
   def __init__(self, options, checkerclasses=None, checkerconfig=None):
@@ -132,7 +132,24 @@ class pocheckfilter:
       filterresult = self.filterelement(thepo)
       if filterresult:
         if filterresult != autocorrect:
-          thepo.visiblecomments.extend(["# (pofilter) %s: %s\n" % (filtername, filtermessage) for filtername, filtermessage in filterresult])
+          for filtername, filtermessage in filterresult:
+            if filtername == "isreview":
+              if thepo.hastypecomment("review"):
+                reviewcomments = [comment for comment in thepo.typecomments if "review" in comment.replace("#,", "", 1).strip()]
+                for comment in reviewcomments:
+                  reviewmessage = comment.replace("#,", "", 1).strip()
+                  if reviewmessage == "review":
+                    reviewmessage = "(review)"
+                    thepo.typecomments = [typecomment for typecomment in thepo.typecomments if typecomment != comment]
+                  elif reviewmessage.startswith("review - "):
+                    reviewmessage = reviewmessage.replace("review - ", "(review) ", 1)
+                    thepo.typecomments = [typecomment for typecomment in thepo.typecomments if typecomment != comment]
+                  else:
+                    reviewmessage = "(review) " + reviewmessage
+                  thepo.othercomments.append("# %s\n" % reviewmessage)
+                thepo.settypecomment("review", False)
+            else:
+              thepo.othercomments.append("# (pofilter) %s: %s\n" % (filtername, filtermessage))
           for filtername, filtermessage in filterresult:
             if isinstance(filtermessage, checks.SeriousFilterFailure):
               thepo.markfuzzy()
