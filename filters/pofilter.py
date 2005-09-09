@@ -193,6 +193,11 @@ class FilterOptionParser(optrecurse.RecursiveOptionParser):
       musttranslatewords = [line.strip() for line in open(options.musttranslatefile).readlines()]
       musttranslatewords = dict.fromkeys([key for key in musttranslatewords])
       checkerconfig.musttranslatewords.update(musttranslatewords)
+    if options.validcharsfile:
+      if not os.path.exists(options.validcharsfile):
+        self.error("validcharsfile %r does not exist" % options.validcharsfile)
+      validchars = open(options.validcharsfile).read()
+      checkerconfig.updatevalidchars(validchars)
     options.checkfilter = pocheckfilter(options, checkerclasses, checkerconfig)
     if not options.checkfilter.checker.combinedfilters:
       self.error("No valid filters were specified")
@@ -261,6 +266,9 @@ def main():
   parser.add_option("", "--musttranslatefile", dest="musttranslatefile",
     default=None, type="string", metavar="FILE",
     help="read list of translatable words from FILE (must be translated)")
+  parser.add_option("", "--validcharsfile", dest="validcharsfile",
+    default=None, type="string", metavar="FILE",
+    help="read list of all valid characters from FILE (must be in UTF-8)")
   parser.passthrough.append('checkfilter')
   parser.run()
 

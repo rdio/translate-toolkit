@@ -64,13 +64,17 @@ class SeriousFilterFailure(FilterFailure):
 
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
-  def __init__(self, targetlanguage=None, accelmarkers=[], varmatches=[], notranslatewords=[], musttranslatewords=[]):
+  def __init__(self, targetlanguage=None, accelmarkers=[], varmatches=[], notranslatewords=[], musttranslatewords=[], validchars=None):
     self.targetlanguage = targetlanguage
     self.accelmarkers = accelmarkers
     self.varmatches = varmatches
     # TODO: allow user configuration of untranslatable words
     self.notranslatewords = dict.fromkeys([key for key in notranslatewords])
     self.musttranslatewords = dict.fromkeys([key for key in musttranslatewords])
+    if isinstance(validchars, str):
+      validchars = validchars.decode("utf-8")
+    self.validcharsmap = {}
+    self.updatevalidchars(validchars)
   def update(self, otherconfig):
     """combines the info in otherconfig into this config object"""
     self.targetlanguage = otherconfig.targetlanguage or self.targetlanguage
@@ -78,6 +82,13 @@ class CheckerConfig(object):
     self.varmatches.extend(otherconfig.varmatches)
     self.notranslatewords.update(otherconfig.notranslatewords)
     self.musttranslatewords.update(otherconfig.musttranslatewords)
+    self.validcharsmap.update(otherconfig.validcharsmap)
+  def updatevalidchars(self, validchars):
+    """updates the map that eliminates valid characters"""
+    if validchars is None:
+      return True
+    validcharsmap = dict([(ord(validchar), None) for validchar in validchars])
+    self.validcharsmap.update(validcharsmap)
 
 class TranslationChecker(object):
   """Base Checker class which does the checking based on functions available in derived classes"""
@@ -208,7 +219,7 @@ class StandardChecker(TranslationChecker):
     """checks whether a translation is basically identical to the original string"""
     str1 = self.filteraccelerators(str1)
     str2 = self.filteraccelerators(str2)
-    if not (str1.isdigit() or len(str1) < 2) or (str1.strip().lower() != str2.strip().lower()):
+    if not (str1.isdigit() or len(str1) < 2) and (str1.strip().lower() == str2.strip().lower()):
       raise FilterFailure("please translate")
     return True
 
@@ -424,7 +435,9 @@ class StandardChecker(TranslationChecker):
   def acronyms(self, str1, str2):
     """checks that acronyms that appear are unchanged"""
     acronyms = []
-    vars1 = helpers.multifilter(str1, self.varfilters)
+    vars1 = []
+    for startmatch, endmatch in self.config.varmatches:
+      vars1 += decoration.getvariables(startmatch, endmatch)(str1)
     for word in self.filteraccelerators(self.filtervariables(str1)).split():
       word = word.strip(":;.,()'\"")
       if word.isupper() and len(word) > 1 and word not in vars1:
@@ -465,6 +478,17 @@ class StandardChecker(TranslationChecker):
     stopwords = [word for word in words1 if word in self.config.musttranslatewords and word in words2]
     if stopwords:
       raise FilterFailure("please translate: %s" % (", ".join(stopwords)))
+    return True
+
+  def validchars(self, str1, str2):
+    """checks that only characters specified as valid appear in the translation"""
+    if not self.config.validcharsmap:
+      return True
+    invalid1 = str1.translate(self.config.validcharsmap)
+    invalid2 = str2.translate(self.config.validcharsmap)
+    invalidchars = ["'%s' (\\u%04x)" % (invalidchar.encode('utf-8'), ord(invalidchar)) for invalidchar in invalid2 if invalidchar not in invalid1]
+    if invalidchars:
+      raise FilterFailure("invalid chars: %s" % (", ".join(invalidchars)))
     return True
 
   def filepaths(self, str1, str2):
