@@ -49,13 +49,14 @@ except ImportError:
 class FilterFailure(Exception):
   """This exception signals that a Filter didn't pass, and gives an explanation / comment"""
   def __init__(self, messages):
-    if isinstance(messages, list):
-      strmessages = []
-      for message in messages:
-        if isinstance(message, unicode):
-          message = message.encode("utf-8")
-        strmessages.append(message)
-      messages = ", ".join(strmessages)
+    if not isinstance(messages, list):
+      messages = [messages]
+    strmessages = []
+    for message in messages:
+      if isinstance(message, unicode):
+        message = message.encode("utf-8")
+      strmessages.append(message)
+    messages = ", ".join(strmessages)
     Exception.__init__(self, messages)
 
 class SeriousFilterFailure(FilterFailure):
