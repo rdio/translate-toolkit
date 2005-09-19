@@ -208,7 +208,7 @@ class poelement:
     self.settypecomment("fuzzy", present)
 
   def isreview(self):
-    return self.hastypecomment("review") or self.hasmarkedcomment("review")
+    return self.hastypecomment("review") or self.hasmarkedcomment("review") or self.hasmarkedcomment("pofilter")
 
   def isnotblank(self):
     return not self.isblank()
