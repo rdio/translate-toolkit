@@ -190,9 +190,9 @@ class FileDiffer:
                     continue
             if self.options.contains:
                 if self.options.ignore_case_contains:
-                    hunk_lines = "".join([line.lower() for line in self.get_lines(group)])
+                    hunk_lines = "".join([line.lower() for line in self.get_from_lines(group) + self.get_to_lines(group)])
                 else:
-                    hunk_lines = "".join(self.get_lines(group))
+                    hunk_lines = "".join(self.get_from_lines(group) + self.get_to_lines(group))
                 for accelerator in self.options.accelchars:
                     hunk_lines = hunk_lines.replace(accelerator, "")
                 if self.options.contains not in hunk_lines:
