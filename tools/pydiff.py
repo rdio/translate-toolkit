@@ -58,6 +58,8 @@ def main():
             help='Only show changes where fromfile or tofile contains TEXT')
     parser.add_option("-I", "--ignore-case-contains", default=False, action="store_true",
             help='Ignore case differences when matching any of the changes')
+    parser.add_option("", "--accelerator", dest="accelchars", default="",
+            metavar="ACCELERATORS", help="ignores the given accelerator characters when matching")
     (options, args) = parser.parse_args()
 
     fromfile, tofile = args
@@ -173,6 +175,8 @@ class FileDiffer:
                     hunk_from_lines = "".join([line.lower() for line in self.get_from_lines(group)])
                 else:
                     hunk_from_lines = "".join(self.get_from_lines(group))
+                for accelerator in self.options.accelchars:
+                    hunk_from_lines = hunk_from_lines.replace(accelerator, "")
                 if self.options.fromcontains not in hunk_from_lines:
                     continue
             if self.options.tocontains:
@@ -180,6 +184,8 @@ class FileDiffer:
                     hunk_to_lines = "".join([line.lower() for line in self.get_to_lines(group)])
                 else:
                     hunk_to_lines = "".join(self.get_to_lines(group))
+                for accelerator in self.options.accelchars:
+                    hunk_to_lines = hunk_to_lines.replace(accelerator, "")
                 if self.options.tocontains not in hunk_to_lines:
                     continue
             if self.options.contains:
@@ -187,6 +193,8 @@ class FileDiffer:
                     hunk_lines = "".join([line.lower() for line in self.get_lines(group)])
                 else:
                     hunk_lines = "".join(self.get_lines(group))
+                for accelerator in self.options.accelchars:
+                    hunk_lines = hunk_lines.replace(accelerator, "")
                 if self.options.contains not in hunk_lines:
                     continue
             if not started:
