@@ -56,6 +56,8 @@ def main():
             help='Only show changes where tofile contains TEXT')
     parser.add_option("", "--contains", type="string", default=None, metavar="TEXT",
             help='Only show changes where fromfile or tofile contains TEXT')
+    parser.add_option("-I", "--ignore-case-contains", default=False, action="store_true",
+            help='Ignore case differences when matching any of the changes')
     (options, args) = parser.parse_args()
 
     fromfile, tofile = args
@@ -167,15 +169,24 @@ class FileDiffer:
         for group in groups:
             hunk = "".join([line for line in self.unified_diff(group)])
             if self.options.fromcontains:
-                hunk_from_lines = "".join(self.get_from_lines(group))
+                if self.options.ignore_case_contains:
+                    hunk_from_lines = "".join([line.lower() for line in self.get_from_lines(group)])
+                else:
+                    hunk_from_lines = "".join(self.get_from_lines(group))
                 if self.options.fromcontains not in hunk_from_lines:
                     continue
             if self.options.tocontains:
-                hunk_to_lines = "".join(self.get_to_lines(group))
+                if self.options.ignore_case_contains:
+                    hunk_to_lines = "".join([line.lower() for line in self.get_to_lines(group)])
+                else:
+                    hunk_to_lines = "".join(self.get_to_lines(group))
                 if self.options.tocontains not in hunk_to_lines:
                     continue
             if self.options.contains:
-                hunk_lines = "".join(self.get_from_lines(group) + self.get_to_lines(group))
+                if self.options.ignore_case_contains:
+                    hunk_lines = "".join([line.lower() for line in self.get_lines(group)])
+                else:
+                    hunk_lines = "".join(self.get_lines(group))
                 if self.options.contains not in hunk_lines:
                     continue
             if not started:
