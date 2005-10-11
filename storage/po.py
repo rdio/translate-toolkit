@@ -580,7 +580,7 @@ class pofile:
     # make only the first one the header
     linesprocessed = 0
     while end <= len(lines):
-      if (end == len(lines)) or (lines[end] == '\n'):   # end of lines or just a carriage return
+      if (end == len(lines)) or (not lines[end].strip()):   # end of lines or blank line
         finished = 0
         while not finished:
           newpe = self.elementclass()
