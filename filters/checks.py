@@ -317,7 +317,10 @@ class StandardChecker(TranslationChecker):
     for startmarker, endmarker in self.config.varmatches:
       varchecker = decoration.getvariables(startmarker, endmarker)
       if startmarker and endmarker:
-        redecorate = lambda var: startmarker + var + endmarker
+        if isinstance(endmarker, int):
+          redecorate = lambda var: startmarker + var
+        else:
+          redecorate = lambda var: startmarker + var + endmarker
       elif startmarker:
         redecorate = lambda var: startmarker + var
       else:
