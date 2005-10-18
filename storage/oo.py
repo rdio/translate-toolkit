@@ -152,7 +152,7 @@ class oofile:
 
 class oomultifile:
   """this takes a huge GSI file and represents it as multiple smaller files..."""
-  def __init__(self, filename, mode=None):
+  def __init__(self, filename, mode=None, multifilestyle="single"):
     """initialises oomultifile from a seekable inputfile or writable outputfile"""
     self.filename = filename
     if mode is None:
@@ -161,6 +161,8 @@ class oomultifile:
       else:
         mode = 'w'
     self.mode = mode
+    self.multifilestyle = multifilestyle
+    self.multifilename = os.path.splitext(filename)[0]
     self.multifile = open(filename, mode)
     self.subfilelines = {}
     if mode == "r":
@@ -182,9 +184,14 @@ class oomultifile:
       raise ValueError("invalid tab-delimited line: %r" % line)
     lineparts = line.split("\t", 2)
     module, filename = lineparts[0], lineparts[1]
-    filename = filename.replace("\\", "/")
-    fileparts = [module] + filename.split("/")
-    ooname = os.path.join(*fileparts[:-1])
+    if self.multifilestyle == "onefile":
+      ooname = self.multifilename
+    elif self.multifilestyle == "toplevel":
+      ooname = module
+    else:
+      filename = filename.replace("\\", "/")
+      fileparts = [module] + filename.split("/")
+      ooname = os.path.join(*fileparts[:-1])
     return ooname + os.extsep + "oo"
 
   def listsubfiles(self):

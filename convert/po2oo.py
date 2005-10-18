@@ -34,9 +34,10 @@ import time
 from translate import __version__
 
 class reoo:
-  def __init__(self, templatefile, languages=None, timestamp=None, includefuzzy=False):
+  def __init__(self, templatefile, languages=None, timestamp=None, includefuzzy=False, long_keys=False):
     """construct a reoo converter for the specified languages (timestamp=0 means leave unchanged)"""
     # languages is a pair of language ids
+    self.long_keys = long_keys
     self.readoo(templatefile)
     self.languages = languages
     if timestamp is None:
@@ -53,8 +54,11 @@ class reoo:
     """converts an oo key tuple into a key identifier for the po file"""
     project, sourcefile, resourcetype, groupid, localid, platform = ookey
     sourcefile = sourcefile.replace('\\','/')
-    sourceparts = sourcefile.split('/')
-    sourcebase = "".join(sourceparts[-1:])
+    if self.long_keys:
+      sourcebase = os.path.join(project, sourcefile)
+    else:
+      sourceparts = sourcefile.split('/')
+      sourcebase = "".join(sourceparts[-1:])
     if len(groupid) == 0 or len(localid) == 0:
       fullid = groupid + localid
     else:
@@ -150,7 +154,7 @@ def getmtime(filename):
   import stat
   return time.localtime(os.stat(filename)[stat.ST_MTIME])
 
-def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetlanguage=None, timestamp=None, includefuzzy=False):
+def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetlanguage=None, timestamp=None, includefuzzy=False, multifilestyle="single"):
   inputpo = po.pofile()
   inputpo.fromlines(inputfile.readlines())
   if not targetlanguage:
@@ -165,7 +169,7 @@ def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetla
     raise ValueError("must have template file for oo files")
     # convertor = po2oo()
   else:
-    convertor = reoo(templatefile, languages=languages, timestamp=timestamp, includefuzzy=includefuzzy)
+    convertor = reoo(templatefile, languages=languages, timestamp=timestamp, includefuzzy=includefuzzy, long_keys=multifilestyle != "single")
   outputoo = convertor.convertfile(inputpo)
   # TODO: check if we need to manually delete missing items
   outputoolines = outputoo.tolines()
@@ -187,6 +191,7 @@ def main():
   parser.add_option("", "--nonrecursiveoutput", dest="allowrecursiveoutput", default=True, action="store_false", help="don't treat the output oo as a recursive store")
   parser.add_option("", "--nonrecursivetemplate", dest="allowrecursivetemplate", default=True, action="store_false", help="don't treat the template oo as a recursive store")
   parser.add_fuzzy_option()
+  parser.add_multifile_option()
   parser.passthrough.append("sourcelanguage")
   parser.passthrough.append("targetlanguage")
   parser.passthrough.append("timestamp")

@@ -59,6 +59,13 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
       help="what to do with duplicate strings (identical source text), styles: %s" % (", ".join(duplicatestyles)), metavar="DUPLICATESTYLE")
     self.passthrough.append("duplicatestyle")
 
+  def add_multifile_option(self, default="single"):
+    """adds an option to say how to split the po/pot files"""
+    self.add_option("", "--multifile", dest="multifilestyle", default="single",
+      type="choice", choices=["single", "toplevel", "onefile"],
+      help="how to split po/pot files (single, toplevel or onefile)", metavar="MULTIFILESTYLE")
+    self.passthrough.append("multifilestyle")
+
   def potifyformat(self, fileformat):
     """converts a .po to a .pot where required"""
     if fileformat is None:
@@ -150,7 +157,12 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
   if the extension is only valid for input/output/template, it can be given as (extension, filepurpose)"""
   def __init__(self, formats, usetemplates=False, usepots=False, description=None, archiveformats={}):
     self.archiveformats = archiveformats
+    self.archiveoptions = {}
     ConvertOptionParser.__init__(self, formats, usetemplates, usepots, description=description)
+
+  def setarchiveoptions(self, **kwargs):
+    """allows setting options that will always be passed to openarchive"""
+    self.archiveoptions = kwargs
 
   def isrecursive(self, fileoption, filepurpose='input'):
     """checks if fileoption is a recursive file"""
@@ -189,7 +201,9 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
     """creates an archive object for the given file"""
     archiveext = self.splitext(archivefilename)[1]
     archiveclass = self.getarchiveclass(archiveext, filepurpose, os.path.isdir(archivefilename))
-    return archiveclass(archivefilename, **kwargs)
+    archiveoptions = self.archiveoptions.copy()
+    archiveoptions.update(kwargs)
+    return archiveclass(archivefilename, **archiveoptions)
 
   def recurseinputfiles(self, options):
     """recurse through archive file / directories and return files to be converted"""
@@ -295,6 +309,8 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
 
   def recursiveprocess(self, options):
     """recurse through directories and convert files"""
+    if hasattr(options, "multifilestyle"):
+      self.setarchiveoptions(multifilestyle=options.multifilestyle)
     self.inittemplatearchive(options)
     self.initoutputarchive(options)
     return super(ArchiveConvertOptionParser, self).recursiveprocess(options)

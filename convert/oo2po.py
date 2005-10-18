@@ -22,6 +22,7 @@
 
 """Converts OpenOffice.org exported .oo files to Gettext .po files"""
 
+import os
 from translate.storage import po
 from translate.storage import oo
 from translate.misc import quote
@@ -30,11 +31,12 @@ from translate import __version__
 # TODO: support using one GSI file as template, another as input (for when English is in one and translation in another)
 
 class oo2po:
-  def __init__(self, sourcelanguage, targetlanguage, blankmsgstr=False):
+  def __init__(self, sourcelanguage, targetlanguage, blankmsgstr=False, long_keys=False):
     """construct an oo2po converter for the specified languages"""
     self.sourcelanguage = sourcelanguage
     self.targetlanguage = targetlanguage
     self.blankmsgstr = blankmsgstr
+    self.long_keys = long_keys
 
   def makepo(self, part1, part2, key, subkey):
     """makes a po element out of a subkey of two parts"""
@@ -50,8 +52,11 @@ class oo2po:
     """converts an oo key tuple into a key identifier for the po file"""
     project, sourcefile, resourcetype, groupid, localid, platform = ookey
     sourcefile = sourcefile.replace('\\','/')
-    sourceparts = sourcefile.split('/')
-    sourcebase = "".join(sourceparts[-1:])
+    if self.long_keys:
+      sourcebase = os.path.join(project, sourcefile)
+    else:
+      sourceparts = sourcefile.split('/')
+      sourcebase = "".join(sourceparts[-1:])
     if (groupid) == 0 or len(localid) == 0:
       ooid = groupid + localid
     else:
@@ -106,7 +111,7 @@ def verifyoptions(options):
   if not options.pot and not options.targetlanguage:
     raise ValueError("You must specify the target language unless generating POT files (-P)")
 
-def convertoo(inputfile, outputfile, templates, pot=False, sourcelanguage=None, targetlanguage=None, duplicatestyle="msgid_comment"):
+def convertoo(inputfile, outputfile, templates, pot=False, sourcelanguage=None, targetlanguage=None, duplicatestyle="msgid_comment", multifilestyle="single"):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   fromfile = oo.oofile()
   if hasattr(inputfile, "filename"):
@@ -123,7 +128,7 @@ def convertoo(inputfile, outputfile, templates, pot=False, sourcelanguage=None, 
     print "Warning: sourcelanguage %s not found in inputfile (contains %s)" % (sourcelanguage, ", ".join(fromfile.languages))
   if targetlanguage and targetlanguage not in fromfile.languages:
     print "Warning: targetlanguage %s not found in inputfile (contains %s)" % (targetlanguage, ", ".join(fromfile.languages))
-  convertor = oo2po(sourcelanguage, targetlanguage, blankmsgstr=pot)
+  convertor = oo2po(sourcelanguage, targetlanguage, blankmsgstr=pot, long_keys=multifilestyle!="single")
   outputpo = convertor.convertfile(fromfile, duplicatestyle)
   if outputpo.isempty():
     return 0
@@ -143,6 +148,7 @@ def main():
                     help="set source language code (default en-US)", metavar="LANG")
   parser.add_option("", "--nonrecursiveinput", dest="allowrecursiveinput", default=True, action="store_false", help="don't treat the input oo as a recursive store")
   parser.add_duplicates_option()
+  parser.add_multifile_option()
   parser.passthrough.append("pot")
   parser.passthrough.append("sourcelanguage")
   parser.passthrough.append("targetlanguage")
