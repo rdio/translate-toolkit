@@ -17,6 +17,7 @@ Filip Miletic: fixes for unicode problems
 Fredrik Corneliusson: xliff work
 Javier Sola: documentation
 Marek Wieckowski: Qt ts file enhancements
+Matthias Klose: extra file options for converters
 Pavel Janík: testing
 Thomas Fogwill: portal code
 
