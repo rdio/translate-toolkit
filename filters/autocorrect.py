@@ -25,6 +25,8 @@ from translate.filters import decoration
 
 def simplecorrect(msgid, msgstr):
   """runs a set of easy automatic corrections"""
+  if msgstr == "":
+    return msgstr
   if "..." in msgid and u"…" in msgstr:
     return msgstr.replace(u"…", "...")
   if decoration.spacestart(msgid) != decoration.spacestart(msgstr) or decoration.spaceend(msgid) != decoration.spaceend(msgstr):
