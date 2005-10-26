@@ -146,10 +146,13 @@ class poelement:
     overwrite non-blank self.msgstr only if overwrite is True
     merge comments only if comments is True"""
     def mergelists(list1, list2):
-      if unicode in [type(item) for item in list2]:
+      if unicode in [type(item) for item in list2] + [type(item) for item in list1]:
         for position, item in enumerate(list1):
           if isinstance(item, str):
             list1[position] = item.decode("utf-8")
+        for position, item in enumerate(list2):
+          if isinstance(item, str):
+            list2[position] = item.decode("utf-8")
       list1.extend([item for item in list2 if not item in list1])
     if comments:
       mergelists(self.othercomments, otherpo.othercomments)
