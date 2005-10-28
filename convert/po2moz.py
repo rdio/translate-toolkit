@@ -67,6 +67,7 @@ def main():
   formats = {("dtd.po", "dtd"): ("dtd", po2dtd.convertdtd),
              ("properties.po", "properties"): ("properties", po2prop.convertprop),
              ("it.po", "it"): ("it", prop2mozfunny.po2it),
+             ("ini.po", "ini"): ("ini", prop2mozfunny.po2it),
              ("inc.po", "inc"): ("inc", prop2mozfunny.po2inc),
              (None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),
