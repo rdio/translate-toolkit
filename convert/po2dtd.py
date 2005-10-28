@@ -28,6 +28,10 @@ from translate.storage import po
 from translate.misc import quote
 from translate import __version__
 
+# labelsuffixes and accesskeysuffixes are combined to accelerator notation
+labelsuffixes = (".label", ".title")
+accesskeysuffixes = (".accesskey", ".accessKey", ".akey")
+
 def getlabel(unquotedstr):
   """retrieve the label from a mixed label+accesskey entity"""
   if isinstance(unquotedstr, str):
@@ -119,13 +123,14 @@ def getmixedentities(entities):
   mixedentities = []  # those entities which have a .label and .accesskey combined
   # search for mixed entities...
   for entity in entities:
-    if entity.endswith(".label"):
-      entitybase = entity[:entity.rfind(".label")]
-      # see if there is a matching accesskey, making this a mixed entity
-      for akeytype in (".accesskey", ".accessKey", ".akey"):
-        if entitybase + akeytype in entities:
-          # add both versions to the list of mixed entities
-          mixedentities += [entity,entitybase+akeytype]
+    for labelsuffix in labelsuffixes:
+      if entity.endswith(labelsuffix):
+        entitybase = entity[:entity.rfind(labelsuffix)]
+        # see if there is a matching accesskey, making this a mixed entity
+        for akeytype in accesskeysuffixes:
+          if entitybase + akeytype in entities:
+            # add both versions to the list of mixed entities
+            mixedentities += [entity,entitybase+akeytype]
   return mixedentities
 
 def applytranslation(entity, thedtd, thepo, mixedentities):
@@ -136,11 +141,13 @@ def applytranslation(entity, thedtd, thepo, mixedentities):
   if len(unquotedstr.strip()) == 0:
     return
   # handle mixed entities
-  if entity.endswith(".label"):
-    if entity in mixedentities:
-      unquotedstr = getlabel(unquotedstr)
+  for labelsuffix in labelsuffixes:
+    if entity.endswith(labelsuffix):
+      if entity in mixedentities:
+        unquotedstr = getlabel(unquotedstr)
+        break
   else:
-    for akeytype in (".accesskey", ".accessKey", ".akey"):
+    for akeytype in accesskeysuffixes:
       if entity.endswith(akeytype):
         if entity in mixedentities:
           unquotedstr = getaccesskey(unquotedstr)
