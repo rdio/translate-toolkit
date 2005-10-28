@@ -176,12 +176,12 @@ class XpiFile(ZipFileCatcher):
       if localematch.match(jarname):
         if locale is None:
           locale = jarname
-        else:
+        elif locale != jarname:
           locale = 0
       elif regionmatch.match(jarname):
         if region is None:
           region = jarname
-        else:
+        elif region != jarname:
           region = 0
       for filename in jarfile.namelist():
         if filename.endswith('/'): continue
@@ -202,12 +202,13 @@ class XpiFile(ZipFileCatcher):
         if localematch.match(dirname):
           if locale is None:
             locale = dirname
-          else:
+          elif locale != dirname:
+            print "locale dir mismatch - ", dirname, "but locale is", locale, "setting to 0"
             locale = 0
         elif regmatch.match(dirname):
           if region is None:
             region = dirname
-          else:
+          elif region != dirname:
             region = 0
     if locale and locale in localeentries:
       del localeentries[locale]
@@ -219,6 +220,8 @@ class XpiFile(ZipFileCatcher):
 
   def setlangreg(self, locale, region):
     """set the locale and region of this xpi"""
+    if locale == 0:
+        raise ValueError("unable to determine locale")
     self.locale = locale
     self.region = region
     self.dirmap = {}
