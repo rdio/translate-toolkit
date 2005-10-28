@@ -304,7 +304,12 @@ class XpiFile(ZipFileCatcher):
   def reversemapxpifilename(self, filename):
     """uses a map to rename files that occur straight in the xpi"""
     if filename == 'bin/chrome/lang-reg.manifest':
-      return '/'.join(('bin', 'chrome', self.locale + '.manifest'))
+      if self.locale:
+        return '/'.join(('bin', 'chrome', self.locale + '.manifest'))
+      else:
+        for otherfilename in self.namelist():
+          if otherfilename.startswith("bin/chrome/") and otherfilename.endswith(".manifest"):
+            return otherfilename
     return filename
 
   def jartoospath(self, jarfilename, filename):
