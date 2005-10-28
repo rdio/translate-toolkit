@@ -40,6 +40,7 @@ class dtdelement:
   def __init__(self):
     """construct the dtdelement, prepare it for parsing"""
     self.comments = []
+    self.unparsedlines = []
     self.incomment = 0
     self.inentity = 0
 
@@ -116,6 +117,8 @@ class dtdelement:
         if line.find('<!ENTITY') <> -1:
           self.inentity = 1
           self.entitypart = "start"
+        else:
+          self.unparsedlines.append(line)
 
       if self.inentity:
         if self.entitypart == "start":
@@ -197,6 +200,8 @@ class dtdelement:
   def tolines(self):
     """convert the dtd entity back to string form"""
     for commenttype,comment in self.comments: yield comment
+    for line in self.unparsedlines:
+      yield line
     if self.isnull():
       raise StopIteration()
     # for f in self.locfilenotes: yield f
@@ -245,7 +250,7 @@ class dtdfile:
         newdtd = dtdelement()
         linesprocessed = newdtd.fromlines(lines[start:end])
         start += linesprocessed
-        if linesprocessed >= 1 and not newdtd.isnull():
+        if linesprocessed >= 1 and (not newdtd.isnull() or newdtd.unparsedlines):
           self.dtdelements.append(newdtd)
 
   def tolines(self):
@@ -260,7 +265,8 @@ class dtdfile:
     """makes self.index dictionary keyed on entities"""
     self.index = {}
     for dtd in self.dtdelements:
-      self.index[dtd.entity] = dtd
+      if not dtd.isnull():
+        self.index[dtd.entity] = dtd
 
 if __name__ == "__main__":
   import sys
