@@ -281,6 +281,12 @@ class XpiFile(ZipFileCatcher):
       return '/'.join(mapped)
     return filename
 
+  def mapxpifilename(self, filename):
+    """uses a map to rename files that occur straight in the xpi"""
+    if filename.startswith('bin/chrome/') and filename.endswith(".manifest"):
+      return 'bin/chrome/lang-reg.manifest'
+    return filename
+
   def reversemapfile(self, filename):
     """unmaps the filename..."""
     possiblematch = None
@@ -295,13 +301,19 @@ class XpiFile(ZipFileCatcher):
     reversemapped = prefix + parts[len(mapto):]
     return '/'.join(reversemapped)
 
+  def reversemapxpifilename(self, filename):
+    """uses a map to rename files that occur straight in the xpi"""
+    if filename == 'bin/chrome/lang-reg.manifest':
+      return '/'.join(('bin', 'chrome', self.locale + '.manifest'))
+    return filename
+
   def jartoospath(self, jarfilename, filename):
     """converts a filename from within a jarfile to an os-style filepath"""
     if jarfilename:
       jarprefix = self.jarprefixes[jarfilename]
       return self.ziptoospath(jarprefix+self.mapfilename(filename))
     else:
-      return self.ziptoospath(os.path.join("package", filename))
+      return self.ziptoospath(os.path.join("package", self.mapxpifilename(filename)))
 
   def ostojarpath(self, ospath):
     """converts an extracted os-style filepath to a jarfilename and filename"""
@@ -310,6 +322,8 @@ class XpiFile(ZipFileCatcher):
     if prefix in self.reverseprefixes:
       jarfilename = self.reverseprefixes[prefix]
       filename = self.reversemapfile('/'.join(zipparts[1:]))
+      if jarfilename is None:
+        filename = self.reversemapxpifilename(filename)
       return jarfilename, filename
     else:
       filename = self.ostozippath(ospath)
