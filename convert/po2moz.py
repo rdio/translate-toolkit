@@ -43,9 +43,12 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
         newlang = None
 	newregion = None
 	if options.locale is not None:
-	  if options.locale.count("-") != 1:
+	  if options.locale.count("-") > 1:
 	    raise ValueError("Invalid locale: %s - should be of the form xx-YY" % options.locale)
-	  newlang, newregion = options.locale.split("-")
+          elif "-" in options.locale:
+	    newlang, newregion = options.locale.split("-")
+          else:
+            newlang, newregion = options.locale, ""
         options.outputarchive = options.templatearchive.clone(options.output, "a", newlang=newlang, newregion=newregion)
       else:
         if os.path.exists(options.output):
