@@ -139,6 +139,26 @@ def copytemplate(inputfile, outputfile, templatefile, **kwargs):
   outputfile.write(templatefile.read())
   return True
 
+class Replacer:
+  """an object that knows how to replace strings in files"""
+  def __init__(self, searchstring, replacestring):
+    self.searchstring = searchstring
+    self.replacestring = replacestring
+
+  def doreplace(self, text):
+    """actually replace the text"""
+    return text.replace(self.searchstring, self.replacestring)
+
+  def searchreplaceinput(self, inputfile, outputfile, templatefile, **kwargs):
+    """copies the input file to the output file, searching and replacing"""
+    outputfile.write(self.doreplace(inputfile.read()))
+    return True
+
+  def searchreplacetemplate(self, inputfile, outputfile, templatefile, **kwargs):
+    """copies the template file to the output file, searching and replacing"""
+    outputfile.write(self.doreplace(templatefile.read()))
+    return True
+
 # archive files need to know how to:
 # - openarchive: creates an archive object for the archivefilename
 #   * requires a constructor that takes the filename

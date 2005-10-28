@@ -58,6 +58,7 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
 
   def recursiveprocess(self, options):
     """recurse through directories and convert files"""
+    self.replacer.replacestring = options.locale
     result = super(MozConvertOptionParser, self).recursiveprocess(options)
     if self.isarchive(options.output, 'output'):
       if options.progress in ('console', 'verbose'):
@@ -75,9 +76,16 @@ def main():
              (None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}
+  # handle search and replace
+  replacer = convert.Replacer("${locale}", None)
+  for replaceformat in ("js", "rdf", "manifest"):
+    formats[(None, replaceformat)] = (replaceformat, replacer.searchreplacetemplate)
+    formats[(replaceformat, replaceformat)] = (replaceformat, replacer.searchreplaceinput)
+    formats[replaceformat] = (replaceformat, replacer.searchreplaceinput)
   parser = MozConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.add_option("-l", "--locale", dest="locale", default=None,
     help="set output locale (required as this sets the directory names)", metavar="LOCALE")
   parser.add_fuzzy_option()
+  parser.replacer = replacer
   parser.run()
 
