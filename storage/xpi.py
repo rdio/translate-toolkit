@@ -170,7 +170,7 @@ class XpiFile(ZipFileCatcher):
     locale = None
     region = None
     localematch = sre.compile("[a-z]{2,3}-[a-zA-Z]{2,3}")
-    regmatch = sre.compile("[a-zA-Z]{2,3}")
+    regionmatch = sre.compile("[a-zA-Z]{2,3}")
     for jarfilename, jarfile in self.iterjars():
       jarname = "".join(jarfilename.split('/')[-1:]).replace(".jar", "", 1)
       if localematch.match(jarname):
@@ -205,7 +205,7 @@ class XpiFile(ZipFileCatcher):
           elif locale != dirname:
             print "locale dir mismatch - ", dirname, "but locale is", locale, "setting to 0"
             locale = 0
-        elif regmatch.match(dirname):
+        elif regionmatch.match(dirname):
           if region is None:
             region = dirname
           elif region != dirname:
@@ -215,7 +215,10 @@ class XpiFile(ZipFileCatcher):
     if region and region in localeentries:
       del localeentries[region]
     if locale and not region:
-      region = locale.split("-", 1)[1]
+      if "-" in locale:
+        region = locale.split("-", 1)[1]
+      else:
+        region = ""
     self.setlangreg(locale, region)
 
   def setlangreg(self, locale, region):
@@ -394,7 +397,10 @@ class XpiFile(ZipFileCatcher):
     """Create a new .jar file with the same contents as the given name, but rename directories, write to outputstream"""
     jarfile = self.jarfiles[origjarfilename]
     origlang = self.locale[:self.locale.find("-")]
-    newlocale = "%s-%s" % (newlang, newregion)
+    if newregion:
+      newlocale = "%s-%s" % (newlang, newregion)
+    else:
+      newlocale = newlang
     for filename in jarfile.namelist():
       filenameparts = filename.split("/")
       for i in range(len(filenameparts)):
@@ -420,7 +426,10 @@ class XpiFile(ZipFileCatcher):
       newlang = origlang
     if newregion is None:
       newregion = self.region
-    newlocale = "%s-%s" % (newlang, newregion)
+    if newregion:
+      newlocale = "%s-%s" % (newlang, newregion)
+    else:
+      newlocale = newlang
     for filename in self.namelist():
       filenameparts = filename.split('/')
       basename = filenameparts[-1]
