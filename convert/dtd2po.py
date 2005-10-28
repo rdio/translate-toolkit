@@ -191,20 +191,25 @@ class dtd2po:
 
     return thepo
 
+  # labelsuffixes and accesskeysuffixes are combined to accelerator notation
+  labelsuffixes = (".label", ".title")
+  accesskeysuffixes = (".accesskey", ".accessKey", ".akey")
+
   def findmixedentities(self, thedtdfile):
     """creates self.mixedentities from the dtd file..."""
-    self.mixedentities = {} # those entities which have a .label and .accesskey combined
+    self.mixedentities = {} # those entities which have a .label/.title and .accesskey combined
     for entity in thedtdfile.index.keys():
-      if entity.endswith(".label"):
-        entitybase = entity[:entity.rfind(".label")]
-        # see if there is a matching accesskey in this line, making this a
-        # mixed entity
-        for akeytype in (".accesskey", ".accessKey", ".akey"):
-          if thedtdfile.index.has_key(entitybase + akeytype):
-            # add both versions to the list of mixed entities
-            self.mixedentities[entity] = {}
-            self.mixedentities[entitybase+akeytype] = {}
-      # check if this could be a mixed entity (".label" and ".accesskey")
+      for labelsuffix in self.labelsuffixes:
+        if entity.endswith(labelsuffix):
+          entitybase = entity[:entity.rfind(labelsuffix)]
+          # see if there is a matching accesskey in this line, making this a
+          # mixed entity
+          for akeytype in self.accesskeysuffixes:
+            if thedtdfile.index.has_key(entitybase + akeytype):
+              # add both versions to the list of mixed entities
+              self.mixedentities[entity] = {}
+              self.mixedentities[entitybase+akeytype] = {}
+          # check if this could be a mixed entity (labelsuffix and ".accesskey")
 
   def convertdtdelement(self, thedtdfile, thedtd, mixbucket="dtd"):
     """converts a dtd element from thedtdfile to a po element, handling mixed entities along the way..."""
@@ -218,19 +223,24 @@ class dtd2po:
         return None
       else:
         # depending on what we come across first, work out the label and the accesskey
-        if thedtd.entity.endswith(".label"):
-          entitybase = thedtd.entity[:thedtd.entity.rfind(".label")]
-          for akeytype in (".accesskey", ".accessKey", ".akey"):
-            if thedtdfile.index.has_key(entitybase + akeytype):
-              labelentity, labeldtd = thedtd.entity, thedtd
-              accesskeyentity = labelentity[:labelentity.rfind(".label")]+akeytype
-              accesskeydtd = thedtdfile.index[accesskeyentity]
+        for labelsuffix in self.labelsuffixes:
+          if thedtd.entity.endswith(labelsuffix):
+            entitybase = thedtd.entity[:thedtd.entity.rfind(labelsuffix)]
+            for akeytype in self.accesskeysuffixes:
+              if thedtdfile.index.has_key(entitybase + akeytype):
+                labelentity, labeldtd = thedtd.entity, thedtd
+                accesskeyentity = labelentity[:labelentity.rfind(labelsuffix)]+akeytype
+                accesskeydtd = thedtdfile.index[accesskeyentity]
+                break
         else:
-          for akeytype in (".accesskey", ".accessKey", ".akey"):
+          for akeytype in self.accesskeysuffixes:
             if thedtd.entity.endswith(akeytype):
               accesskeyentity, accesskeydtd = thedtd.entity, thedtd
-              labelentity = accesskeyentity[:accesskeyentity.rfind(akeytype)]+".label"
-              labeldtd = thedtdfile.index[labelentity]
+              for labelsuffix in self.labelsuffixes:
+                labelentity = accesskeyentity[:accesskeyentity.rfind(akeytype)]+labelsuffix
+                if thedtdfile.index.has_key(labelentity):
+                  labeldtd = thedtdfile.index[labelentity]
+                  break
         thepo = self.convertmixedelement(labeldtd, accesskeydtd)
         if thepo is not None:
           self.mixedentities[accesskeyentity][mixbucket] = 1
