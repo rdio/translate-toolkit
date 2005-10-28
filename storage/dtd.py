@@ -123,20 +123,43 @@ class dtdelement:
           e = quote.findend(line,'<!ENTITY')
           line = line[e:]
           self.entitypart = "name"
+          self.entitytype = "internal"
         if self.entitypart == "name":
           e = 0
           while (e < len(line) and line[e].isspace()): e += 1
           self.entity = ''
+          if (e < len(line) and line[e] == '%'):
+            self.entitytype = "external"
+            self.entityparameter = ""
+            e += 1
+            while (e < len(line) and line[e].isspace()): e += 1
           while (e < len(line) and not line[e].isspace()):
             self.entity += line[e]
             e += 1
           while (e < len(line) and line[e].isspace()): e += 1
           if self.entity:
-            self.entitypart = "definition"
+            if self.entitytype == "external":
+              self.entitypart = "parameter"
+            else:
+              self.entitypart = "definition"
             # remember the start position and the quote character
             if e == len(line):
               self.entityhelp = None
               continue
+            elif self.entitypart == "definition":
+              self.entityhelp = (e,line[e])
+              self.instring = 0
+        if self.entitypart == "parameter":
+          paramstart = e
+          while (e < len(line) and line[e].isalnum()): e += 1
+          self.entityparameter += line[paramstart:e]
+          while (e < len(line) and line[e].isspace()): e += 1
+          line = line[e:]
+          e = 0
+          if not line:
+            continue
+          if line[0] in ('"', "'"):
+            self.entitypart = "definition"
             self.entityhelp = (e,line[e])
             self.instring = 0
         if self.entitypart == "definition":
@@ -181,7 +204,10 @@ class dtdelement:
     # for gs in self.locgroupstarts: yield gs
     # for n in self.locnotes: yield n
     if len(self.entity) > 0: 
-      entityline = '<!ENTITY '+self.entity+' '+self.definition+'>'
+      if self.entitytype == 'internal':
+        entityline = '<!ENTITY '+self.entity+' '+self.definition+'>'
+      elif self.entitytype == 'external':
+        entityline = '<!ENTITY % '+self.entity+' '+self.entityparameter+' '+self.definition+'>'
       if isinstance(entityline, unicode):
         entityline = entityline.encode('UTF-8')
       yield entityline+'\n'
@@ -235,4 +261,9 @@ class dtdfile:
     self.index = {}
     for dtd in self.dtdelements:
       self.index[dtd.entity] = dtd
+
+if __name__ == "__main__":
+  import sys
+  d = dtdfile(sys.stdin)
+  sys.stdout.writelines(d.tolines())
 
