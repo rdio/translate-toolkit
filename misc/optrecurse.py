@@ -216,8 +216,11 @@ class RecursiveOptionParser(optparse.OptionParser, object):
 
   def setprogressoptions(self):
     """sets the progress options"""
-    self.progresstypes = {"none": progressbar.NoProgressBar, "dots": progressbar.DotsProgressBar,
-                          "bar": progressbar.HashProgressBar, "verbose": progressbar.VerboseProgressBar}
+    self.progresstypes = {"none": progressbar.NoProgressBar,
+                          "bar": progressbar.HashProgressBar,
+                          "dots": progressbar.DotsProgressBar,
+                          "names": progressbar.MessageProgressBar,
+                          "verbose": progressbar.VerboseProgressBar}
     progressoption = optparse.Option(None, "--progress", dest="progress", default="bar",
                       choices = self.progresstypes.keys(), metavar="PROGRESS",
                       help="show progress as: %s" % (", ".join(self.progresstypes)))

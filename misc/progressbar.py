@@ -86,6 +86,17 @@ class ProgressBar:
     """displays the progress bar"""
     print self
 
+class MessageProgressBar(ProgressBar):
+  """a ProgressBar that just writes out the messages without any progress display"""
+  def __init__(self, *args, **kwargs):
+    import sys
+    self.sys = sys
+    ProgressBar.__init__(self, *args, **kwargs)
+
+  def show(self, verbosemessage):
+    self.sys.stdout.write(verbosemessage + '\n')
+    self.sys.stdout.flush()
+
 class HashProgressBar(ProgressBar):
   """a ProgressBar which knows how to go back to the beginning of the line..."""
   def __init__(self, *args, **kwargs):
