@@ -74,16 +74,10 @@ class dtd2po:
     unquoted = self.extractdtdstring(thedtd.definition)
     # escape backslashes...
     unquoted = unquoted.replace("\\", "\\\\")
-    if not unquoted:
-      # don't include this element if the msgid is empty
-      # TODO: with throwing away blank elements we may lose some comments
-      # these could perhaps be included (although they may refer to the blank element...)
-      return 0
     # now split the string into lines and quote them
     msgid = [quote.quotestr(line) for line in unquoted.split('\n')]
     thepo.msgid = msgid
     thepo.msgstr = ['""']
-    return 1
 
   def convertmixedelement(self,labeldtd,accesskeydtd):
     labelpo = self.convertelement(labeldtd)
@@ -186,9 +180,7 @@ class dtd2po:
 
     # do a standard translation
     self.convertcomments(thedtd,thepo)
-    if not self.convertstrings(thedtd,thepo):
-      return None
-
+    self.convertstrings(thedtd,thepo)
     return thepo
 
   # labelsuffixes and accesskeysuffixes are combined to accelerator notation
@@ -247,10 +239,7 @@ class dtd2po:
           self.mixedentities[labelentity][mixbucket] = 1
           return thepo
         # otherwise the mix failed. add each one separately...
-    if thedtd.entity:
-      return self.convertelement(thedtd)
-    else:
-      return None
+    return self.convertelement(thedtd)
 
   def convertfile(self, thedtdfile):
     thepofile = po.pofile()
@@ -261,6 +250,8 @@ class dtd2po:
     self.findmixedentities(thedtdfile)
     # go through the dtd and convert each element
     for thedtd in thedtdfile.dtdelements:
+      if thedtd.isnull():
+        continue
       thepo = self.convertdtdelement(thedtdfile, thedtd)
       if thepo is not None:
         thepofile.poelements.append(thepo)
@@ -278,7 +269,12 @@ class dtd2po:
     self.findmixedentities(translateddtdfile)
     # go through the dtd files and convert each element
     for origdtd in origdtdfile.dtdelements:
+      if origdtd.isnull():
+        continue
       origpo = self.convertdtdelement(origdtdfile, origdtd, mixbucket="orig")
+      if origpo is None:
+        # this means its a mixed entity (with accesskey) that's already been dealt with)
+        continue
       if origdtd.entity in translateddtdfile.index:
         translateddtd = translateddtdfile.index[origdtd.entity]
         translatedpo = self.convertdtdelement(translateddtdfile, translateddtd, mixbucket="translate")
@@ -288,8 +284,6 @@ class dtd2po:
         if translatedpo is not None and not self.blankmsgstr:
           origpo.msgstr = translatedpo.msgid
         thepofile.poelements.append(origpo)
-      elif translatedpo is not None:
-        print >>sys.stderr, "error converting original dtd entity %s" % origdtd.entity
     thepofile.removeduplicates(self.duplicatestyle)
     return thepofile
 
