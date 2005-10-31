@@ -137,10 +137,10 @@ class XpiFile(ZipFileCatcher):
       del kwargs["includenonloc"]
     if "compression" not in kwargs:
       kwargs["compression"] = zipfile.ZIP_DEFLATED
+    self.locale = kwargs.pop("locale", None)
+    self.region = kwargs.pop("region", None)
     super(XpiFile, self).__init__(*args, **kwargs)
     self.jarfiles = {}
-    self.locale = None
-    self.region = None
     self.findlangreg()
     self.jarprefixes = self.findjarprefixes()
     self.reverseprefixes = dict([
@@ -167,8 +167,8 @@ class XpiFile(ZipFileCatcher):
   def findlangreg(self):
     """finds the common prefix of all the files stored in the jar files"""
     dirstructure = {}
-    locale = None
-    region = None
+    locale = self.locale
+    region = self.region
     localematch = sre.compile("^[a-z]{2,3}(-[a-zA-Z]{2,3}|)$")
     regionmatch = sre.compile("^[a-zA-Z]{2,3}$")
     for jarfilename, jarfile in self.iterjars():
@@ -439,7 +439,7 @@ class XpiFile(ZipFileCatcher):
 
   def clone(self, newfilename, newmode=None, newlang=None, newregion=None):
     """Create a new .xpi file with the same contents as this one..."""
-    other = XpiFile(newfilename, "w")
+    other = XpiFile(newfilename, "w", locale=newlang, region=newregion)
     origlang = self.locale[:self.locale.find("-")]
     if newlang is None:
       newlang = origlang
