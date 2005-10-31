@@ -169,8 +169,8 @@ class XpiFile(ZipFileCatcher):
     dirstructure = {}
     locale = None
     region = None
-    localematch = sre.compile("[a-z]{2,3}-[a-zA-Z]{2,3}")
-    regionmatch = sre.compile("[a-zA-Z]{2,3}")
+    localematch = sre.compile("^[a-z]{2,3}(-[a-zA-Z]{2,3}|)$")
+    regionmatch = sre.compile("^[a-zA-Z]{2,3}$")
     for jarfilename, jarfile in self.iterjars():
       jarname = "".join(jarfilename.split('/')[-1:]).replace(".jar", "", 1)
       if localematch.match(jarname):
@@ -223,14 +223,14 @@ class XpiFile(ZipFileCatcher):
 
   def setlangreg(self, locale, region):
     """set the locale and region of this xpi"""
-    if locale == 0:
+    if locale == 0 or locale is None:
         raise ValueError("unable to determine locale")
     self.locale = locale
     self.region = region
     self.dirmap = {}
     if self.locale is not None:
       self.dirmap[('locale', self.locale)] = ('lang-reg',)
-    if self.region is not None:
+    if self.region:
       self.dirmap[('locale', self.region)] = ('reg',)
 
   def findjarprefixes(self):
