@@ -194,6 +194,8 @@ def mozillapropertiesdecode(source):
   # and modified it to retain escaped control characters
   output = u""
   s = 0
+  if isinstance(source, str):
+    source = source.decode("utf-8")
   def unichr2(i):
     """Returns a Unicode string of one character with ordinal 32 <= i, otherwise an escaped control character"""
     if 32 <= i:
@@ -216,35 +218,23 @@ def mozillapropertiesdecode(source):
     if c == '\n': pass
     # propertyescapes lookups
     elif c in propertyescapes: output += propertyescapes[c]
-    # \000 (octal) escapes
-    elif c in "01234567":
-      x = ord(c) - ord('0')
-      c = source[s]
-      if c in "01234567":
-        x = (x << 3) + ord(c) - ord('0')
-        s += 1
-        c = source[s]
-        if c in "01234567":
-          x = (x << 3) + ord(c) - ord('0')
-          s += 1
-      output += unichr2(x)
-    # \xXX (hex) escapes
     # \uXXXX escapes
-    # \UXXXXXXXX escapes
-    elif c in "xuU":
-      digits = {'x': 2, 'u': 4, 'U':8}[c]
-      if s + digits > len(source):
-        raise ValueError("End of string in Unicode escape sequence")
+    # \UXXXX escapes
+    elif c in "uU":
+      digits = 4
       x = 0
       for digit in range(digits):
         x <<= 4
+        if s + digit >= len(source):
+          digits = digit
+          break
         c = source[s+digit].lower()
         if c.isdigit():
           x += ord(c) - ord('0')
         elif c in "abcdef":
           x += ord(c) - ord('a') + 10
         else:
-          raise ValueError("Invalid digit %r in Unicode escape sequence %r" % (c, source[s:s+digits]))
+          break
       s += digits
       output += unichr2(x)
     elif c == "N":
