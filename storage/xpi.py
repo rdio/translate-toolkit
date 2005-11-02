@@ -441,6 +441,7 @@ class XpiFile(ZipFileCatcher):
     """Create a new .xpi file with the same contents as this one..."""
     other = XpiFile(newfilename, "w", locale=newlang, region=newregion)
     origlang = self.locale[:self.locale.find("-")]
+    # TODO: check if this language replacement code is still neccessary
     if newlang is None:
       newlang = origlang
     if newregion is None:
@@ -477,6 +478,7 @@ class XpiFile(ZipFileCatcher):
         outputstream.close()
     other.close()
     if newmode is None: newmode = self.mode
+    if newmode == "w": newmode = "a"
     other = XpiFile(newfilename, newmode)
     other.setlangreg(newlocale, newregion)
     return other
