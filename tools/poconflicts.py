@@ -125,7 +125,7 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
         else:
           msgstr = self.unquote(thepo.msgid, options)
           msgid = self.unquote(thepo.msgstr, options)
-        self.textmap.setdefault(msgid, []).append((msgstr, thepo))
+        self.textmap.setdefault(msgid, []).append((msgstr, thepo, fullinputpath))
 
   def flatten(self, text, joinchar):
     """flattens text to just be words"""
@@ -142,7 +142,7 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
     self.conflictmap = {}
     for msgid, translations in self.textmap.iteritems():
       if len(translations) > 1:
-        uniquetranslations = dict.fromkeys([msgstr for msgstr, thepo in translations])
+        uniquetranslations = dict.fromkeys([msgstr for msgstr, thepo, filename in translations])
         if len(uniquetranslations) > 1:
           self.conflictmap[self.flatten(msgid, " ")] = translations
 
@@ -166,7 +166,8 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
       flatmsgid = self.flatten(msgid, "-")
       fulloutputpath = os.path.join(options.output, flatmsgid + os.extsep + "po")
       conflictfile = po.pofile()
-      for msgstr, thepo in translations:
+      for msgstr, thepo, filename in translations:
+        thepo.othercomments.append("# (poconflicts) %s\n" % filename)
         conflictfile.poelements.append(thepo)
       open(fulloutputpath, "w").writelines(conflictfile.tolines())
 
