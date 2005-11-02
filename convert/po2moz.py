@@ -39,22 +39,26 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
   def initoutputarchive(self, options):
     """creates an outputarchive if required"""
     if options.output and self.isarchive(options.output, 'output'):
-      if self.isarchive(options.template, 'template'):
-        newlang = None
-	newregion = None
-	if options.locale is not None:
-	  if options.locale.count("-") > 1:
-	    raise ValueError("Invalid locale: %s - should be of the form xx-YY" % options.locale)
-          elif "-" in options.locale:
-	    newlang, newregion = options.locale.split("-")
-          else:
-            newlang, newregion = options.locale, ""
+      newlang = None
+      newregion = None
+      if options.locale is not None:
+        if options.locale.count("-") > 1:
+          raise ValueError("Invalid locale: %s - should be of the form xx-YY" % options.locale)
+        elif "-" in options.locale:
+          newlang, newregion = options.locale.split("-")
+        else:
+          newlang, newregion = options.locale, ""
+      if options.clonexpi is not None:
+        originalxpi = xpi.XpiFile(options.clonexpi, "r")
+        options.outputarchive = originalxpi.clone(options.output, "w", newlang=newlang, newregion=newregion)
+      elif self.isarchive(options.template, 'template'):
         options.outputarchive = options.templatearchive.clone(options.output, "a", newlang=newlang, newregion=newregion)
       else:
         if os.path.exists(options.output):
-          options.outputarchive = xpi.XpiFile(options.output)
+          options.outputarchive = xpi.XpiFile(options.output, "a", locale=newlang, region=newregion)
         else:
-          options.outputarchive = xpi.XpiFile(options.output, "w")
+          # FIXME: this is unlikely to work because it has no jar files
+          options.outputarchive = xpi.XpiFile(options.output, "w", locale=newlang, region=newregion)
 
   def recursiveprocess(self, options):
     """recurse through directories and convert files"""
@@ -73,7 +77,7 @@ def main():
              ("it.po", "it"): ("it", prop2mozfunny.po2it),
              ("ini.po", "ini"): ("ini", prop2mozfunny.po2it),
              ("inc.po", "inc"): ("inc", prop2mozfunny.po2inc),
-             (None, "*"): ("*", convert.copytemplate),
+             # (None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}
   # handle search and replace
@@ -85,6 +89,8 @@ def main():
   parser = MozConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.add_option("-l", "--locale", dest="locale", default=None,
     help="set output locale (required as this sets the directory names)", metavar="LOCALE")
+  parser.add_option("", "--clonexpi", dest="clonexpi", default=None,
+    help="clone xpi structure from the given xpi file")
   parser.add_fuzzy_option()
   parser.replacer = replacer
   parser.run()
