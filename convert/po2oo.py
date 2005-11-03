@@ -101,7 +101,14 @@ class reoo:
         theoo = self.index[key] # find the oo
         self.applytranslation(key, subkey, theoo, thepo)
       else:
-        print >>sys.stderr, "couldn't find key %r in po %s" % (key, "\n".join(thepo.tolines()))
+        print >>sys.stderr, "couldn't find key %r in po:" % key
+        try:
+          polines = "\n".join(thepo.tolines())
+          if isinstance(polines, unicode):
+            polines = polines.encode("utf-8")
+          print >>sys.stderr, polines
+        except:
+          print >>sys.stderr, "error outputting po %r" % (thepo.tolines(),)
 
   def applytranslation(self, key, subkey, theoo, thepo):
     """applies the translation for entity in the po element to the dtd element"""
