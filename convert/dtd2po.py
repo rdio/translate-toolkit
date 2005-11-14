@@ -79,6 +79,47 @@ class dtd2po:
     thepo.msgid = msgid
     thepo.msgstr = ['""']
 
+  def convertelement(self,thedtd):
+    thepo = po.poelement()
+    # remove unwanted stuff
+    for commentnum in range(len(thedtd.comments)):
+      commenttype,locnote = thedtd.comments[commentnum]
+      # if this is a localization note
+      if commenttype == 'locnote':
+        # parse the locnote into the entity and the actual note
+        typeend = quote.findend(locnote,'LOCALIZATION NOTE')
+        # parse the id
+        idstart = locnote.find('(',typeend)
+        if idstart == -1: continue
+        idend = locnote.find(')',idstart+1)
+        entity = locnote[idstart+1:idend].strip()
+        # parse the actual note
+        actualnotestart = locnote.find(':',idend+1)
+        actualnoteend = locnote.find('-->',idend)
+        actualnote = locnote[actualnotestart+1:actualnoteend].strip()
+        # if it's for this entity, process it
+        if thedtd.entity == entity:
+          # if it says don't translate (and nothing more),
+          if actualnote == "DONT_TRANSLATE":
+            # take out the entity,definition and the DONT_TRANSLATE comment
+            thedtd.entity = ""
+            thedtd.definition = ""
+            del thedtd.comments[commentnum]
+            # finished this for loop
+            break
+          else:
+            # convert it into a msgidcomment, to be processed by convertcomments
+            # the actualnote is followed by a literal \n
+            thedtd.comments[commentnum] = ("msgidcomment",quote.quotestr("_: "+actualnote+"\\n"))
+    # do a standard translation
+    self.convertcomments(thedtd,thepo)
+    self.convertstrings(thedtd,thepo)
+    return thepo
+
+  # labelsuffixes and accesskeysuffixes are combined to accelerator notation
+  labelsuffixes = (".label", ".title")
+  accesskeysuffixes = (".accesskey", ".accessKey", ".akey")
+
   def convertmixedelement(self,labeldtd,accesskeydtd):
     labelpo = self.convertelement(labeldtd)
     accesskeypo = self.convertelement(accesskeydtd)
@@ -122,7 +163,6 @@ class dtd2po:
               accesskeyaltcasepos = searchpos
               # note: we keep on looping through in hope of exact match
       searchpos += 1
-
     # if we didn't find an exact case match, use an alternate one if available
     if accesskeypos == -1:
       accesskeypos = accesskeyaltcasepos
@@ -138,54 +178,6 @@ class dtd2po:
     thepo.msgid = msgid
     thepo.msgstr = ['""']
     return thepo
-
-  def convertelement(self,thedtd):
-    thepo = po.poelement()
-
-    # remove unwanted stuff
-    for commentnum in range(len(thedtd.comments)):
-      commenttype,locnote = thedtd.comments[commentnum]
-      # if this is a localization note
-      if commenttype == 'locnote':
-        # parse the locnote into the entity and the actual note
-        typeend = quote.findend(locnote,'LOCALIZATION NOTE')
-
-        # parse the id
-        idstart = locnote.find('(',typeend)
-        if idstart == -1: continue
-        idend = locnote.find(')',idstart+1)
-
-        entity = locnote[idstart+1:idend].strip()
-
-        # parse the actual note
-        actualnotestart = locnote.find(':',idend+1)
-        actualnoteend = locnote.find('-->',idend)
-
-        actualnote = locnote[actualnotestart+1:actualnoteend].strip()
-
-        # if it's for this entity, process it
-        if thedtd.entity == entity:
-          # if it says don't translate (and nothing more),
-          if actualnote == "DONT_TRANSLATE":
-            # take out the entity,definition and the DONT_TRANSLATE comment
-            thedtd.entity = ""
-            thedtd.definition = ""
-            del thedtd.comments[commentnum]
-            # finished this for loop
-            break
-          else:
-            # convert it into a msgidcomment, to be processed by convertcomments
-            # the actualnote is followed by a literal \n
-            thedtd.comments[commentnum] = ("msgidcomment",quote.quotestr("_: "+actualnote+"\\n"))
-
-    # do a standard translation
-    self.convertcomments(thedtd,thepo)
-    self.convertstrings(thedtd,thepo)
-    return thepo
-
-  # labelsuffixes and accesskeysuffixes are combined to accelerator notation
-  labelsuffixes = (".label", ".title")
-  accesskeysuffixes = (".accesskey", ".accessKey", ".akey")
 
   def findmixedentities(self, thedtdfile):
     """creates self.mixedentities from the dtd file..."""
