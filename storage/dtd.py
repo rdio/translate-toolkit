@@ -177,7 +177,6 @@ class dtdelement:
           e = self.entityhelp[0]
           if (self.entityhelp[1] == "'"):
             (defpart,self.instring) = quote.extract(line[e:],"'","'",None,startinstring=self.instring)
-            defpart = defpart.replace("&apos;", "'")
           elif (self.entityhelp[1] == '"'):
             (defpart,self.instring) = quote.extract(line[e:],'"','"',None,startinstring=self.instring)
           else:

@@ -65,6 +65,8 @@ class dtd2po:
     if len(dtdstring) == 0: dtdstring = '""'
     quotechar = dtdstring[0]
     extracted,quotefinished = quote.extract(dtdstring,quotechar,quotechar,None)
+    if quotechar == "'" and "&apos;" in extracted:
+      extracted = extracted.replace("&apos;", "'")
     # the quote characters should be the first and last characters in the string
     # of course there could also be quote characters within the string; not handled here
     return extracted[1:-1]
