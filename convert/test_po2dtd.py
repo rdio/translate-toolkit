@@ -4,6 +4,8 @@ from translate.convert import po2dtd
 from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import dtd
+from py import test
+import warnings
 
 class TestPO2DTD:
     def po2dtd(self, posource):
@@ -40,6 +42,14 @@ class TestPO2DTD:
 
     def test_ampersandwarning(self):
         """tests that proper warnings are given if invalid ampersands occur"""
+        simplestring = '''#: simple.warningtest\nmsgid "Simple String"\nmsgstr "Dimpled &Ring"\n'''
+        warnings.resetwarnings()
+        warnings.simplefilter("error")
+        assert test.raises(Warning, po2dtd.removeinvalidamps, "simple.warningtest", "Dimpled &Ring")
+        warnings.resetwarnings()
+
+    def test_ampersandfix(self):
+        """tests that invalid ampersands are fixed in the dtd"""
         simplestring = '''#: simple.string\nmsgid "Simple String"\nmsgstr "Dimpled &Ring"\n'''
         dtdfile = self.po2dtd(simplestring)
         dtdsource = "".join(dtdfile.tolines())
