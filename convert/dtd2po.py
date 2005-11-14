@@ -53,10 +53,10 @@ class dtd2po:
         thepo.msgidcomments.append(comment + "\n")
       # handle normal comments
       else:
-        thepo.visiblecomments.append("# " + quote.stripcomment(comment) + "\n")
+        thepo.othercomments.append("# " + quote.stripcomment(comment) + "\n")
     # handle group stuff
     if self.currentgroup is not None:
-      thepo.visiblecomments.append("# " + quote.stripcomment(self.currentgroup) + "\n")
+      thepo.othercomments.append("# " + quote.stripcomment(self.currentgroup) + "\n")
     if entity.endswith(".height") or entity.endswith(".width") or entity.endswith(".size"):
       thepo.msgidcomments.append(quote.quotestr("_: Do not translate this.  Only change the numeric values if you need this dialogue box to appear bigger.\\n"))
 
@@ -132,8 +132,8 @@ class dtd2po:
     thepo.sourcecomments += accesskeypo.sourcecomments
     thepo.msgidcomments += labelpo.msgidcomments
     thepo.msgidcomments += accesskeypo.msgidcomments
-    thepo.visiblecomments += labelpo.visiblecomments
-    thepo.visiblecomments += accesskeypo.visiblecomments
+    thepo.othercomments += labelpo.othercomments
+    thepo.othercomments += accesskeypo.othercomments
     # redo the strings from original dtd...
     label = self.extractdtdstring(labeldtd.definition).decode('UTF-8')
     accesskey = self.extractdtdstring(accesskeydtd.definition).decode('UTF-8')
