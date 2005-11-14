@@ -63,6 +63,22 @@ class SeriousFilterFailure(FilterFailure):
   """This exception signals that a Filter didn't pass, and the bad translation might break an application (so the string will be marked fuzzy)"""
   pass
 
+def passes(filterfunction, str1, str2):
+  """returns whether the given strings pass on the given test, handling FilterFailures"""
+  try:
+    filterresult = filterfunction(str1, str2)
+  except FilterFailure, e:
+    filterresult = False
+  return filterresult
+
+def fails(filterfunction, str1, str2):
+  """returns whether the given strings fail on the given test, handling FilterFailures"""
+  try:
+    filterresult = filterfunction(str1, str2)
+  except FilterFailure, e:
+    filterresult = False
+  return not filterresult
+
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
   def __init__(self, targetlanguage=None, accelmarkers=[], varmatches=[], notranslatewords=[], musttranslatewords=[], validchars=None):
