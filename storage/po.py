@@ -515,7 +515,7 @@ class pofile:
 
   def updateheaderplural(self, nplurals, plural):
     """update the Plural-Form PO header"""
-    if isinstance(nplurals, str):
+    if isinstance(nplurals, basestring):
       nplurals = int(nplurals)
     self.updateheader( Plural_Forms = "nplurals=%d; plural=%s;" % (nplurals, plural) )
 
