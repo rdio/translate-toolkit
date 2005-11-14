@@ -27,6 +27,7 @@ from translate.storage import dtd
 from translate.storage import po
 from translate.misc import quote
 from translate import __version__
+import warnings
 
 # labelsuffixes and accesskeysuffixes are combined to accelerator notation
 labelsuffixes = (".label", ".title")
@@ -96,7 +97,7 @@ def removeinvalidamps(entity, unquotedstr):
       # otherwise, we found a problem
       invalidamps.append(amppos-1)
   if len(invalidamps) > 0:
-    print >>sys.stderr, "ampcheck failed in %s (file %s)" % (entity, sys.argv[-1])
+    warnings.warn("invalid ampersands in dtd entity %s" % (entity))
     comp = 0
     for amppos in invalidamps:
       unquotedstr = unquotedstr[:amppos-comp] + unquotedstr[amppos-comp+1:]
