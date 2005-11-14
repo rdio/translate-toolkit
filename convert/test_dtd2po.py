@@ -35,6 +35,17 @@ class TestDTD2PO:
         poelement = self.singleelement(pofile)
         assert "credit.translation" in "".join(poelement.tolines())
 
+    def test_kdecomment_merge(self):
+        """test that LOCALIZATION NOTES are added properly as KDE comments and merged with duplicate comments"""
+        dtdtemplate = '<!--LOCALIZATION NOTE (%s): Edit box appears beside this label -->\n' + \
+            '<!ENTITY %s "If publishing to a FTP site, enter the HTTP address to browse to:">\n'
+        dtdsource = dtdtemplate % ("note1.label", "note1.label") + dtdtemplate % ("note2.label", "note2.label")
+        pofile = self.dtd2po(dtdsource)
+        pofile.poelements = pofile.poelements[1:]
+        posource = ''.join(pofile.tolines())
+        print posource
+        assert posource.count('"_:') <= len(pofile.poelements)
+
     def test_donttranslate_label(self):
         """bug 30 - strangeness when label entity is marked DONT_TRANSLATE and accesskey is not"""
         dtdsource = '<!--LOCALIZATION NOTE (editorCheck.label): DONT_TRANSLATE -->\n' + \
