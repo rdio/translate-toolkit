@@ -147,7 +147,10 @@ class Replacer:
 
   def doreplace(self, text):
     """actually replace the text"""
-    return text.replace(self.searchstring, self.replacestring)
+    if self.searchstring is not None and self.replacestring is not None:
+      return text.replace(self.searchstring, self.replacestring)
+    else:
+      return text
 
   def searchreplaceinput(self, inputfile, outputfile, templatefile, **kwargs):
     """copies the input file to the output file, searching and replacing"""
