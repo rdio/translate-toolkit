@@ -33,8 +33,7 @@ class TestDTD2PO:
         dtdsource = "<!ENTITY test.me 'bananas &apos; for sale'>\n"
         pofile = self.dtd2po(dtdsource)
         poelement = self.singleelement(pofile)
-        assert po.unquotefrompo(poelement.msgid) == "bananas &apos; for sale"
-        assert po.unquotefrompo(poelement.msgstr) == ""
+        assert po.unquotefrompo(poelement.msgid) == "bananas ' for sale"
 
     def test_emptyentity(self):
         """checks that empty entity definitions survive into po file, bug 15"""
