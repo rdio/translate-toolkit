@@ -209,10 +209,10 @@ class dtdelement:
     # for gs in self.locgroupstarts: yield gs
     # for n in self.locnotes: yield n
     if len(self.entity) > 0: 
-      if self.entitytype == 'internal':
-        entityline = '<!ENTITY '+self.entity+' '+self.definition+'>'
-      elif self.entitytype == 'external':
+      if getattr(self, 'entitytype', None) == 'external':
         entityline = '<!ENTITY % '+self.entity+' '+self.entityparameter+' '+self.definition+'>'
+      else:
+        entityline = '<!ENTITY '+self.entity+' '+self.definition+'>'
       if isinstance(entityline, unicode):
         entityline = entityline.encode('UTF-8')
       yield entityline+'\n'
