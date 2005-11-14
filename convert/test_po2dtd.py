@@ -8,6 +8,12 @@ from py import test
 import warnings
 
 class TestPO2DTD:
+    def setup_method(self, method):
+        warnings.resetwarnings()
+
+    def teardown_method(self, method):
+        warnings.resetwarnings()
+
     def po2dtd(self, posource):
         """helper that converts po source to dtd source without requiring files"""
         inputfile = wStringIO.StringIO(posource)
@@ -43,10 +49,15 @@ class TestPO2DTD:
     def test_ampersandwarning(self):
         """tests that proper warnings are given if invalid ampersands occur"""
         simplestring = '''#: simple.warningtest\nmsgid "Simple String"\nmsgstr "Dimpled &Ring"\n'''
-        warnings.resetwarnings()
         warnings.simplefilter("error")
         assert test.raises(Warning, po2dtd.removeinvalidamps, "simple.warningtest", "Dimpled &Ring")
-        warnings.resetwarnings()
+
+    def test_missingaccesskey(self):
+        """tests that proper warnings are given if access key is missing"""
+        simplepo = '''#: simple.label\n#: simple.accesskey\nmsgid "Simple &String"\nmsgstr "Dimpled Ring"\n'''
+        simpledtd = '''<!ENTITY simple.label "Simple String">\n<!ENTITY simple.accesskey "S">'''
+        warnings.simplefilter("error")
+        assert test.raises(Warning, self.merge2dtd, simpledtd, simplepo)
 
     def test_ampersandfix(self):
         """tests that invalid ampersands are fixed in the dtd"""
