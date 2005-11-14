@@ -35,11 +35,14 @@ class TestDTD2PO:
         poelement = self.singleelement(pofile)
         assert "credit.translation" in "".join(poelement.tolines())
 
-    def test_entitynameincomment(self):
-        """bug 30 - error converting original dtd entity """
-        dtdsource = '<!--LOCALIZATION NOTE (editorCheck.label):\nDONT_TRANSLATE -->\n' + \
+    def test_donttranslate_label(self):
+        """bug 30 - strangeness when label entity is marked DONT_TRANSLATE and accesskey is not"""
+        dtdsource = '<!--LOCALIZATION NOTE (editorCheck.label): DONT_TRANSLATE -->\n' + \
             '<!ENTITY editorCheck.label "Composer">\n<!ENTITY editorCheck.accesskey "c">\n'
         pofile = self.dtd2po(dtdsource)
-        poelement = self.singleelement(pofile)
-        assert '# DONT_TRANSLATE\n' in poelement.othercomments
+        posource = ''.join(pofile.tolines())
+        # we need to decided what we're going to do here - see the comments in bug 30
+        # this tests the current implementation which is that the DONT_TRANSLATE string is removed, but the other remains
+        assert 'editorCheck.label' not in posource
+        assert 'editorCheck.accesskey' in posource
 
