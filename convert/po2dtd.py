@@ -142,6 +142,8 @@ def applytranslation(entity, thedtd, thepo, mixedentities):
       if entity.endswith(akeytype):
         if entity in mixedentities:
           unquotedstr = getaccesskey(unquotedstr)
+          if not unquotedstr:
+            warnings.warn("Could not find accesskey for %s" % entity)
   # handle invalid left-over ampersands (usually unneeded access key shortcuts)
   unquotedstr = removeinvalidamps(entity, unquotedstr)
   # finally set the new definition in the dtd, but not if its empty
