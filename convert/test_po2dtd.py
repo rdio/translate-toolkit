@@ -21,3 +21,10 @@ class TestPO2DTD:
         dtdsource = "".join(dtdfile.tolines())
         assert "</span>" in dtdsource
 
+    def test_escapedstr(self):
+        """tests that \n in msgstr is escaped correctly in dtd"""
+        multilinepo = '''#: pref.menuPath\nmsgid "Hello\\nEveryone"\nmsgstr "Good day\\nAll"\n'''
+        dtdfile = self.po2dtd(multilinepo)
+        dtdsource = "".join(dtdfile.tolines())
+        assert "Good day\\nAll" in dtdsource
+
