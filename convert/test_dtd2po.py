@@ -27,6 +27,5 @@ class TestDTD2PO:
         pofile = self.dtd2po(dtdsource)
         assert len(pofile.poelements) == 2
         poelement = pofile.poelements[1]
-        assert po.unquotefrompo(poelement.msgid) == ""
-        assert po.unquotefrompo(poelement.msgstr) == ""
+        assert "credit.translation" in "".join(poelement.tolines())
 
