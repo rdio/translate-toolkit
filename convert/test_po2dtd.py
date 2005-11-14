@@ -14,6 +14,16 @@ class TestPO2DTD:
         outputdtd = convertor.convertfile(inputpo)
         return outputdtd
 
+    def merge2dtd(self, dtdsource, posource):
+        """helper that merges po translations to dtd source without requiring files"""
+        inputfile = wStringIO.StringIO(posource)
+        inputpo = po.pofile(inputfile)
+        templatefile = wStringIO.StringIO(dtdsource)
+        templatedtd = dtd.dtdfile(templatefile)
+        convertor = po2dtd.redtd(templatedtd)
+        outputdtd = convertor.convertfile(inputpo)
+        return outputdtd
+
     def test_joinlines(self):
         """tests that po lines are joined seamlessly (bug 16)"""
         multilinepo = '''#: pref.menuPath\nmsgid ""\n"<span>Tools &gt; Options</"\n"span>"\nmsgstr ""\n'''
@@ -27,4 +37,11 @@ class TestPO2DTD:
         dtdfile = self.po2dtd(multilinepo)
         dtdsource = "".join(dtdfile.tolines())
         assert "Good day\\nAll" in dtdsource
+
+    def test_ampersandwarning(self):
+        """tests that proper warnings are given if invalid ampersands occur"""
+        simplestring = '''#: simple.string\nmsgid "Simple String"\nmsgstr "Dimpled &Ring"\n'''
+        dtdfile = self.po2dtd(simplestring)
+        dtdsource = "".join(dtdfile.tolines())
+        assert "Dimpled Ring" in dtdsource
 
