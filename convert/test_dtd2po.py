@@ -28,8 +28,16 @@ class TestDTD2PO:
         assert po.unquotefrompo(poelement.msgid) == "bananas for sale"
         assert po.unquotefrompo(poelement.msgstr) == ""
 
+    def test_apos(self):
+        """apostrophe should not break a single-quoted entity definition, bug 69"""
+        dtdsource = "<!ENTITY test.me 'bananas &apos; for sale'>\n"
+        pofile = self.dtd2po(dtdsource)
+        poelement = self.singleelement(pofile)
+        assert po.unquotefrompo(poelement.msgid) == "bananas &apos; for sale"
+        assert po.unquotefrompo(poelement.msgstr) == ""
+
     def test_emptyentity(self):
-        """bug 15 - checks that empty entity definitions survive into po file"""
+        """checks that empty entity definitions survive into po file, bug 15"""
         dtdsource = '<!ENTITY credit.translation "">\n'
         pofile = self.dtd2po(dtdsource)
         poelement = self.singleelement(pofile)
@@ -47,7 +55,7 @@ class TestDTD2PO:
         assert posource.count('"_:') <= len(pofile.poelements)
 
     def test_donttranslate_label(self):
-        """bug 30 - strangeness when label entity is marked DONT_TRANSLATE and accesskey is not"""
+        """test strangeness when label entity is marked DONT_TRANSLATE and accesskey is not, bug 30"""
         dtdsource = '<!--LOCALIZATION NOTE (editorCheck.label): DONT_TRANSLATE -->\n' + \
             '<!ENTITY editorCheck.label "Composer">\n<!ENTITY editorCheck.accesskey "c">\n'
         pofile = self.dtd2po(dtdsource)
