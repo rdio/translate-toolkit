@@ -94,7 +94,7 @@ def removeinvalidamps(entity, unquotedstr):
           # what we have found is an entity, not a problem...
           continue
       # otherwise, we found a problem
-      invalidamps.append(amppos)
+      invalidamps.append(amppos-1)
   if len(invalidamps) > 0:
     print >>sys.stderr, "ampcheck failed in %s (file %s)" % (entity, sys.argv[-1])
     comp = 0
@@ -229,6 +229,7 @@ class po2dtd:
       unquoted = unquotedid
     else:
       unquoted = unquotedstr
+    unquoted = removeinvalidamps(thedtd.entity, unquoted)
     thedtd.definition = dtd.quotefordtd(unquoted)
 
   def convertelement(self,thepo):
