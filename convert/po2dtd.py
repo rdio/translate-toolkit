@@ -103,19 +103,9 @@ def removeinvalidamps(entity, unquotedstr):
       comp += 1
   return unquotedstr
 
-def extractpoline(line):
-  backslash = '\\'
-  return quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=0)[0]
-
 def dounquotepo(thepo):
-  # NOTE: the \n newline characters included here are merely for readability.
-  # they don't come out as actual newlines in mozilla
-  unquotedid = "\n".join([extractpoline(line) for line in thepo.msgid])
-  if unquotedid[:1] == "\n":
-    unquotedid = unquotedid[1:]
-  unquotedstr = "\n".join([extractpoline(line) for line in thepo.msgstr])
-  if unquotedstr[:1] == "\n":
-    unquotedstr = unquotedstr[1:]
+  unquotedid = po.unquotefrompo(thepo.msgid, False)
+  unquotedstr = po.unquotefrompo(thepo.msgstr, False)
   return unquotedid, unquotedstr
 
 def getmixedentities(entities):
@@ -232,10 +222,8 @@ class po2dtd:
   def convertstrings(self,thepo,thedtd):
     # currently let's just get the msgid back
     backslash = '\\'
-    unquotedid = "\n".join([quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=0)[0] for line in thepo.msgid])
-    if unquotedid[:1] == "\n": unquotedid = unquotedid[1:]
-    unquotedstr = "\n".join([quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=0)[0] for line in thepo.msgstr])
-    if unquotedstr[:1] == "\n": unquotedstr = unquotedstr[1:]
+    unquotedid = po.unquotefrompo(thepo.msgid, False)
+    unquotedstr = po.unquotefrompo(thepo.msgstr, False)
     # choose the msgstr unless it's empty, in which case choose the msgid
     if len(unquotedstr) == 0:
       unquoted = unquotedid
