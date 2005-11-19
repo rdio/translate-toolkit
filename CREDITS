@@ -11,13 +11,16 @@ Alphabetical Order of Contributors
 ----------------------------------
 
 Caio Begotti: documentation
+David Farning: testing
 David Fraser: main development
 Dwayne Bailey: added tests, checks in pofilter, some helpful bash scripts, testing
 Filip Miletic: fixes for unicode problems
 Fredrik Corneliusson: xliff work
 Javier Sola: documentation
 Marek Wieckowski: Qt ts file enhancements
+Matt Chisholm: fixes
 Matthias Klose: extra file options for converters
+Ognyan Kulev: testing and fixes
 Pavel Janík: testing
 Thomas Fogwill: portal code
 
