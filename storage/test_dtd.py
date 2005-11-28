@@ -14,12 +14,22 @@ class TestDTD:
         """helper that converts a dtd file back to source code"""
         return "".join(dtdfile.tolines())
 
+    def dtdregen(self, dtdsource):
+        """helper that converts dtd source to dtdfile object and back"""
+        return self.dtdsource(self.dtdparse(dtdsource))
+
     def test_simpleentity(self):
-        """checks that a simple dtd entity definition converts properly to a po entry"""
+        """checks that a simple dtd entity definition is parsed correctly"""
         dtdsource = '<!ENTITY test.me "bananas for sale">\n'
         dtdfile = self.dtdparse(dtdsource)
         assert len(dtdfile.dtdelements) == 1
         dtdelement = dtdfile.dtdelements[0]
         assert dtdelement.entity == "test.me"
         assert dtdelement.definition == '"bananas for sale"'
+
+    def test_simpleentity_source(self):
+        """checks that a simple dtd entity definition can be regenerated as source"""
+        dtdsource = '<!ENTITY test.me "bananas for sale">\n'
+        dtdregen = self.dtdregen(dtdsource)
+        assert dtdsource == dtdregen
 
