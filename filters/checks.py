@@ -38,11 +38,12 @@ try:
     for err in c:
       yield err.word, err.wordpos, err.suggest()
 except ImportError:
-  from jToolkit import spellcheck
-  dospellcheck = spellcheck.check
-except ImportError:
-  def dospellcheck(text, lang):
-    return []
+  try:
+    from jToolkit import spellcheck
+    dospellcheck = spellcheck.check
+  except ImportError:
+    def dospellcheck(text, lang):
+      return []
 
 # actual test methods
 
