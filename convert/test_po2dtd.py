@@ -66,3 +66,11 @@ class TestPO2DTD:
         dtdsource = "".join(dtdfile.tolines())
         assert "Dimpled Ring" in dtdsource
 
+    def test_retains_hashprefix(self):
+        """tests that hash prefixes in the dtd are retained"""
+        hashpo = '''#: lang.version\nmsgid "__MOZILLA_LOCALE_VERSION__"\nmsgstr "__MOZILLA_LOCALE_VERSION__"\n'''
+        hashdtd = '#expand <!ENTITY lang.version "__MOZILLA_LOCALE_VERSION__">\n'
+        dtdfile = self.merge2dtd(hashdtd, hashpo)
+        regendtd = "".join(dtdfile.tolines())
+        assert regendtd == hashdtd
+
