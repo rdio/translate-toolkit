@@ -35,7 +35,7 @@ class TestDTD:
 
     def test_hashcomment_source(self):
         """checks that a #expand comment is retained in the source"""
-        dtdsource = '#expand <!ENTITY lang.version "__MOZILLA_LOCALE_VERSION__">'
+        dtdsource = '#expand <!ENTITY lang.version "__MOZILLA_LOCALE_VERSION__">\n'
         dtdregen = self.dtdregen(dtdsource)
         assert dtdsource == dtdregen
 

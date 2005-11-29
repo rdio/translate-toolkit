@@ -114,8 +114,12 @@ class dtdelement:
         line = line.replace(comment, "", 1)
 
       if not self.inentity and not self.incomment:
-        if line.find('<!ENTITY') <> -1:
+        entitypos = line.find('<!ENTITY')
+        if entitypos != -1:
           self.inentity = 1
+          beforeentity = line[:entitypos].strip()
+          if beforeentity.startswith("#"):
+            self.hashprefix = beforeentity
           self.entitypart = "start"
         else:
           self.unparsedlines.append(line)
@@ -207,11 +211,13 @@ class dtdelement:
     # for ge in self.locgroupends: yield ge
     # for gs in self.locgroupstarts: yield gs
     # for n in self.locnotes: yield n
-    if len(self.entity) > 0: 
+    if len(self.entity) > 0:
       if getattr(self, 'entitytype', None) == 'external':
         entityline = '<!ENTITY % '+self.entity+' '+self.entityparameter+' '+self.definition+'>'
       else:
         entityline = '<!ENTITY '+self.entity+' '+self.definition+'>'
+      if getattr(self, 'hashprefix', None):
+        entityline = self.hashprefix + " " + entityline
       if isinstance(entityline, unicode):
         entityline = entityline.encode('UTF-8')
       yield entityline+'\n'
