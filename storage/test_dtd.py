@@ -39,3 +39,9 @@ class TestDTD:
         dtdregen = self.dtdregen(dtdsource)
         assert dtdsource == dtdregen
 
+    def test_commentclosing(self):
+        """tests that comment closes with trailing space aren't duplicated"""
+        dtdsource = '<!-- little comment --> \n<!ENTITY pane.title "Notifications">'
+        dtdregen = self.dtdregen(dtdsource)
+        assert dtdsource == dtdregen
+
