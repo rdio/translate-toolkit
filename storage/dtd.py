@@ -94,8 +94,6 @@ class dtdelement:
         (comment, self.incomment) = quote.extract(line,"<!--","-->",None,self.continuecomment)
         # print "comment(%d,%d): " % (self.incomment,self.continuecomment),comment
         self.continuecomment = self.incomment
-        # add a end of line of this is the end of the comment
-        if not self.incomment: comment += '\n'
         # depending on the type of comment (worked out at the start), put it in the right place
         # make it record the comment and type as a tuple
         if comment.find('<!ENTITY') <> -1:
@@ -112,6 +110,8 @@ class dtdelement:
         elif self.commenttype == "comment":
           self.comments.append(commentpair)
         line = line.replace(comment, "", 1)
+        # add a end of line of this is the end of the comment
+        if not self.incomment: comment += '\n'
 
       if not self.inentity and not self.incomment:
         entitypos = line.find('<!ENTITY')
