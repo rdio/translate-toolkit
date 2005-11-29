@@ -320,6 +320,17 @@ class poelement:
         # but if the whole string is blank, leave it in
         if len(partlines) > 1:
           partstartline += 1
+      # combine comments into one if more then one
+      if len(partcomments) > 1:
+        combinedcomment = []
+        for comment in partcomments:
+          comment = unquotefrompo([comment])
+          if comment.startswith("_:"):
+            comment = comment[len("_:"):]
+          if comment.endswith("\\n"):
+            comment = comment[:-len("\\n")]
+          combinedcomment.append(comment.strip())
+        partcomments = quoteforpo("_:%s\\n" % "\n".join(combinedcomment))
       # comments first, no blank leader line needed
       partstr += "\n".join(partcomments)
       partstr = quote.rstripeol(partstr)

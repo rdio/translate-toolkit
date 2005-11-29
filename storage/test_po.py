@@ -28,3 +28,13 @@ class TestPO:
         assert po.unquotefrompo(thepo.msgid) == "test"
         assert po.unquotefrompo(thepo.msgstr) == "rest"
 
+    def test_combine_msgidcomments(self):
+        """checks that we don't get duplicate msgid comments"""
+        posource = 'msgid "test me"\nmsgstr ""'
+        pofile = self.poparse(posource)
+        thepo = pofile.poelements[0]
+        thepo.msgidcomments.append('"_: first comment\\n"')
+        thepo.msgidcomments.append('"_: second comment\\n"')
+        regenposource = self.posource(pofile)
+        assert regenposource.count("_:") == 1
+
