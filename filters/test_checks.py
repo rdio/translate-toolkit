@@ -19,6 +19,14 @@ def test_accelerators():
     assert checks.passes(stdchecker.accelerators, "Mail &amp; News", "Pos en Nuus") 
     assert checks.passes(stdchecker.accelerators, "&Allow", u"&ﺲﻣﺎﺣ")
 
+def test_accronyms():
+    """tests accronyms"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.acronyms, "An HTML file", "'n HTML leer")
+    assert checks.fails(stdchecker.acronyms, "An HTML file", "'n LMTH leer")
+    # We don't mind if you add an acronym to correct bad capitalisation in the original
+    assert checks.passes(stdchecker.acronyms, "An html file", "'n HTML leer")
+
 def test_notranslatewords():
     """tests stopwords"""
     stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=[]))
