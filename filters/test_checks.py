@@ -104,4 +104,9 @@ def test_unchanged():
     # Should be filtering out KDE comments before testing
     #assert checks.fails(stdchecker.unchanged, "_: KDE comment\\nUnchanged", "Unchanged") 
 
+def test_untranslated():
+    """tests untranslated entries"""
+    stdchecker = checks.StandardChecker()
+    assert checks.fails(stdchecker.untranslated, "I am untranslated", "")
+    assert checks.passes(stdchecker.untranslated, "I am translated", "Ek is vertaal")
 
