@@ -9,6 +9,15 @@ def test_construct():
     gnomechecker = checks.GnomeChecker()
     kdechecker = checks.KdeChecker()
 
+def test_accelerators():
+    """tests accelerators"""
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(accelmarkers="&"))
+    assert checks.passes(stdchecker.accelerators, "&File", "&Fayile") 
+    assert checks.fails(stdchecker.accelerators, "&File", "Fayile") 
+    assert checks.fails(stdchecker.accelerators, "File", "&Fayile") 
+    assert checks.passes(stdchecker.accelerators, "Mail && News", "Pos en Nuus") 
+    assert checks.passes(stdchecker.accelerators, "Mail &amp; News", "Pos en Nuus") 
+
 def test_notranslatewords():
     """tests stopwords"""
     stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=[]))
@@ -72,4 +81,5 @@ def test_unchanged():
     assert checks.passes(stdchecker.unchanged, "Unchanged", "Changed") 
     # Should be filtering out KDE comments before testing
     #assert checks.fails(stdchecker.unchanged, "_: KDE comment\\nUnchanged", "Unchanged") 
+
 
