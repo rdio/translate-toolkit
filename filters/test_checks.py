@@ -27,6 +27,11 @@ def test_accronyms():
     # We don't mind if you add an acronym to correct bad capitalisation in the original
     assert checks.passes(stdchecker.acronyms, "An html file", "'n HTML leer")
 
+def test_blank():
+    """tests blank"""
+    stdchecker = checks.StandardChecker()
+    assert checks.fails(stdchecker.blank, "Save as", " ")
+
 def test_compendiumconflicts():
     """tests compendiumconflicts"""
     stdchecker = checks.StandardChecker()
