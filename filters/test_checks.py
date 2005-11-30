@@ -40,6 +40,15 @@ Leer nie gestoor gestoor nie\\n
 #-#-#-#-# file1.po #-#-#-#-#\\n
 Leer nie gestoor""")
 
+def test_doublewords():
+    """tests doublewords"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.doublewords, "Save the rhino", "Save the rhino")
+    assert checks.fails(stdchecker.doublewords, "Save the rhino", "Save the the rhino")
+    # Double variables are not an error
+    #stdchecker = checks.StandardChecker(checks.CheckerConfig(varmatches=[("%", 1)]))
+    #assert checks.passes(stdchecker.doublewords, "%s %s installation", "tsenyo ya %s %s")
+
 def test_filepaths():
     """tests filepaths"""
     stdchecker = checks.StandardChecker()
