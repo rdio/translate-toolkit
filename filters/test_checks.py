@@ -40,6 +40,12 @@ Leer nie gestoor gestoor nie\\n
 #-#-#-#-# file1.po #-#-#-#-#\\n
 Leer nie gestoor""")
 
+def test_filepaths():
+    """tests filepaths"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.filepaths, "%s to the file /etc/hosts on your system.", "%s na die leer /etc/hosts op jou systeem.")
+    assert checks.fails(stdchecker.filepaths, "%s to the file /etc/hosts on your system.", "%s na die leer /etc/gasheer op jou systeem.")
+    
 def test_notranslatewords():
     """tests stopwords"""
     stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=[]))
