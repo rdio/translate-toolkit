@@ -33,3 +33,35 @@ def test_musttranslatewords():
     # should always pass if there are no stopwords in the original
     assert checks.passes(stdchecker.musttranslatewords, "This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
 
+def test_startcaps():
+    """tests starting capitals"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.startcaps, "Find", "Vind")
+    assert checks.passes(stdchecker.startcaps, "find", "vind")
+    assert checks.fails(stdchecker.startcaps, "Find", "vind")
+    assert checks.fails(stdchecker.startcaps, "find", "Vind")
+    # Need to check for prefilters ie test that won't be run if translation is blank
+    #assert checks.passes(stdchecker.startcaps, "Find", "")
+    assert checks.fails(stdchecker.startcaps, "Find", "'")
+    assert checks.fails(stdchecker.startcaps, "'", "Find")
+    assert checks.passes(stdchecker.startcaps, "'", "'")
+    assert checks.passes(stdchecker.startcaps, "\\.,/?!`'\"[]{}()@#$%^&*_-;:<>Find", "\\.,/?!`'\"[]{}()@#$%^&*_-;:<>Vind")
+    # With leading whitespace
+    assert checks.passes(stdchecker.startcaps, " Find", " Vind")
+    assert checks.passes(stdchecker.startcaps, " find", " vind")
+    assert checks.fails(stdchecker.startcaps, " Find", " vind")
+    assert checks.fails(stdchecker.startcaps, " find", " Vind")
+    # Leading punctuation
+    assert checks.passes(stdchecker.startcaps, "'Find", "'Vind")
+    assert checks.passes(stdchecker.startcaps, "'find", "'vind")
+    assert checks.fails(stdchecker.startcaps, "'Find", "'vind")
+    assert checks.fails(stdchecker.startcaps, "'find", "'Vind")
+    # Unicode
+    assert checks.passes(stdchecker.startcaps, "Find", u"Šind")
+    assert checks.passes(stdchecker.startcaps, "find", u"šind")
+    assert checks.fails(stdchecker.startcaps, "Find", u"šind")
+    assert checks.fails(stdchecker.startcaps, "find", u"Šind")
+    # Accelerators
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(accelmarkers="&"))
+    assert checks.passes(stdchecker.startcaps, "&Find", "Vi&nd")
+
