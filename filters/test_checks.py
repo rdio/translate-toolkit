@@ -17,6 +17,7 @@ def test_accelerators():
     assert checks.fails(stdchecker.accelerators, "File", "&Fayile") 
     assert checks.passes(stdchecker.accelerators, "Mail && News", "Pos en Nuus") 
     assert checks.passes(stdchecker.accelerators, "Mail &amp; News", "Pos en Nuus") 
+    assert checks.passes(stdchecker.accelerators, "&Allow", u"&ﺲﻣﺎﺣ")
 
 def test_notranslatewords():
     """tests stopwords"""
