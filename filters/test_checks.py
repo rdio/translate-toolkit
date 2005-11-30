@@ -65,3 +65,11 @@ def test_startcaps():
     stdchecker = checks.StandardChecker(checks.CheckerConfig(accelmarkers="&"))
     assert checks.passes(stdchecker.startcaps, "&Find", "Vi&nd")
 
+def test_unchanged():
+    """tests unchanged entries"""
+    stdchecker = checks.StandardChecker()
+    assert checks.fails(stdchecker.unchanged, "Unchanged", "Unchanged") 
+    assert checks.passes(stdchecker.unchanged, "Unchanged", "Changed") 
+    # Should be filtering out KDE comments before testing
+    #assert checks.fails(stdchecker.unchanged, "_: KDE comment\\nUnchanged", "Unchanged") 
+
