@@ -47,7 +47,7 @@ def main():
             help='Treat absent first files as empty.')
     parser.add_option("-s", "--report-identical-files", default=False, action="store_true",
             help='Report when two files are the same.')
-    parser.add_option("-x", "--exclude", default=[], action="append", metavar="PAT",
+    parser.add_option("-x", "--exclude", default=["CVS", "*.po~"], action="append", metavar="PAT",
             help='Exclude files that match PAT.')
     # our own options
     parser.add_option("", "--fromcontains", type="string", default=None, metavar="TEXT",
@@ -62,7 +62,12 @@ def main():
             metavar="ACCELERATORS", help="ignores the given accelerator characters when matching")
     (options, args) = parser.parse_args()
 
+    if len(args) != 2:
+        parser.error("fromfile and tofile required")
     fromfile, tofile = args
+    if fromfile == "-" and tofile == "-":
+        parser.error("Only one of fromfile and tofile can be read from stdin")
+		    
     if os.path.isdir(fromfile):
         if os.path.isdir(tofile):
             differ = DirDiffer(fromfile, tofile, options)
@@ -138,20 +143,26 @@ class FileDiffer:
         if os.path.exists(self.fromfile):
             self.from_lines = open(self.fromfile, 'U').readlines()
             fromfiledate = os.stat(self.fromfile).st_mtime
+        elif self.fromfile == "-":
+            self.from_lines = sys.stdin.readlines()
+            fromfiledate = time.time()
         elif self.options.new_file or self.options.unidirectional_new_file:
             self.from_lines = []
             fromfiledate = 0
         else:
-            outfile.write("%s: No such file or directory\n" % fromfile)
+            outfile.write("%s: No such file or directory\n" % self.fromfile)
             validfiles = False
         if os.path.exists(self.tofile):
             self.to_lines = open(self.tofile, 'U').readlines()
             tofiledate = os.stat(self.tofile).st_mtime
+        elif self.tofile == "-":
+            self.to_lines = sys.stdin.readlines()
+            tofiledate = time.time()
         elif self.options.new_file:
             self.to_lines = []
             tofiledate = 0
         else:
-            outfile.write("%s: No such file or directory" % tofile)
+            outfile.write("%s: No such file or directory\n" % self.tofile)
             validfiles = False
         if not validfiles:
             return
