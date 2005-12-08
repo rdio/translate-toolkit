@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 import zlib # implied prerequisite
 import zipfile, os, StringIO, tempfile
-from test.test_support import TestFailed
+try:
+  from test.test_support import TestFailed
+except ImportError:
+  class TestFailed(Exception):
+    pass
 from translate.misc import zipfileext
 
 BrokenStringIO = StringIO.StringIO
