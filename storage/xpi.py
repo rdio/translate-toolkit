@@ -171,9 +171,11 @@ class XpiFile(ZipFileCatcher):
     region = self.region
     localematch = sre.compile("^[a-z]{2,3}(-[a-zA-Z]{2,3}|)$")
     regionmatch = sre.compile("^[a-zA-Z]{2,3}$")
+    # exclude en-mac, en-win, en-unix for seamonkey
+    osmatch = sre.compile("^[a-z]{2,3}-(mac|unix|win)$")
     for jarfilename, jarfile in self.iterjars():
       jarname = "".join(jarfilename.split('/')[-1:]).replace(".jar", "", 1)
-      if localematch.match(jarname):
+      if localematch.match(jarname) and not osmatch.match(jarname):
         if locale is None:
           locale = jarname
         elif locale != jarname:
@@ -199,7 +201,7 @@ class XpiFile(ZipFileCatcher):
     if 'locale' in dirstructure:
       for dirname in dirstructure['locale']:
         localeentries[dirname] = 1
-        if localematch.match(dirname):
+        if localematch.match(dirname) and not osmatch.match(dirname):
           if locale is None:
             locale = dirname
           elif locale != dirname:
