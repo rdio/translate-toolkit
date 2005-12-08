@@ -637,8 +637,8 @@ class pofile:
         msgid = getunquotedstr(thepo.msgidcomments) + getunquotedstr(thepo.msgid)
       else:
         msgid = getunquotedstr(thepo.msgid)
-      if not msgid:
-        # blank msgids shouldn't be merged...
+      if thepo.isheader():
+        # header msgids shouldn't be merged...
         uniqueelements.append(thepo)
       elif duplicatestyle == "msgid_comment_all":
         addcomment(thepo)
