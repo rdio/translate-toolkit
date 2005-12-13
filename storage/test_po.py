@@ -38,3 +38,22 @@ class TestPO:
         regenposource = self.posource(pofile)
         assert regenposource.count("_:") == 1
 
+    def test_merge_duplicates(self):
+        """checks that merging duplicates works"""
+        posource = '#: source1\nmsgid "test me"\nmsgstr ""\n\n#: source2\nmsgid "test me"\nmsgstr ""\n'
+        pofile = self.poparse(posource)
+        assert len(pofile.poelements) == 2
+        pofile.removeduplicates("merge")
+        assert len(pofile.poelements) == 1
+        assert pofile.poelements[0].getsources() == ["source1", "source2"]
+
+    def test_merge_blanks(self):
+        """checks that merging adds msgid_comments to blanks"""
+        posource = '#: source1\nmsgid ""\nmsgstr ""\n\n#: source2\nmsgid ""\nmsgstr ""\n'
+        pofile = self.poparse(posource)
+        assert len(pofile.poelements) == 2
+        pofile.removeduplicates("merge")
+        assert len(pofile.poelements) == 2
+        assert po.getunquotedstr(pofile.poelements[0].msgidcomments) == "_: source1\\n"
+        assert po.getunquotedstr(pofile.poelements[1].msgidcomments) == "_: source2\\n"
+
