@@ -645,7 +645,11 @@ class pofile:
         uniqueelements.append(thepo)
       elif msgid in msgiddict:
         if duplicatestyle == "merge":
-          msgiddict[msgid].merge(thepo)
+          if msgid:
+            msgiddict[msgid].merge(thepo)
+          else:
+            addcomment(thepo)
+            uniqueelements.append(thepo)
         elif duplicatestyle == "keep":
           uniqueelements.append(thepo)
         elif duplicatestyle == "msgid_comment":
@@ -655,6 +659,8 @@ class pofile:
           addcomment(thepo)
           uniqueelements.append(thepo)
       else:
+        if not msgid and duplicatestyle != "keep":
+          addcomment(thepo)
         msgiddict[msgid] = thepo
         uniqueelements.append(thepo)
     self.poelements = uniqueelements
