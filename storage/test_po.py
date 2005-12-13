@@ -57,3 +57,14 @@ class TestPO:
         assert po.getunquotedstr(pofile.poelements[0].msgidcomments) == "_: source1\\n"
         assert po.getunquotedstr(pofile.poelements[1].msgidcomments) == "_: source2\\n"
 
+    def test_keep_blanks(self):
+        """checks that keeping keeps blanks and doesn't add msgid_comments"""
+        posource = '#: source1\nmsgid ""\nmsgstr ""\n\n#: source2\nmsgid ""\nmsgstr ""\n'
+        pofile = self.poparse(posource)
+        assert len(pofile.poelements) == 2
+        pofile.removeduplicates("keep")
+        assert len(pofile.poelements) == 2
+        # check we don't add msgidcomments
+        assert po.getunquotedstr(pofile.poelements[0].msgidcomments) == ""
+        assert po.getunquotedstr(pofile.poelements[1].msgidcomments) == ""
+
