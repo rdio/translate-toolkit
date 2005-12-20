@@ -61,7 +61,7 @@ class po2csv:
     thecsv.msgstr = self.convertstring(thepo.msgstr[1])
     return thecsv
 
-  def convertfile(self,thepofile,columnorder):
+  def convertfile(self,thepofile,columnorder=None):
     thecsvfile = csvl10n.csvfile(fieldnames=columnorder)
     for thepo in thepofile.poelements:
       thecsv = self.convertelement(thepo)
