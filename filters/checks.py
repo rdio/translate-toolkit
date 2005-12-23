@@ -82,7 +82,16 @@ def fails(filterfunction, str1, str2):
 
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
-  def __init__(self, targetlanguage=None, accelmarkers=[], varmatches=[], notranslatewords=[], musttranslatewords=[], validchars=None):
+  def __init__(self, targetlanguage=None, accelmarkers=None, varmatches=None, notranslatewords=None, musttranslatewords=None, validchars=None):
+    # make sure that we initialise empty lists properly (default arguments get reused!)
+    if accelmarkers is None:
+      accelmarkers = []
+    if varmatches is None:
+      varmatches = []
+    if musttranslatewords is None:
+      musttranslatewords = []
+    if notranslatewords is None:
+      notranslatewords = []
     self.targetlanguage = targetlanguage
     self.accelmarkers = accelmarkers
     self.varmatches = varmatches
