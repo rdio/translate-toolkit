@@ -58,7 +58,7 @@ def test_doublespacing():
     assert checks.fails(stdchecker.doublespacing, "Sentence.  Another sentence.", "Sin. Missing the double space.")
     assert checks.fails(stdchecker.doublespacing, "Sentence. Another sentence.", "Sin.  Uneeded double space in translation.")
 
-def test_double_quotes():
+def test_doublequoting():
     """tests double quotes"""
     stdchecker = checks.StandardChecker()
     assert checks.fails(stdchecker.doublequoting, "Hot plate", "\"Ipuleti\" elishisa")
