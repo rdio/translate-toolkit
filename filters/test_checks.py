@@ -32,6 +32,16 @@ def test_blank():
     stdchecker = checks.StandardChecker()
     assert checks.fails(stdchecker.blank, "Save as", " ")
 
+def test_brackets():
+    """tests brackets"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.brackets, "N number(s)", "N getal(le)")
+    assert checks.fails(stdchecker.brackets, "For {sic} numbers", "Vier getalle")
+    assert checks.fails(stdchecker.brackets, "For }sic{ numbers", "Vier getalle")
+    #assert checks.fails(stdchecker.brackets, "For [sic] numbers", "Vier getalle")
+    assert checks.fails(stdchecker.brackets, "For ]sic[ numbers", "Vier getalle")
+    assert checks.passes(stdchecker.brackets, "{[(", "[({")
+
 def test_compendiumconflicts():
     """tests compendiumconflicts"""
     stdchecker = checks.StandardChecker()
@@ -40,6 +50,14 @@ Leer nie gestoor gestoor nie\\n
 #-#-#-#-# file1.po #-#-#-#-#\\n
 Leer nie gestoor""")
 
+def test_double_quotes():
+    """tests double quotes"""
+    stdchecker = checks.StandardChecker()
+    assert checks.fails(stdchecker.doublequoting, "Hot plate", "\"Ipuleti\" elishisa")
+    assert checks.passes(stdchecker.doublequoting, "\"Hot\" plate", "\"Ipuleti\" elishisa")
+    assert checks.fails(stdchecker.doublequoting, "'Hot' plate", "\"Ipuleti\" elishisa")
+    assert checks.passes(stdchecker.doublequoting, "\\\"Hot\\\" plate", "\\\"Ipuleti\\\" elishisa")
+    
 def test_doublewords():
     """tests doublewords"""
     stdchecker = checks.StandardChecker()
@@ -78,6 +96,14 @@ def test_musttranslatewords():
     assert checks.fails(stdchecker.musttranslatewords, "This uses Mozilla. Don't you?", "hierdie gebruik Mozilla soos jy")
     # should always pass if there are no stopwords in the original
     assert checks.passes(stdchecker.musttranslatewords, "This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
+
+def test_puncspacing():
+    """tests spacing after punctuation"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.puncspacing, "One, two, three.", "Kunye, kubili, kuthathu.")
+    assert checks.passes(stdchecker.puncspacing, "One, two, three. ", "Kunye, kubili, kuthathu.")
+    assert checks.fails(stdchecker.puncspacing, "One, two, three. ", "Kunye, kubili,kuthathu.")
+    assert checks.passes(stdchecker.puncspacing, "One, two, three!?", "Kunye, kubili, kuthathu?")
 
 def test_startcaps():
     """tests starting capitals"""
@@ -125,3 +151,12 @@ def test_untranslated():
     assert checks.fails(stdchecker.untranslated, "I am untranslated", "")
     assert checks.passes(stdchecker.untranslated, "I am translated", "Ek is vertaal")
 
+def test_xmltags():
+    """tests xml tags"""
+    stdchecker = checks.StandardChecker()
+    assert checks.fails(stdchecker.xmltags, "Do it <b>now</b>", "Doen dit <v>nou</v>")
+    assert checks.passes(stdchecker.xmltags, "Do it <b>now</b>", "Doen dit <b>nou</b>")
+    assert checks.passes(stdchecker.xmltags, "Click <img src=\"img.jpg\">here</img>", "Klik <img src=\"img.jpg\">hier</img>")
+    assert checks.fails(stdchecker.xmltags, "Click <img src=\"image.jpg\">here</img>", "Klik <img src=\"prent.jpg\">hier</img>")
+    assert checks.passes(stdchecker.xmltags, "Start with the &lt;start&gt; tag", "Begin met die &lt;begin&gt;")
+    #TODO: test tags like alt, longdsc that can be translated
