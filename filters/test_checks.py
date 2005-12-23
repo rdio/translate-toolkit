@@ -193,6 +193,12 @@ def test_startcaps():
     stdchecker = checks.StandardChecker(checks.CheckerConfig(accelmarkers="&"))
     assert checks.passes(stdchecker.startcaps, "&Find", "Vi&nd")
 
+def test_startwhitespace():
+    """tests startwhitespace"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.startwhitespace, "A setence.", "I'm correct.")
+    assert checks.fails(stdchecker.startwhitespace, " A setence. ", "I'm incorrect.")
+
 def test_unchanged():
     """tests unchanged entries"""
     stdchecker = checks.StandardChecker()
