@@ -36,7 +36,7 @@ def funcmatch(str1, str2, func):
   return func(str1) == func(str2)
 
 def countsmatch(str1, str2, countlist):
-  """checks whether countstr occurs the same number of times in str1 and str2"""
+  """checks whether each element in countlist occurs the same number of times in str1 and str2"""
   return reduce(operator.and_, [countmatch(str1, str2, countstr) for countstr in countlist], True)
 
 def funcsmatch(str1, str2, funclist):
