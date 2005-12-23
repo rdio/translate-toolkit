@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 from translate.filters import checks
 
+def test_defaults():
+    """tests default setup and that checks aren't altered by other constructions"""
+    stdchecker = checks.StandardChecker()
+    assert stdchecker.config.varmatches == []
+    mozillachecker = checks.MozillaChecker()
+    stdchecker = checks.StandardChecker()
+    assert stdchecker.config.varmatches == []
+
 def test_construct():
     """tests that the checkers can be constructed"""
     stdchecker = checks.StandardChecker()
