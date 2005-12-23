@@ -14,7 +14,7 @@ class TestPOFilter:
 
     def pofilter(self, posource, checkerconfig=None):
         """helper that parses po source and passes it through a filter"""
-        options, args = pofilter.cmdlineparser().parse_args()
+        options, args = pofilter.cmdlineparser().parse_args(["xxx.po"])
         checkerclasses = [checks.StandardChecker, pofilter.StandardPOChecker]
         if checkerconfig is None:
           checkerconfig = checks.CheckerConfig()
