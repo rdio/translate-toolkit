@@ -100,7 +100,7 @@ class prop2po:
   def convertelement(self, theprop):
     """converts a .properties element to a .po element..."""
     # escape unicode
-    msgid = theprop.msgid.strip()
+    msgid = theprop.msgid.strip(" ")
     thepo = po.poelement()
     thepo.othercomments.extend(theprop.comments)
     # TODO: handle multiline msgid

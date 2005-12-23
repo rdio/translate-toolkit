@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from translate.convert import prop2po
 from translate.misc import wStringIO
@@ -37,8 +38,7 @@ class TestProp2PO:
 
     def test_tab_at_end_of_string(self):
         """check that we preserve tabs at the end of a string"""
-        propsource = r"NS_ERROR_NOT_IMPLEMENTED=Encara no s'ha implementat alguna funcionalitat de la impressi \u00F3.\t"
+        propsource = r"TAB_AT_END=This setence has a tab at the end.\t"
         pofile = self.prop2po(propsource)
         poelement = self.singleelement(pofile)
-        assert po.unquotefrompo(poelement.msgid).encode('UTF-8') == r"Encara no s'ha implementat alguna funcionalitat de la impressi ó.\t"
-        assert po.unquotefrompo(poelement.msgstr) == ""
+        assert po.unquotefrompo(poelement.msgid) == "This setence has a tab at the end.\t"
