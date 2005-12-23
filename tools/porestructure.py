@@ -104,7 +104,7 @@ def main():
     #outputfile extentions will actually be determined by the comments in the po files
     pooutput = ("po", None)
     formats = {(None, None): pooutput, ("po", "po"): pooutput, "po": pooutput}
-    parser = SplitOptionParser(formats, usetemplates=True, description=__doc__)
+    parser = SplitOptionParser(formats, description=__doc__)
     parser.set_usage()
     parser.run()
 
