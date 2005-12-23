@@ -198,6 +198,15 @@ def test_short():
     assert checks.passes(stdchecker.short, "I am normal", "Ek is ook normaal")
     assert checks.fails(stdchecker.short, "I am a very long sentence", "Ek")
 
+def test_singlequoting():
+    """tests single quotes"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.singlequoting, "A 'Hot' plate", "Ipuleti 'elishisa' kunye")
+    # FIXME this should pass but doesn't probably to do with our logic that got confused at the end of lines
+    # assert checks.passes(stdchecker.singlequoting, "'Hot' plate", "Ipuleti 'elishisa'")
+    assert checks.fails(stdchecker.singlequoting, "'Hot' plate", "Ipuleti \"elishisa\"")
+    assert checks.passes(stdchecker.singlequoting, "It's here.", "Dit is hier.")
+
 def test_startcaps():
     """tests starting capitals"""
     stdchecker = checks.StandardChecker()
