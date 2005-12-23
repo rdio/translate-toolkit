@@ -50,14 +50,6 @@ Leer nie gestoor gestoor nie\n
 #-#-#-#-# file1.po #-#-#-#-#\n
 Leer nie gestoor""")
 
-def test_doublespacing():
-    """tests double spacing"""
-    stdchecker = checks.StandardChecker()
-    assert checks.passes(stdchecker.doublespacing, "Sentence.  Another sentence.", "Sin.  'n Ander sin.")
-    assert checks.passes(stdchecker.doublespacing, "Sentence. Another sentence.", "Sin. No double spacing.")
-    assert checks.fails(stdchecker.doublespacing, "Sentence.  Another sentence.", "Sin. Missing the double space.")
-    assert checks.fails(stdchecker.doublespacing, "Sentence. Another sentence.", "Sin.  Uneeded double space in translation.")
-
 def test_doublequoting():
     """tests double quotes"""
     stdchecker = checks.StandardChecker()
@@ -66,6 +58,14 @@ def test_doublequoting():
     assert checks.fails(stdchecker.doublequoting, "'Hot' plate", "\"Ipuleti\" elishisa")
     assert checks.passes(stdchecker.doublequoting, "\\\"Hot\\\" plate", "\\\"Ipuleti\\\" elishisa")
     
+def test_doublespacing():
+    """tests double spacing"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.doublespacing, "Sentence.  Another sentence.", "Sin.  'n Ander sin.")
+    assert checks.passes(stdchecker.doublespacing, "Sentence. Another sentence.", "Sin. No double spacing.")
+    assert checks.fails(stdchecker.doublespacing, "Sentence.  Another sentence.", "Sin. Missing the double space.")
+    assert checks.fails(stdchecker.doublespacing, "Sentence. Another sentence.", "Sin.  Uneeded double space in translation.")
+
 def test_doublewords():
     """tests doublewords"""
     stdchecker = checks.StandardChecker()
@@ -99,18 +99,6 @@ def test_numbers():
     assert checks.fails(stdchecker.numbers, "R57.60", "R57,60")
     assert checks.fails(stdchecker.numbers, "1,000.00", "1 000,00")
 
-def test_notranslatewords():
-    """tests stopwords"""
-    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=[]))
-    assert checks.passes(stdchecker.notranslatewords, "This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
-    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["Mozilla"]))
-    assert checks.fails(stdchecker.notranslatewords, "This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
-    assert checks.passes(stdchecker.notranslatewords, "This uses Mozilla of course", "hierdie gebruik Mozilla natuurlik")
-    assert checks.fails(stdchecker.notranslatewords, "This uses Mozilla. Don't you?", "hierdie gebruik le mozille soos jy")
-    assert checks.passes(stdchecker.notranslatewords, "This uses Mozilla. Don't you?", "hierdie gebruik Mozilla soos jy")
-    # should always pass if there are no stopwords in the original
-    assert checks.passes(stdchecker.notranslatewords, "This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
-
 def test_musttranslatewords():
     """tests stopwords"""
     stdchecker = checks.StandardChecker(checks.CheckerConfig(musttranslatewords=[]))
@@ -123,6 +111,18 @@ def test_musttranslatewords():
     # should always pass if there are no stopwords in the original
     assert checks.passes(stdchecker.musttranslatewords, "This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
 
+def test_notranslatewords():
+    """tests stopwords"""
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=[]))
+    assert checks.passes(stdchecker.notranslatewords, "This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["Mozilla"]))
+    assert checks.fails(stdchecker.notranslatewords, "This uses Mozilla of course", "hierdie gebruik le mozille natuurlik")
+    assert checks.passes(stdchecker.notranslatewords, "This uses Mozilla of course", "hierdie gebruik Mozilla natuurlik")
+    assert checks.fails(stdchecker.notranslatewords, "This uses Mozilla. Don't you?", "hierdie gebruik le mozille soos jy")
+    assert checks.passes(stdchecker.notranslatewords, "This uses Mozilla. Don't you?", "hierdie gebruik Mozilla soos jy")
+    # should always pass if there are no stopwords in the original
+    assert checks.passes(stdchecker.notranslatewords, "This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
+
 def test_puncspacing():
     """tests spacing after punctuation"""
     stdchecker = checks.StandardChecker()
@@ -130,6 +130,12 @@ def test_puncspacing():
     assert checks.passes(stdchecker.puncspacing, "One, two, three. ", "Kunye, kubili, kuthathu.")
     assert checks.fails(stdchecker.puncspacing, "One, two, three. ", "Kunye, kubili,kuthathu.")
     assert checks.passes(stdchecker.puncspacing, "One, two, three!?", "Kunye, kubili, kuthathu?")
+
+def test_short():
+    """tests short messages"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.short, "I am normal", "Ek is ook normaal")
+    assert checks.fails(stdchecker.short, "I am a very long sentence", "Ek")
 
 def test_startcaps():
     """tests starting capitals"""
