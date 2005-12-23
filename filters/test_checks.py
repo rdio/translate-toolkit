@@ -161,6 +161,13 @@ def test_purepunc():
     assert checks.passes(stdchecker.purepunc, ".", ".")
     assert checks.fails(stdchecker.purepunc, ".", " ")
 
+def test_sentencecount():
+    """tests sentencecount messages"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.sentencecount, "One. Two. Three.", "Een. Twee. Drie.")
+    assert checks.fails(stdchecker.sentencecount, "One two three", "Een twee drie.")
+    assert checks.fails(stdchecker.sentencecount, "One. Two. Three.", "Een Twee. Drie.")
+
 def test_short():
     """tests short messages"""
     stdchecker = checks.StandardChecker()
