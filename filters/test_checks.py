@@ -18,6 +18,22 @@ def test_accelerators():
     assert checks.passes(stdchecker.accelerators, "Mail && News", "Pos en Nuus") 
     assert checks.passes(stdchecker.accelerators, "Mail &amp; News", "Pos en Nuus") 
     assert checks.passes(stdchecker.accelerators, "&Allow", u"&ﺲﻣﺎﺣ")
+    kdechecker = checks.KdeChecker()
+    assert checks.passes(kdechecker.accelerators, "&File", "&Fayile") 
+    assert checks.fails(kdechecker.accelerators, "&File", "Fayile") 
+    assert checks.fails(kdechecker.accelerators, "File", "&Fayile") 
+    gnomechecker = checks.GnomeChecker()
+    assert checks.passes(gnomechecker.accelerators, "_File", "_Fayile") 
+    assert checks.fails(gnomechecker.accelerators, "_File", "Fayile") 
+    assert checks.fails(gnomechecker.accelerators, "File", "_Fayile") 
+    mozillachecker = checks.MozillaChecker()
+    assert checks.passes(mozillachecker.accelerators, "&File", "&Fayile") 
+    assert checks.fails(mozillachecker.accelerators, "&File", "Fayile") 
+    assert checks.fails(mozillachecker.accelerators, "File", "&Fayile") 
+    ooochecker = checks.OpenOfficeChecker()
+    assert checks.passes(ooochecker.accelerators, "~File", "~Fayile") 
+    assert checks.fails(ooochecker.accelerators, "~File", "Fayile") 
+    assert checks.fails(ooochecker.accelerators, "File", "~Fayile") 
 
 def test_accronyms():
     """tests acronyms"""
