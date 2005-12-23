@@ -514,6 +514,10 @@ class StandardChecker(TranslationChecker):
     """checks that only characters specified as valid appear in the translation"""
     if not self.config.validcharsmap:
       return True
+    if isinstance(str1, str):
+      str1 = str1.decode('utf-8')
+    if isinstance(str2, str):
+      str2 = str2.decode('utf-8')
     invalid1 = str1.translate(self.config.validcharsmap)
     invalid2 = str2.translate(self.config.validcharsmap)
     invalidchars = ["'%s' (\\u%04x)" % (invalidchar.encode('utf-8'), ord(invalidchar)) for invalidchar in invalid2 if invalidchar not in invalid1]
