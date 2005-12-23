@@ -121,7 +121,7 @@ class TranslationChecker(object):
   """Base Checker class which does the checking based on functions available in derived classes"""
   preconditions = {}
 
-  def __init__(self, checkerconfig=None, excludefilters={}, limitfilters=None, errorhandler=None):
+  def __init__(self, checkerconfig=None, excludefilters=None, limitfilters=None, errorhandler=None):
     """construct the TranslationChecker..."""
     self.errorhandler = errorhandler
     if checkerconfig is None:
@@ -136,12 +136,14 @@ class TranslationChecker(object):
         self.helperfunctions[functionname] = function
     self.defaultfilters = self.getfilters(excludefilters, limitfilters)
 
-  def getfilters(self, excludefilters={}, limitfilters=None):
+  def getfilters(self, excludefilters=None, limitfilters=None):
     """returns dictionary of available filters, including/excluding those in the given lists"""
     filters = {}
     if limitfilters is None:
       # use everything available unless instructed
       limitfilters = dir(self)
+    if excludefilters is None:
+      excludefilters = {}
     for functionname in limitfilters:
       if functionname in excludefilters: continue
       if functionname in self.helperfunctions: continue
@@ -207,7 +209,7 @@ class TranslationChecker(object):
 
 class TeeChecker:
   """A Checker that controls multiple checkers..."""
-  def __init__(self, checkerconfig=None, excludefilters={}, limitfilters=None, checkerclasses=None, errorhandler=None):
+  def __init__(self, checkerconfig=None, excludefilters=None, limitfilters=None, checkerclasses=None, errorhandler=None):
     """construct a TeeChecker from the given checkers"""
     self.limitfilters = limitfilters
     if checkerclasses is None:
@@ -215,8 +217,10 @@ class TeeChecker:
     self.checkers = [checkerclass(checkerconfig=checkerconfig, excludefilters=excludefilters, limitfilters=limitfilters, errorhandler=errorhandler) for checkerclass in checkerclasses]
     self.combinedfilters = self.getfilters(excludefilters, limitfilters)
 
-  def getfilters(self, excludefilters={}, limitfilters=None):
+  def getfilters(self, excludefilters=None, limitfilters=None):
     """returns dictionary of available filters, including/excluding those in the given lists"""
+    if excludefilters is None:
+      excluefilters = {}
     filterslist = [checker.getfilters(excludefilters, limitfilters) for checker in self.checkers]
     self.combinedfilters = {}
     for filters in filterslist:

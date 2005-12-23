@@ -177,8 +177,11 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
   """ConvertOptionParser that can handle recursing into single archive files.
   archiveformats maps extension to class. if the extension doesn't matter, it can be None.
   if the extension is only valid for input/output/template, it can be given as (extension, filepurpose)"""
-  def __init__(self, formats, usetemplates=False, usepots=False, description=None, archiveformats={}):
-    self.archiveformats = archiveformats
+  def __init__(self, formats, usetemplates=False, usepots=False, description=None, archiveformats=None):
+    if archiveformats is None:
+      self.archiveformats = {}
+    else:
+      self.archiveformats = archiveformats
     self.archiveoptions = {}
     ConvertOptionParser.__init__(self, formats, usetemplates, usepots, description=description)
 

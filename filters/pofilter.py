@@ -28,7 +28,7 @@ import os
 
 class POChecker(checks.TranslationChecker):
   """allows advanced checks that have access to the whole po element, not just strings"""
-  def __init__(self, checkerconfig, excludefilters={}, limitfilters=None, errorhandler=None):
+  def __init__(self, checkerconfig, excludefilters=None, limitfilters=None, errorhandler=None):
     """construct the POChecker..."""
     super(POChecker, self).__init__(checkerconfig, excludefilters, limitfilters, errorhandler)
 
