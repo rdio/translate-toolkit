@@ -218,7 +218,7 @@ def runpofilter(inputfile, outputfile, templatefile, checkfilter=None):
   outputfile.write(str(tofile))
   return 1
 
-def main():
+def cmdlineparser():
   formats = {"po":("po", runpofilter), "pot":("pot", runpofilter), None:("po", runpofilter)}
   parser = FilterOptionParser(formats)
   parser.add_option("", "--review", dest="includereview",
@@ -269,5 +269,9 @@ def main():
     default=None, type="string", metavar="FILE",
     help="read list of all valid characters from FILE (must be in UTF-8)")
   parser.passthrough.append('checkfilter')
+  return parser
+
+def main():
+  parser = cmdlineparser()
   parser.run()
 
