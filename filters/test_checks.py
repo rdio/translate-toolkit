@@ -81,6 +81,12 @@ def test_filepaths():
     assert checks.passes(stdchecker.filepaths, "%s to the file /etc/hosts on your system.", "%s na die leer /etc/hosts op jou systeem.")
     assert checks.fails(stdchecker.filepaths, "%s to the file /etc/hosts on your system.", "%s na die leer /etc/gasheer op jou systeem.")
     
+def test_long():
+    """tests long messages"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.long, "I am normal", "Ek is ook normaal")
+    assert checks.fails(stdchecker.long, "Short.", "Kort.......................................................................................")
+
 def test_numbers():
     """test numbers"""
     stdchecker = checks.StandardChecker()
