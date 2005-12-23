@@ -201,6 +201,13 @@ def test_untranslated():
     assert checks.fails(stdchecker.untranslated, "I am untranslated", "")
     assert checks.passes(stdchecker.untranslated, "I am translated", "Ek is vertaal")
 
+def test_validchars():
+    """tests valid characters"""
+    stdchecker = checks.StandardChecker(checks.CheckerConfig())
+    assert checks.passes(stdchecker.validchars, "The check always passes if you don't specify chars", "Die toets sal altyd werk as jy nie karacters specifisier")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(validchars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'))
+    assert checks.passes(stdchecker.validchars, "This sentence contains valid characters", "Hierdie sin bevat ware karakters")
+
 def test_xmltags():
     """tests xml tags"""
     stdchecker = checks.StandardChecker()
