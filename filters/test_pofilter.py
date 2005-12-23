@@ -25,12 +25,17 @@ class TestPOFilter:
     def test_simplepass(self):
         """checks that an obviously correct string passes"""
         posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
-        pofile = self.pofilter(posource)
-        assert not pofile
+        poresult = self.pofilter(posource)
+        assert poresult == ""
 
     def test_simplefail(self):
         """checks that an obviously wrong string fails"""
         posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
-        pofile = self.pofilter(posource)
-        assert pofile
+        poresult = self.pofilter(posource)
+        assert poresult != ""
 
+    def test_variables_across_lines(self):
+        """Test that variables can span lines and still fail/pass"""
+        posource = '#: test.c\nmsgid "At &timeBombURL."\n"label;."\nmsgstr "Tydens &tydBombURL."\n"labeel;."'
+        poresult = self.pofilter(posource)
+        assert poresult == ""
