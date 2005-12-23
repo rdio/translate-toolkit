@@ -128,13 +128,12 @@ class csvfile:
       self.fieldnames = fieldnames
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
-      csvlines = inputfile.readlines()
+      csvsrc = inputfile.read()
       inputfile.close()
-      self.fromlines(csvlines)
+      self.parse(csvsrc)
 
-  def fromlines(self,lines):
-    if type(lines) == list: lines = "".join(lines)
-    csvfile = csv.StringIO(lines)
+  def parse(self, csvsrc):
+    csvfile = csv.StringIO(csvsrc)
     reader = SimpleDictReader(csvfile, self.fieldnames)
     for row in reader:
       newce = csvelement()
@@ -153,6 +152,6 @@ class csvfile:
 if __name__ == '__main__':
   import sys
   cf = csvfile()
-  cf.fromlines(sys.stdin.readlines())
+  cf.parse(sys.stdin.read())
   sys.stdout.writelines(cf.tolines())
 

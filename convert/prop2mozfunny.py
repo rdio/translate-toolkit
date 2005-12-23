@@ -44,7 +44,8 @@ def prop2it(pf):
         definition = definition.encode("UTF-8")
       yield definition
 
-def prop2funny(lines, itencoding="cp1252"):
+def prop2funny(src, itencoding="cp1252"):
+  lines = src.split("\n")
   header = lines[0]
   if not header.startswith("# converted from "):
     waspseudoprops = len([line for line in lines if line.startswith("# section:")])
@@ -56,13 +57,13 @@ def prop2funny(lines, itencoding="cp1252"):
   if not (waspseudoprops ^ wasdefines):
     raise ValueError("could not determine file type as pseudo-properties or defines file")
   pf = properties.propfile()
-  pf.fromlines(lines)
+  pf.parse("\n".join(lines))
   if wasdefines:
     for line in prop2inc(pf):
-      yield line
+      yield line + "\n"
   elif waspseudoprops:
     for line in prop2it(pf):
-      yield line.decode("utf-8").encode(itencoding)
+      yield line.decode("utf-8").encode(itencoding) + "\n"
 
 def po2inc(inputfile, outputfile, templatefile, encoding=None, includefuzzy=False):
   """wraps po2prop but converts outputfile to properties first"""
@@ -103,8 +104,8 @@ def po2it(inputfile, outputfile, templatefile, encoding="cp1252", includefuzzy=F
 def main():
   import sys
   # TODO: get encoding from charset.mk, using parameter
-  lines = sys.stdin.readlines()
-  for line in prop2funny(lines):
+  src = sys.stdin.read()
+  for line in prop2funny(src):
     sys.stdout.write(line)
 
 if __name__ == "__main__":

@@ -116,8 +116,8 @@ def convertoo(inputfile, outputfile, templates, pot=False, sourcelanguage=None, 
   fromfile = oo.oofile()
   if hasattr(inputfile, "filename"):
     fromfile.filename = inputfile.filename
-  filelines = inputfile.readlines()
-  fromfile.fromlines(filelines)
+  filesrc = inputfile.read()
+  fromfile.parse(filesrc)
   if not sourcelanguage:
     testlangtype = targetlanguage or (fromfile and fromfile.languages[0]) or ""
     if testlangtype.isdigit():

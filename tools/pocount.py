@@ -86,7 +86,7 @@ Review Messages, Review Source Words"
   def handlefile(self, filename):
     infile = open(filename)
     pof = po.pofile()
-    pof.fromlines(infile.readlines())
+    pof.parse(infile.read())
     infile.close()
     self.allelements.extend(pof.poelements)
     summarize(filename, pof.poelements, self.CSVstyle)

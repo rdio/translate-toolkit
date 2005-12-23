@@ -227,14 +227,15 @@ class poelement:
     """returns whether this poelement contains plural strings..."""
     return len(self.msgid_plural) > 0
 
-  def fromlines(self,lines):
+  def parse(self, src):
     inmsgid = 0
     inmsgid_comment = 0
     inmsgid_plural = 0
     inmsgstr = 0
     msgstr_pluralid = None
     linesprocessed = 0
-    for line in lines:
+    for line in src.split("\n"):
+      line = line + "\n"
       linesprocessed += 1
       if len(line) == 0:
         continue
@@ -400,14 +401,6 @@ class pofile:
     self.encoding = encoding
     if inputfile is not None:
       self.parse(inputfile)
-
-  def parse(self, inputfile):
-    """parses the given file"""
-    self.filename = getattr(inputfile, 'name', '')
-    if inputfile is not None:
-      polines = inputfile.readlines()
-      inputfile.close()
-      self.fromlines(polines)
 
   def makeheader(self, charset="CHARSET", encoding="ENCODING", project_id_version=None, pot_creation_date=None, po_revision_date=None, last_translator=None, language_team=None, mime_version=None, plural_forms=None, report_msgid_bugs_to=None, **kwargs):
     """create a header for the given filename. arguments are specially handled, kwargs added as key: value
@@ -591,8 +584,14 @@ class pofile:
         return 0
     return 1
 
-  def fromlines(self, lines):
-    """read the lines of a po file in and include them as poelements"""
+  def parse(self, input):
+    """parses the given file or source string"""
+    self.filename = getattr(input, 'name', '')
+    if hasattr(input, "read"):
+      posrc = input.read()
+      input.close()
+      input = posrc
+    lines = posrc.split("\n")
     start = 0
     end = 0
     # make only the first one the header
@@ -602,7 +601,7 @@ class pofile:
         finished = 0
         while not finished:
           newpe = self.elementclass()
-          linesprocessed = newpe.fromlines(lines[start:end])
+          linesprocessed = newpe.parse("\n".join(lines[start:end]))
           start += linesprocessed
           if linesprocessed > 1:
             self.poelements.append(newpe)

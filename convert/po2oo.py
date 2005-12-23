@@ -77,9 +77,9 @@ class reoo:
 
   def readoo(self, of):
     """read in the oo from the file"""
-    oolines = of.readlines()
+    oosrc = of.read()
     self.o = oo.oofile()
-    self.o.fromlines(oolines)
+    self.o.parse(oosrc)
     self.makeindex()
 
   def handlepoelement(self, thepo):
@@ -163,7 +163,7 @@ def getmtime(filename):
 
 def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetlanguage=None, timestamp=None, includefuzzy=False, multifilestyle="single"):
   inputpo = po.pofile()
-  inputpo.fromlines(inputfile.readlines())
+  inputpo.parse(inputfile.read())
   if not targetlanguage:
     raise ValueError("You must specify the target language")
   if not sourcelanguage:

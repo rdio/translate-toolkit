@@ -48,8 +48,8 @@ class dtdelement:
     """returns whether this dtdelement doesn't actually have an entity definition"""
     return self.entity is None
 
-  def fromlines(self,lines):
-    """read the first dtd element from the set of lines into this object, return linesprocessed"""
+  def parse(self, dtdsrc):
+    """read the first dtd element from the source code into this object, return linesprocessed"""
     self.comments = []
     # make all the lists the same
     self.locfilenotes = self.comments
@@ -63,9 +63,13 @@ class dtdelement:
     # self.comments = []
     self.entity = None
     self.definition = ''
+    if not dtdsrc:
+      return 0
+    lines = dtdsrc.split("\n")
     linesprocessed = 0
     comment = ""
     for line in lines:
+      line += "\n"
       linesprocessed += 1
       # print "line(%d,%d): " % (self.incomment,self.inentity),line[:-1]
       if not self.incomment:
@@ -229,14 +233,15 @@ class dtdfile:
     self.dtdelements = []
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
-      dtdlines = inputfile.readlines()
-      self.fromlines(dtdlines)
+      dtdsrc = inputfile.read()
+      self.parse(dtdsrc)
       self.makeindex()
 
-  def fromlines(self,lines):
-    """read the lines of a dtd file in and include them as dtdelements"""
+  def parse(self, dtdsrc):
+    """read the source code of a dtd file in and include them as dtdelements"""
     start = 0
     end = 0
+    lines = dtdsrc.split("\n")
     while end < len(lines):
       if (start == end): end += 1
       foundentity = 0
@@ -253,7 +258,7 @@ class dtdfile:
       linesprocessed = 1 # to initialise loop
       while linesprocessed >= 1:
         newdtd = dtdelement()
-        linesprocessed = newdtd.fromlines(lines[start:end])
+        linesprocessed = newdtd.parse("\n".join(lines[start:end]))
         start += linesprocessed
         if linesprocessed >= 1 and (not newdtd.isnull() or newdtd.unparsedlines):
           self.dtdelements.append(newdtd)

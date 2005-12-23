@@ -111,13 +111,15 @@ class ooelement:
 
 class oofile:
   """this represents an entire .oo file"""
-  def __init__(self):
+  def __init__(self, input=None):
     """constructs the oofile"""
     self.oolines = []
     self.ooelements = []
     self.ookeys = {}
     self.filename = "(unknown file)"
     self.languages = []
+    if input is not None:
+      self.parse(input)
 
   def addline(self, thisline):
     """adds a parsed line to the file"""
@@ -132,9 +134,15 @@ class oofile:
     if thisline.languageid not in self.languages:
       self.languages.append(thisline.languageid)
 
-  def fromlines(self, lines):
+  def parse(self, input):
     """parses lines and adds them to the file"""
-    for line in lines:
+    self.filename = getattr(input, 'name', '')
+    if hasattr(input, "read"):
+      src = input.read()
+      input.close()
+    else:
+      src = input
+    for line in src.split("\n"):
       parts = quote.rstripeol(line).split("\t")
       thisline = ooline(parts)
       self.addline(thisline)
@@ -172,13 +180,13 @@ class oomultifile:
     """reads in all the lines and works out the subfiles"""
     linenum = 0
     for line in self.multifile:
-      subfile = self.getsubfile(line)
+      subfile = self.getsubfilename(line)
       if not subfile in self.subfilelines:
         self.subfilelines[subfile] = []
       self.subfilelines[subfile].append(linenum)
       linenum += 1
 
-  def getsubfile(self, line):
+  def getsubfilename(self, line):
     """looks up the subfile name for the line"""
     if line.count("\t") < 2:
       raise ValueError("invalid tab-delimited line: %r" % line)
@@ -207,7 +215,7 @@ class oomultifile:
     """checks if this pathname is a valid subfile"""
     return pathname in self.subfilelines
 
-  def getlines(self, subfile):
+  def getsubfilesrc(self, subfile):
     """returns the list of lines matching the subfile"""
     lines = []
     requiredlines = dict.fromkeys(self.subfilelines[subfile])
@@ -217,12 +225,12 @@ class oomultifile:
       if linenum in requiredlines:
         lines.append(line)
       linenum += 1
-    return lines
+    return "".join(lines)
 
   def openinputfile(self, subfile):
     """returns a pseudo-file object for the given subfile"""
-    lines = self.getlines(subfile)
-    inputfile = wStringIO.StringIO("".join(lines))
+    subfilesrc = self.getsubfilesrc(subfile)
+    inputfile = wStringIO.StringIO(subfilesrc)
     inputfile.filename = subfile
     return inputfile
 
@@ -236,15 +244,15 @@ class oomultifile:
 
   def getoofile(self, subfile):
     """returns an oofile built up from the given subfile's lines"""
-    lines = self.getlines(subfile)
-    oofilefromlines = oofile()
-    oofilefromlines.filename = subfile
-    oofilefromlines.fromlines(lines)
-    return oofilefromlines
+    subfilesrc = self.getsubfilesrc(subfile)
+    oosubfile = oofile()
+    oosubfile.filename = subfile
+    oosubfile.parse(subfilesrc)
+    return oosubfile
 
 if __name__ == '__main__':
   of = oofile()
-  of.fromlines(sys.stdin.readlines())
+  of.parse(sys.stdin.read())
   sys.stdout.writelines(of.tolines())
 
 

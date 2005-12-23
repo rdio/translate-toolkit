@@ -26,9 +26,9 @@ from translate.storage import po
 from translate.misc import quote
 
 def readpofile(infile):
-  lines = infile.readlines()
+  posrc = infile.read()
   pf = po.pofile()
-  pf.fromlines(lines)
+  pf.parse(posrc)
   return pf
 
 def writepofile(outfile, pf):

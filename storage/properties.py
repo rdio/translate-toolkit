@@ -55,14 +55,15 @@ class propfile:
     self.propelements = []
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
-      proplines = inputfile.readlines()
+      propsrc = inputfile.read()
       inputfile.close()
-      self.fromlines(proplines)
+      self.parse(propsrc)
 
-  def fromlines(self, lines):
-    """read the lines of a properties file in and include them as propelements"""
+  def parse(self, propsrc):
+    """read the source of a properties file in and include them as propelements"""
     newpe = propelement()
     inmultilinemsgid = 0
+    lines = propsrc.split("\n")
     for line in lines:
       # handle multiline msgid if we're in one
       if inmultilinemsgid:
