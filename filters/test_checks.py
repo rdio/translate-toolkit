@@ -239,6 +239,62 @@ def test_validchars():
     stdchecker = checks.StandardChecker(checks.CheckerConfig(validchars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'))
     assert checks.passes(stdchecker.validchars, "This sentence contains valid characters", "Hierdie sin bevat ware karakters")
 
+def test_variables_kde():
+    """tests variables in KDE translations"""
+    # GNOME variables
+    kdechecker = checks.KdeChecker()
+    assert checks.passes(kdechecker.variables, "%d files of type %s saved.", "%d leers van %s tipe gestoor.")
+    assert checks.fails(kdechecker.variables, "%d files of type %s saved.", "%s leers van %s tipe gestoor.")
+
+def test_variables_gnome():
+    """tests variables in GNOME translations"""
+    # GNOME variables
+    gnomechecker = checks.GnomeChecker()
+    assert checks.passes(gnomechecker.variables, "%d files of type %s saved.", "%d leers van %s tipe gestoor.")
+    assert checks.fails(gnomechecker.variables, "%d files of type %s saved.", "%s leers van %s tipe gestoor.")
+    assert checks.passes(gnomechecker.variables, "Save $(file)", "Stoor $(file)")
+    assert checks.fails(gnomechecker.variables, "Save $(file)", "Stoor $(leer)")
+
+def test_variables_mozilla():
+    """tests variables in Mozilla translations"""
+    # Mozilla variables
+    mozillachecker = checks.MozillaChecker()
+    assert checks.passes(mozillachecker.variables, "Use the &brandShortname; instance.", "Gebruik die &brandShortname; weergawe.")
+    assert checks.fails(mozillachecker.variables, "Use the &brandShortname; instance.", "Gebruik die &brandKortnaam; weergawe.")
+    assert checks.passes(mozillachecker.variables, "Save %file%", "Stoor %file%")
+    assert checks.fails(mozillachecker.variables, "Save %file%", "Stoor %leer%")
+    assert checks.passes(mozillachecker.variables, "%d files of type %s saved.", "%d leers van %s tipe gestoor.")
+    assert checks.fails(mozillachecker.variables, "%d files of type %s saved.", "%s leers van %s tipe gestoor.")
+    assert checks.passes(mozillachecker.variables, "Save $file", "Stoor $file")
+    assert checks.fails(mozillachecker.variables, "Save $file", "Stoor $leer")
+
+def test_variables_openoffice():
+    """tests variables in OpenOffice translations"""
+    # OpenOffice.org variables
+    ooochecker = checks.OpenOfficeChecker()
+    assert checks.passes(ooochecker.variables, "Use the &brandShortname; instance.", "Gebruik die &brandShortname; weergawe.")
+    assert checks.fails(ooochecker.variables, "Use the &brandShortname; instance.", "Gebruik die &brandKortnaam; weergawe.")
+    assert checks.passes(ooochecker.variables, "Save %file%", "Stoor %file%")
+    assert checks.fails(ooochecker.variables, "Save %file%", "Stoor %leer%")
+    assert checks.passes(ooochecker.variables, "Save %file", "Stoor %file")
+    assert checks.fails(ooochecker.variables, "Save %file", "Stoor %leer")
+    assert checks.passes(ooochecker.variables, "Save $(file)", "Stoor $(file)")
+    assert checks.fails(ooochecker.variables, "Save $(file)", "Stoor $(leer)")
+    assert checks.passes(ooochecker.variables, "Save $file$", "Stoor $file$")
+    assert checks.fails(ooochecker.variables, "Save $file$", "Stoor $leer$")
+    assert checks.passes(ooochecker.variables, "Save ${file}", "Stoor ${file}")
+    assert checks.fails(ooochecker.variables, "Save ${file}", "Stoor ${leer}")
+    assert checks.passes(ooochecker.variables, "Save #file#", "Stoor #file#")
+    assert checks.fails(ooochecker.variables, "Save #file#", "Stoor #leer#")
+    assert checks.passes(ooochecker.variables, "Save ($file)", "Stoor ($file)")
+    assert checks.fails(ooochecker.variables, "Save ($file)", "Stoor ($leer)")
+    assert checks.passes(ooochecker.variables, "Save $[file]", "Stoor $[file]")
+    assert checks.fails(ooochecker.variables, "Save $[file]", "Stoor $[leer]")
+    assert checks.passes(ooochecker.variables, "Save [file]", "Stoor [file]")
+    assert checks.fails(ooochecker.variables, "Save [file]", "Stoor [leer]")
+    assert checks.passes(ooochecker.variables, "Save $file", "Stoor $file")
+    assert checks.fails(ooochecker.variables, "Save $file", "Stoor $leer")
+
 def test_xmltags():
     """tests xml tags"""
     stdchecker = checks.StandardChecker()
