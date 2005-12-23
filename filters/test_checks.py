@@ -50,6 +50,14 @@ Leer nie gestoor gestoor nie\\n
 #-#-#-#-# file1.po #-#-#-#-#\\n
 Leer nie gestoor""")
 
+def test_doublespacing():
+    """tests double spacing"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.doublespacing, "Sentence.  Another sentence.", "Sin.  'n Ander sin.")
+    assert checks.passes(stdchecker.doublespacing, "Sentence. Another sentence.", "Sin. No double spacing.")
+    assert checks.fails(stdchecker.doublespacing, "Sentence.  Another sentence.", "Sin. Missing the double space.")
+    assert checks.fails(stdchecker.doublespacing, "Sentence. Another sentence.", "Sin.  Uneeded double space in translation.")
+
 def test_double_quotes():
     """tests double quotes"""
     stdchecker = checks.StandardChecker()
