@@ -64,3 +64,14 @@ class TestDTD2PO:
         assert 'editorCheck.label' not in posource
         assert 'editorCheck.accesskey' in posource
 
+    def test_spaces_at_start_of_dtd_lines(self):
+        """test that pretty print spaces at the start of subsequent DTD element lines are removed from the PO file, bug 79"""
+        dtdsource = '<!ENTITY  noupdatesfound.intro "First line then \n' + \
+          '                                          next lines.">\n'
+        pofile = self.dtd2po(dtdsource)
+        posource = ''.join(pofile.tolines())
+        poelement = self.singleelement(pofile)
+        # We still need to decide how we handle line line breaks in the DTD entities.  It seems that we should actually
+        # drop the line break but this has not been implemented yet.
+        assert po.unquotefrompo(poelement.msgid) == "First line then \nnext lines."
+
