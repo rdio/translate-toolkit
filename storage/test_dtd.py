@@ -10,13 +10,9 @@ class TestDTD:
         dtdfile = dtd.dtdfile(dummyfile)
         return dtdfile
 
-    def dtdsource(self, dtdfile):
-        """helper that converts a dtd file back to source code"""
-        return str(dtdfile)
-
     def dtdregen(self, dtdsource):
         """helper that converts dtd source to dtdfile object and back"""
-        return self.dtdsource(self.dtdparse(dtdsource))
+        return str(self.dtdparse(dtdsource))
 
     def test_simpleentity(self):
         """checks that a simple dtd entity definition is parsed correctly"""

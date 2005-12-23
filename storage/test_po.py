@@ -10,13 +10,9 @@ class TestPO:
         pofile = po.pofile(dummyfile)
         return pofile
 
-    def posource(self, pofile):
-        """helper that converts a po file back to source code"""
-        return str(pofile)
-
     def poregen(self, posource):
         """helper that converts po source to pofile object and back"""
-        return self.posource(self.poparse(posource))
+        return str(self.poparse(posource))
 
     def test_simpleentry(self):
         """checks that a simple po entry is parsed correctly"""
@@ -35,7 +31,7 @@ class TestPO:
         thepo = pofile.poelements[0]
         thepo.msgidcomments.append('"_: first comment\\n"')
         thepo.msgidcomments.append('"_: second comment\\n"')
-        regenposource = self.posource(pofile)
+        regenposource = str(pofile)
         assert regenposource.count("_:") == 1
 
     def test_merge_duplicates(self):
