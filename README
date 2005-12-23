@@ -25,7 +25,7 @@ The latest version of the Translate Toolkit can be downloaded from:
 http://sourceforge.net/project/showfiles.php?group_id=91920
 
 The latest documentation is always available at:
-http://translate.sourceforge.net/doc/index.html
+http://translate.sourceforge.net/wiki/toolkit/index
 
 
 Copying
@@ -36,11 +36,14 @@ The Translate Toolkit is developed and Copyright:
 
 and is released under the GPL license.
 
-The Documentation is Copyright:
+The Translate Toolkit Documentation is Copyright:
 	Dwayne Bailey
 	Javier SOLA
+	David Fraser
+	Friedel Wolff
+	and others
 
-and is release under a Creative Commons Attribution-ShareAlike license.
+and is released under the GPL.
 
 Where useful emails have been quoted we have attempted to preserve the authors
 name and assume that their work may be republished.
