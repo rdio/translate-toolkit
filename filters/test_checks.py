@@ -112,6 +112,12 @@ def test_endwhitespace():
     assert checks.passes(stdchecker.endwhitespace, "A setence. ", "I'm correct. ")
     assert checks.fails(stdchecker.endwhitespace, "A setence. ", "'I'm incorrect.")
 
+def test_escapes():
+    """tests escapes"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.escapes, r"""_: KDE comment\n
+A sentence""", "I'm correct.")
+
 def test_filepaths():
     """tests filepaths"""
     stdchecker = checks.StandardChecker()
@@ -205,6 +211,7 @@ def test_singlequoting():
     assert checks.passes(stdchecker.singlequoting, "A 'Hot' plate", "Ipuleti 'elishisa' kunye")
     # FIXME this should pass but doesn't probably to do with our logic that got confused at the end of lines
     # assert checks.passes(stdchecker.singlequoting, "'Hot' plate", "Ipuleti 'elishisa'")
+    assert checks.passes(stdchecker.singlequoting, "File '%s'.", "'%s' Faele.")
     assert checks.fails(stdchecker.singlequoting, "'Hot' plate", "Ipuleti \"elishisa\"")
     assert checks.passes(stdchecker.singlequoting, "It's here.", "Dit is hier.")
 
