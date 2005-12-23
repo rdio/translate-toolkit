@@ -45,9 +45,9 @@ def test_brackets():
 def test_compendiumconflicts():
     """tests compendiumconflicts"""
     stdchecker = checks.StandardChecker()
-    assert checks.fails(stdchecker.compendiumconflicts, "File not saved", """#-#-#-#-# file1.po #-#-#-#-#\\n
-Leer nie gestoor gestoor nie\\n
-#-#-#-#-# file1.po #-#-#-#-#\\n
+    assert checks.fails(stdchecker.compendiumconflicts, "File not saved", r"""#-#-#-#-# file1.po #-#-#-#-#\n
+Leer nie gestoor gestoor nie\n
+#-#-#-#-# file1.po #-#-#-#-#\n
 Leer nie gestoor""")
 
 def test_doublespacing():
