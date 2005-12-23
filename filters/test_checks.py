@@ -117,6 +117,14 @@ def test_escapes():
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.escapes, r"""_: KDE comment\n
 A sentence""", "I'm correct.")
+    assert checks.passes(stdchecker.escapes, "A file\n", "'n Leer\n")
+    assert checks.fails(stdchecker.escapes, "A file\n", "'n Leer")
+    assert checks.passes(stdchecker.escapes, "A tab\t", "'n Tab\t")
+    assert checks.fails(stdchecker.escapes, "A tab\t", "'n Tab")
+    assert checks.passes(stdchecker.escapes, "An escape escape \\", "Escape escape \\")
+    assert checks.fails(stdchecker.escapes, "An escape escape \\", "Escape escape")
+    assert checks.passes(stdchecker.escapes, "A double quote \"", "Double quote \"")
+    assert checks.fails(stdchecker.escapes, "A double quote \"", "Double quote")
 
 def test_filepaths():
     """tests filepaths"""
@@ -212,8 +220,20 @@ def test_singlequoting():
     # FIXME this should pass but doesn't probably to do with our logic that got confused at the end of lines
     # assert checks.passes(stdchecker.singlequoting, "'Hot' plate", "Ipuleti 'elishisa'")
     assert checks.passes(stdchecker.singlequoting, "File '%s'.", "'%s' Faele.")
+    # FIXME newlines also confuse our algorithm for single quotes
+    # assert checks.passes(stdchecker.singlequoting, "File '%s'\n", "'%s' Faele\n")
     assert checks.fails(stdchecker.singlequoting, "'Hot' plate", "Ipuleti \"elishisa\"")
     assert checks.passes(stdchecker.singlequoting, "It's here.", "Dit is hier.")
+    assert checks.passes(stdchecker.singlequoting, r"""_: 'Migrating' formats.\n
+Converting...""", "Kugucula...")
+
+# def test_simplecaps():
+#     """tests simple caps"""
+#     stdchecker = checks.StandardChecker()
+
+# def test_spellcheck():
+#     """tests simple caps"""
+#     stdchecker = checks.StandardChecker()
 
 def test_startcaps():
     """tests starting capitals"""

@@ -284,7 +284,7 @@ class StandardChecker(TranslationChecker):
 
   def singlequoting(self, str1, str2):
     """checks whether singlequoting is consistent between the two strings"""
-    str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
+    str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(prefilters.removekdecomments(str1))))
     str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
     return helpers.countsmatch(str1, str2, ("'", "''", "\\'"))
 
