@@ -21,9 +21,17 @@ class TestOO2PO:
 
     def test_simpleentity(self):
         """checks that a simple oo entry converts properly to a po entry"""
-	oosource = 'svx	source\\dialog\\numpages.src	0	string	RID_SVXPAGE_NUM_OPTIONS	STR_BULLET			0	en-US	Character				20050924 09:13:58'
+	oosource = r'svx	source\dialog\numpages.src	0	string	RID_SVXPAGE_NUM_OPTIONS	STR_BULLET			0	en-US	Character				20050924 09:13:58'
         pofile = self.oo2po(oosource)
         poelement = self.singleelement(pofile)
         assert po.unquotefrompo(poelement.msgid) == "Character"
         assert po.unquotefrompo(poelement.msgstr) == ""
+
+    def test_escapes(self):
+        """checks that a simple oo entry converts escapes properly to a po entry"""
+	oosource = r"wizards	source\formwizard\dbwizres.src	0	string	RID_DB_FORM_WIZARD_START + 19				0	en-US	The join '<FIELDNAME1>' and '<FIELDNAME2>' has been selected twice.\nBut joins may only be used once.				20050924 09:13:58"
+        pofile = self.oo2po(oosource)
+        poelement = self.singleelement(pofile)
+        poelementsrc = str(poelement)
+        assert r"twice.\nBut" in poelementsrc
 
