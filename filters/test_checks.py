@@ -62,7 +62,7 @@ def test_brackets():
     assert checks.passes(stdchecker.brackets, "N number(s)", "N getal(le)")
     assert checks.fails(stdchecker.brackets, "For {sic} numbers", "Vier getalle")
     assert checks.fails(stdchecker.brackets, "For }sic{ numbers", "Vier getalle")
-    #assert checks.fails(stdchecker.brackets, "For [sic] numbers", "Vier getalle")
+    assert checks.fails(stdchecker.brackets, "For [sic] numbers", "Vier getalle")
     assert checks.fails(stdchecker.brackets, "For ]sic[ numbers", "Vier getalle")
     assert checks.passes(stdchecker.brackets, "{[(", "[({")
 
