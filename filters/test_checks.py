@@ -75,6 +75,12 @@ def test_doublewords():
     #stdchecker = checks.StandardChecker(checks.CheckerConfig(varmatches=[("%", 1)]))
     #assert checks.passes(stdchecker.doublewords, "%s %s installation", "tsenyo ya %s %s")
 
+def test_endpunc():
+    """tests endpunc"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.endpunc, "Question?", "Correct?")
+    assert checks.fails(stdchecker.endpunc, " Question?", "Wrong ?")
+
 def test_endwhitespace():
     """tests endwhitespace"""
     stdchecker = checks.StandardChecker()
