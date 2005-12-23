@@ -93,24 +93,6 @@ def test_long():
     assert checks.passes(stdchecker.long, "I am normal", "Ek is ook normaal")
     assert checks.fails(stdchecker.long, "Short.", "Kort.......................................................................................")
 
-def test_numbers():
-    """test numbers"""
-    stdchecker = checks.StandardChecker()
-    assert checks.passes(stdchecker.numbers, "Netscape 4 was not as good as Netscape 7.", "Netscape 4 was nie so goed soos Netscape 7 nie.")
-    # Check for correct detection of degree.  Also check that we aren't getting confused with 1 and 2 byte UTF-8 characters
-    assert checks.fails(stdchecker.numbers, "180° turn", "180 turn")
-    assert checks.passes(stdchecker.numbers, "180~ turn", "180 turn")
-    assert checks.passes(stdchecker.numbers, "180¶ turn", "180 turn")
-    # Numbers with multiple decimal points
-    assert checks.passes(stdchecker.numbers, "12.34.56", "12.34.56")
-    assert checks.fails(stdchecker.numbers, "12.34.56", "98.76.54")
-    # Currency
-    # FIXME we should probably be able to handle currency checking with locale inteligence
-    assert checks.passes(stdchecker.numbers, "R57.60", "R57.60")
-    # FIXME - again locale intelligence should allow us to use other decimal seperators
-    assert checks.fails(stdchecker.numbers, "R57.60", "R57,60")
-    assert checks.fails(stdchecker.numbers, "1,000.00", "1 000,00")
-
 def test_musttranslatewords():
     """tests stopwords"""
     stdchecker = checks.StandardChecker(checks.CheckerConfig(musttranslatewords=[]))
@@ -135,6 +117,24 @@ def test_notranslatewords():
     # should always pass if there are no stopwords in the original
     assert checks.passes(stdchecker.notranslatewords, "This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
 
+def test_numbers():
+    """test numbers"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.numbers, "Netscape 4 was not as good as Netscape 7.", "Netscape 4 was nie so goed soos Netscape 7 nie.")
+    # Check for correct detection of degree.  Also check that we aren't getting confused with 1 and 2 byte UTF-8 characters
+    assert checks.fails(stdchecker.numbers, "180° turn", "180 turn")
+    assert checks.passes(stdchecker.numbers, "180~ turn", "180 turn")
+    assert checks.passes(stdchecker.numbers, "180¶ turn", "180 turn")
+    # Numbers with multiple decimal points
+    assert checks.passes(stdchecker.numbers, "12.34.56", "12.34.56")
+    assert checks.fails(stdchecker.numbers, "12.34.56", "98.76.54")
+    # Currency
+    # FIXME we should probably be able to handle currency checking with locale inteligence
+    assert checks.passes(stdchecker.numbers, "R57.60", "R57.60")
+    # FIXME - again locale intelligence should allow us to use other decimal seperators
+    assert checks.fails(stdchecker.numbers, "R57.60", "R57,60")
+    assert checks.fails(stdchecker.numbers, "1,000.00", "1 000,00")
+
 def test_puncspacing():
     """tests spacing after punctuation"""
     stdchecker = checks.StandardChecker()
@@ -142,6 +142,12 @@ def test_puncspacing():
     assert checks.passes(stdchecker.puncspacing, "One, two, three. ", "Kunye, kubili, kuthathu.")
     assert checks.fails(stdchecker.puncspacing, "One, two, three. ", "Kunye, kubili,kuthathu.")
     assert checks.passes(stdchecker.puncspacing, "One, two, three!?", "Kunye, kubili, kuthathu?")
+
+def test_purepunc():
+    """tests messages containing only punctuation"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.purepunc, ".", ".")
+    assert checks.fails(stdchecker.purepunc, ".", " ")
 
 def test_short():
     """tests short messages"""
