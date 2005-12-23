@@ -81,6 +81,24 @@ def test_filepaths():
     assert checks.passes(stdchecker.filepaths, "%s to the file /etc/hosts on your system.", "%s na die leer /etc/hosts op jou systeem.")
     assert checks.fails(stdchecker.filepaths, "%s to the file /etc/hosts on your system.", "%s na die leer /etc/gasheer op jou systeem.")
     
+def test_numbers():
+    """test numbers"""
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.numbers, "Netscape 4 was not as good as Netscape 7.", "Netscape 4 was nie so goed soos Netscape 7 nie.")
+    # Check for correct detection of degree.  Also check that we aren't getting confused with 1 and 2 byte UTF-8 characters
+    assert checks.fails(stdchecker.numbers, "180° turn", "180 turn")
+    assert checks.passes(stdchecker.numbers, "180~ turn", "180 turn")
+    assert checks.passes(stdchecker.numbers, "180¶ turn", "180 turn")
+    # Numbers with multiple decimal points
+    assert checks.passes(stdchecker.numbers, "12.34.56", "12.34.56")
+    assert checks.fails(stdchecker.numbers, "12.34.56", "98.76.54")
+    # Currency
+    # FIXME we should probably be able to handle currency checking with locale inteligence
+    assert checks.passes(stdchecker.numbers, "R57.60", "R57.60")
+    # FIXME - again locale intelligence should allow us to use other decimal seperators
+    assert checks.fails(stdchecker.numbers, "R57.60", "R57,60")
+    assert checks.fails(stdchecker.numbers, "1,000.00", "1 000,00")
+
 def test_notranslatewords():
     """tests stopwords"""
     stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=[]))
