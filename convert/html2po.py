@@ -55,8 +55,8 @@ def converthtml(inputfile, outputfile, templates, includeuntagged=False):
   outputfilepos = outputfile.tell()
   includeheader = outputfilepos == 0
   outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader, includeuntagged)
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
+  outputposrc = str(outputpo)
+  outputfile.write(outputposrc)
   return 1
 
 def main():

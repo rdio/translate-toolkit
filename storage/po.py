@@ -343,31 +343,27 @@ class poelement:
       partstr += partline + '\n'
     return partstr
 
-  def tolines(self):
-    """return this po element as a set of lines"""
-    for othercomment in self.othercomments:
-      yield othercomment
+  def __str__(self):
+    """return this po element as a string"""
+    lines = []
+    lines.extend(self.othercomments)
     if self.isobsolete():
-      for typecomment in self.typecomments:
-        yield typecomment
-      for obsoletemessage in self.obsoletemessages:
-        yield obsoletemessage
-      return
+      lines.extend(self.typecomments)
+      lines.extend(self.obsoletemessages)
+      return "".join(lines)
     # if there's no msgid don't do msgid and string, unless we're the header
     # this will also discard any comments other than plain othercomments...
     if (len(self.msgid) == 0) or ((len(self.msgid) == 1) and (self.msgid[0] == '""')):
       if not (self.isheader() or self.msgidcomments or self.sourcecomments):
         return
-    for sourcecomment in self.sourcecomments:
-      yield sourcecomment
-    for typecomment in self.typecomments:
-      yield typecomment
-    for visiblecomment in self.visiblecomments:
-      yield visiblecomment
-    yield self.getmsgpartstr("msgid", self.msgid, self.msgidcomments)
+    lines.extend(self.sourcecomments)
+    lines.extend(self.typecomments)
+    lines.extend(self.visiblecomments)
+    lines.append(self.getmsgpartstr("msgid", self.msgid, self.msgidcomments))
     if self.msgid_plural or self.msgid_pluralcomments:
-      yield self.getmsgpartstr("msgid_plural", self.msgid_plural, self.msgid_pluralcomments)
-    yield self.getmsgpartstr("msgstr", self.msgstr)
+      lines.append(self.getmsgpartstr("msgid_plural", self.msgid_plural, self.msgid_pluralcomments))
+    lines.append(self.getmsgpartstr("msgstr", self.msgstr))
+    return "".join(lines)
 
   def getsources(self):
     """returns the list of sources from sourcecomments in the po element"""
@@ -681,15 +677,13 @@ class pofile:
         else:
           self.sourceindex[source] = thepo
 
-  def tolines(self):
+  def __str__(self):
     """convert the poelements back to lines"""
     lines = []
     for pe in self.poelements:
-      pelines = pe.tolines()
-      lines.extend(pelines)
-      # add a line break
-      lines.append('\n')
-    return self.encode(lines)
+      pesrc = str(pe) + "\n"
+      lines.append(pesrc)
+    return "".join(self.encode(lines))
 
   def encode(self, lines):
     """encode any unicode strings in lines in self.encoding"""
@@ -724,5 +718,5 @@ class pofile:
 if __name__ == '__main__':
   import sys
   pf = pofile(sys.stdin)
-  sys.stdout.writelines(pf.tolines())
+  sys.stdout.write(str(pf))
 

@@ -299,8 +299,8 @@ def convertdtd(inputfile, outputfile, templatefile, pot=False, duplicatestyle="m
     outputpo = convertor.mergefiles(templatedtd, inputdtd)
   if outputpo.isempty():
     return 0
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
+  outputposrc = str(outputpo)
+  outputfile.write(outputposrc)
   return 1
 
 if __name__ == '__main__':

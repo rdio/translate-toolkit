@@ -12,7 +12,7 @@ class TestDTD:
 
     def dtdsource(self, dtdfile):
         """helper that converts a dtd file back to source code"""
-        return "".join(dtdfile.tolines())
+        return str(dtdfile)
 
     def dtdregen(self, dtdsource):
         """helper that converts dtd source to dtdfile object and back"""

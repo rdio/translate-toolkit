@@ -85,7 +85,7 @@ class ooline:
             self.groupid, self.localid, self.helpid, self.platform, self.width, 
             self.languageid, self.text, self.helptext, self.quickhelptext, self.title, self.timestamp)
 
-  def toline(self):
+  def __str__(self):
     """return a line in tab-delimited form"""
     return "\t".join(self.getparts()).replace("\n", "\\n")
 
@@ -105,9 +105,9 @@ class ooelement:
     self.languages[line.languageid] = line
     self.lines.append(line)
 
-  def tolines(self):
+  def __str__(self):
     """return the lines in tab-delimited form"""
-    return "\r\n".join([line.toline() for line in self.lines])
+    return "\r\n".join([str(line) for line in self.lines])
 
 class oofile:
   """this represents an entire .oo file"""
@@ -147,16 +147,16 @@ class oofile:
       thisline = ooline(parts)
       self.addline(thisline)
 
-  def tolines(self):
+  def __str__(self):
     """converts all the lines back to tab-delimited form"""
     lines = []
     for oe in self.ooelements:
       if len(oe.lines) > 2:
         for line in oe.lines:
           print >>sys.stderr, line.getparts()
-      oeline = oe.tolines() + "\r\n"
+      oeline = str(oe) + "\r\n"
       lines.append(oeline)
-    return lines
+    return "".join(lines)
 
 class oomultifile:
   """this takes a huge GSI file and represents it as multiple smaller files..."""
@@ -253,6 +253,6 @@ class oomultifile:
 if __name__ == '__main__':
   of = oofile()
   of.parse(sys.stdin.read())
-  sys.stdout.writelines(of.tolines())
+  sys.stdout.write(str(of))
 
 

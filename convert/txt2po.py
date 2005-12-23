@@ -68,8 +68,8 @@ def converttxt(inputfile, outputfile, templates):
   outputfilepos = outputfile.tell()
   includeheader = outputfilepos == 0
   outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader)
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
+  outputposrc = str(outputpo)
+  outputfile.write(outputposrc)
   return 1
 
 def main():

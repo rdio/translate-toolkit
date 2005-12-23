@@ -32,8 +32,7 @@ def readpofile(infile):
   return pf
 
 def writepofile(outfile, pf):
-  lines = pf.tolines()
-  outfile.writelines(lines)
+  outfile.write(str(pf))
 
 def mergepofiles(p1, p2, mergeblanks, mergecomments):
   """take any new translations in p2 and write them into p1"""
@@ -50,7 +49,7 @@ def mergepofiles(p1, p2, mergeblanks, mergecomments):
       if unquotedid in p1.msgidindex:
         po1 = p1.msgidindex[unquotedid]
       if po1 is None:
-        sys.stderr.write("".join(po2.tolines()) + "\n")
+        sys.stderr.write(str(po2) + "\n")
       else:
         # finally set the new definition in po1
         po1.merge(po2, overwrite=True)
@@ -71,7 +70,7 @@ def mergepofiles(p1, p2, mergeblanks, mergecomments):
       # check if we found a matching po element
       if po1 is None:
         print >>sys.stderr, "# the following po element was not found"
-        sys.stderr.write("".join(po2.tolines()) + "\n")
+        sys.stderr.write(str(po2) + "\n")
       else:
         if not mergeblanks:
           unquotedstr = po.getunquotedstr(po2.msgstr)
@@ -109,7 +108,7 @@ def mergepo(inputfile, outputfile, templatefile, mergeblanks="no", mergecomments
   outputpo = mergepofiles(templatepo, inputpo, mergeblanks, mergecomments)
   if outputpo.isempty():
     return 0
-  outputfile.writelines(outputpo.tolines())
+  outputfile.write(str(outputpo))
   return 1
 
 def main():

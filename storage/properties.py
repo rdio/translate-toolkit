@@ -41,12 +41,12 @@ class propelement:
     """returns whether this is a blank element, containing only comments..."""
     return not (self.name or self.msgid)
 
-  def tolines(self):
+  def __str__(self):
     """convert the element back into formatted lines for a .properties file"""
     if self.isblank():
-      return self.comments + ["\n"]
+      return "".join(self.comments + ["\n"])
     else:
-      return self.comments + ["%s=%s\n" % (self.name, self.msgid)]
+      return "".join(self.comments + ["%s=%s\n" % (self.name, self.msgid)])
 
 class propfile:
   """this class represents a .properties file, made up of propelements"""
@@ -114,14 +114,12 @@ class propfile:
     if inmultilinemsgid or len(newpe.comments) > 0:
       self.propelements.append(newpe)
 
-  def tolines(self):
+  def _str__(self):
     """convert the propelements back to lines"""
     lines = []
     for pe in self.propelements:
-      pelines = pe.tolines()
-      lines.extend(pelines)
-    lines = [quote.mozillapropertiesencode(line) for line in lines]
-    return lines
+      lines.append(str(pe))
+    return quote.mozillapropertiesencode("".join(lines))
 
   def makeindex(self):
     """makes self.index dictionary keyed on the name"""
@@ -132,5 +130,5 @@ class propfile:
 if __name__ == '__main__':
   import sys
   pf = propfile(sys.stdin)
-  sys.stdout.writelines(pf.tolines())
+  sys.stdout.write(str(pf))
 

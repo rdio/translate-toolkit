@@ -259,8 +259,8 @@ def convertdtd(inputfile, outputfile, templatefile, includefuzzy=False):
     templatedtd = dtd.dtdfile(templatefile)
     convertor = redtd(templatedtd)
   outputdtd = convertor.convertfile(inputpo, includefuzzy)
-  outputdtdlines = outputdtd.tolines()
-  outputfile.writelines(outputdtdlines)
+  outputdtdsrc = src(outputdtd)
+  outputfile.write(outputdtdsrc)
   return 1
 
 if __name__ == '__main__':

@@ -171,7 +171,7 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
       for msgstr, thepo, filename in translations:
         thepo.othercomments.append("# (poconflicts) %s\n" % filename)
         conflictfile.poelements.append(thepo)
-      open(fulloutputpath, "w").writelines(conflictfile.tolines())
+      open(fulloutputpath, "w").write(str(conflictfile))
 
 def main():
   formats = {"po":("po", None), None:("po", None)}

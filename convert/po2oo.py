@@ -103,12 +103,12 @@ class reoo:
       else:
         print >>sys.stderr, "couldn't find key %r in po:" % key
         try:
-          polines = "\n".join(thepo.tolines())
+          polines = str(thepo)
           if isinstance(polines, unicode):
             polines = polines.encode("utf-8")
           print >>sys.stderr, polines
         except:
-          print >>sys.stderr, "error outputting po %r" % (thepo.tolines(),)
+          print >>sys.stderr, "error outputting po %r" % (str(thepo),)
 
   def applytranslation(self, key, subkey, theoo, thepo):
     """applies the translation for entity in the po element to the dtd element"""
@@ -179,8 +179,8 @@ def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetla
     convertor = reoo(templatefile, languages=languages, timestamp=timestamp, includefuzzy=includefuzzy, long_keys=multifilestyle != "single")
   outputoo = convertor.convertfile(inputpo)
   # TODO: check if we need to manually delete missing items
-  outputoolines = outputoo.tolines()
-  outputfile.writelines(outputoolines)
+  outputoosrc = str(outputoo)
+  outputfile.write(outputoosrc)
   return True
 
 def main():

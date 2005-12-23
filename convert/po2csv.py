@@ -81,8 +81,8 @@ def convertcsv(inputfile, outputfile, templatefile, columnorder=None):
     return 0
   convertor = po2csv()
   outputcsv = convertor.convertfile(inputpo,columnorder)
-  outputcsvlines = outputcsv.tolines()
-  outputfile.writelines(outputcsvlines)
+  outputcsvsrc = str(outputcsv)
+  outputfile.write(outputcsvsrc)
   return 1
 
 def main():

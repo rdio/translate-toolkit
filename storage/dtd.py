@@ -204,11 +204,11 @@ class dtdelement:
         self.comments.append(("comment","self.%s = %s" % (attr,r) ))
     return linesprocessed
 
-  def tolines(self):
+  def __str__(self):
     """convert the dtd entity back to string form"""
-    for commenttype,comment in self.comments: yield comment
-    for line in self.unparsedlines:
-      yield line
+    lines = []
+    lines.extend([comment for commenttype,comment in self.comments])
+    lines.extend(self.unparsedlines)
     if self.isnull():
       raise StopIteration()
     # for f in self.locfilenotes: yield f
@@ -224,7 +224,8 @@ class dtdelement:
         entityline = self.hashprefix + " " + entityline
       if isinstance(entityline, unicode):
         entityline = entityline.encode('UTF-8')
-      yield entityline+'\n'
+      lines.append(entityline+'\n')
+    return "".join(lines)
 
 class dtdfile:
   """this class represents a .dtd file, made up of dtdelements"""
@@ -263,13 +264,10 @@ class dtdfile:
         if linesprocessed >= 1 and (not newdtd.isnull() or newdtd.unparsedlines):
           self.dtdelements.append(newdtd)
 
-  def tolines(self):
-    """convert the dtdelements back to lines"""
-    lines = []
-    for dtd in self.dtdelements:
-      dtdlines = dtd.tolines()
-      lines.extend(dtdlines)
-    return lines    
+  def __str__(self):
+    """convert the dtdelements back to source"""
+    sources = [str(dtd) for dtd in self.dtdelements]
+    return "".join(sources)
 
   def makeindex(self):
     """makes self.index dictionary keyed on entities"""
@@ -281,5 +279,5 @@ class dtdfile:
 if __name__ == "__main__":
   import sys
   d = dtdfile(sys.stdin)
-  sys.stdout.writelines(d.tolines())
+  sys.stdout.write(str(d))
 

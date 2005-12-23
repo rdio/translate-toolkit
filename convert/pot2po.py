@@ -90,7 +90,7 @@ def convertpot(inputfile, outputfile, templatefile):
         outputpo.poelements.append(thepo)
       else:
         outputpo.poelements.append(thepo)
-  outputfile.writelines(outputpo.tolines())
+  outputfile.write(str(outputpo))
   return 1
 
 def main():

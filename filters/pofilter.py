@@ -215,8 +215,7 @@ def runpofilter(inputfile, outputfile, templatefile, checkfilter=None):
   tofile = checkfilter.filterfile(fromfile)
   if tofile.isempty():
     return 0
-  tolines = tofile.tolines()
-  outputfile.writelines(tolines)
+  outputfile.write(str(tofile))
   return 1
 
 def main():

@@ -43,8 +43,8 @@ class poreplace:
     if inputpo.isempty():
       return 0
     outputpo = self.convertfile(inputpo)
-    outputpolines = outputpo.tolines()
-    outputfile.writelines(outputpolines)
+    outputposrc = str(outputpo)
+    outputfile.write(outputposrc)
     return 1
 
 def main(converterclass):

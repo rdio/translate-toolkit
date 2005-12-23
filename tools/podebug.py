@@ -118,8 +118,7 @@ def convertpo(inputfile, outputfile, templatefile, format=None):
     return 0
   convertor = podebug(format=format)
   outputpo = convertor.convertfile(inputpo)
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
+  outputfile.write(str(outputpo))
   return 1
 
 def main():

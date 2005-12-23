@@ -82,8 +82,8 @@ def convertsxw(inputfile, outputfile, templates):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   convertor = sxw2po()
   outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"))
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
+  outputposrc = str(outputpo)
+  outputfile.write(outputposrc)
   return 1
 
 def main():

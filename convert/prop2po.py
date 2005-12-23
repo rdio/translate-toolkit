@@ -130,8 +130,8 @@ def convertprop(inputfile, outputfile, templatefile, pot=False, duplicatestyle="
     outputpo = convertor.mergefiles(templateprop, inputprop, blankmsgstr=pot, duplicatestyle=duplicatestyle)
   if outputpo.isempty():
     return 0
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
+  outputposrc = src(outputpo)
+  outputfile.write(outputposrc)
   return 1
 
 if __name__ == '__main__':

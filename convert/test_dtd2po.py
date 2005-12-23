@@ -40,7 +40,7 @@ class TestDTD2PO:
         dtdsource = '<!ENTITY credit.translation "">\n'
         pofile = self.dtd2po(dtdsource)
         poelement = self.singleelement(pofile)
-        assert "credit.translation" in "".join(poelement.tolines())
+        assert "credit.translation" in str(poelement)
 
     def test_kdecomment_merge(self):
         """test that LOCALIZATION NOTES are added properly as KDE comments and merged with duplicate comments"""
@@ -49,7 +49,7 @@ class TestDTD2PO:
         dtdsource = dtdtemplate % ("note1.label", "note1.label") + dtdtemplate % ("note2.label", "note2.label")
         pofile = self.dtd2po(dtdsource)
         pofile.poelements = pofile.poelements[1:]
-        posource = ''.join(pofile.tolines())
+        posource = str(pofile)
         print posource
         assert posource.count('"_:') <= len(pofile.poelements)
 
@@ -58,7 +58,7 @@ class TestDTD2PO:
         dtdsource = '<!--LOCALIZATION NOTE (editorCheck.label): DONT_TRANSLATE -->\n' + \
             '<!ENTITY editorCheck.label "Composer">\n<!ENTITY editorCheck.accesskey "c">\n'
         pofile = self.dtd2po(dtdsource)
-        posource = ''.join(pofile.tolines())
+        posource = str(pofile)
         # we need to decided what we're going to do here - see the comments in bug 30
         # this tests the current implementation which is that the DONT_TRANSLATE string is removed, but the other remains
         assert 'editorCheck.label' not in posource
@@ -69,7 +69,6 @@ class TestDTD2PO:
         dtdsource = '<!ENTITY  noupdatesfound.intro "First line then \n' + \
           '                                          next lines.">\n'
         pofile = self.dtd2po(dtdsource)
-        posource = ''.join(pofile.tolines())
         poelement = self.singleelement(pofile)
         # We still need to decide how we handle line line breaks in the DTD entities.  It seems that we should actually
         # drop the line break but this has not been implemented yet.

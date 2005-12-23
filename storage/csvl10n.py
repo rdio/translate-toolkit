@@ -140,18 +140,18 @@ class csvfile:
       newce.fromdict(row)
       self.csvelements.append(newce)
 
-  def tolines(self):
+  def __str__(self):
     csvfile = csv.StringIO()
     writer = csv.DictWriter(csvfile, self.fieldnames)
     for ce in self.csvelements:
       cedict = ce.todict()
       writer.writerow(cedict)
     csvfile.reset()
-    return csvfile.readlines()
+    return "".join(csvfile.readlines())
 
 if __name__ == '__main__':
   import sys
   cf = csvfile()
   cf.parse(sys.stdin.read())
-  sys.stdout.writelines(cf.tolines())
+  sys.stdout.write(str(cf))
 

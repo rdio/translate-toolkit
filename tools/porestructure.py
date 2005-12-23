@@ -98,7 +98,7 @@ class SplitOptionParser(optrecurse.RecursiveOptionParser):
                         outputpofile = po.pofile()
                     outputpofile.poelements.append(poelement)   #TODO:perhaps check to see if it's already there...
                     outputfile = open(fulloutputpath, 'w')
-                    outputfile.writelines(outputpofile.tolines())
+                    outputfile.write(str(outputpofile))
 
 def main():
     #outputfile extentions will actually be determined by the comments in the po files

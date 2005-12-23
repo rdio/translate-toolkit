@@ -183,8 +183,8 @@ def convertcsv(inputfile, outputfile, templatefile, charset=None, columnorder=No
   outputpo = convertor.convertfile(inputcsv)
   if outputpo.isempty():
     return 0
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
+  outputposrc = str(outputpo)
+  outputfile.write(outputposrc)
   return 1
 
 def main():

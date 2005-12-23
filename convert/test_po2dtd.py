@@ -36,14 +36,14 @@ class TestPO2DTD:
         """tests that po lines are joined seamlessly (bug 16)"""
         multilinepo = '''#: pref.menuPath\nmsgid ""\n"<span>Tools &gt; Options</"\n"span>"\nmsgstr ""\n'''
         dtdfile = self.po2dtd(multilinepo)
-        dtdsource = "".join(dtdfile.tolines())
+        dtdsource = str(dtdfile)
         assert "</span>" in dtdsource
 
     def test_escapedstr(self):
         """tests that \n in msgstr is escaped correctly in dtd"""
         multilinepo = '''#: pref.menuPath\nmsgid "Hello\\nEveryone"\nmsgstr "Good day\\nAll"\n'''
         dtdfile = self.po2dtd(multilinepo)
-        dtdsource = "".join(dtdfile.tolines())
+        dtdsource = str(dtdfile)
         assert "Good day\\nAll" in dtdsource
 
     def test_ampersandwarning(self):
@@ -63,7 +63,7 @@ class TestPO2DTD:
         """tests that invalid ampersands are fixed in the dtd"""
         simplestring = '''#: simple.string\nmsgid "Simple String"\nmsgstr "Dimpled &Ring"\n'''
         dtdfile = self.po2dtd(simplestring)
-        dtdsource = "".join(dtdfile.tolines())
+        dtdsource = str(dtdfile)
         assert "Dimpled Ring" in dtdsource
 
     def test_retains_hashprefix(self):
@@ -71,6 +71,6 @@ class TestPO2DTD:
         hashpo = '''#: lang.version\nmsgid "__MOZILLA_LOCALE_VERSION__"\nmsgstr "__MOZILLA_LOCALE_VERSION__"\n'''
         hashdtd = '#expand <!ENTITY lang.version "__MOZILLA_LOCALE_VERSION__">\n'
         dtdfile = self.merge2dtd(hashdtd, hashpo)
-        regendtd = "".join(dtdfile.tolines())
+        regendtd = str(dtdfile)
         assert regendtd == hashdtd
 

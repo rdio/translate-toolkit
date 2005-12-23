@@ -132,8 +132,8 @@ def convertoo(inputfile, outputfile, templates, pot=False, sourcelanguage=None, 
   outputpo = convertor.convertfile(fromfile, duplicatestyle)
   if outputpo.isempty():
     return 0
-  outputpolines = outputpo.tolines()
-  outputfile.writelines(outputpolines)
+  outputposrc = str(outputpo)
+  outputfile.write(outputposrc)
   return 1
 
 def main():

@@ -12,7 +12,7 @@ class TestPO:
 
     def posource(self, pofile):
         """helper that converts a po file back to source code"""
-        return "".join(pofile.tolines())
+        return str(pofile)
 
     def poregen(self, posource):
         """helper that converts po source to pofile object and back"""
