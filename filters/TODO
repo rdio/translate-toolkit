@@ -22,9 +22,6 @@ bugs
   doublewords - sees double variables as an error
 
 other checks
-  stop words - 
-	same: eg. OpenOffice or IMAP should not be translated.
-	different: Color, Maximize should be translated
   plural checks - check plural forms against the Gettext plural header
     fallback to list of valid plurals for KDE.
   Supper basic machine translation - en_GB changes color -> colour
