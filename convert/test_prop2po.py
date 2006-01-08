@@ -42,3 +42,19 @@ class TestProp2PO:
         pofile = self.prop2po(propsource)
         poelement = self.singleelement(pofile)
         assert po.unquotefrompo(poelement.msgid) == "This setence has a tab at the end.\t"
+        propsource = r"SPACE_THEN_TAB_AT_END=This setence has a space then tab at the end. \t"
+        pofile = self.prop2po(propsource)
+        poelement = self.singleelement(pofile)
+        assert po.unquotefrompo(poelement.msgid) == "This setence has a space then tab at the end. \t"
+        propsource = r"REAL_TAB_AT_END=This setence has a real tab at the end.	"
+        pofile = self.prop2po(propsource)
+        poelement = self.singleelement(pofile)
+        assert po.unquotefrompo(poelement.msgid) == "This setence has a real tab at the end.	"
+        propsource = r"REAL_TAB_THEN_SPACE_AT_END=This setence has a real tab then space at the end.	 "
+        pofile = self.prop2po(propsource)
+        poelement = self.singleelement(pofile)
+        assert po.unquotefrompo(poelement.msgid) == "This setence has a real tab then space at the end.	"
+        propsource = r"SPACE_AT_END=This setence will lose its 4 spaces at the end.    "
+        pofile = self.prop2po(propsource)
+        poelement = self.singleelement(pofile)
+        assert po.unquotefrompo(poelement.msgid) == "This setence will lose its 4 spaces at the end."
