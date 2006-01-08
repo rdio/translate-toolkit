@@ -248,7 +248,7 @@ class StandardChecker(TranslationChecker):
 
   def unchanged(self, str1, str2):
     """checks whether a translation is basically identical to the original string"""
-    str1 = self.filteraccelerators(str1)
+    str1 = self.filteraccelerators(prefilters.removekdecomments(str1))
     str2 = self.filteraccelerators(str2)
     if not (str1.isdigit() or len(str1) < 2) and (str1.strip().lower() == str2.strip().lower()):
       raise FilterFailure("please translate")
