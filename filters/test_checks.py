@@ -39,6 +39,7 @@ def test_accelerators():
     assert checks.fails(mozillachecker.accelerators, "&File", "Fayile") 
     assert checks.fails(mozillachecker.accelerators, "File", "&Fayile") 
     assert checks.passes(mozillachecker.accelerators, "Mail &amp; News", "Pos en Nuus") 
+    assert checks.fails(mozillachecker.accelerators, "Mail &amp; News", "Pos en &Nuus") 
     ooochecker = checks.OpenOfficeChecker()
     assert checks.passes(ooochecker.accelerators, "~File", "~Fayile") 
     assert checks.fails(ooochecker.accelerators, "~File", "Fayile") 
@@ -117,14 +118,14 @@ def test_escapes():
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.escapes, r"""_: KDE comment\n
 A sentence""", "I'm correct.")
-    assert checks.passes(stdchecker.escapes, "A file\n", "'n Leer\n")
-    assert checks.fails(stdchecker.escapes, "A file\n", "'n Leer")
-    assert checks.passes(stdchecker.escapes, "A tab\t", "'n Tab\t")
-    assert checks.fails(stdchecker.escapes, "A tab\t", "'n Tab")
-    assert checks.passes(stdchecker.escapes, "An escape escape \\", "Escape escape \\")
-    assert checks.fails(stdchecker.escapes, "An escape escape \\", "Escape escape")
-    assert checks.passes(stdchecker.escapes, "A double quote \"", "Double quote \"")
-    assert checks.fails(stdchecker.escapes, "A double quote \"", "Double quote")
+    assert checks.passes(stdchecker.escapes, r"A file\n", r"'n Leer\n")
+    assert checks.fails(stdchecker.escapes, r"A file\n", r"'n Leer")
+    assert checks.passes(stdchecker.escapes, r"A tab\t", r"'n Tab\t")
+    assert checks.fails(stdchecker.escapes, r"A tab\t", r"'n Tab")
+    assert checks.passes(stdchecker.escapes, r"An escape escape \\", r"Escape escape \\")
+    assert checks.fails(stdchecker.escapes, r"An escape escape \\", r"Escape escape")
+    assert checks.passes(stdchecker.escapes, r"A double quote \"", r"Double quote \"")
+    assert checks.fails(stdchecker.escapes, r"A double quote \"", r"Double quote")
 
 def test_filepaths():
     """tests filepaths"""
@@ -135,8 +136,11 @@ def test_filepaths():
 def test_kdecomments():
     """tests kdecomments"""
     stdchecker = checks.StandardChecker()
-    assert checks.passes(stdchecker.kdecomments, r"_: I am a comment\nA string to translate", "'n String om te vertaal")
-    assert checks.fails(stdchecker.kdecomments, r"_: I am a comment\nA string to translate", r"_: Ek is 'n commment\n'n String om te vertaal")
+    assert checks.passes(stdchecker.kdecomments, r"""_: I am a comment\n
+A string to translate""", "'n String om te vertaal")
+    assert checks.fails(stdchecker.kdecomments, r"""_: I am a comment\n
+A string to translate""", r"""_: Ek is 'n commment\n
+'n String om te vertaal""")
 
 def test_long():
     """tests long messages"""
@@ -277,15 +281,18 @@ def test_startwhitespace():
     """tests startwhitespace"""
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.startwhitespace, "A setence.", "I'm correct.")
-    assert checks.fails(stdchecker.startwhitespace, " A setence. ", "I'm incorrect.")
+    assert checks.fails(stdchecker.startwhitespace, " A setence.", "I'm incorrect.")
 
 def test_unchanged():
     """tests unchanged entries"""
-    stdchecker = checks.StandardChecker()
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(accelmarkers="&"))
     assert checks.fails(stdchecker.unchanged, "Unchanged", "Unchanged") 
+    assert checks.fails(stdchecker.unchanged, "&Unchanged", "Un&changed") 
     assert checks.passes(stdchecker.unchanged, "Unchanged", "Changed") 
-    # Should be filtering out KDE comments before testing
-    #assert checks.fails(stdchecker.unchanged, "_: KDE comment\\nUnchanged", "Unchanged") 
+    assert checks.passes(stdchecker.unchanged, "1234", "1234") 
+    assert checks.passes(stdchecker.unchanged, "I", "I") 
+    assert checks.fails(stdchecker.unchanged, r"""_: KDE comment\n
+Unchanged""", r"Unchanged") 
 
 def test_untranslated():
     """tests untranslated entries"""
@@ -299,6 +306,10 @@ def test_validchars():
     assert checks.passes(stdchecker.validchars, "The check always passes if you don't specify chars", "Die toets sal altyd werk as jy nie karacters specifisier")
     stdchecker = checks.StandardChecker(checks.CheckerConfig(validchars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'))
     assert checks.passes(stdchecker.validchars, "This sentence contains valid characters", "Hierdie sin bevat ware karakters")
+    assert checks.fails(stdchecker.validchars, "Some unexpected characters", "©®°±÷¼½¾")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(validchars='⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰'))
+    assert checks.passes(stdchecker.validchars, "Our target language is all non-ascii", "⠁⠂⠃⠄⠆⠇⠈⠉⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫")
+    assert checks.fails(stdchecker.validchars, "Our target language is all non-ascii", "Some ascii⠁⠂⠃⠄⠆⠇⠈⠉⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫")
 
 def test_variables_kde():
     """tests variables in KDE translations"""
