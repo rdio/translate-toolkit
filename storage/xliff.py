@@ -53,6 +53,8 @@ def writexml(self, writer, indent="", addindent="", newl=""):
     else:
         writer.write("/>%s"%(newl))
 
+# commented out modifications to minidom classes
+'''
 Element_writexml = minidom.Element.writexml
 for elementclassname in dir(minidom):
   elementclass = getattr(minidom, elementclassname)
@@ -63,6 +65,7 @@ for elementclassname in dir(minidom):
   if elementclass.writexml != Element_writexml:
     continue
   elementclass.writexml = writexml
+'''
 
 def getText(nodelist):
   """joins together the text from all the text nodes in the nodelist and their children"""

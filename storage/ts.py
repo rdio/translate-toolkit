@@ -53,6 +53,8 @@ def writexml(self, writer, indent="", addindent="", newl=""):
     else:
         writer.write("/>%s"%(newl))
 
+# commented out modifications to minidom classes
+'''
 Element_writexml = minidom.Element.writexml
 for elementclassname in dir(minidom):
   elementclass = getattr(minidom, elementclassname)
@@ -63,6 +65,7 @@ for elementclassname in dir(minidom):
   if elementclass.writexml != Element_writexml:
     continue
   elementclass.writexml = writexml
+'''
 
 def getElementsByTagName(parent, name, dummy=None):
     for node in parent.childNodes:
@@ -97,11 +100,14 @@ def getnodetext(node):
   if node is None: return ""
   return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
 
+# commented out modifications to minidom classes
+'''
 minidom._get_elements_by_tagName_helper = getElementsByTagName
 minidom.Document.getElementsByTagName = getElementsByTagName
 minidom.Node.getElementsByTagName = getElementsByTagName
 minidom.Document.searchElementsByTagName = searchElementsByTagName
 minidom.Element.searchElementsByTagName = searchElementsByTagName
+'''
 
 class QtTsParser:
   contextancestors = dict.fromkeys(["TS"])
