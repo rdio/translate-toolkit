@@ -1,3 +1,2296 @@
+2006-01-17 15:41  davidfraser
+
+	* storage/test_zipfile.py: added tests for zipfile module to make
+	  sure it supports required functionality for xpi module
+	  (refactored from previous non-py.test version)
+
+2006-01-17 09:53  davidfraser
+
+	* filters/test_pofilter.py: added ability to pass cmdlineoptions to
+	  pofilter cmdlineparser
+
+2006-01-17 09:31  davidfraser
+
+	* CREDITS: added nicolas
+
+2006-01-17 09:11  davidfraser
+
+	* __version__.py: version 0.8 (at last!)
+
+2006-01-17 09:06  davidfraser
+
+	* storage/: ts.py, xliff.py: commented out modifications to minidom
+	  classes
+
+2006-01-08 17:48  dwaynebailey
+
+	* convert/test_prop2po.py: More tab at the end tests for prop2po
+
+2006-01-08 14:46  dwaynebailey
+
+	* filters/test_checks.py: Fix many of the escape tests using raw
+	  wtrings Add another accelerator test for accelerators combined
+	  with variables on Mozilla Fix KDE comment tests More unchanged
+	  tests to cover KDE comments, numbers, accelerators Add validchars
+	  tests
+
+2006-01-08 14:29  dwaynebailey
+
+	* filters/checks.py: Must remove KDE comments when checking for
+	  unchnaged entries.
+
+2006-01-08 14:26  dwaynebailey
+
+	* filters/TODO: musttranslate and notranslate implement the stop
+	  words functionality.
+
+2005-12-23 16:46  dwaynebailey
+
+	* filters/: checks.py, test_checks.py: Make singlequoting remove
+	  KDE comments before testing Add test to check that KDE comments
+	  are ignored.
+
+	  Add fuller coverage for "escapes" unit tests.
+
+	  Add commented out tests for "simplcaps" and "spellcheck" as these
+	  are the only remaining tests that we need to check here.
+	  "isfuzzy" and "isreview" should be tested in test_pofilter.py
+
+2005-12-23 16:21  dwaynebailey
+
+	* filters/test_checks.py: Add a unit test for pofilter "escapes"
+	  test.
+
+	  Add another test for "singlequotes" to check quotes at end of
+	  sentences.
+
+2005-12-23 16:17  dwaynebailey
+
+	* filters/test_pofilter.py: Test to check variables spanning lines.
+
+2005-12-23 15:48  dwaynebailey
+
+	* convert/: prop2po.py, test_prop2po.py: Only strip spaces, not all
+	  whitespace.  Thus we leave \t (tabs) that occur at the end of a
+	  .properties entry.
+
+	  Also updated the test to focus on the \t at the end (removed all
+	  other Unicode bumf)
+
+2005-12-23 15:24  dwaynebailey
+
+	* convert/test_prop2po.py: Add a unit test harness for prop2po
+	  based on the tests for dtd2po.
+
+	  This includes a test for Bug 74.
+
+2005-12-23 15:11  davidfraser
+
+	* filters/test_pofilter.py: actually pass a fake argument to the
+	  parser so it doesn't use sys.argv and thinks it has something to
+	  handle
+
+2005-12-23 15:10  davidfraser
+
+	* filters/: pofilter.py, test_pofilter.py: added a way of testing
+	  pofilter by giving it actual poentries and passing them through
+	  the standard chain this slightly bypasses command line argument
+	  handling etc; refactored a helper to return a command line parser
+	  for this purpose
+
+2005-12-23 14:56  davidfraser
+
+	* convert/convert.py: avoid potential errors caused by default
+	  arguments getting set as member variables and modified
+
+2005-12-23 14:53  davidfraser
+
+	* filters/: checks.py, pofilter.py: avoid potential errors caused
+	  by default arguments getting set as member variables and modified
+
+2005-12-23 14:52  davidfraser
+
+	* filters/test_checks.py: this check was passing incorrectly
+	  because of mozilla variables leaking into the standard checker
+	  check properly now that that was fixed - should fail if &amp; is
+	  not a variable and pass if it is
+
+2005-12-23 14:43  friedelwolff
+
+	* filters/test_checks.py: Uncomment failing bracket test
+
+2005-12-23 14:41  davidfraser
+
+	* filters/checks.py: map strings to unicode before checking valid
+	  characters
+
+2005-12-23 14:40  dwaynebailey
+
+	* filters/test_checks.py: Add a unit test for pofilter
+	  "singlequoting" check.
+
+2005-12-23 14:38  davidfraser
+
+	* filters/test_checks.py: added test for config objects not being
+	  muddly (which they were until a recent fix)
+
+2005-12-23 14:35  davidfraser
+
+	* filters/checks.py: default [] arguments are a no-no - they can
+	  get altered if they are stored in the object, and cause muddly
+	  issues
+
+2005-12-23 14:31  dwaynebailey
+
+	* filters/test_checks.py: Add tests to the "accelerator" unit test
+	  that covers the various types of accelerator keys.
+
+2005-12-23 14:24  dwaynebailey
+
+	* filters/test_checks.py: Add unit tests for pofilter "variables"
+	  check.  They are broken down into each defined checker type: KDE,
+	  GNOME, etc
+
+2005-12-23 14:20  davidfraser
+
+	* README: we're going to get the docs from the wiki, and we've
+	  relicensed them under GPL (see bug 33)
+
+2005-12-23 14:05  dwaynebailey
+
+	* filters/test_checks.py: Added unit test for pofilter
+	  "setencecount" check.
+
+2005-12-23 13:58  dwaynebailey
+
+	* filters/test_checks.py: Add unit test for pofilter "endpunc"
+	  check.
+
+2005-12-23 13:52  dwaynebailey
+
+	* filters/test_checks.py: Add unit test for pofilter "startpunc"
+	  check.
+
+2005-12-23 13:49  dwaynebailey
+
+	* filters/test_checks.py: Added unit test for pofilter
+	  "startwhitespace" check.
+
+2005-12-23 13:42  dwaynebailey
+
+	* filters/test_checks.py: Added "endwhitespace" test
+
+2005-12-23 13:36  dwaynebailey
+
+	* filters/test_checks.py: Added validchars test: this needs some
+	  fixing from Dave for the internal workings of validchars.
+
+2005-12-23 12:43  dwaynebailey
+
+	* filters/test_checks.py: Put numbers test in alphabetic order
+
+	  Add a test for "purepunc"
+
+2005-12-23 12:39  dwaynebailey
+
+	* filters/test_checks.py: Add a test for the kdecomments test
+
+2005-12-23 12:35  dwaynebailey
+
+	* filters/test_checks.py: Add a test for pofilter "long" test
+
+2005-12-23 12:32  dwaynebailey
+
+	* filters/test_checks.py: Reorder tests into alphabetic order - we
+	  have 34 so order is important.
+
+	  Added a short test.
+
+2005-12-23 12:31  friedelwolff
+
+	* tools/porestructure.py: Don't use templates
+
+2005-12-23 12:23  dwaynebailey
+
+	* filters/test_checks.py: Add tests for pofilter numbers test.
+
+2005-12-23 12:05  dwaynebailey
+
+	* filters/test_checks.py: Make test names follow the pofilter
+	  names, to ease finding associated tests.
+
+2005-12-23 12:02  dwaynebailey
+
+	* filters/test_checks.py: Change test_compendiumconflicts to use a
+	  raw string in the assert, to make things clearer.
+
+2005-12-23 11:59  dwaynebailey
+
+	* filters/test_checks.py: Add test for doublespacing
+
+2005-12-23 11:31  davidfraser
+
+	* convert/test_oo2po.py: used raw strings so escapes are less
+	  confusing added a test of escape conversions (bug 24)
+
+2005-12-23 11:24  friedelwolff
+
+	* filters/helpers.py: Clarify comment
+
+2005-12-23 11:23  friedelwolff
+
+	* filters/test_checks.py: More unit tests for standard checks
+
+2005-12-23 11:22  davidfraser
+
+	* storage/: test_dtd.py, test_po.py: simplified by using str
+	  directly now that its that easy
+
+2005-12-23 11:19  davidfraser
+
+	* convert/csv2po.py, convert/dtd2po.py, convert/html2po.py,
+	  convert/nb2po.py, convert/oo2po.py, convert/po2csv.py,
+	  convert/po2dtd.py, convert/po2oo.py, convert/poreplace.py,
+	  convert/pot2po.py, convert/prop2po.py, convert/sxw2po.py,
+	  convert/test_dtd2po.py, convert/test_po2dtd.py, convert/ts2po.py,
+	  convert/txt2po.py, convert/xliff2po.py, filters/pofilter.py,
+	  storage/csvl10n.py, storage/dtd.py, storage/oo.py, storage/po.py,
+	  storage/properties.py, storage/test_dtd.py, storage/test_po.py,
+	  tools/poconflicts.py, tools/podebug.py, tools/pogrep.py,
+	  tools/pomerge.py, tools/porestructure.py: replaced all tolines
+	  functions with __str__ functions that return a string rather than
+	  a list of lines note that we could use __unicode__ if desired as
+	  well
+
+2005-12-23 11:03  dwaynebailey
+
+	* convert/: dtd2po.py, test_dtd2po.py: Fix for Bug #79
+
+	  Removes starting whitespace in subsequent lines of a DTD entity.
+	  Thus the PO entry has these uneeded spaces removed.
+
+	  Ie:
+
+	  <!ENTITY blah "Some text		  and more"
+
+	  Becomes
+
+	  msgid "Some text \nand more" msgstr ""
+
+	  Conversion back does not create a pretty formatted entity and
+	  won't do that.
+
+	  This fix does not solve the CRLF at the end of such multiline
+	  entities. See Bug 86 for the line ending problem.
+
+2005-12-23 10:39  davidfraser
+
+	* convert/oo2po.py, convert/po2oo.py, convert/prop2mozfunny.py,
+	  convert/test_oo2po.py, storage/csvl10n.py, storage/dtd.py,
+	  storage/oo.py, storage/po.py, storage/properties.py,
+	  tools/pocount.py, tools/pomerge.py: replaced all fromlines
+	  functions with parse functions that take strings (or sometimes
+	  file objects) instead of lists of lines the underlying functions
+	  still often split things up into lines in some cases there was an
+	  existing parse function that called fromlines, so these have been
+	  merged also the dtd element parsing broke on empty strings with
+	  thinking it had a line, so this was fixed added an input argument
+	  to oofile so that it can be constructed more easily renamed
+	  methods in storage/oo.py oomultifile (getlines -> getsubfilesrc,
+	  getsubfile -> getsubfilename) added a simple test for oo2po
+
+2005-12-23 10:29  friedelwolff
+
+	* tools/: porestructure, porestructure.py: Tool to restructure po
+	  files according to poconflicts directives
+
+2005-12-20 11:59  davidfraser
+
+	* convert/po2csv.py: need a default value for columnorder so we can
+	  call convertfile with just the pofile argument (for Pootle)
+
+2005-12-13 16:54  davidfraser
+
+	* storage/test_po.py: must make sure we don't add msgid_comments to
+	  blanks when keeping them
+
+2005-12-13 16:53  davidfraser
+
+	* storage/po.py: Always add msgid_comment to blank entries unless
+	  "keep"ing them.  This is already done for msgid_comment and
+	  msgid_comment_all so the one needing change is merge
+
+2005-12-13 16:47  davidfraser
+
+	* storage/test_po.py: added tests for merging duplicates, and
+	  particularly ensure that merging blanks with "merge" adds
+	  msgid_comments see bug 15 for an explanation
+
+2005-12-08 14:59  friedelwolff
+
+	* tools/pydiff.py: Support stdin. Check arguments more carefully.
+
+2005-12-08 12:49  davidfraser
+
+	* storage/po.py: allow duplicate handling of blank msg ids, but
+	  exclude the header
+
+2005-12-08 12:17  davidfraser
+
+	* misc/test_zipfileext.py: only use TestFailed if test.test_support
+	  is present (requires python-devel on Fedora)
+
+2005-12-08 10:01  davidfraser
+
+	* storage/xpi.py: support seamonkey containing os-specific jars by
+	  not letting them get matched as lang-reg and disrupt the locale
+	  detection
+
+2005-12-06 16:08  davidfraser
+
+	* CREDITS: Friedel Wolff has been doing bug fixing
+
+2005-12-06 15:57  friedelwolff
+
+	* tools/poconflicts.py: Complain if no ouput options are found
+
+2005-11-30 23:11  dwaynebailey
+
+	* filters/test_checks.py: Unit test for pofilter "doublewords"
+	  test. Disable one for testing double variables as I'm unsure of
+	  how to prefilter variables.
+
+2005-11-30 22:55  dwaynebailey
+
+	* filters/test_checks.py: Unit test for pofilter "filepaths" test
+
+2005-11-30 22:49  dwaynebailey
+
+	* filters/test_checks.py: Unit tests for pofilter "untranslated"
+
+2005-11-30 22:42  dwaynebailey
+
+	* filters/test_checks.py: Unit test for pofilter blank test
+
+2005-11-30 22:37  dwaynebailey
+
+	* filters/test_checks.py: Test for conpedium conflicts
+
+2005-11-30 22:30  dwaynebailey
+
+	* filters/test_checks.py: Add validation checks for acronyms
+
+2005-11-30 22:24  dwaynebailey
+
+	* filters/test_checks.py: Also check that we can detect accelrators
+	  that are using Unicode characters in the translation.
+
+2005-11-30 22:18  dwaynebailey
+
+	* filters/test_checks.py: Add test for pofilters accelerators test
+
+2005-11-30 22:06  dwaynebailey
+
+	* filters/test_checks.py: Add test pofilter unchanged test.
+
+2005-11-30 21:26  dwaynebailey
+
+	* filters/test_checks.py: Add startcap tests
+
+2005-11-29 20:55  dwaynebailey
+
+	* convert/convert.py: For --duplicates make merge the default
+	  behaviour.  This is the same and normal Gettext behaviour.  This
+	  change should make it more understandable for the general user
+	  and still make it possible for the advanced user to manipulate
+	  their PO files.
+
+2005-11-29 15:52  davidfraser
+
+	* convert/po2xliff.py: convert getElementsByTagName results to list
+	  in case it returns a generator (bug 78)
+
+2005-11-29 15:09  davidfraser
+
+	* storage/test_dtd.py: forgot that trailing \n again
+
+2005-11-29 15:06  davidfraser
+
+	* storage/dtd.py: adding the \n to the comment broke stripping the
+	  comment from the line with the result that if it had a trailing
+	  space, it came out as an unparsed line, and so was repeated (bug
+	  77) doing the add after the stripping makes it work
+	  (test_commentclosing)
+
+2005-11-29 15:00  davidfraser
+
+	* storage/test_dtd.py: test that if comments have trailing spaces
+	  they aren't duplicated
+
+2005-11-29 14:13  davidfraser
+
+	* storage/po.py: if the msgid and msgstr are blank, but there is a
+	  source comment, this is still an important piece of a po file
+	  (bug 15)
+
+2005-11-29 14:09  davidfraser
+
+	* storage/: test_po.py, po.py: added a test for combining msgid
+	  comments, and actually do it when reproducing the source
+
+2005-11-29 13:49  davidfraser
+
+	* storage/test_po.py: added simple start to tests for po module
+
+2005-11-29 13:44  davidfraser
+
+	* convert/test_po2dtd.py: added test for retaining hash prefix (bug
+	  81)
+
+2005-11-29 13:38  davidfraser
+
+	* storage/: dtd.py, test_dtd.py: added a hack to handle
+	  "hashprefix" in dtd, and fixed up the slight format problem in
+	  the test
+
+2005-11-29 13:29  davidfraser
+
+	* storage/test_dtd.py: added test for hashcomment from bug 81
+
+2005-11-28 17:20  davidfraser
+
+	* storage/test_dtd.py: fixed simpleentity comment, added helper for
+	  regenerating source and test on simple string
+
+2005-11-28 17:12  davidfraser
+
+	* storage/test_dtd.py: added initial simple dtd test
+
+2005-11-28 15:19  dwaynebailey
+
+	* filters/checks.py: Fix situation when jToolkit is not installed.
+
+2005-11-19 08:33  davidfraser
+
+	* CREDITS: some fixes from Matt Chisholm and Ognyan Kulev, testing
+	  by David Farning ; might have missed a few people out, so need to
+	  review
+
+2005-11-19 08:27  davidfraser
+
+	* __version__.py: version 0.8rc5
+
+2005-11-14 17:41  davidfraser
+
+	* convert/test_dtd2po.py: actually we do want to convert the
+	  apostrophe in the po file
+
+2005-11-14 17:41  davidfraser
+
+	* convert/dtd2po.py, storage/dtd.py: crazy to replace &apos; with
+	  single quote here as the defpart is still quoted so it will
+	  always break the quoting do it rather in dtd2po, then the
+	  back-conversion in po2dtd also still works this fixes bug 69
+
+2005-11-14 17:27  davidfraser
+
+	* convert/test_dtd2po.py: added test for apostrophe breaking
+	  single-quoted entity definition moved bug numbers to end of doc
+	  strings
+
+2005-11-14 16:55  davidfraser
+
+	* convert/test_dtd2po.py: added test for kde comments being merged
+	  properly (bug 65)
+
+2005-11-14 16:32  davidfraser
+
+	* convert/test_dtd2po.py: updated test_entityname to
+	  test_donttranslate_label and explained current state a bit better
+
+2005-11-14 16:12  davidfraser
+
+	* convert/test_dtd2po.py: added helper to return single element
+	  from pofile added doc strings to tests added test for bug 30
+
+2005-11-14 16:11  davidfraser
+
+	* convert/dtd2po.py: replaced visiblecomments with othercomments as
+	  that's the correct name in pofile for #  comments
+
+2005-11-14 15:59  davidfraser
+
+	* convert/po2dtd.py: warn if accesskey is not found
+
+2005-11-14 15:58  davidfraser
+
+	* convert/test_po2dtd.py: reset warnings properly using
+	  setup_method and teardown_method so tests don't interact badly
+	  added test to make sure missing access key raises an error (bug
+	  44)
+
+2005-11-14 15:49  davidfraser
+
+	* convert/po2dtd.py: generate warnings rather than writing straight
+	  to sys.stderr don't use sy.argv[-1] for filename as this is
+	  almost invariably wrong
+
+2005-11-14 15:49  davidfraser
+
+	* convert/test_po2dtd.py: added proper test that invalid ampersands
+	  generate warnings, renamed fix test
+
+2005-11-14 15:26  davidfraser
+
+	* convert/po2dtd.py: check for invalid ampersands on straight
+	  po2dtd conversions fixed the ampersand correction position as it
+	  was keeping the ampersand and removing the next character!
+
+2005-11-14 15:25  davidfraser
+
+	* convert/test_po2dtd.py: added test for ampersands being stripped
+	  out (doesn't detect warning as it says yet) added a helper to do
+	  dtd merging (not used yet)
+
+2005-11-14 15:10  davidfraser
+
+	* storage/dtd.py: don't assume that self.entitytype will always be
+	  set
+
+2005-11-14 15:09  davidfraser
+
+	* convert/test_po2dtd.py: test that \n in msgstr is escaped
+	  correctly in dtd - bug 45
+
+2005-11-14 15:03  davidfraser
+
+	* storage/po.py: Convert nplurals if its unicode too...  This was
+	  bug 36 (Patch from Matt Chisholm)
+
+2005-11-14 14:43  davidfraser
+
+	* convert/po2dtd.py: replaced quote functions etc with
+	  unquotefrompo make sure newlines aren't included (bug 16)
+
+2005-11-14 14:34  davidfraser
+
+	* convert/test_po2dtd.py: added test for bug 16 in test_po2dtd
+
+2005-11-14 14:25  davidfraser
+
+	* convert/dtd2po.py: move convertmixedelement below convertelement,
+	  which makes more sense removed a few blank lines
+
+2005-11-14 14:24  davidfraser
+
+	* convert/test_dtd2po.py: check that the output actually contains
+	  credit.translation (otherwise it could be an empty string, the
+	  current situation) see
+	  http://bugs.wordforge.org/show_bug.cgi?id=15
+
+2005-11-14 14:16  davidfraser
+
+	* convert/test_dtd2po.py: added py.test file for dtd2po
+
+2005-11-14 14:06  davidfraser
+
+	* misc/test_zipfileext.py: added py.test tests for zipfileext that
+	  fixes problems in ZipFile
+
+2005-11-14 13:59  davidfraser
+
+	* filters/: checks.py, test_checks.py: added helper functions
+	  passes and fails to checks, and use them from within test_checks
+	  this is neccessary now that a failure can raise a FilterFailure
+	  exception
+
+2005-11-14 13:16  davidfraser
+
+	* convert/convert.py: only do a replace if both the searchstring
+	  and replacestring are not None
+
+2005-11-03 15:06  davidfraser
+
+	* __version__.py: rc4, this is really a release candidate now :-)
+
+2005-11-03 14:58  davidfraser
+
+	* convert/po2oo.py: this causes horrible problems for hristo and
+	  javier (printing out a unicode string) so trying a relatively
+	  verbose but hopefully safe alternative
+
+2005-11-02 11:33  davidfraser
+
+	* convert/dtd2po.py: added a scheme to make sure that if the
+	  original strings didn't get mixed for an entity, the translated
+	  strings won't be mixed either
+
+2005-11-02 11:27  davidfraser
+
+	* convert/po2moz.py: added --clonexpi option, which allows you to
+	  use a different xpi for the structure from the template xpi this
+	  is useful when recreating xpis but still wanting to use the en-US
+	  xpi for the original strings disabled copying from the template -
+	  all files should be unpacked into the input directory by moz2po
+	  anyway, and this ends up confusing things if the template xpi and
+	  the input xpi from moz2po had a different structure
+
+2005-11-02 11:20  davidfraser
+
+	* storage/xpi.py: when cloning an xpi, if it is created in "w"
+	  mode, we should reopen it in "a" mode (or we just recreate a
+	  blank file) added TODO to check language replacement code
+
+2005-11-02 09:26  dwaynebailey
+
+	* tools/poconflicts.py: poconflicts now adds a comment:
+
+	  # (poconflicts) path/to/file.po
+
+	  To each conflicting entry.  This so that we can merge the
+	  corrected conflicts back into the original PO files.
+
+2005-10-31 17:47  davidfraser
+
+	* storage/xpi.py: support passing locale and region to the XpiFile
+	  constructor actually pass them when cloning, since we are given
+	  them here
+
+2005-10-31 17:25  davidfraser
+
+	* misc/quote.py: handle unicode in properties files (in utf-8) fix
+	  to the way mozilla actually handles unicode escapes \u or \u, up
+	  to four hexadecimal characters
+
+2005-10-31 17:20  davidfraser
+
+	* convert/dtd2po.py: fix logic for handling empty dtd elements
+	  (empty string, but valid entity name)
+
+2005-10-31 12:24  davidfraser
+
+	* misc/: optrecurse.py, progressbar.py: added support for a new
+	  progress option, --progress=names this just prints out filenames
+	  without any other progress indicator it's a good option when
+	  outputting to a log file rather than a terminal
+
+2005-10-31 12:00  davidfraser
+
+	* storage/xpi.py: another fix to handle locales without regions
+	  also make suer the locale and region match the whole string, not
+	  just the start produce more errors if we cannot determine locale,
+	  don't use uncertain region
+
+2005-10-28 17:00  davidfraser
+
+	* convert/: convert.py, moz2po.py, po2moz.py: added a Replacer
+	  object that you can give a search and replace to and then use its
+	  searchreplaceinput / searchreplacetemplate methods as converter
+	  objects this is basically so we can substitute in variables for
+	  the locale and change it automatically we then use this from
+	  moz2po / po2moz to prevent users having to edit .js, .manifest
+	  and .rdf files also use loops to define the format converters now
+	  that they are so prolific we have a hack on po2moz that updates
+	  the single replacer object with the locale later on as it is only
+	  known later
+
+2005-10-28 16:56  davidfraser
+
+	* storage/xpi.py: handle converting the
+	  bin/chrome/lang-reg.manifest mapping back if the locale has not
+	  been discovered (just find the first thing that seems to match)
+	  this is basically for running xpi standalone to extract the files
+
+2005-10-28 16:28  davidfraser
+
+	* storage/xpi.py: added a special hook to rename
+	  bin/chrome/en-US.manifest (or locale) to lang-reg.manifest (both
+	  ways)
+
+2005-10-28 15:04  davidfraser
+
+	* convert/po2dtd.py: handle merging with .title as well as .label
+	  made list of possible labelsuffixes and accesskeysuffixes to
+	  ensure it is extensible and logical
+
+2005-10-28 14:57  davidfraser
+
+	* convert/po2moz.py: handle locales that are just lang without the
+	  -region
+
+2005-10-28 14:55  davidfraser
+
+	* convert/dtd2po.py: handle merging with .title as well as .label
+	  made list of possible labelsuffixes and accesskeysuffixes to
+	  ensure it is extensible and logical
+
+2005-10-28 12:36  davidfraser
+
+	* storage/xpi.py: handle blank regions (which is now expected to be
+	  more common in ff 1.5 cvs etc) including a fix for an incorrect
+	  variable name...
+
+2005-10-28 12:03  davidfraser
+
+	* storage/dtd.py: handle lines that we don't otherwise parse
+	  (non-entity, non-comment lines) this is neccessary for handling
+	  the %realBrandDTD; lines that happen with parameterized entries
+	  we just pass them straight through.  if such a line occurs after
+	  the last entity defined in the file, we uses a null dtdelement to
+	  represent it - we need to exclude this from the index
+
+2005-10-28 11:53  davidfraser
+
+	* storage/dtd.py: handle <!ENTITY % brandDTD SYSTEM
+	  "chrome://branding/locale/brand.dtd"> (external entities in the
+	  XML spec) See http://www.w3.org/TR/REC-xml/#dt-extent Also allow
+	  dtd module to be run as a program that reads in a dtd and outputs
+	  it to stdout (useful for testing)
+
+2005-10-28 10:12  davidfraser
+
+	* convert/: moz2po.py, po2moz.py: handle ini files that occur in
+	  firefox 1.5 xpis
+
+2005-10-28 10:01  davidfraser
+
+	* storage/xpi.py: only cause problems when two or more
+	  file/directory names giving locale are found if they mismatch,
+	  and give some more details
+
+2005-10-26 09:56  davidfraser
+
+	* storage/po.py: handle unicode in both parts of the comment merge
+
+2005-10-25 19:57  dwaynebailey
+
+	* filters/autocorrect.py: Don't try and correct untranslated
+	  messages.
+
+2005-10-24 16:52  dwaynebailey
+
+	* tools/pogrep.py: Allow unicode search strings.
+
+2005-10-19 11:28  davidfraser
+
+	* storage/po.py: convert items to unicode if required for merge
+	  (untested)
+
+2005-10-18 18:06  dwaynebailey
+
+	* filters/checks.py: Handle variables that have a numeric endmarker
+	  eg ('%', 1) I'm not sure if this actually ensures that they still
+	  work correctly but it does solve the problem of generating the
+	  error message for pofilter.  It was trying to create a string by
+	  concatanating str + int.  Now we elimiante the int.
+
+2005-10-18 17:04  davidfraser
+
+	* CREDITS: Matthias Klose supplied some patches
+
+2005-10-18 15:51  davidfraser
+
+	* convert/convert.py, convert/oo2po.py, convert/po2oo.py,
+	  storage/oo.py: addition of a long_keys option, to identify a
+	  translation across files. [Matthias Klose] add a multifile option
+	  with values "single" (the current behaviour), "toplevel",
+	  "onefile". Some files do contain only a few translations, and it
+	  makes sense to combine them. [Matthias Klose] modified the way
+	  the multifile option was passed in the above patch [David Fraser]
+
+2005-10-18 15:26  davidfraser
+
+	* misc/optparse.py: fixed line-ending problem
+
+2005-10-11 10:12  davidfraser
+
+	* storage/po.py: split at any blank line (so that DOS line endings
+	  are handled properly, gulp)
+
+2005-09-28 09:56  dwaynebailey
+
+	* tools/pydiff.py: Messed up the workin of --contains in the last
+	  patches. This restores this option.
+
+2005-09-28 08:57  dwaynebailey
+
+	* tools/pydiff.py: Added --accelerator option to allow you to
+	  ignore accelerator markers when identifying hunks using the
+	  --*contains options.
+
+	  This needs some refactoring.
+
+2005-09-28 08:48  dwaynebailey
+
+	* tools/pydiff.py: Added -I option to ignore case when using
+	  --*contains options.
+
+2005-09-27 12:05  davidfraser
+
+	* tools/pydiff.py: greatly enhanced version moved things to a
+	  class-based structure allow diffing directories, and recursive
+	  diffs enabled a few GNU diff options that are useful fixed a few
+	  minor bugs tried to make the output similar to GNU diff
+
+2005-09-26 18:26  davidfraser
+
+	* tools/: pydiff, pydiff.py: added pydiff tool
+
+2005-09-19 19:46  dwaynebailey
+
+	* storage/po.py: Add pofilter as a type of review marker.  This
+	  means that pofilter comments ie "# (pofilter)" are now considered
+	  as the same as "# (review)"
+
+2005-09-10 00:56  dwaynebailey
+
+	* filters/checks.py: handle single unicode string messages properly
+	  in FilterFailure
+
+2005-09-09 13:48  dwaynebailey
+
+	* filters/: checks.py, pofilter.py: added check for invalid
+	  characters that uses a file to read in the list of valid
+	  characters
+
+2005-09-08 16:25  dwaynebailey
+
+	* convert/csv2po.py: improve the error messages when entry can't be
+	  found
+
+2005-09-08 11:25  dwaynebailey
+
+	* filters/checks.py: have more helpful error messages for
+	  untranslated, notranslatewords and musttranslatewords
+
+2005-09-08 11:14  dwaynebailey
+
+	* filters/pofilter.py: include previous pofilter commented entries
+	  as needing review
+
+2005-09-08 10:32  dwaynebailey
+
+	* filters/pofilter.py: use thepo.isreview so we pick up new #
+	  (review) style comments too added some fancy code to convert
+	  oldstyle #, review messages to new style # (review) also don't
+	  add a # (pofilter) message for review checks # (pofilter)
+	  messages should go in othercomments, not visiblecomments
+
+2005-09-08 09:53  dwaynebailey
+
+	* storage/po.py: added ability to check for marked comments that
+	  pofilter now produces rather than flags these will be of the form
+	  # (commentmarker) detect # (review) as a review marker
+
+2005-09-08 09:01  dwaynebailey
+
+	* filters/checks.py: added helpful error message for escapes error,
+	  make it a SeriousFilterFailure
+
+2005-09-08 08:54  dwaynebailey
+
+	* filters/: checks.py, pofilter.py: added the ability to
+	  distinguish between normal filter failures and serious ones that
+	  should mark a message as being fuzzy (so at the moment only
+	  variable errors will make a message fuzzy) adjusted run_filters
+	  to return lists of filtername, message_or_exception rather than
+	  just a comment changed format of filter comments from #_
+	  filtername: message to # (pofilter) filtername: message to make
+	  them more easily detectable
+
+2005-09-08 08:26  dwaynebailey
+
+	* filters/autocorrect.py: added autocorrects for space, end
+	  punctuation, initial caps
+
+2005-09-07 23:07  dwaynebailey
+
+	* filters/: checks.py, pofilter.py: rearranged the way we pass
+	  options into pocheckfilter, pass the whole options object
+	  rather...  added language option for spellchecker added
+	  spellchecking code which can use either enchant (fast, by
+	  default) or jToolkit.spellchecker (slow) make sure we handle
+	  unicode properly in FilterFailure messages raise errors in
+	  filters directly (easier for testing) improve brackets message
+	  using FilterFailure make acronyms ignore variable names
+
+2005-09-07 21:11  dwaynebailey
+
+	* filters/: autocorrect.py, pofilter.py: changed ellipsis
+	  autocorrect to handle it anywhere in the string use the more
+	  correct unquotefrompo / quoteforpo to do autocorrect (we should
+	  use this for checks too later)
+
+2005-09-07 20:39  dwaynebailey
+
+	* filters/: autocorrect.py, pofilter.py: added an autocorrect mode
+	  which has some predefined autocorrects that it will output to the
+	  results to in autocorrect mode, the standard comments etc will
+	  not be added and the entries will only be output if an
+	  autocorrect succeeds so far there is just one autocorrect
+	  defined, for ellipsis...
+
+2005-09-07 15:37  dwaynebailey
+
+	* filters/checks.py: added FilterFailure exception class. This can
+	  be used to produce custom error messages Basically instead of
+	  returning False from the test, you raise a FilterFailure that you
+	  pass a message or list of messages adjusted accelerators and
+	  variables checks to produce intelligent messages using the
+	  FilterFailure class added notranslatewords and musttranslatewords
+	  to the filter for untranslated added Yet Another Variable Style
+	  for OpenOffice ($ATTRIBUTENAME in svx/source/form.po)
+
+2005-09-07 13:36  dwaynebailey
+
+	* filters/: checks.py, pofilter.py: made musttranslate and
+	  notranslate case sensitive as they are often used for product
+	  names etc
+
+2005-09-07 13:31  dwaynebailey
+
+	* convert/csv2po.py, convert/po2csv.py, storage/csvl10n.py: added
+	  support for --columnorder switches in csv2po and po2csv which
+	  allow you to alter the order of columns by default the order is
+	  source,msgid,msgstr but you can change this and skip columns by
+	  using dummy column names
+
+2005-09-05 21:38  dwaynebailey
+
+	* filters/checks.py: Added another OpenOffice style test ("[", "]")
+	  - this appears in the MSI installer.	Am worried that this might
+	  cause too many false positives.  But lets see.  Ideally you
+	  should be able to set the variable styles in the POT header (or
+	  OOo should rationalise their variable styles).  (PPS: they use
+	  both ~ and & as accelerators in this file... dumb dumb dumb)
+
+2005-09-05 17:37  davidfraser
+
+	* storage/po.py: make the unicode error clearer by reporting the
+	  line number too...
+
+2005-08-31 15:39  dwaynebailey
+
+	* tools/poconflicts.py: Add --invert (-v) - this swaps the msgid
+	  and msgstr for the conflict comparison this allowing us to
+	  extract destination words that were used to translate different
+	  source words.  Most are OK but a few will be usuability issues.
+
+2005-08-24 18:40  davidfraser
+
+	* tools/poconflicts.py: removed old reduction methods added simple
+	  plural conflation
+
+2005-08-24 17:12  davidfraser
+
+	* tools/poconflicts.py: tried to improve the algorithm for grouping
+	  conflicts - now uses the longest word in the msgid (other
+	  algorithm commented out)
+
+2005-08-24 14:24  davidfraser
+
+	* tools/poconflicts.py: fixed help string and added description of
+	  operation handle trailing - in flatmsgid for filename, use
+	  "conflicts.po" if its empty
+
+2005-08-24 14:14  davidfraser
+
+	* tools/: poconflicts, poconflicts.py: added po conflict detection
+	  tool
+
+2005-08-24 11:44  davidfraser
+
+	* filters/pofilter.py: added must translate / no translate
+	  commandline options
+
+2005-08-17 15:24  davidfraser
+
+	* filters/: checks.py, test_checks.py: renamed untranslatablewords
+	  to notranslatewords and added musttranslatewords (the logical
+	  opposite) added test and extended tests slightly
+
+2005-08-17 15:06  davidfraser
+
+	* filters/: checks.py, test_checks.py: realized the logic for the
+	  untranslatable test was the wrong way round...
+
+2005-08-17 14:48  davidfraser
+
+	* filters/checks.py: more sane way to do customization for projects
+	  (update config rather than overwriting it)
+
+2005-08-17 12:36  davidfraser
+
+	* filters/: checks.py, pofilter.py, test_checks.py: separated out
+	  checker configuration into its own object (to allow user config
+	  read from files later...) moved untranslatablewords into checker
+	  configuration ignore untranslated test if no untranslatablewords
+	  adjusted derived classes, test accordingly
+
+2005-08-17 12:15  davidfraser
+
+	* filters/: checks.py, test_checks.py: added "stopwords"
+	  (untranslatable words) - list needs to be made configurable added
+	  first py.test based tests on checks (currently just tests
+	  construction and stopwords)
+
+2005-08-03 23:17  dwaynebailey
+
+	* convert/convert.py, misc/optrecurse.py: All command line options
+	  that can take a value from a predefined list now list the valid
+	  values.
+
+2005-07-28 19:40  dwaynebailey
+
+	* convert/: dtd2po.py, oo2po.py, prop2po.py: Add
+	  X-Accelerator-Marker to the PO header.  This is the preliminary
+	  to embeding more of this info in the PO file header and allowing
+	  tools like pofilter and Pootle to use that information to manage
+	  checking and accelerator highlighting.
+
+2005-07-02 22:51  davidfraser
+
+	* convert/: po2ts.py, po2xliff.py: make sure po2xxx.convertfile
+	  works with a single pofile parameter for input for consistency
+
+2005-07-01 21:14  davidfraser
+
+	* __init__.py, __version__.py, convert/__init__.py,
+	  convert/convert.py, convert/csv2po.py, convert/dtd2po.py,
+	  convert/html2po.py, convert/moz2po.py, convert/mozfunny2prop.py,
+	  convert/nb2po.py, convert/oo2po.py, convert/po2csv.py,
+	  convert/po2dtd.py, convert/po2html.py, convert/po2moz.py,
+	  convert/po2nb.py, convert/po2oo.py, convert/po2prop.py,
+	  convert/po2tmx.py, convert/po2ts.py, convert/po2txt.py,
+	  convert/po2xliff.py, convert/poreplace.py, convert/pot2po.py,
+	  convert/prop2mozfunny.py, convert/prop2po.py, convert/sxw2po.py,
+	  convert/ts2po.py, convert/txt2po.py, convert/xliff2po.py,
+	  filters/__init__.py, filters/checks.py, filters/decoration.py,
+	  filters/helpers.py, filters/prefilters.py, misc/__init__.py,
+	  misc/csv.py, misc/dictutils.py, misc/optparse.py,
+	  misc/optrecurse.py, misc/progressbar.py, misc/quote.py,
+	  misc/setup.py, misc/sparse.py, misc/textwrap.py,
+	  misc/wStringIO.py, misc/xmlwrapper.py, misc/zipfileext.py,
+	  storage/__init__.py, storage/csvl10n.py, storage/dtd.py,
+	  storage/html.py, storage/oo.py, storage/po.py,
+	  storage/properties.py, storage/tmx.py, storage/ts.py,
+	  storage/xliff.py, storage/xpi.py, tools/__init__.py,
+	  tools/pocompile.py, tools/pocount.py, tools/podebug.py,
+	  tools/pogrep.py, tools/pomerge.py: made all files python source
+	  encoding marked as utf-8 [Simos Xenitellis] also fixed a
+	  #!/usr/bin/python -> env python
+
+2005-06-30 21:14  dwaynebailey
+
+	* tools/pocount.py: Added totals fro CSV mode.	Mainly so that you
+	  can easily use the data in bash scripts instead of having to
+	  calculate it.
+
+2005-06-30 21:00  dwaynebailey
+
+	* convert/po2ts.py: Work with only po class within the conversion
+	  class and move filehandling to outside the class.  This means we
+	  can use the po2ts class in Pootle while still allowing the
+	  command line po2ts to work.
+
+2005-06-28 21:11  davidfraser
+
+	* storage/po.py: use dictionary utilities to ensure that any new
+	  items that are not already present will be ordered the same as
+	  header_order
+
+2005-06-28 19:55  davidfraser
+
+	* storage/po.py: changed default headers and added header_order
+	  element
+
+2005-06-28 19:39  davidfraser
+
+	* storage/po.py: improvements to header generation:   added
+	  x_generator which can be overridden in a derived class (e.g. for
+	  Pootle)   changed all makeheader arguments to be
+	  key.lower().replace("-", "_") for consistency   adjust kwargs to
+	  makeheader, updateheader to be titlecase if lowercase   deal with
+	  header arguments case-insensitively	made parseheader use an
+	  ordered dictionary so they come out in the same order they went
+	  in   in updateheader, add a header element if one isn't present
+
+2005-06-28 19:29  davidfraser
+
+	* convert/pot2po.py: renamed all header variables to be aligned
+	  with the real header name parameters to makeheader have changed
+	  like this so it makes it easier
+
+2005-06-28 19:28  davidfraser
+
+	* misc/dictutils.py: added dictutils for case-insensitive and
+	  ordered dictionaries
+
+2005-06-14 18:21  davidfraser
+
+	* convert/prop2mozfunny.py: ignore comments that get inserted by
+	  mozfunny2prop (header describing file type) po2inc also needs to
+	  convert template
+
+2005-06-14 18:16  davidfraser
+
+	* convert/prop2mozfunny.py: templates file needs to be converted to
+	  properties as well
+
+2005-06-14 18:08  davidfraser
+
+	* convert/: moz2po.py, po2moz.py: convert funny mozilla files from
+	  CVS as well
+
+2005-06-14 18:07  davidfraser
+
+	* convert/: mozfunny2prop.py, prop2mozfunny.py: added po conversion
+	  methods as well using prop2po / po2prop and fake file objects
+	  using wStringIO (also rename define to inc in function names,
+	  make a main function)
+
+2005-06-14 16:11  davidfraser
+
+	* convert/: mozfunny2prop.py, prop2mozfunny.py: moved encoding
+	  parameter to function option (not yet commandline)
+
+2005-06-14 16:05  davidfraser
+
+	* convert/: mozfunny2prop.py, prop2mozfunny.py: implemented the
+	  neccessary encoding conversions note that cp1252 is assumed for
+	  .it files - this should be made an option, its defined in
+	  charset.mk
+
+2005-06-14 15:46  davidfraser
+
+	* convert/: mozfunny2prop.py, prop2mozfunny.py: converted from
+	  little scripts to having proper methods etc
+
+2005-06-14 15:26  davidfraser
+
+	* convert/xliff2po.py: the fuzzy flag is set if it was marked fuzzy
+	  in the XLIFF [Fredrik Corneliusson]
+
+2005-06-14 15:24  davidfraser
+
+	* storage/xliff.py: patches from Fredrik Corneliusson:	 use a
+	  getText method to get text recursively rather than assuming its
+	  at the top level   handle there being no target translationnode
+
+2005-06-09 20:13  dwaynebailey
+
+	* storage/po.py: nplural => nplurals to prevent confusion in the
+	  variable names
+
+	  Also convert nplurals to an integer if it is currently a string
+
+2005-06-09 20:04  dwaynebailey
+
+	* storage/po.py: Change header creation strftime format string: %F
+	  does not exist on the windows implementation so convert to
+	  %Y-%m-%d which is equivalent.
+
+	  %z also does not exist but am not sure how to change that.  The
+	  problem is that windows uses %Z instead which is the text based
+	  time zone desrtiptor.  This would be OK except that localised
+	  Windows (ie Javier's Spanish one) uses non UTF-8 chars to
+	  describe it which of course makes the whole file barf.  So either
+	  be drop %z on Windows platforms or we work out how to escape the
+	  text in the correct charset.
+
+2005-06-08 14:16  dwaynebailey
+
+	* filters/TODO: New filter for checking for double caps issues Eg.
+	  SLOw RElease of CAps LOck
+
+2005-05-14 16:57  dwaynebailey
+
+	* convert/po2xliff.py: For now skip plural messages.
+
+2005-05-14 16:55  dwaynebailey
+
+	* convert/TODO: Note plural handling problem in CSV and XLIFF
+
+2005-05-14 16:52  dwaynebailey
+
+	* storage/po.py: Handle the case where there is no Plural-Form
+	  correctly
+
+2005-05-07 11:48  davidfraser
+
+	* storage/po.py: allowed setting an elementclass for a pofile,
+	  which will use that class - default is still poelement also made
+	  copy method use the actual class of the object (this allows
+	  pootlefile to use a derived pootleelement)
+
+2005-05-06 11:42  davidfraser
+
+	* storage/po.py: if msgid is plural, include plural in msgidlen
+
+2005-05-06 10:14  davidfraser
+
+	* storage/po.py: when unquoting from po, if first line is blank
+	  then don't join with line break
+
+2005-04-28 10:33  dwaynebailey
+
+	* convert/po2xliff.py: Move the file parsing out of convertor into
+	  convertpo.  This will allow us to use the XLIFF convertor in
+	  Pootle.
+
+2005-04-26 14:58  dwaynebailey
+
+	* storage/po.py: Escape \t correctly - might need to consider
+	  others such as \v, etc but did this on an as needed basis.  Only
+	  update the header if there is already an entry by that name
+	  present or iff you specify the add flag.
+
+2005-04-21 16:47  davidfraser
+
+	* storage/xpi.py: adjusted findlangreg to be able to detect locale
+	  / region on the jar name this is because the latest Firefox
+	  structure expects the jars to contain locale/xxx rather than
+	  locale/en-US/xxx etc reported by Richard Allen
+
+2005-04-21 11:32  davidfraser
+
+	* __version__.py: version 0.8rc3
+
+2005-04-21 11:23  davidfraser
+
+	* tools/: ooo_languageselector.png, ooswitchlang, ooswitchlang.ico:
+	  removed ooswitchlang tool as its obsolete for OOo 2.x and can
+	  always be retrieve from CVS :-)
+
+2005-04-20 14:43  davidfraser
+
+	* CREDITS: removed pootle-specific credits (moved to
+	  Pootle/CREDITS)
+
+2005-04-20 12:47  davidfraser
+
+	* convert/oo2po.py: updated oo2po to use a similar command-line
+	  syntax to po2oo (NOTE: this requires changes to scripts!) require
+	  a targetlanguage if not producing POTs set the source language as
+	  English if not supplied (using existing languages to calculate
+	  1.x/2.x) don't operate without languages any more, improve error
+	  detection and reporting
+
+2005-04-20 12:36  davidfraser
+
+	* convert/convert.py: added verifyoptions hook for global
+	  verifications that you don't want to fail on every file (see next
+	  commit to oo2po)
+
+2005-04-20 12:33  davidfraser
+
+	* storage/oo.py: collect all the different languageids present in
+	  the oofile
+
+2005-04-19 23:40  dwaynebailey
+
+	* filters/checks.py: Added $[blah] variable type
+
+2005-04-18 23:36  dwaynebailey
+
+	* filters/checks.py: OpenOffice has yet another variable style -
+	  ($...) of course itm might be a $... within () but it appeard not
+	  to be :(.
+
+2005-04-14 11:20  davidfraser
+
+	* misc/optrecurse.py: added ability for commands to produce man
+	  pages with --manpage option make sure the usetemplates errors
+	  don't produce an error when trying to make an error (if inputext
+	  and templateext are both None)
+
+2005-04-14 09:08  davidfraser
+
+	* storage/po.py: initialize newcharsetline properly if no charset
+	  found in charsetline (thanks pychecker)
+
+2005-04-13 17:38  davidfraser
+
+	* convert/: oo2po.py, po2oo.py: vastly improve the language
+	  handling code rather than assume lines are in the correct order
+	  in po2oo, only add lines for a language if a translation is
+	  present set the language correctly by requiring the language code
+	  (and improving the options setup) now renumberdest is not needed
+	  added a sourcelanguage option as well for people who want to use
+	  French etc for msgid
+
+2005-04-05 22:01  davidfraser
+
+	* CREDITS: added credit to Fredrik Corneliusson for xliff work
+
+2005-04-05 22:00  davidfraser
+
+	* CREDITS: added SVG logo for Pootle from Lucas Veietes
+
+2005-04-04 09:41  davidfraser
+
+	* convert/po2xliff.py: support placeholder (variable) markup, and
+	  speed up xliff element generation [Fredrik Corneliusson]:
+	  > I've changed so that placeholders such as %s gets marked up
+	  with
+	  > ph(placeholder) tags. It also sets the translated attribute and
+	  fuzzy
+	  > state when appropriate.
+
+	  > As I found the xliff2po script to be extremely slow
+	  > (minutes for common po file) I made addtransunit method a
+	  little less
+	  > naive so it's now a matter of seconds for the same po file.
+
+2005-04-04 09:39  davidfraser
+
+	* storage/xliff.py: made prettification of xml an option [Fredrik
+	  Corneliusson]:
+	  > I also had to chang so prettyprint in the storage/xliff.py
+	  getxml
+	  > method is optional as I don't want to get whitespace into the
+	  > translation units.
+
+2005-03-29 20:46  dwaynebailey
+
+	* storage/po.py: Add getheaderplural() to retrieve the plural-forms
+	  header values
+
+2005-03-29 19:22  davidfraser
+
+	* convert/po2oo.py: don't print out an error on language code
+	  switch if line doesn't have any text (Pavel's request)
+
+2005-03-22 08:17  dwaynebailey
+
+	* storage/po.py: If there is no header then don't update any header
+	  items. Don't even try to create a header.
+
+2005-03-21 20:12  dwaynebailey
+
+	* storage/po.py: Added a method to update the Plural-Forms header
+
+2005-03-19 12:01  dwaynebailey
+
+	* convert/po2tmx, convert/po2tmx.py, storage/tmx.py: po2tmx allows
+	  us to convert PO files to TMX (Translation Memory eXchange)
+	  format.  This format is designed to allow the sharing of TM data.
+
+	  This implementation is beta alpha quality and has been sitting
+	  neglected on my harddrive.  It is probably better that it move to
+	  a new home where someone can take good care of it.
+
+	  The TMX files it builds are probably wrong.  But at least if
+	  people can test it then we can begin correcting errors.
+
+	  setup.py now includes a new section for installing beta software.
+	   Thus po2tmx will not be installed by default but requires:
+
+	    installbeta = True
+
+	  Enjoy!
+
+2005-03-18 18:51  davidfraser
+
+	* storage/csvl10n.py: handle plain and unicode strings in cvsl10n
+
+2005-03-18 16:19  dwaynebailey
+
+	* storage/po.py: Remove some debugging code
+
+2005-03-18 16:01  dwaynebailey
+
+	* storage/po.py: POT-Creation-Date now has correct timezone
+	  information.	Same will apply to PO-Revision-Date if it is set.
+	  Will probably still have problems if you set creationdate or
+	  revisiondate to a time object.
+
+2005-03-18 14:23  davidfraser
+
+	* storage/po.py: FIXED: copy wasn't copying the constituent
+	  elements (was shallow), so altering the copied element altered
+	  the original
+
+2005-03-15 15:29  davidfraser
+
+	* tools/pocompile.py: add an encoding header so Python doesn't
+	  issue a warning about Martin Loewis with a fancy o
+
+2005-03-14 14:47  dwaynebailey
+
+	* storage/csvl10n.py: Create the dictionary using UTF-8 encoding.
+	  This eliminates crashes on Unicode.  This should probably
+	  inteligently determine the output encoding.  Either from the PO
+	  header or a command line options.  But utf-8 is probably all we
+	  need.
+
+2005-03-14 00:39  dwaynebailey
+
+	* storage/po.py: Update arbitrary PO header items.
+
+2005-03-11 17:09  dwaynebailey
+
+	* tools/: pocompile, pocompile.py: We can now compile PO files into
+	  MO (Machine Object) files that can actually be used on a users
+	  machine.  The main reason for this is so that Pootle can have the
+	  option of creating MO files for users to download and install.
+
+2005-03-02 07:54  dwaynebailey
+
+	* filters/TODO: pofilter - sees %s %s as a doubleword
+
+2005-03-01 16:22  dwaynebailey
+
+	* tools/TODO: Some pocount bugs
+
+2005-03-01 14:15  dwaynebailey
+
+	* tools/pocount.py: Use --csv to output counts in Comma Seperated
+	  Value format for import into a spreadsheet.
+
+2005-02-28 17:30  davidfraser
+
+	* convert/po2oo.py: handle unicode strings coming from the PO file
+	  (encode as UTF-8)
+
+2005-02-28 16:55  davidfraser
+
+	* storage/oo.py: handle unicode filenames within oo file
+
+2005-02-25 10:28  dwaynebailey
+
+	* filters/checks.py: Remove accelerators before checking capitals.
+
+2005-02-25 09:44  dwaynebailey
+
+	* convert/TODO: Wish for --no-wrap to prevent lines being broken
+	  when creating the PO file.  Mainly to help localisaers who will
+	  use CAT tools which can't segment across line breaks.
+
+2005-02-21 10:52  davidfraser
+
+	* convert/prop2mozfunny.py: fixed up handle of unicode in funny
+	  mozilla files
+
+2005-02-18 22:04  davidfraser
+
+	* storage/po.py: POT files contain CHARSET as a placeholder for the
+	  encoding, we need to ignore it (this could be improved to map
+	  CHARSET to None)
+
+2005-02-18 21:48  davidfraser
+
+	* convert/: mozfunny2prop.py, prop2mozfunny.py: added tools for
+	  handling funny .inc / .it files from firefox CVS (very primitive)
+
+2005-02-18 20:56  davidfraser
+
+	* convert/po2dtd.py, misc/quote.py, storage/dtd.py: fixed up
+	  quoting in dtds (would give problems with both " and ' in the
+	  string) the correct way to do this is to use a &apos; for the '
+	  (if quoting with ') or a &quot; for the " (if quoting with ") see
+	  http://www.w3.org/TR/2004/REC-xml11-20040204/#NT-EntityValue and
+	  #syntax also encode the line if it comes out as unicode in
+	  tolines fixed up general logic for eitherquotestr so it will
+	  escape normally (though that's not whats wanted for dtds)
+
+2005-02-17 20:05  davidfraser
+
+	* convert/: po2dtd.py, po2prop.py: since po module now decodes
+	  strings to unicode we don't need to decode them ; still do if str
+	  incase
+
+2005-02-17 19:54  davidfraser
+
+	* storage/po.py: handle missing encoding when encoding / decoding
+	  (we have to have one on encoding, just ignore on decoding)
+
+2005-02-17 19:30  davidfraser
+
+	* storage/po.py: added code to encode / decode PO files based on
+	  the encoding specified in their header, rather than hard-coding
+	  UTF-8
+
+2005-02-10 21:07  dwaynebailey
+
+	* storage/po.py: Added missing header entries: Report-Msgid-Bugs-To
+	  and Plural-Forms
+
+2005-02-04 15:34  davidfraser
+
+	* storage/ts.py: silly variable naming fix rearrangement make sure
+	  getmessagetranslation only gets one node
+
+2005-02-04 15:04  davidfraser
+
+	* storage/ts.py: still need to catch the helper function for some
+	  reason
+
+2005-02-04 14:57  davidfraser
+
+	* storage/ts.py: rather than having funny helper function names,
+	  set up the helper methods as normal functions added an index on
+	  message source per context node, to speed up searching
+
+2005-02-04 14:46  davidfraser
+
+	* storage/ts.py: added new clever helper for searching elements by
+	  tagname (it takes advantage of the structure of the xml file, you
+	  say what parents to search under) added that as
+	  .searchElementsByTagName on Document and Elements within minidom
+	  moved helper functions out of QtTsParser, they really are
+	  functions use the search function to speed up finding things
+
+2005-02-04 14:07  davidfraser
+
+	* storage/ts.py: added faster helper for getElementsByTagName that
+	  uses iterator added getFirstElementByName that knows how to take
+	  advantage of this in the common case of just getting one child
+	  taught getnodetext to handle None
+
+2005-02-04 08:11  davidfraser
+
+	* convert/ts2po.py: use markfuzzy to do fuzzy marking consistently
+	  also don't mark blank unfinished messages as fuzzy
+
+2005-02-04 07:30  davidfraser
+
+	* convert/ts2po.py, storage/ts.py: renamed getmessageattributes to
+	  getmessagetype, and changed type/msgtype variables to transtype
+
+2005-02-04 07:26  davidfraser
+
+	* storage/ts.py, convert/po2ts.py: added default comment value of
+	  None to addtranslation
+
+2005-02-04 07:23  davidfraser
+
+	* convert/po2ts.py, storage/ts.py: removed TODO for adding
+	  translation types renamed type to transtype and added default
+	  value of None (no type)
+
+2005-02-04 07:17  davidfraser
+
+	* convert/ts2po.py, CREDITS, convert/po2ts.py, storage/ts.py:
+	  [Marek Wieckowski] added support for comments, and types in ts
+	  files - "obsolete" and "unfinished" patch received on
+	  translate-devel, Fri, 4 Feb 2005 05:51:16 +0100 (CET)
+
+2005-02-02 13:54  davidfraser
+
+	* convert/po2xliff.py: handle missing line numbers properly
+
+2005-02-02 13:44  davidfraser
+
+	* convert/po2xliff.py: added messages_%d id to new trans-unit nodes
+
+2005-02-02 13:37  davidfraser
+
+	* convert/po2xliff.py, storage/xliff.py: added PoXliffParser
+	  derived from XliffParser to handle po-guide specific things use
+	  this to put translations in body element made XliffParser derive
+	  from object so it is a new-style class added XliffParser method
+	  for creating filenode so it can be overridden
+
+2005-02-02 13:24  davidfraser
+
+	* convert/po2ts.py, storage/ts.py: _write_data should really be
+	  minidom._write_data, and a comment fix
+
+2005-02-02 13:10  davidfraser
+
+	* storage/xliff.py, convert/po2xliff.py, convert/xliff2po.py: got
+	  po2xliff working in initial form misc changes: fixed up call to
+	  minidom._write_data in xliff added method to add a transunit node
+	  fixed up getnodetext to handle null Text too fixed up
+	  getting/setting of attributes
+
+2005-02-02 12:07  davidfraser
+
+	* storage/xliff.py, convert/po2xliff, convert/po2xliff.py,
+	  convert/xliff2po, convert/xliff2po.py: added initial xliff
+	  support base on ts code
+
+2005-01-19 20:29  davidfraser
+
+	* tools/pogrep.py: handle po entries that have a plural msgid but
+	  not a plural msgstr (this should really be fixed elsewhere)
+
+2005-01-19 20:12  davidfraser
+
+	* storage/po.py: removed erroneous .msgid
+
+2005-01-19 20:06  davidfraser
+
+	* storage/oo.py: raise a clearer error if a line doesn't contain
+	  enough tabs to determine the module
+
+2005-01-19 20:01  davidfraser
+
+	* convert/oo2po.py, convert/po2oo.py, storage/po.py: moved and
+	  refactored po string quoting / unquoting functions from
+	  convert/oo2po,po2oo to storage/po adjusted getunquotedstr to pass
+	  parameters when used on a plural string entry, added TODO to
+	  refactor it we now have quoteforpo and unquotefrompo as fairly
+	  good symettrical quote/unquote functions getunquotedstr calls
+	  should be replaced with calls to unquotefrompo and tested where
+	  practical
+
+2005-01-19 12:56  davidfraser
+
+	* filters/decoration.py: implement more careful check for degrees
+	  sign using unicode, fail gracefull if not utf-8
+
+2005-01-19 12:39  davidfraser
+
+	* filters/: checks.py, pofilter.py: added support for giving a
+	  custom errorhandler to a TranslationChecker rather than raising
+	  an error on any error in the filter
+
+2005-01-11 23:28  dwaynebailey
+
+	* tools/TODO: Two bugs related to obsolete messages have been fixed
+
+2005-01-11 00:14  dwaynebailey
+
+	* storage/po.py: Wrong indent caused only one line of the obsolete
+	  message to be output
+
+2005-01-11 00:11  dwaynebailey
+
+	* tools/pocount.py: Ignore obsolete messages: do not count them as
+	  untranslated.
+
+2005-01-11 00:00  dwaynebailey
+
+	* storage/po.py: Now store obsolete messages seperately from other
+	  comments.  Added isobsolete() function.
+
+	  Now fuzzy obsolete messages are not made not fuzzy during a
+	  pomerge.
+
+	  Should probably eventually actually read the msgid and msgstr
+	  contents of the obsolete message for doing machine assisted
+	  translations.
+
+2005-01-06 17:00  dwaynebailey
+
+	* README: Made Python 2.3 the recommended environment.
+
+2005-01-06 14:52  dwaynebailey
+
+	* filters/TODO: Suggested file level checks
+
+2005-01-06 14:08  dwaynebailey
+
+	* filters/checks.py: Added doublewords check.  This will find
+	  occurances of "the the" in translations, most of these we assume
+	  are in fact wrong.
+
+2005-01-06 02:37  dwaynebailey
+
+	* tools/pocount.py: Always provide a total if more than one file is
+	  counted whether the input is a file(s) or a directory.  We also
+	  now provide a total of the number of files counted.
+
+2005-01-05 19:35  dwaynebailey
+
+	* filters/TODO: Some bugs identified
+
+2005-01-05 15:01  dwaynebailey
+
+	* filters/checks.py: Validated all filters that need a precondition
+	  untranslated check.  Added: brackets, filepaths, isfuzzy and
+	  isreview Removed: long, short And any others for which I couldn't
+	  create a test.
+
+2005-01-05 14:15  dwaynebailey
+
+	* filters/checks.py: Add compendiumconflicts as a precondition for
+	  a number of tests.  This will prevent many false positives:
+	  errors identified but actually caused because of the compendium
+	  conflict syntax.
+
+2005-01-03 10:00  dwaynebailey
+
+	* tools/TODO: Bug pomerge removes fuzzy markers from obsolete
+	  messages
+
+2005-01-03 09:56  dwaynebailey
+
+	* filters/TODO: More pofilter wishes
+
+2005-01-02 14:43  dwaynebailey
+
+	* filters/checks.py: Add setencecount to untranslated precondition
+
+2005-01-01 11:13  dwaynebailey
+
+	* filters/checks.py: Minor formating fix
+
+2005-01-01 11:05  dwaynebailey
+
+	* filters/: TODO, checks.py: Added startcaps which checks to see
+	  that the starting letter is correctly capitalised.  It is more
+	  specific then simplecaps, avoids confusion for the person
+	  checking and picks up a few that simplecaps misses.
+
+	  It does not correctly handle locale info about valid capitals.
+
+2004-12-31 17:18  dwaynebailey
+
+	* README: The toolkit does more but we need to tell people that.
+	  pofilter has more checks and of course we have ts2po and html2po
+	  and pot2po.
+
+2004-12-20 12:24  davidfraser
+
+	* filters/checks.py: if exceptions happen in a filter, show some
+	  information about what happened (and the strings)
+
+2004-12-17 23:03  davidfraser
+
+	* convert/TODO: added ideas from Pavel on IRC
+
+2004-12-17 16:20  dwaynebailey
+
+	* convert/TODO: po2dtd apersand checks don't give you good info as
+	  to wherre exactly the error occurs.
+
+2004-12-17 11:43  dwaynebailey
+
+	* convert/TODO: Added TODO about installing docs in the right place
+	  on Linux
+
+2004-12-17 09:19  dwaynebailey
+
+	* README: Credit Javer as a docs copyright holder.  Caveat about
+	  quoted emails
+
+2004-12-16 19:04  davidfraser
+
+	* CREDITS: added some more credits
+
+2004-12-16 18:59  davidfraser
+
+	* convert/: pot2po, pot2po.py: added simple pot2po tool
+
+2004-12-16 18:41  davidfraser
+
+	* storage/po.py: added lots more options to makeheader (to enable
+	  it to make PO headers as well as POT ones) added a parseheader
+	  function
+
+2004-12-16 11:52  dwaynebailey
+
+	* filters/TODO: Spelling test wish
+
+2004-12-16 11:49  dwaynebailey
+
+	* tools/TODO: Added bug: pocount counts obsolete messages as
+	  untranslated
+
+2004-12-16 09:44  dwaynebailey
+
+	* filters/: TODO, checks.py: Added xmltags test that checks that
+	  the tags in msgid == msgstr.	This will catch missing tags and
+	  translated tags.  If tags cover the full length of the msgid then
+	  we assume it is something like "<Error>" and skip it as you are
+	  unlikely to find a proper XML/HTML tag on its own.
+
+2004-12-16 09:39  dwaynebailey
+
+	* filters/TODO: Gettext conflicts are marked fuzzy so by using
+	  --nofuzzy you can skip them.
+
+2004-12-14 23:32  dwaynebailey
+
+	* filters/pofilter.py: Now correctly ignore reviews with --noreview
+	  Also ensured that the default is to include revies and fuzzies
+
+2004-12-14 23:26  dwaynebailey
+
+	* filters/pofilter.py: Correctly ignore fuzzy messages when using
+	  --nofuzzy
+
+2004-12-14 22:15  davidfraser
+
+	* convert/: dtd2po.py, moz2po.py, prop2po.py: added duplicates
+	  option to moz2po, dtd2po and prop2po
+
+2004-12-14 22:09  davidfraser
+
+	* convert/: convert.py, oo2po.py: added new add_duplicates_option
+	  to ConvertOptionParser so we can share it between different
+	  scripts
+
+2004-12-14 21:56  davidfraser
+
+	* convert/: po2dtd.py, po2moz.py, po2prop.py: use add_fuzzy_option
+	  to simplify life. also added to po2moz (using the underlying
+	  functions it should all work)
+
+2004-12-14 21:53  davidfraser
+
+	* convert/: convert.py, po2oo.py: made add_fuzzy_option on
+	  ConvertOptionParser so we don't duplicate work ...
+
+2004-12-14 21:39  dwaynebailey
+
+	* convert/po2prop.py: And now po2prop can ignore fuzzy entries
+	  also.
+
+2004-12-14 21:11  dwaynebailey
+
+	* convert/po2dtd.py: po2dtd can now also ignore PO messages marked
+	  as fuzzy
+
+2004-12-14 18:40  davidfraser
+
+	* convert/TODO: have fixed double escaping.  clarified oo output
+	  order TODO
+
+2004-12-14 18:31  davidfraser
+
+	* convert/oo2po.py: added --duplicates option which specifies
+	  whether to merge duplicates (previous default behaviour),
+	  generate unique msgid_comments when required (or all the time),
+	  or keep them also added option to specify nonrecursive input
+
+2004-12-14 18:26  davidfraser
+
+	* storage/po.py: added ability to specify different 'style's for
+	  handling duplicates this includes adding a unique kde-comment
+	  into the msgid if required (msgid_comment), or all the time
+	  (msgid_comment_all), merging it (the previous behaviour, and the
+	  default - merge), and ignoring them (keep)
+
+2004-12-14 17:49  davidfraser
+
+	* convert/po2oo.py: make sure that includefuzzy still produces
+	  strings if there is no translation in the templatefile made
+	  includefuzzy an attribute of reoo so that it doesn't have to be
+	  passed around everywhere
+
+2004-12-14 15:12  davidfraser
+
+	* convert/po2moz.py: adjusted to new isarchive syntax (which checks
+	  which field its for)
+
+2004-12-14 14:13  dwaynebailey
+
+	* filters/: TODO, checks.py: sentencecount - counts the number of
+	  fullstops to see that they match. Ie a simple sentence counter.
+
+2004-12-14 12:38  davidfraser
+
+	* convert/po2dtd.py: do a decode/encode using UTF-8 when getting
+	  label / accesskey, so that multibyte unicode characters are
+	  handled correctly
+
+2004-12-14 12:34  davidfraser
+
+	* convert/dtd2po.py: changed decoding syntax to be more consistent
+	  with the rest of the code
+
+2004-12-14 12:29  davidfraser
+
+	* convert/: dtd2po.py, po2dtd.py: added a mention that the DTD
+	  files have to be in UTF-8 to the doc strings
+
+2004-12-14 12:26  dwaynebailey
+
+	* filters/TODO: Added some TODO items
+
+2004-12-14 12:12  davidfraser
+
+	* convert/dtd2po.py: Handle non-Ascii unicode accesskeys [Filip
+	  Miletic]
+
+2004-12-14 11:51  davidfraser
+
+	* CREDITS: Added Credits
+
+2004-12-13 18:43  davidfraser
+
+	* convert/po2oo.py: added includefuzzy option that specifies
+	  whether or not to use fuzzy translations. turned off by default
+	  (this is a change)
+
+2004-12-13 18:05  davidfraser
+
+	* convert/po2oo.py: use the includeescape function to only include
+	  escapes for \\n (since these aren't double-escaped in the file)
+
+2004-12-13 18:02  davidfraser
+
+	* misc/quote.py: added the ability to selectively include escapes
+	  by passing an includeescapes function
+
+2004-12-13 17:43  davidfraser
+
+	* convert/: moz2po, moz2po.py, po2moz, po2moz.py: moved all the
+	  actual functionality of the moz2po / po2moz scripts into
+	  moz2po.py / po2moz.py, like all the other civilized scripts...
+
+2004-12-13 17:37  davidfraser
+
+	* convert/oo2po.py: make sure oomultifile is only used on input
+
+2004-12-13 17:30  davidfraser
+
+	* convert/oo2po.py: made sure that \n is not double-escaped, but
+	  all other escapes are so that they will be handled properly in po
+	  files
+
+2004-12-13 17:21  davidfraser
+
+	* convert/oo2po.py: made a quoteforpo function so that we can
+	  change it to improve escaping
+
+2004-12-13 17:19  davidfraser
+
+	* storage/po.py: made parsing the inputfile an exposed (and
+	  therefore repeatable, if you clean things up) function
+
+2004-12-13 16:24  dwaynebailey
+
+	* filters/checks.py: Added filepaths test to check for translated
+	  paths.
+
+2004-12-13 16:18  dwaynebailey
+
+	* filters/checks.py: Added $(blah) style variables for GNOME
+	  projects
+
+2004-12-13 11:58  davidfraser
+
+	* convert/po2oo.py: updated to only use oomultifile for output and
+	  templates. added options to prevent even them from being
+	  interpreted as recursive (useful for testing)
+
+2004-12-13 11:29  davidfraser
+
+	* convert/convert.py, misc/optrecurse.py: fairly big change to
+	  ArchiveConvertOptionParser to allow specifying whether archive
+	  formats are applicable to only input, output or templates...
+	  added option "filepurpose" to isrecursive, isarchive (replacing
+	  mustexist there), openarchive added new method "getarchiveclass"
+	  which has the right logic and can be used to detect if something
+	  is an archive check that a template is marked as recursive as
+	  well as whether its an archive when opening a template file added
+	  optional options "allowrecursiveinput/archive/output" which
+	  default to True but can be set to False if recursive formats need
+	  to be explicitly avoided
+
+2004-12-13 09:41  davidfraser
+
+	* convert/csv2po.py: the string might be unicode, so use whatever
+	  type it is to filter alphanumeric characters...
+
+2004-12-04 14:38  dwaynebailey
+
+	* filters/pofilter.py: --header option adds an optional header to
+	  the out PO file.
+
+2004-12-04 14:31  dwaynebailey
+
+	* tools/: TODO, pomerge.py: pomerge will now not merge header
+	  entries.  When we can handle header merging properly we should
+	  enable header merging as an option.
+
+2004-12-04 01:04  dwaynebailey
+
+	* filters/TODO: More TODOs
+
+2004-12-03 22:32  dwaynebailey
+
+	* tools/TODO: We wish for pomigrate in python
+
+2004-12-03 17:55  davidfraser
+
+	* storage/ts.py: added TODOs for parts of ts files not yet handled
+	  (comments, translation types) changed addtranslation to make a
+	  new translationnode to replace the old one ...
+
+2004-12-03 17:32  davidfraser
+
+	* convert/: po2ts, po2ts.py: added po2ts and po2ts.py as reverse of
+	  ts2po and ts2po.py
+
+2004-12-03 17:29  davidfraser
+
+	* convert/: ts2po, ts2po.py: have made po2ts so you don't need to
+	  write it anymore :-) cleaned up leftover code from whatever file
+	  I based this on, that wasn't relevant
+
+2004-12-03 17:24  davidfraser
+
+	* storage/ts.py: enhanced ts storage module to support adding
+	  translations and converting back to xml (in a pretty format)
+	  added support for constructing blank QtTsParser objects changed
+	  variable name
+
+2004-12-03 16:11  davidfraser
+
+	* convert/ts2po, convert/ts2po.py, storage/ts.py: added initial
+	  code for handling Qt Ts files
+
+2004-12-03 12:43  dwaynebailey
+
+	* storage/po.py, tools/TODO, tools/pocount.py: Counts messages
+	  marked for review seperately from the translated, fuzzy,
+	  untranslated totals.
+
+2004-12-02 23:41  dwaynebailey
+
+	* tools/pocount.py: Lonely bracket
+
+2004-12-02 22:11  dwaynebailey
+
+	* tools/: TODO, pocount.py: Include blank msgid's in the count as
+	  this give a "string" count that will match msgfmt --statistics.
+	  This also does not change the word count, they're blank messages
+	  after all!
+
+2004-12-02 21:09  davidfraser
+
+	* tools/pogrep.py: added default options to pogrepfilter
+	  constructor to make it easier to use the class for other stuff
+	  ...
+
+2004-12-02 20:33  dwaynebailey
+
+	* storage/po.py: Of course if you want the header to contain an
+	  automatic timestamp then you should delete the old static
+	  POT-Creation-Date line.
+
+2004-12-02 18:39  davidfraser
+
+	* storage/html.py: added code to handle entities and character refs
+
+2004-12-02 18:09  davidfraser
+
+	* convert/TODO: added more TODOs for oo2po / po2oo
+
+2004-12-02 17:00  davidfraser
+
+	* storage/properties.py: added more explicit error message for
+	  problems with unicode in properties files
+
+2004-12-02 16:10  dwaynebailey
+
+	* tools/: TODO, pocount.py: Provide a total for each PO file
+	  counted.  So you don't have to get the calculator to add the
+	  translated + untranslated + fuzzy messages.
+
+2004-12-02 13:01  davidfraser
+
+	* storage/po.py, tools/pocount.py: added stuff to po.getunquotedstr
+	  to handle dictinoaries for plural msgstr (in case it gets passed
+	  in by someone not knowing it was a plural) now wordcount in
+	  pocount.py doesn't need to know about it...  (this shouldn't be
+	  used for normal translation, it's there just in case)
+
+2004-12-02 12:47  davidfraser
+
+	* __init__.py: the package should be called "the translate toolkit"
+	  from now on...
+
+2004-12-02 09:45  dwaynebailey
+
+	* tools/: TODO, pocount.py: Only provide a Grand Total if more than
+	  one file is counted
+
+2004-12-02 09:39  dwaynebailey
+
+	* tools/: TODO, pocount.py: pocount now correctly counts KDE style
+	  plural messages. A better fix would be for the po class to
+	  understand KDE plurals.
+
+2004-12-01 16:59  davidfraser
+
+	* tools/pocount.py: remember all the word counts for all the
+	  elements' msgid and msgstr and sum them as required
+
+2004-12-01 16:51  davidfraser
+
+	* storage/csvl10n.py: remember the csv file's filename
+
+2004-12-01 16:40  dwaynebailey
+
+	* tools/: TODO, pocount.py: - Count msgid_plural properly by
+	  craeting a seperate wordcount procedure for	msgid's that can
+	  count msgid and msgid_plural - Removed some debugging output
+
+2004-12-01 15:40  davidfraser
+
+	* convert/: TODO, csv2po.py: added --charset option to csv2po that
+	  sets what charset the csv files are in made PO files UTF-8
+
+2004-12-01 15:18  davidfraser
+
+	* tools/pocount.py: handle plurals in wordcount ...
+
+2004-11-30 14:27  dwaynebailey
+
+	* tools/TODO: Lots of pocount todo items
+
+2004-11-28 16:15  dwaynebailey
+
+	* convert/TODO, storage/po.py: POT headers now have the generation
+	  date and time.  Timezone info seems to be missing however.
+
+2004-11-28 15:18  dwaynebailey
+
+	* convert/: dtd2po.py, po2dtd.py: Now can merge accelerator keys of
+	  type: .accesskey, .accessKey, .akey.	Probably should define that
+	  list of three types as some global but not sure how/where to do
+	  that.
+
+2004-11-28 09:10  dwaynebailey
+
+	* filters/decoration.py: - If a number a suffixed with a degree
+	  sign, then this now forms part of the   number for comparison.
+	  This allows for '180° != 180'   NOTE: Not sure if this is 100%
+	  the correct approach.  Should probably use   Unicode throughout
+	  to not have to do this kind of unpacking.  - Reset carryperiod so
+	  that you don't get number like 123.4.5 when the number   actually
+	  was 123.45 (I'm sure it will expose a bug someday :)
+
+2004-11-27 22:03  dwaynebailey
+
+	* tools/pogrep.py: --accelerator allows you to specify the
+	  accelerator key to ignore when matching.  This way you will find:
+	  "File, &File. F&ile, etc".  Accepted accelerator is one of "_&~"
+
+2004-11-27 18:46  davidfraser
+
+	* filters/decoration.py: handle unicode when checking character
+	  ranges
+
+2004-11-21 16:40  dwaynebailey
+
+	* README: Windows installation	instructions
+
+2004-11-20 17:04  davidfraser
+
+	* storage/po.py: added a copy method for copying poelements
+
+2004-11-20 16:16  davidfraser
+
+	* storage/po.py: use regular expressions to check for word
+	  boundaries properly also allow adding / removing type comments
+	  based on present keyword
+
+2004-11-20 15:41  davidfraser
+
+	* filters/pofilter.py, storage/po.py: added methods to set type
+	  comments, in particular markfuzzy, and use them where done
+	  manually before
+
+2004-11-18 16:54  davidfraser
+
+	* convert/oo2po.py: if we don't have extra lines for a element,
+	  automatically make the translation blank
+
+2004-11-18 16:44  davidfraser
+
+	* misc/optrecurse.py: handle KeyboardInterrupts properly (don't
+	  ignore them!) and set success to False on errors
+
+2004-11-18 16:38  davidfraser
+
+	* convert/TODO: added TODO to not use fuzzies in conversion cleaned
+	  up other TODOs
+
+2004-11-18 16:35  davidfraser
+
+	* filters/pofilter.py: Don't process if no valid filters were
+	  specified at all
+
+2004-11-18 13:52  davidfraser
+
+	* storage/po.py: join the comments with a "\n" if there are more
+	  than one...  otherwise we get this: "_: Do not translate this.
+	  Only change the numeric values if you need this ""dialogue box to
+	  appear bigger.\n"
+
+2004-11-18 13:44  davidfraser
+
+	* storage/dtd.py: refactored so that we can parse successfully even
+	  if entity name is on a separate line to <!ENTITY did this by
+	  adding a separate state, should cause no problems :-)
+
+2004-11-18 13:32  davidfraser
+
+	* filters/checks.py: ignore numbers or single characters when
+	  checking unchanged
+
+2004-11-17 12:13  davidfraser
+
+	* filters/checks.py: rather than assuming the strings are normal
+	  strs, use type(strn) in case they are unicode
+
+2004-11-15 22:37  davidfraser
+
+	* misc/optrecurse.py: improved error correction and traceback
+	  generation - added an errorlevel switch
+
+2004-11-15 18:49  davidfraser
+
+	* tools/podebug.py: added length limit option and consonant-filter
+	  option added basename format str, versions with/without
+	  extensions, dirname format str
+
+2004-11-15 18:32  davidfraser
+
+	* tools/podebug.py: made simple system to allow format strings for
+	  podebug currently only %s (shrunk filename) and %f (full
+	  filename) are provided
+
+2004-11-15 14:39  dwaynebailey
+
+	* filters/TODO: TODO items: added - skip entries that have
+	  #-#-#-#-# problems complete - empty translations can be extracted
+	  using blank, untranslated - for regex extraction use pogrep - KDE
+	  comments are removed in tests that had problems with the comments
+	  eg: long,   short, etc
+
+2004-11-15 13:42  dwaynebailey
+
+	* tools/pogrep: pogrep is now in tools not filters
+
+2004-11-14 00:02  davidfraser
+
+	* storage/po.py: fixed logic that was skipping the first line of
+	  kde comments
+
+2004-11-13 18:08  davidfraser
+
+	* README: fixed invalid URL
+
+2004-11-13 18:07  davidfraser
+
+	* README: fixed spelling errors (aspell :-))
+
+2004-11-13 16:19  davidfraser
+
+	* filters/checks.py: added dictionary to find checker for a given
+	  project code...
+
+2004-11-13 13:49  dwaynebailey
+
+	* README: Major revision of the README for 0.8 release
+
+2004-11-12 16:51  davidfraser
+
+	* ChangeLog: updated to recent ChangeLog
+
+2004-11-12 16:51  davidfraser
+
+	* misc/optrecurse.py: exclude CVS directories by default...
+
 2004-11-12 14:00  davidfraser
 
 	* tools/: pocount.py, pogrep.py: pychecker fixes:   sum is only
@@ -112,41 +2405,6 @@
 
 	* convert/po2csv.py: Incorrectly calling convertcsv
 
-2004-11-10 09:13  davidfraser
-
-	* pootle/: projects.py, translatepage.py: did some simplification
-	  of translation session, factored out getitem method made argdict
-	  a member of TranslatePage, to simplify access added Edit link for
-	  each item that lets you go straight to edit that item
-
-2004-11-10 08:53  davidfraser
-
-	* pootle/: indexpage.py, projects.py, server.py: pass argdict in to
-	  ProjectIndex, use that for showchecks rather than a special
-	  variable use showchecks parameter rather than checks.html to
-	  determine checking allow ProjectIndex to work on a single file
-	  added browse and checks links per file allow projects code to
-	  handle individual po files
-
-2004-11-10 08:30  davidfraser
-
-	* pootle/: TODO, indexpage.py, projects.py, translatepage.py:
-	  instead of translate page defaulting to quick translate, pass
-	  fuzzy and blank as parameters similarly projects code doesn't
-	  default to fuzzy & blank, it defaults to matchnames=[] which
-	  allows everything DONE: renamed start translate
-
-2004-11-10 08:19  davidfraser
-
-	* pootle/indexpage.py: changed "Start Translating" to "Quick
-	  Translate" Don't show the name of the file everywhere for PO
-	  files
-
-2004-11-10 08:14  davidfraser
-
-	* pootle/projects.py: renamed po2csvmod -> po2csv (filename
-	  changed)
-
 2004-11-09 18:19  davidfraser
 
 	* filters/TODO, tools/TODO: added TODO to rearrange the
@@ -163,20 +2421,11 @@
 	  the files not ending in .py are just scripts to call a main
 	  method in a module
 
-2004-11-08 19:00  davidfraser
-
-	* pootle/TODO: Added pootle TODO
-
 2004-11-08 17:40  davidfraser
 
 	* convert/po2oo: started adding support for using simple
 	  unduplicated english GSI as input this duplicates the lines if
 	  neccessary
-
-2004-11-04 22:11  davidfraser
-
-	* pootle/server.py: added mani program to allow server to run
-	  webserver itself (will allow deefault options in future)
 
 2004-11-04 21:52  davidfraser
 
@@ -192,48 +2441,12 @@
 	* convert/: po2csv, po2csvmod.py: moved all the po2csv code into
 	  po2csvmod.py so that we can call it from pootle
 
-2004-11-04 16:07  davidfraser
-
-	* pootle/projects.py: have made po2csv into po2csvmod.py and po2csv
-
-2004-11-04 16:06  davidfraser
-
-	* pootle/translatepage.py: added list of checks in sidebar
-
-2004-11-04 16:00  davidfraser
-
-	* pootle/: indexpage.py, projects.py, server.py, translatepage.py:
-	  create clickable links to be able to go through files that failed
-	  checks dded matchnames as an option to
-	  TranslationSession.getnextitem only get translationproject once
-	  in server
-
-2004-11-04 15:43  davidfraser
-
-	* pootle/indexpage.py: factored out check details, apply it to both
-	  dirs and files (also don't say "files" when summarising a
-	  file...)
-
-2004-11-04 15:35  davidfraser
-
-	* pootle/: indexpage.py, projects.py: renamed the checks to check-
-	  so we don't show normal statistics as checks
-
-2004-11-04 15:28  davidfraser
-
-	* pootle/: indexpage.py, projects.py, server.py, html/pootle.css:
-	  added code to include checks and show statistics on them ...
-
 2004-11-04 14:58  dwaynebailey
 
 	* filters/checks.py: Added tests: - kdecomments: detects kde
 	  comments in the msgstr - compendiumconflicts: detects #-#-#-#-#
 	  conflicts in files - acronyms: cehcks that acronyms in the msgid
 	  are also in the msgstr
-
-2004-11-04 14:33  davidfraser
-
-	* pootle/projects.py: renamed subproject to project
 
 2004-11-04 14:22  davidfraser
 
@@ -242,85 +2455,6 @@
 	  for fuzzy, review into this added TeeCheckers which can handle
 	  multiple filters, POTeeChecker which can handle POChecker or
 	  normal Checkers
-
-2004-11-04 10:31  davidfraser
-
-	* pootle/indexpage.py: refactored summarizing statistics
-
-2004-11-03 22:44  davidfraser
-
-	* pootle/: indexpage.py, server.py: finished project->language and
-	  subproject->project rename
-
-2004-11-03 14:50  davidfraser
-
-	* pootle/: indexpage.py, server.py, translatepage.py: added link to
-	  current folder from translate page made banner height smaller
-	  except for main page
-
-2004-11-03 14:30  davidfraser
-
-	* pootle/html/pootle.css: added some missing styles from
-	  translate.css
-
-2004-11-03 14:19  davidfraser
-
-	* pootle/html/: pootle.css, images/logo.gif, images/pootle.jpg,
-	  js/autoexpand.js: added images
-
-2004-11-03 14:07  davidfraser
-
-	* pootle/indexpage.py: fixed language links, misreplaced
-	  project/language names made Start Transating link look nice
-
-2004-11-03 13:59  davidfraser
-
-	* pootle/: indexpage.py, server.py: renamed "project" to "language"
-
-2004-11-03 11:02  davidfraser
-
-	* pootle/server.py: pass the login page class to the underlying
-	  server
-
-2004-11-03 10:00  davidfraser
-
-	* pootle/server.py: added support for browsing through directories
-	  and files added support for downloading po files and csv files
-	  updated to use non-database user details in prefs files improved
-	  registration -> login redirection made a lot of the required
-	  prefs optional, and added support for saving prefs currently
-	  emailing username + passwords is disabled, the message is printed
-	  on stdout
-
-2004-11-03 09:54  davidfraser
-
-	* pootle/pagelayout.py: made a lot of the required prefs optional
-	  and have defaults
-
-2004-11-03 09:45  davidfraser
-
-	* pootle/indexpage.py: added support for browsing through the files
-	  / directories in a project this allows browsing or translating at
-	  a given granularity also don't require the project node to have a
-	  fullname attribute
-
-2004-11-03 09:40  davidfraser
-
-	* pootle/translatepage.py: refactored generation of translation
-	  rows so we don't have to call before / item / after separately
-	  refactored receivetranslations into a function, handle skipping
-	  added dirfilter support so the translatepage can be used with
-	  more granularity (used when finding the next item)
-
-2004-11-03 09:24  davidfraser
-
-	* pootle/projects.py: added dir filtering ability, code to browse
-	  through po filenames and directories in a useful way added
-	  support for skipping translations added pofilenames option for
-	  calculatestats for retrieving stats in finer granularity added
-	  support for getting po file source and converting to csv (needs a
-	  po2csv module) this fits in with other refactoring in the other
-	  files
 
 2004-11-03 09:18  davidfraser
 
@@ -392,219 +2526,15 @@
 
 	* convert/csv2po: enable conversion without template
 
-2004-10-28 08:48  davidfraser
-
-	* pootle/server.py: passwordgen is in jToolkit not pootle
-
-2004-10-28 08:45  davidfraser
-
-	* pootle/: pagelayout.py, server.py: added link to register added
-	  password generation and emailing
-
-2004-10-28 07:33  davidfraser
-
-	* pootle/: indexpage.py, pagelayout.py, server.py,
-	  translatepage.py: made PootlePage automatically wrap the main
-	  contents in a #content div
-
-2004-10-27 23:00  davidfraser
-
-	* pootle/server.py: added very simple registration
-	  (username=password)
-
-2004-10-27 22:49  davidfraser
-
-	* pootle/server.py: started adding registration page for new users
-
-2004-10-27 22:40  davidfraser
-
-	* pootle/pagelayout.py: sidetitle got changed to sidecontents
-	  accidentally added TranslateForm
-
-2004-10-27 22:37  davidfraser
-
-	* pootle/translatepage.py: simplified styles by moving to css
-
-2004-10-27 21:53  davidfraser
-
-	* pootle/: indexpage.py, pagelayout.py: renamed classes (and css
-	  classes) to be less bloggy renamed title to contents for Division
-	  classes
-
-2004-10-27 21:44  davidfraser
-
-	* pootle/: indexpage.py, pagelayout.py, server.py,
-	  translatepage.py: made little classes for all the div styles, to
-	  make stuff simpler...
-
-2004-10-27 21:41  davidfraser
-
-	* pootle/projects.py: various minor pochecker fixups...  don't just
-	  fall off the end if no more pofilenames could be found
-
-2004-10-27 21:08  davidfraser
-
-	* pootle/: indexpage.py, pagelayout.py, server.py,
-	  translatepage.py: used new cls= keyword parameter for Division
-	  rather than putting the class in a dictionary
-
 2004-10-25 18:51  davidfraser
 
 	* convert/TODO: some mozilla stuff is done found an error on
 	  firefox dtds
 
-2004-10-25 18:41  davidfraser
-
-	* pootle/indexpage.py: make sure empty projects are handle OK by
-	  the stats pages
-
 2004-10-25 13:13  dwaynebailey
 
 	* filters/checks.py: Added #1 style variables to the --mozilla
 	  variable checks.
-
-2004-10-25 11:58  davidfraser
-
-	* pootle/projects.py: when an item is submitted, store the
-	  pofilename and lastitem on the TranslationSession this should
-	  make apache multi-process servers pass state between processes
-
-2004-10-25 11:46  davidfraser
-
-	* pootle/translatepage.py: jToolkit has problems with non-unicode
-	  in the TextArea ; manually decoding to unicode for now
-
-2004-10-25 11:08  davidfraser
-
-	* pootle/projects.py: added quick route to find next pofilename
-	  that contains matches, so we don't have to parse all those in
-	  between
-
-2004-10-25 10:57  davidfraser
-
-	* pootle/: pagelayout.py, server.py: added spearch url for login
-	  page which redirects back to the index if logged in (this is
-	  because the login page submits to itself in case of error) added
-	  link to logout / login to sidebar
-
-2004-10-25 10:37  davidfraser
-
-	* pootle/server.py: added an OptionalLoginAppServer that makes
-	  login optional
-
-2004-10-25 10:25  davidfraser
-
-	* pootle/projects.py: need to convert the statsmtime to an integer
-	  otherwise it'll never match
-
-2004-10-25 09:53  davidfraser
-
-	* pootle/projects.py: took out __init__ loop through self.pofiles
-	  (should have been self.pofilename) as it would have been too
-	  expensive but it wasn't doing anything as self.pofiles was empty
-	  moved pofile.classify construction to getpofile as we always need
-	  the classifications available
-
-2004-10-23 20:26  davidfraser
-
-	* pootle/projects.py: use matchnames for searching for next item,
-	  to make it superfast :-)
-
-2004-10-23 20:09  davidfraser
-
-	* pootle/: indexpage.py, projects.py, translatepage.py: replaced
-	  translated, total with named stats in a dictionary also keep in
-	  each pofile a classify member that keeps named lists of elements
-	  matching fuzzy, blank, etc this should be useful in optimizing
-	  searches added more info on blank, fuzzy to the sidebar of the
-	  translation page
-
-2004-10-23 19:47  davidfraser
-
-	* pootle/: indexpage.py, projects.py, translatepage.py: more
-	  detailed statistics invalidate statistics when a file changes
-
-2004-10-23 19:40  davidfraser
-
-	* pootle/projects.py: changed to use relative paths for po files,
-	  calculate absolute path when needing to access files
-
-2004-10-23 19:33  davidfraser
-
-	* pootle/: pagelayout.py, projects.py, translatepage.py: added
-	  pofilename to the links at the side (made them accessible as
-	  PootlePage members) rearranged test for what is translated
-
-2004-10-23 19:26  davidfraser
-
-	* pootle/projects.py: separated out receivetranslation so the
-	  actual changes are done from the TranslationProject made new
-	  savefile function which saves the pofile to disk   currently
-	  saving after each change which is not ideal added doc strings
-
-2004-10-23 19:19  davidfraser
-
-	* pootle/projects.py: added findnextitem which searches and filters
-	  options through a function this can be slow if you do what it
-	  does at the moment and searches for blank msgstrs...	we should
-	  use the stats to filter out files automatically...
-
-2004-10-23 19:08  davidfraser
-
-	* pootle/projects.py: moved logic about moving to next item from
-	  session into project
-
-2004-10-23 14:57  davidfraser
-
-	* pootle/: indexpage.py, projects.py, translatepage.py: created new
-	  class TranslationSession which represents a users work on a
-	  project use this to keep track of current po file, item rather
-	  than doing it globally in the project added the pofilename as a
-	  hidden field so we know what item is being translated exactly
-	  store translatable elements in pofile.transelements for each
-	  pofile to make indexing easier rather than returning items before
-	  and after with the translatable item, query for them separately
-	  also changed projects.getproject to only take the subproject
-	  config item
-
-2004-10-23 13:58  davidfraser
-
-	* pootle/projects.py: added call to initstatscache so it is
-	  actually used :-) and make sure the right filenames etc are
-	  passed so that it actually reads the files...
-
-2004-10-23 13:54  davidfraser
-
-	* pootle/projects.py: added primitive means of caching statistics
-	  in .stats files with timestamps
-
-2004-10-23 13:43  davidfraser
-
-	* pootle/: indexpage.py, projects.py, translatepage.py: read all
-	  pofiles in when TranslationProject is constructed added
-	  calculation and display of statistics ; this is currently very
-	  slow! renamed projects.getiterator to getproject
-
-2004-10-23 13:15  davidfraser
-
-	* pootle/projects.py: added code to iterate through all the files
-	  in a directory tree rather than just one pofile this changes the
-	  pref name to podir fixed up getiterator to not use self
-	  everywhere...
-
-2004-10-23 12:57  davidfraser
-
-	* pootle/: projects.py, translatepage.py: moved TranslationIterator
-	  code into separate projects module, from whence it will be
-	  transmogrified
-
-2004-10-23 12:46  davidfraser
-
-	* pootle/indexpage.py: count the subprojects
-
-2004-10-23 12:45  davidfraser
-
-	* pootle/server.py: added login, LoginPage that looks pootley
 
 2004-10-22 15:54  davidfraser
 
@@ -627,24 +2557,6 @@
 	  untranslated are no longer double counted.	A n entry is fuzzy
 	  if it is marked fuzzy and in not untranslated. This change
 	  also makes it easier to total and evaluate figures.
-
-2004-10-22 11:46  davidfraser
-
-	* pootle/: server.py, translatepage.py: added hook to receive new
-	  translations calculate translation items correctly, made the row
-	  offset equal to the item in the file
-
-2004-10-22 11:14  davidfraser
-
-	* pootle/translatepage.py: removed dummytranslations, now uses
-	  subproject.pofile to get translations from also fixed up some row
-	  calculation problems
-
-2004-10-22 10:51  davidfraser
-
-	* pootle/: __init__.py, indexpage.py, pagelayout.py, server.py,
-	  translatepage.py: added initial pootle implementation (with
-	  random dummy bork translations)
 
 2004-10-21 17:20  davidfraser
 
@@ -1383,40 +3295,6 @@
 
 	* misc/xmlwrapper.py: added xml wrapper
 
-2004-07-20 00:30  tfogwill
-
-	* portal/importers/__init__.py: added missing __init__.py for
-	  importers
-
-2004-07-20 00:27  tfogwill
-
-	* portal/: database/createdb.sql, database/dbhelper.py,
-	  importers/Import.py, views/SetupView.py, views/filedetail.py,
-	  views/filedetail.tmpl, views/projectdetail.py,
-	  views/projectdetail.tmpl, views/projectlist.py,
-	  views/projectlist.tmpl, views/stringdetail.py,
-	  views/stringdetail.tmpl, views/testing.py: - added missing
-	  importer (imports from .pot and .po files), with a whole bunch of
-	  fixes.  - added a string formatter to the web stuff (for now, it
-	  is merely used to ensure that any html markup in the po strings
-	  is "escaped", so that it is not rendered in the browser) - a few
-	  bug fixes in dbhelper (escape % and ' in sql strings, etc)
-
-2004-07-19 21:13  tfogwill
-
-	* portal/: .cvsignore, createdb.py, dropdb.py, actions/Actions.py,
-	  database/createdb.sql, database/dbhelper.py, database/model.py,
-	  views/SetupView.py, views/filedetail.py, views/filedetail.tmpl,
-	  views/filelist.py, views/filelist.tmpl, views/projectdetail.py,
-	  views/projectdetail.tmpl, views/projectlist.py,
-	  views/projectlist.tmpl, views/stringdetail.py,
-	  views/stringdetail.tmpl, views/testing.py:  - cleanup: removed
-	  old (unused) code. This should help revent confusion as to which
-	  code to use (i.e. which is current)
-	   - added: missing files (model, a few views, db creation sql) -
-	  somehow I missed these with my last commit
-	   - other small updates
-
 2004-07-16 22:11  davidfraser
 
 	* tools/oosetupmerge: exclude non-alpha isocodes from
@@ -1613,17 +3491,6 @@
 
 	* storage/properties.py: strip eols from comments and put a
 	  standard \n on
-
-2004-07-06 10:12  tfogwill
-
-	* portal/: BaseMVCServlet.py, index.py, actions/Actions.py,
-	  actions/__init__.py, database/__init__.py,
-	  database/connection.py, database/dbhelper.py, util/HTTPUtil.py,
-	  util/Logging.py, util/__init__.py, views/SetupView.py,
-	  views/__init__.py, views/filedetail.py, views/filedetail.tmpl,
-	  views/filelist.py, views/filelist.tmpl, views/stringdetail.py,
-	  views/stringdetail.tmpl, views/testing.py, views/testing.tmpl:
-	  initial addition of files (finally)
 
 2004-07-05 17:07  davidfraser
 
@@ -2130,10 +3997,6 @@
 
 	* misc/zipfileext.py: added zipfileext which contains code to
 	  delete files in zipfiles, replace them, etc
-
-2004-05-11 13:19  dwaynebailey
-
-	* portal/portal-erd.dia: A few minor changes and new fields
 
 2004-05-11 11:59  davidfraser
 
@@ -2802,10 +4665,6 @@
 	* tools/detectencoding: added tool to detect encoding of files
 	  (currently po files)
 
-2004-04-04 08:05  davidfraser
-
-	* portal/portaldb.py: fixed syntax error, name shadowing
-
 2004-04-03 18:11  davidfraser
 
 	* storage/po.py: fixed wrong variable names
@@ -3072,11 +4931,6 @@
 2004-03-12 16:17  davidfraser
 
 	* filters/.cvsignore: added .cvsignore for filters
-
-2004-03-12 16:16  davidfraser
-
-	* portal/: .cvsignore, portaldb.py: added .cvsignore for
-	  translate.portal
 
 2004-03-12 16:14  davidfraser
 
@@ -3543,10 +5397,9 @@
 	  convert/moz2po, convert/oo2po.py, convert/po2dtd.py,
 	  convert/po2moz, convert/po2oo.py, convert/po2prop.py,
 	  convert/prop2po.py, misc/__init__.py, misc/quote.py,
-	  misc/setup.py, portal/__init__.py, portal/createdb.py,
-	  portal/dropdb.py, portal/portaldb.py, storage/__init__.py,
-	  storage/csvl10n.py, storage/dtd.py, storage/oo.py, storage/po.py:
-	  changed all #!/usr/bin/python2.2 headers to #!/usr/bin/env python
+	  misc/setup.py, storage/__init__.py, storage/csvl10n.py,
+	  storage/dtd.py, storage/oo.py, storage/po.py: changed all
+	  #!/usr/bin/python2.2 headers to #!/usr/bin/env python
 
 2004-02-17 15:50  davidfraser
 
@@ -3574,20 +5427,10 @@
 
 2004-02-10 15:23  davidfraser
 
-	* portal/: __init__.py, createdb.py, dropdb.py, portaldb.py: added
-	  initial database framework for portal
-
-2004-02-10 15:23  davidfraser
-
 	* convert/: oo2po.py, po2oo.py: improved method of converting
 	  OpenOffice key tuples into po location strings this prevents
 	  errors with gettext tools like msguniq also added some TODOs
 	  about future improvements that are required...
-
-2004-02-06 13:24  davidfraser
-
-	* portal/portal-erd.dia: created ER diagram for portal database,
-	  using dia
 
 2004-02-06 12:33  davidfraser
 
