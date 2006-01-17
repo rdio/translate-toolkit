@@ -12,9 +12,11 @@ class TestPOFilter:
         pofile = po.pofile(dummyfile)
         return pofile
 
-    def pofilter(self, posource, checkerconfig=None):
+    def pofilter(self, posource, checkerconfig=None, cmdlineoptions=None):
         """helper that parses po source and passes it through a filter"""
-        options, args = pofilter.cmdlineparser().parse_args(["xxx.po"])
+        if cmdlineoptions is None:
+            cmdlineoptions = []
+        options, args = pofilter.cmdlineparser().parse_args(["xxx.po"] + cmdlineoptions)
         checkerclasses = [checks.StandardChecker, pofilter.StandardPOChecker]
         if checkerconfig is None:
           checkerconfig = checks.CheckerConfig()
