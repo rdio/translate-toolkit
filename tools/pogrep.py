@@ -28,7 +28,7 @@ import sre
 class pogrepfilter:
   def __init__(self, searchstring, searchparts, ignorecase=False, useregexp=False, invertmatch=False, accelchar=None):
     """builds a pocheckfilter using the given checker"""
-    self.searchstring = searchstring.decode('utf-8')
+    self.searchstring = searchstring
     if searchparts:
       self.searchmsgid = "msgid" in searchparts
       self.searchmsgstr = "msgstr" in searchparts
