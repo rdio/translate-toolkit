@@ -74,14 +74,15 @@ class TmxParser:
     self.filename = getattr(inputfile, "filename", None)
     if inputfile is None:
       self.document = minidom.parseString('''<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE tmx SYSTEM "tmx11.dtd">
-<tmx xmlns="http://www.lisa.org/tmx11"
-version="1.1"><header></header><body></body></tmx>''')
+<!DOCTYPE tmx SYSTEM "tmx14.dtd">
+<tmx 
+version="1.4"><header></header><body></body></tmx>''')
       # TODO Add header info here
       self.addheader()
     else:
       self.document = minidom.parse(inputfile)
       assert self.document.documentElement.tagName == "tmx"
+    self.bodynode = self.document.getElementsByTagName("body")[0]
 
   def addheader(self):
     headernode = self.document.getElementsByTagName("header")[0]
@@ -95,12 +96,10 @@ version="1.1"><header></header><body></body></tmx>''')
     #headernode.setAttribute("creationdate", "YYYYMMDDTHHMMSSZ"
     #headernode.setAttribute("creationid", "CodeSyntax"
 
-    
   def addtranslation(self, source, srclang, translation, translang):
     """adds the given translation (will create the nodes required if asked). Returns success"""
-    bodynode = self.document.getElementsByTagName("body")[0]
     tunode = self.document.createElement("tu")
-    bodynode.appendChild(tunode)
+    self.bodynode.appendChild(tunode)
 
     # Source
     tuvnode = self.document.createElement("tuv")
@@ -126,9 +125,27 @@ version="1.1"><header></header><body></body></tmx>''')
 
   def getxml(self):
     """return the TMX file as xml"""
-    xml = self.document.toprettyxml(indent="  ", encoding="utf-8")
-    xml = "\n".join([line for line in xml.split("\n") if line.strip()])
-    return xml
+    #we can't do pretty XML as it inserts wrong newlines inside translations
+    return self.document.toxml(encoding="utf-8")
+
+  def getunits(self):
+    return self.document.getElementsByTagName("tu")
+
+  def getvariants(self, unit):
+    return unit.getElementsByTagName("tuv")
+
+  def getsegmenttext(self, variant):
+    return self.getnodetext(variant.getElementsByTagName("seg")[0])
+
+  def translate(self, source, sourcelang=None, targetlang=None):
+    #TODO: consider source and target languages
+    found = False
+    for unit in self.getunits():
+      for variant in self.getvariants(unit):
+        if found:
+          return self.getsegmenttext(variant)
+        if self.getsegmenttext(variant) == source:
+          found = True
 
   def getcontextname(self, contextnode):
     """returns the name of the given context"""
