@@ -69,7 +69,7 @@ from translate import __version__
 # TODO: handle translation types
 
 class TmxParser:
-  def __init__(self, inputfile=None):
+  def __init__(self, inputfile=None, sourcelanguage='en'):
     """make a new TmxParser, reading from the given inputfile if required"""
     self.filename = getattr(inputfile, "filename", None)
     if inputfile is None:
@@ -77,6 +77,7 @@ class TmxParser:
 <!DOCTYPE tmx SYSTEM "tmx14.dtd">
 <tmx 
 version="1.4"><header></header><body></body></tmx>''')
+      self.setsourcelanguage(sourcelanguage)
       # TODO Add header info here
       self.addheader()
     else:
@@ -91,10 +92,16 @@ version="1.4"><header></header><body></body></tmx>''')
     headernode.setAttribute("segtype", "sentence")
     headernode.setAttribute("o-tmf", "UTF-8")
     headernode.setAttribute("adminlang", "en")
-    headernode.setAttribute("srclang", "en")
+    #TODO: consider adminlang. Used for notes, etc. Possibly same as targetlanguage
+    headernode.setAttribute("srclang", self.sourcelanguage)
     headernode.setAttribute("datatype", "PlainText")
     #headernode.setAttribute("creationdate", "YYYYMMDDTHHMMSSZ"
     #headernode.setAttribute("creationid", "CodeSyntax"
+
+  def setsourcelanguage(self, sourcelanguage):
+    self.sourcelanguage = sourcelanguage
+    headernode = self.document.getElementsByTagName("header")[0]
+    headernode.setAttribute("srclang", self.sourcelanguage)
 
   def addtranslation(self, source, srclang, translation, translang):
     """adds the given translation (will create the nodes required if asked). Returns success"""
@@ -135,17 +142,20 @@ version="1.4"><header></header><body></body></tmx>''')
     return unit.getElementsByTagName("tuv")
 
   def getsegmenttext(self, variant):
+    #Only one <seg> is allowed per variant
     return self.getnodetext(variant.getElementsByTagName("seg")[0])
 
-  def translate(self, source, sourcelang=None, targetlang=None):
+  def translate(self, sourcetext, sourcelang=None, targetlang=None):
+    """translates sourcetext from this memory"""
     #TODO: consider source and target languages
     found = False
     for unit in self.getunits():
       for variant in self.getvariants(unit):
         if found:
           return self.getsegmenttext(variant)
-        if self.getsegmenttext(variant) == source:
+        if self.getsegmenttext(variant) == sourcetext:
           found = True
+    return None
 
   def getcontextname(self, contextnode):
     """returns the name of the given context"""
