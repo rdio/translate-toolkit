@@ -25,37 +25,74 @@
 from translate.storage import po
 from translate.storage import tmx
 from translate.misc import quote
+from translate.convert import convert
+from translate.misc import wStringIO
+import os
 
 class po2tmx:
-  def convertfile(self, inputfile):
+  def convertfile(self, inputfile, tmxfile, sourcelanguage='en', targetlanguage=None):
     """converts a .po file to TMX file"""
-    tmxfile = tmx.TmxParser()
     thepofile = po.pofile(inputfile)
     for thepo in thepofile.poelements:
-      # TODO ignore if fuzzy option
-      if thepo.isheader() or thepo.isblank() or thepo.isblankmsgstr():
+      if thepo.isheader() or thepo.isblank() or thepo.isblankmsgstr() or thepo.isfuzzy():
         continue
-      source = po.getunquotedstr(thepo.msgid, includeescapes=False)
-      translation = po.getunquotedstr(thepo.msgstr, includeescapes=False)
+      source = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False, includeescapes=False)
+      translation = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False, includeescapes=False)
       if isinstance(source, str):
         source = source.decode("utf-8")
       if isinstance(translation, str):
         translation = translation.decode("utf-8")
       # TODO place source location in comments
-      # TODO how do we determine the dest lang?
-      tmxfile.addtranslation(source, "en", translation, "af")
-    return tmxfile.getxml()
+      tmxfile.addtranslation(source, sourcelanguage, translation, targetlanguage)
 
-def convertpo(inputfile, outputfile, templatefile):
+def convertpo(inputfile, outputfile, templatefile, sourcelanguage='en', targetlanguage=None):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   convertor = po2tmx()
-  outputtmx = convertor.convertfile(inputfile)
-  outputfile.write(outputtmx)
+  convertor.convertfile(inputfile, outputfile.tmxfile, sourcelanguage, targetlanguage)
   return 1
 
+class tmxmultifile:
+  def __init__(self, filename, mode=None):
+    """initialises tmxmultifile from a seekable inputfile or writable outputfile"""
+    self.filename = filename
+    if mode is None:
+      if os.path.exists(filename):
+        mode = 'r'
+      else:
+        mode = 'w'
+    self.mode = mode
+#    self.multifilestyle = multifilestyle
+    self.multifilename = os.path.splitext(filename)[0]
+#    self.multifile = open(filename, mode)
+    self.tmxfile = tmx.TmxParser()
+
+  def openoutputfile(self, subfile):
+    """returns a pseudo-file object for the given subfile"""
+    def onclose(contents):
+      pass
+    outputfile = wStringIO.CatchStringOutput(onclose)
+    outputfile.filename = subfile
+    outputfile.tmxfile = self.tmxfile
+    return outputfile
+
+
+class TmxOptionParser(convert.ArchiveConvertOptionParser):
+  def recursiveprocess(self, options):
+    if not options.targetlanguage:
+      raise ValueError("You must specify the target language")
+    super(TmxOptionParser, self).recursiveprocess(options)
+    self.output = open(options.output, 'w')
+    self.output.write(options.outputarchive.tmxfile.getxml())
+
 def main():
-  from translate.convert import convert
   formats = {"po": ("tmx", convertpo), ("po", "tmx"): ("tmx", convertpo)}
-  parser = convert.ConvertOptionParser(formats, usepots=True, usetemplates=False, description=__doc__)
+  archiveformats = {(None, "output"): tmxmultifile, (None, "template"): tmxmultifile}
+  parser = TmxOptionParser(formats, usepots=True, usetemplates=False, description=__doc__, archiveformats=archiveformats)
+  parser.add_option("-l", "--language", dest="targetlanguage", default=None, 
+                    help="set target language code (e.g. af-ZA) [required]", metavar="LANG")
+  parser.add_option("", "--source-language", dest="sourcelanguage", default='en', 
+                    help="set source language code (default: en)", metavar="LANG")
+  parser.passthrough.append("sourcelanguage")
+  parser.passthrough.append("targetlanguage")
   parser.run()
 
