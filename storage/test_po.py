@@ -64,3 +64,7 @@ class TestPO:
         assert po.getunquotedstr(pofile.poelements[0].msgidcomments) == ""
         assert po.getunquotedstr(pofile.poelements[1].msgidcomments) == ""
 
+    def test_getunquotedstr(self):
+        """checks that getunquotedstr works as advertised"""
+        assert po.getunquotedstr(['"First line\nSecond line"'], includeescapes=False) == "First line\nSecond line"
+
