@@ -587,7 +587,7 @@ class pofile:
       posrc = input.read()
       input.close()
       input = posrc
-    lines = posrc.split("\n")
+    lines = input.split("\n")
     start = 0
     end = 0
     # make only the first one the header

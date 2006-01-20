@@ -10,13 +10,6 @@ class TestPO:
         pofile = po.pofile(dummyfile)
         return pofile
 
-    def poparse_real(self, posource):
-        """helper that creates a real PO file for parsing"""
-        file = open("/tmp/joe.po", "w")
-        file.write(posource)
-	file.close()
-        return open("/tmp/joe.po", "r")
-
     def poregen(self, posource):
         """helper that converts po source to pofile object and back"""
         return str(self.poparse(posource))
@@ -76,14 +69,13 @@ class TestPO:
         assert po.getunquotedstr(['"First line\nSecond line"'], includeescapes=False) == "First line\nSecond line"
 
     def test_parse_source_string(self):
+        """parse a string"""
+        posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
+        pofile = po.pofile(posource)
+        assert len(pofile.poelements) == 1
+
+    def test_parse_file(self):
+        """test parsing a real file"""
         posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         pofile = self.poparse(posource)
         assert len(pofile.poelements) == 1
-
-    def test_parse_real_file(self):
-        posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
-        tempfile = self.poparse_real(posource)
-        pofile = po.pofile(tempfile)
-        assert len(pofile.poelements) == 1
-	tempfile.close()
-
