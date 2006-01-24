@@ -19,10 +19,29 @@ class TestTranslationUnit:
         """tests equality comparison"""
         unit1 = self.UnitClass("Test String")
         unit2 = self.UnitClass("Test String")
-        unit3 = self.UnitClass("Blessed String")
+        unit3 = self.UnitClass("Test String")
+        unit4 = self.UnitClass("Blessed String")
+        unit5 = self.UnitClass("Blessed String")
+        unit6 = self.UnitClass("Blessed String")
         assert unit1 == unit1
         assert unit1 == unit2
+        assert unit1 != unit4
+        unit1.settarget("Stressed Ting")
+        unit2.settarget("Stressed Ting")
+        unit5.settarget("Stressed Bling")
+        unit6.settarget("Stressed Ting")
+        assert unit1 == unit2
         assert unit1 != unit3
+        assert unit4 != unit5
+        assert unit1 != unit6
+
+    def test_target(self):
+        unit = self.UnitClass("Test String")
+        assert unit.target is None
+        unit.settarget("Stressed Ting")
+        assert unit.target == "Stressed Ting"
+        unit.settarget("Stressed Bling")
+        assert unit.target == "Stressed Bling"
 
 class TestTranslationStore:
     """Tests a TranslationStore.

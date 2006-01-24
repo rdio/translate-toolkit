@@ -8,9 +8,15 @@ class TranslationUnit:
     def __init__(self, source):
         """Constructs a TranslationUnit containing the given source string"""
         self.source = source
+        self.target = None
+
     def __eq__(self, other):
         """Compares two TranslationUnits"""
-        return self.source == other.source
+        return self.source == other.source and self.target == other.target
+
+    def settarget(self, target):
+        """Sets the target string to the given value"""
+        self.target = target
 
 class TranslationStore:
     """Base class for stores for multiple translation units of type UnitClass"""
