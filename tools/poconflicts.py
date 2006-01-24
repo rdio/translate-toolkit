@@ -117,7 +117,7 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
     """process an individual file"""
     inputfile = self.openinputfile(options, fullinputpath)
     inputpofile = po.pofile(inputfile)
-    for thepo in inputpofile.poelements:
+    for thepo in inputpofile.elements:
       if not (thepo.isheader() or thepo.isblankmsgstr()):
         if thepo.hasplural():
           continue
@@ -170,7 +170,7 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
       conflictfile = po.pofile()
       for msgstr, thepo, filename in translations:
         thepo.othercomments.append("# (poconflicts) %s\n" % filename)
-        conflictfile.poelements.append(thepo)
+        conflictfile.elements.append(thepo)
       open(fulloutputpath, "w").write(str(conflictfile))
 
 def main():

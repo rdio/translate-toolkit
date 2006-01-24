@@ -48,7 +48,7 @@ class reprop:
 
   def makepodict(self, pofile, includefuzzy=False):
     # make a dictionary of the translations
-    for thepo in pofile.poelements:
+    for thepo in pofile.elements:
       if includefuzzy or not thepo.isfuzzy():
         # there may be more than one entity due to msguniq merge
         entities = []

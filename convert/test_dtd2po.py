@@ -16,9 +16,9 @@ class TestDTD2PO:
 
     def singleelement(self, pofile):
         """checks that the pofile contains a single non-header element, and returns it"""
-        assert len(pofile.poelements) == 2
-        assert pofile.poelements[0].isheader()
-        return pofile.poelements[1]
+        assert len(pofile.elements) == 2
+        assert pofile.elements[0].isheader()
+        return pofile.elements[1]
 
     def test_simpleentity(self):
         """checks that a simple dtd entity definition converts properly to a po entry"""
@@ -48,10 +48,10 @@ class TestDTD2PO:
             '<!ENTITY %s "If publishing to a FTP site, enter the HTTP address to browse to:">\n'
         dtdsource = dtdtemplate % ("note1.label", "note1.label") + dtdtemplate % ("note2.label", "note2.label")
         pofile = self.dtd2po(dtdsource)
-        pofile.poelements = pofile.poelements[1:]
+        pofile.elements = pofile.elements[1:]
         posource = str(pofile)
         print posource
-        assert posource.count('"_:') <= len(pofile.poelements)
+        assert posource.count('"_:') <= len(pofile.elements)
 
     def test_donttranslate_label(self):
         """test strangeness when label entity is marked DONT_TRANSLATE and accesskey is not, bug 30"""

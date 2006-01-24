@@ -42,7 +42,7 @@ class txt2po:
     thepofile = po.pofile()
     if includeheader:
       headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-      thepofile.poelements.append(headerpo)
+      thepofile.elements.append(headerpo)
     lines = inputfile.readlines()
     block = []
     startline = 0
@@ -51,7 +51,7 @@ class txt2po:
       isbreak = not line.strip()
       if isbreak and block:
         thepo = self.convertblock(filename, block, startline)
-        thepofile.poelements.append(thepo)
+        thepofile.elements.append(thepo)
         block = []
       elif not isbreak:
         if not block:
@@ -59,7 +59,7 @@ class txt2po:
         block.append(line)
     if block:
       thepo = self.convertblock(filename, block, startline)
-      thepofile.poelements.append(thepo)
+      thepofile.elements.append(thepo)
     return thepofile
 
 def converttxt(inputfile, outputfile, templates):

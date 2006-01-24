@@ -15,9 +15,9 @@ class TestOO2PO:
 
     def singleelement(self, pofile):
         """checks that the pofile contains a single non-header element, and returns it"""
-        assert len(pofile.poelements) == 2
-        assert pofile.poelements[0].isheader()
-        return pofile.poelements[1]
+        assert len(pofile.elements) == 2
+        assert pofile.elements[0].isheader()
+        return pofile.elements[1]
 
     def test_simpleentity(self):
         """checks that a simple oo entry converts properly to a po entry"""

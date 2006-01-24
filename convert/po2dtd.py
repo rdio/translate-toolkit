@@ -157,7 +157,7 @@ class redtd:
 
   def convertfile(self, pofile, includefuzzy=False):
     # translate the strings
-    for thepo in pofile.poelements:
+    for thepo in pofile.elements:
       # there may be more than one entity due to msguniq merge
       if includefuzzy or not thepo.isfuzzy():
         self.handlepoelement(thepo)
@@ -244,7 +244,7 @@ class po2dtd:
   def convertfile(self, thepofile, includefuzzy=False):
     thedtdfile = dtd.dtdfile()
     self.currentgroups = []
-    for thepo in thepofile.poelements:
+    for thepo in thepofile.elements:
       if includefuzzy or not thepo.isfuzzy():
         thedtd = self.convertelement(thepo)
         if thedtd is not None:

@@ -54,7 +54,7 @@ class po2nb:
     nbresult = ""
     cachefieldorder = []
     cachefields = {}
-    for thepo in inputpo.poelements:
+    for thepo in inputpo.elements:
       if thepo.isheader():
         continue
       for source in thepo.getsources():
@@ -86,7 +86,7 @@ class po2nb:
     nbresult = templatetext
     # TODO: use the algorithm from html2po to get blocks and translate them individually
     # rather than using replace
-    for thepo in inputpo.poelements:
+    for thepo in inputpo.elements:
       if thepo.isheader():
         continue
       msgid = self.convertmessage(thepo.msgid)

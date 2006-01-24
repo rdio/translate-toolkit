@@ -242,7 +242,7 @@ class dtd2po:
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit", x_accelerator_marker="&")
     headerpo.othercomments.append("# extracted from %s\n" % thedtdfile.filename)
-    thepofile.poelements.append(headerpo)
+    thepofile.elements.append(headerpo)
     thedtdfile.makeindex()
     self.findmixedentities(thedtdfile)
     # go through the dtd and convert each element
@@ -251,7 +251,7 @@ class dtd2po:
         continue
       thepo = self.convertdtdelement(thedtdfile, thedtd)
       if thepo is not None:
-        thepofile.poelements.append(thepo)
+        thepofile.elements.append(thepo)
     thepofile.removeduplicates(self.duplicatestyle)
     return thepofile
 
@@ -259,7 +259,7 @@ class dtd2po:
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
     headerpo.othercomments.append("# extracted from %s, %s\n" % (origdtdfile.filename, translateddtdfile.filename))
-    thepofile.poelements.append(headerpo)
+    thepofile.elements.append(headerpo)
     origdtdfile.makeindex()
     self.findmixedentities(origdtdfile)
     translateddtdfile.makeindex()
@@ -284,7 +284,7 @@ class dtd2po:
       if origpo is not None:
         if translatedpo is not None and not self.blankmsgstr:
           origpo.msgstr = translatedpo.msgid
-        thepofile.poelements.append(origpo)
+        thepofile.elements.append(origpo)
     thepofile.removeduplicates(self.duplicatestyle)
     return thepofile
 

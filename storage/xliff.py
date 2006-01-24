@@ -168,6 +168,15 @@ class XliffParser(object):
     for filenode in self.document.getElementsByTagName("file"):
       yield self.getfilename(filenode), self.gettransunitnodes(filenode)
 
+  def make_element(self, transunit):
+    """converts a transunit into an element that has the required properties"""
+    return transunit
+
+  def get_elements(self):
+    """returns an iterator through the transunits"""
+    return [self.make_element(transunit) for filename, transunit in self.iteritems()]
+  elements = property(get_elements)
+
   def __del__(self):
     """clean up the document if required"""
     if hasattr(self, "document"):

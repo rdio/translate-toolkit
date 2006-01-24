@@ -128,7 +128,7 @@ class pocheckfilter:
   def filterfile(self, thepofile):
     """runs filters on a file"""
     thenewpofile = po.pofile()
-    for thepo in thepofile.poelements:
+    for thepo in thepofile.elements:
       filterresult = self.filterelement(thepo)
       if filterresult:
         if filterresult != autocorrect:
@@ -153,9 +153,9 @@ class pocheckfilter:
           for filtername, filtermessage in filterresult:
             if isinstance(filtermessage, checks.SeriousFilterFailure):
               thepo.markfuzzy()
-        thenewpofile.poelements.append(thepo)
-    if self.options.includeheader and thenewpofile.poelements > 0:
-      thenewpofile.poelements.insert(0, thenewpofile.makeheader("UTF-8", "8bit"))
+        thenewpofile.elements.append(thepo)
+    if self.options.includeheader and thenewpofile.elements > 0:
+      thenewpofile.elements.insert(0, thenewpofile.makeheader("UTF-8", "8bit"))
     return thenewpofile
 
 class FilterOptionParser(optrecurse.RecursiveOptionParser):

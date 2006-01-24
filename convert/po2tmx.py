@@ -33,7 +33,7 @@ class po2tmx:
   def convertfile(self, inputfile, tmxfile, sourcelanguage='en', targetlanguage=None):
     """converts a .po file to TMX file"""
     thepofile = po.pofile(inputfile)
-    for thepo in thepofile.poelements:
+    for thepo in thepofile.elements:
       if thepo.isheader() or thepo.isblank() or thepo.isblankmsgstr() or thepo.isfuzzy():
         continue
       source = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False, includeescapes=False)

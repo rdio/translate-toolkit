@@ -373,7 +373,7 @@ class poelement:
     return sources
 
 class pofile:
-  """this represents a .po file containing various poelements"""
+  """this represents a .po file containing various elements"""
   x_generator = "Translate Toolkit %s" % __version__.ver
   header_order = [
     "Project-Id-Version",
@@ -392,7 +392,7 @@ class pofile:
     """construct a pofile, optionally reading in from inputfile.
     encoding can be specified but otherwise will be read from the PO header"""
     self.elementclass = elementclass
-    self.poelements = []
+    self.elements = []
     self.filename = ''
     self.encoding = encoding
     if inputfile is not None:
@@ -460,9 +460,9 @@ class pofile:
   def parseheader(self):
     """parses the values in the header into a dictionary"""
     headervalues = dictutils.ordereddict()
-    if len(self.poelements) == 0:
+    if len(self.elements) == 0:
       return headervalues
-    header = self.poelements[0]
+    header = self.elements[0]
     if not header.isheader():
       return headervalues
     lineitem = ""
@@ -485,10 +485,10 @@ class pofile:
     headeritems = self.parseheader()
     if not headeritems and not add:
       return
-    header = self.poelements[0]
+    header = self.elements[0]
     if not header.isheader():
       header = self.makeheader(**kwargs)
-      self.poelements.insert(0, header)
+      self.elements.insert(0, header)
       headeritems = self.parseheader()
     else:
       headerargs = dictutils.ordereddict()
@@ -539,9 +539,9 @@ class pofile:
   def changeencoding(self, newencoding):
     """changes the encoding on the file"""
     self.encoding = newencoding
-    if not self.poelements:
+    if not self.elements:
       return
-    header = self.poelements[0]
+    header = self.elements[0]
     if not (header.isheader() or header.isblank()):
       return
     charsetline = None
@@ -568,14 +568,14 @@ class pofile:
 
   def isempty(self):
     """returns whether the po file doesn't contain any definitions..."""
-    if len(self.poelements) == 0:
+    if len(self.elements) == 0:
       return 1
     # first we check the header...
-    header = self.poelements[0]
+    header = self.elements[0]
     if not (header.isheader() or header.isblank()):
       return 0
     # if there are any other elements, this is only empty if they are blank
-    for thepo in self.poelements[1:]:
+    for thepo in self.elements[1:]:
       if not thepo.isblank():
         return 0
     return 1
@@ -600,7 +600,7 @@ class pofile:
           linesprocessed = newpe.parse("\n".join(lines[start:end]))
           start += linesprocessed
           if linesprocessed > 1:
-            self.poelements.append(newpe)
+            self.elements.append(newpe)
             if self.encoding is None and newpe.isheader():
               headervalues = self.parseheader()
               contenttype = headervalues.get("Content-Type", None)
@@ -615,8 +615,8 @@ class pofile:
       end = end+1
 
   def removeblanks(self):
-    """remove any poelements which say they are blank"""
-    self.poelements = filter(self.elementclass.isnotblank, self.poelements)
+    """remove any elements which say they are blank"""
+    self.elements = filter(self.elementclass.isnotblank, self.elements)
 
   def removeduplicates(self, duplicatestyle="merge"):
     """make sure each msgid is unique ; merge comments etc from duplicates into original"""
@@ -627,7 +627,7 @@ class pofile:
     def addcomment(thepo):
       thepo.msgidcomments.append('"_: %s\\n"' % " ".join(thepo.getsources()))
       markedpos[thepo] = True
-    for thepo in self.poelements:
+    for thepo in self.elements:
       if duplicatestyle.startswith("msgid_comment"):
         msgid = getunquotedstr(thepo.msgidcomments) + getunquotedstr(thepo.msgid)
       else:
@@ -658,13 +658,13 @@ class pofile:
           addcomment(thepo)
         msgiddict[msgid] = thepo
         uniqueelements.append(thepo)
-    self.poelements = uniqueelements
+    self.elements = uniqueelements
 
   def makeindex(self):
     """creates an index of po elements based on source comments"""
     self.sourceindex = {}
     self.msgidindex = {}
-    for thepo in self.poelements:
+    for thepo in self.elements:
       msgid = getunquotedstr(thepo.msgid)
       self.msgidindex[msgid] = thepo
       if thepo.hasplural():
@@ -678,9 +678,9 @@ class pofile:
           self.sourceindex[source] = thepo
 
   def __str__(self):
-    """convert the poelements back to lines"""
+    """convert the elements back to lines"""
     lines = []
-    for pe in self.poelements:
+    for pe in self.elements:
       pesrc = str(pe) + "\n"
       lines.append(pesrc)
     return "".join(self.encode(lines))
@@ -713,7 +713,7 @@ class pofile:
     """returns a dictionary of elements based on msgid"""
     # NOTE: these elements are quoted strings
     # TODO: make them unquoted strings, if useful...
-    return dict([(" ".join(poel.msgid), poel) for poel in self.poelements])
+    return dict([(" ".join(poel.msgid), poel) for poel in self.elements])
 
 if __name__ == '__main__':
   import sys

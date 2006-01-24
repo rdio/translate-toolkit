@@ -88,8 +88,8 @@ Review Messages, Review Source Words"
     pof = po.pofile()
     pof.parse(infile.read())
     infile.close()
-    self.allelements.extend(pof.poelements)
-    summarize(filename, pof.poelements, self.CSVstyle)
+    self.allelements.extend(pof.elements)
+    summarize(filename, pof.elements, self.CSVstyle)
     self.filecount += 1
 
   def handlefiles(self, arg, dirname, filenames):

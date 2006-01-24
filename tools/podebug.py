@@ -88,7 +88,7 @@ class podebug:
         if length:
           formatted = formatted[:int(length)]
       prefix = prefix.replace(formatstr, formatted)
-    for thepo in thepofile.poelements:
+    for thepo in thepofile.elements:
       if thepo.isheader() or thepo.isblank():
         continue
       thepo = self.convertelement(thepo, prefix)

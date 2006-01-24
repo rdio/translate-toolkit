@@ -151,7 +151,7 @@ class reoo:
   def convertfile(self, inputpo):
     self.p = inputpo
     # translate the strings
-    for thepo in self.p.poelements:
+    for thepo in self.p.elements:
       # there may be more than one element due to msguniq merge
       self.handlepoelement(thepo)
     # return the modified oo file object

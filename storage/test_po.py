@@ -18,8 +18,8 @@ class TestPO:
         """checks that a simple po entry is parsed correctly"""
         posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         pofile = self.poparse(posource)
-        assert len(pofile.poelements) == 1
-        thepo = pofile.poelements[0]
+        assert len(pofile.elements) == 1
+        thepo = pofile.elements[0]
         assert thepo.getsources() == ["test.c"]
         assert po.unquotefrompo(thepo.msgid) == "test"
         assert po.unquotefrompo(thepo.msgstr) == "rest"
@@ -28,7 +28,7 @@ class TestPO:
         """checks that we don't get duplicate msgid comments"""
         posource = 'msgid "test me"\nmsgstr ""'
         pofile = self.poparse(posource)
-        thepo = pofile.poelements[0]
+        thepo = pofile.elements[0]
         thepo.msgidcomments.append('"_: first comment\\n"')
         thepo.msgidcomments.append('"_: second comment\\n"')
         regenposource = str(pofile)
@@ -38,31 +38,31 @@ class TestPO:
         """checks that merging duplicates works"""
         posource = '#: source1\nmsgid "test me"\nmsgstr ""\n\n#: source2\nmsgid "test me"\nmsgstr ""\n'
         pofile = self.poparse(posource)
-        assert len(pofile.poelements) == 2
+        assert len(pofile.elements) == 2
         pofile.removeduplicates("merge")
-        assert len(pofile.poelements) == 1
-        assert pofile.poelements[0].getsources() == ["source1", "source2"]
+        assert len(pofile.elements) == 1
+        assert pofile.elements[0].getsources() == ["source1", "source2"]
 
     def test_merge_blanks(self):
         """checks that merging adds msgid_comments to blanks"""
         posource = '#: source1\nmsgid ""\nmsgstr ""\n\n#: source2\nmsgid ""\nmsgstr ""\n'
         pofile = self.poparse(posource)
-        assert len(pofile.poelements) == 2
+        assert len(pofile.elements) == 2
         pofile.removeduplicates("merge")
-        assert len(pofile.poelements) == 2
-        assert po.getunquotedstr(pofile.poelements[0].msgidcomments) == "_: source1\\n"
-        assert po.getunquotedstr(pofile.poelements[1].msgidcomments) == "_: source2\\n"
+        assert len(pofile.elements) == 2
+        assert po.getunquotedstr(pofile.elements[0].msgidcomments) == "_: source1\\n"
+        assert po.getunquotedstr(pofile.elements[1].msgidcomments) == "_: source2\\n"
 
     def test_keep_blanks(self):
         """checks that keeping keeps blanks and doesn't add msgid_comments"""
         posource = '#: source1\nmsgid ""\nmsgstr ""\n\n#: source2\nmsgid ""\nmsgstr ""\n'
         pofile = self.poparse(posource)
-        assert len(pofile.poelements) == 2
+        assert len(pofile.elements) == 2
         pofile.removeduplicates("keep")
-        assert len(pofile.poelements) == 2
+        assert len(pofile.elements) == 2
         # check we don't add msgidcomments
-        assert po.getunquotedstr(pofile.poelements[0].msgidcomments) == ""
-        assert po.getunquotedstr(pofile.poelements[1].msgidcomments) == ""
+        assert po.getunquotedstr(pofile.elements[0].msgidcomments) == ""
+        assert po.getunquotedstr(pofile.elements[1].msgidcomments) == ""
 
     def test_getunquotedstr(self):
         """checks that getunquotedstr works as advertised"""
@@ -72,10 +72,10 @@ class TestPO:
         """parse a string"""
         posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         pofile = po.pofile(posource)
-        assert len(pofile.poelements) == 1
+        assert len(pofile.elements) == 1
 
     def test_parse_file(self):
         """test parsing a real file"""
         posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         pofile = self.poparse(posource)
-        assert len(pofile.poelements) == 1
+        assert len(pofile.elements) == 1

@@ -56,7 +56,7 @@ class csv2po:
     self.msgidindex = {}
     self.simpleindex = {}
     self.duplicatesources = []
-    for thepo in self.pofile.poelements:
+    for thepo in self.pofile.elements:
       sourceparts = []
       for sourcecomment in thepo.sourcecomments:
         sourceparts.append(sourcecomment.replace("#:","",1).strip())
@@ -138,8 +138,8 @@ class csv2po:
       mergemode = False
     else:
       mergemode = True
-    if self.pofile.poelements and self.pofile.poelements[0].isheader():
-      headerpo = self.pofile.poelements[0]
+    if self.pofile.elements and self.pofile.elements[0].isheader():
+      headerpo = self.pofile.elements[0]
       headerpo.msgstr = [line.replace("CHARSET", "UTF-8").replace("ENCODING", "8bit") for line in headerpo.msgstr]
     else:
       headerpo = self.pofile.makeheader(charset="UTF-8", encoding="8bit")
@@ -161,14 +161,14 @@ class csv2po:
         self.handlecsvelement(thecsv)
       else:
         thepo = self.convertelement(thecsv)
-        self.pofile.poelements.append(thepo)
+        self.pofile.elements.append(thepo)
     return self.pofile
 
   def getmissing(self):
     """get the number of missing translations..."""
     # TODO: work out how to print out the following if in verbose mode
     missing = 0
-    for thepo in self.pofile.poelements:
+    for thepo in self.pofile.elements:
       if thepo.isblankmsgstr():
         missing += 1
 

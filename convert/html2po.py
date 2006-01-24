@@ -34,7 +34,7 @@ class html2po:
     htmlparser = html.POHTMLParser(includeuntaggeddata=includeuntagged)
     if includeheader:
       headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-      thepofile.poelements.append(headerpo)
+      thepofile.elements.append(headerpo)
     contents = inputfile.read()
     htmlparser.feed(contents)
     for blocknum in range(len(htmlparser.blocks)):
@@ -46,7 +46,7 @@ class html2po:
       if len(thepo.msgid) > 1:
         thepo.msgid = [quote.quotestr("")] + thepo.msgid
       thepo.msgstr = []
-      thepofile.poelements.append(thepo)
+      thepofile.elements.append(thepo)
     return thepofile
 
 def converthtml(inputfile, outputfile, templates, includeuntagged=False):

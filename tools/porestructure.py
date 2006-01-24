@@ -80,7 +80,7 @@ class SplitOptionParser(optrecurse.RecursiveOptionParser):
         """process an individual file"""
         inputfile = self.openinputfile(options, fullinputpath)
         inputpofile = po.pofile(inputfile)
-        for poelement in inputpofile.poelements:
+        for poelement in inputpofile.elements:
             if not (poelement.isheader() or poelement.hasplural()): #XXX
                 if poelement.hasmarkedcomment("poconflicts"):
                     for comment in poelement.othercomments:
@@ -96,7 +96,7 @@ class SplitOptionParser(optrecurse.RecursiveOptionParser):
                         outputpofile = po.pofile(outputfile)
                     else:
                         outputpofile = po.pofile()
-                    outputpofile.poelements.append(poelement)   #TODO:perhaps check to see if it's already there...
+                    outputpofile.elements.append(poelement)   #TODO:perhaps check to see if it's already there...
                     outputfile = open(fulloutputpath, 'w')
                     outputfile.write(str(outputpofile))
 

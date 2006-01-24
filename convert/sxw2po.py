@@ -58,7 +58,7 @@ class sxw2po:
     """converts a file to .po format"""
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-    thepofile.poelements.append(headerpo)
+    thepofile.elements.append(headerpo)
     try:
       z = zipfile.ZipFile(filename, 'r')
       contents = z.read("content.xml")
@@ -75,7 +75,7 @@ class sxw2po:
       if len(thepo.msgid) > 1:
         thepo.msgid = [quote.quotestr("")] + thepo.msgid
       thepo.msgstr = []
-      thepofile.poelements.append(thepo)
+      thepofile.elements.append(thepo)
     return thepofile
 
 def convertsxw(inputfile, outputfile, templates):

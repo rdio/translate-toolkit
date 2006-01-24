@@ -95,12 +95,12 @@ class oo2po:
     # create a header for the file
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit", x_accelerator_marker="~")
     headerpo.othercomments.append("# extracted from %s\n" % theoofile.filename)
-    thepofile.poelements.append(headerpo)
+    thepofile.elements.append(headerpo)
     # go through the oo and convert each element
     for theoo in theoofile.ooelements:
       polist = self.convertelement(theoo)
       for thepo in polist:
-        thepofile.poelements.append(thepo)
+        thepofile.elements.append(thepo)
     thepofile.removeblanks()
     # TODO: add a switch for duplicates...
     thepofile.removeduplicates(duplicatestyle)
