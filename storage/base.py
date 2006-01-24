@@ -6,14 +6,18 @@ import pickle
 
 class TranslationUnit:
     def __init__(self, source):
+        """Constructs a TranslationUnit containing the given source string"""
         self.source = source
     def __eq__(self, other):
+        """Compares two TranslationUnits"""
         return self.source == other.source
 
 class TranslationStore:
+    """Base class for stores for multiple translation units of type UnitClass"""
     UnitClass = TranslationUnit
 
     def __init__(self):
+        """Constructs a blank TranslationStore"""
         self.units = []
 
     def addsourceunit(self, source):
