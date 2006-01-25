@@ -376,3 +376,15 @@ def test_xmltags():
     assert checks.fails(stdchecker.xmltags, "Click <img src=\"image.jpg\">here</img>", "Klik <img src=\"prent.jpg\">hier</img>")
     assert checks.passes(stdchecker.xmltags, "Start with the &lt;start&gt; tag", "Begin met die &lt;begin&gt;")
     #TODO: test tags like alt, longdsc that can be translated
+
+def test_functions():
+    """tests to see that funtions() are not translated"""
+    stdchecker = checks.StandardChecker()
+    assert checks.fails(stdchecker.functions, "blah rgb() blah", "blee brg() blee")
+    assert checks.passes(stdchecker.functions, "blah rgb() blah", "blee rgb() blee")
+    assert checks.fails(stdchecker.functions, "percentage in rgb()", "phesenthe kha brg()")
+    assert checks.passes(stdchecker.functions, "percentage in rgb()", "phesenthe kha rgb()")
+    assert checks.fails(stdchecker.functions, "rgb() in percentage", "brg() kha phesenthe")
+    assert checks.passes(stdchecker.functions, "rgb() in percentage", "rgb() kha phesenthe")
+    assert checks.fails(stdchecker.functions, "blah string.rgb() blah", "blee bleeb.rgb() blee")
+    assert checks.passes(stdchecker.functions, "blah string.rgb() blah", "blee string.rgb() blee")

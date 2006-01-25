@@ -194,6 +194,10 @@ def getnumbers(str1):
     numbers = [number.encode('utf8') for number in numbers]
   return numbers
 
+def getfunctions(str1):
+  """returns the functions() that are in a string"""
+  return [word for word in str1.split() if word.endswith("()")]
+
 def countaccelerators(accelmarker, ignorelist=[]):
   """returns a function that counts the number of accelerators marked with the given marker"""
   def countmarkedaccelerators(str1):

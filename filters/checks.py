@@ -377,6 +377,10 @@ class StandardChecker(TranslationChecker):
       raise FilterFailure(messages)
     return True
 
+  def functions(self, str1, str2):
+    """checks to see that function names are not translated"""
+    return helpers.funcmatch(str1, str2, decoration.getfunctions)
+
   def numbers(self, str1, str2):
     """checks whether numbers of various forms are consistent between the two strings"""
     return helpers.funcmatch(str1, str2, decoration.getnumbers)
