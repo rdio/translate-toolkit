@@ -78,7 +78,7 @@ class POCompile:
   def convertfile(self, thepofile):
     MESSAGES = {}
     #themofile = self.make(thepofile)
-    for thepo in thepofile.elements:
+    for thepo in thepofile.units:
       if not thepo.isblank():
         msgid = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False).replace("\\n", "\n")
         msgstr = po.unquotefrompo(thepo.msgstr, joinwithlinebreak=False).replace("\\n", "\n")

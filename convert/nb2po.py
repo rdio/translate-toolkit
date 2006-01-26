@@ -30,8 +30,8 @@ class nb2po:
   htmlfields = ["BODY"]
 
   def makepoelement(self, filename, fieldname, fieldvalue):
-    """makes a poelement"""
-    thepo = po.poelement()
+    """makes a pounit"""
+    thepo = po.pounit()
     thepo.sourcecomments.append("#: %s#%s\n" % (filename,fieldname))
     thepo.msgid = []
     lines = fieldvalue.split("\n")
@@ -85,14 +85,14 @@ class nb2po:
     thepofile = po.pofile()
     if includeheader:
       headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-      thepofile.elements.append(headerpo)
+      thepofile.units.append(headerpo)
     lines = inputfile.readlines()
     inlongfield = False
     for line in lines:
       if line.strip() == "-----":
         if inlongfield:
           thepolist = self.makepoelements(filename, longfieldname, longfieldvalue)
-          thepofile.elements.extend(thepolist)
+          thepofile.units.extend(thepolist)
         inlongfield = not inlongfield
         longfieldname, longfieldvalue = None, ""
         continue
@@ -109,7 +109,7 @@ class nb2po:
       else:
         # split up into blocks
         thepo = self.makepoelement(filename, fieldname, fieldvalue)
-        thepofile.elements.append(thepo)
+        thepofile.units.append(thepo)
     return thepofile
 
 def convertnb(inputfile, outputfile, templates):

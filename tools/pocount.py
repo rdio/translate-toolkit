@@ -30,14 +30,14 @@ def wordsinpoel(poel):
   msgstrwords = wordcount(poel.msgstr)
   return msgidwords, msgstrwords
 
-def summarize(title, elements, CSVstyle=False):
-  # ignore totally blank or header elements
-  elements = filter(lambda poel: not poel.isheader(), elements)
-  translated = filter(lambda poel: not poel.isblankmsgstr() and not poel.isfuzzy(), elements)
-  fuzzy = filter(lambda poel: poel.isfuzzy() and not poel.isblankmsgstr(), elements)
-  review = filter(lambda poel: poel.isreview(), elements)
-  untranslated = filter(lambda poel: poel.isblankmsgstr() and not poel.isobsolete(), elements)
-  wordcounts = dict(map(lambda poel: (poel, wordsinpoel(poel)), elements))
+def summarize(title, units, CSVstyle=False):
+  # ignore totally blank or header units
+  units = filter(lambda poel: not poel.isheader(), units)
+  translated = filter(lambda poel: not poel.isblankmsgstr() and not poel.isfuzzy(), units)
+  fuzzy = filter(lambda poel: poel.isfuzzy() and not poel.isblankmsgstr(), units)
+  review = filter(lambda poel: poel.isreview(), units)
+  untranslated = filter(lambda poel: poel.isblankmsgstr() and not poel.isobsolete(), units)
+  wordcounts = dict(map(lambda poel: (poel, wordsinpoel(poel)), units))
   msgidwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][0], elementlist))
   msgstrwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][1], elementlist))
   if CSVstyle:
@@ -88,8 +88,8 @@ Review Messages, Review Source Words"
     pof = po.pofile()
     pof.parse(infile.read())
     infile.close()
-    self.allelements.extend(pof.elements)
-    summarize(filename, pof.elements, self.CSVstyle)
+    self.allelements.extend(pof.units)
+    summarize(filename, pof.units, self.CSVstyle)
     self.filecount += 1
 
   def handlefiles(self, arg, dirname, filenames):

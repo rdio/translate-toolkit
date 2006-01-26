@@ -213,7 +213,7 @@ class po2xliff:
     else:
       xlifffile = PoXliffParser(templatefile)
     filename = thepofile.filename
-    for thepo in thepofile.elements:
+    for thepo in thepofile.units:
       if thepo.isblank():
         continue
       transunitnode = self.createtransunit(thepo)

@@ -73,8 +73,8 @@ def convertpot(inputfile, outputfile, templatefile):
   outputheaderpo = outputpo.makeheader(charset=charset, encoding=encoding, project_id_version=project_id_version,
     pot_creation_date=pot_creation_date, po_revision_date=po_revision_date, last_translator=last_translator,
     language_team=language_team, **kwargs)
-  outputpo.elements.append(outputheaderpo)
-  for thepo in inputpo.elements:
+  outputpo.units.append(outputheaderpo)
+  for thepo in inputpo.units:
     if not thepo.isheader():
       if templatefile:
         possiblematches = []
@@ -87,9 +87,9 @@ def convertpot(inputfile, outputfile, templatefile):
           if po.getunquotedstr(thepo.msgid) == po.getunquotedstr(otherpo.msgid):
             thepo.merge(otherpo)
             break
-        outputpo.elements.append(thepo)
+        outputpo.units.append(thepo)
       else:
-        outputpo.elements.append(thepo)
+        outputpo.units.append(thepo)
   outputfile.write(str(outputpo))
   return 1
 

@@ -29,8 +29,8 @@ from translate.misc import quote
 
 class ts2po:
   def convertmessage(self, contextname, messagenum, msgid, msgstr, msgcomments, transtype):
-    """makes a poelement from the given message"""
-    thepo = po.poelement()
+    """makes a pounit from the given message"""
+    thepo = po.pounit()
     thepo.sourcecomments.append("#: %s#%d\n" % (contextname, messagenum))
     thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in msgid.split("\n")]
     if len(thepo.msgid) > 1:
@@ -50,7 +50,7 @@ class ts2po:
     tsfile = ts.QtTsParser(inputfile)
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-    thepofile.elements.append(headerpo)
+    thepofile.units.append(headerpo)
     for contextname, messages in tsfile.iteritems():
       messagenum = 0
       for message in messages:
@@ -60,7 +60,7 @@ class ts2po:
         comment = tsfile.getmessagecomment(message)
         transtype = tsfile.getmessagetype(message)
         thepo = self.convertmessage(contextname, messagenum, source, translation, comment, transtype)
-        thepofile.elements.append(thepo)
+        thepofile.units.append(thepo)
     return thepofile
 
 def convertts(inputfile, outputfile, templates):

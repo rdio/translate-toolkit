@@ -28,8 +28,8 @@ from translate.misc import quote
 
 class txt2po:
   def convertblock(self, filename, block, linenum):
-    """makes a poelement based on the current block"""
-    thepo = po.poelement()
+    """makes a pounit based on the current block"""
+    thepo = po.pounit()
     thepo.sourcecomments.append("#: %s:%d\n" % (filename,linenum+1))
     thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in block]
     if len(thepo.msgid) > 1:
@@ -42,7 +42,7 @@ class txt2po:
     thepofile = po.pofile()
     if includeheader:
       headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-      thepofile.elements.append(headerpo)
+      thepofile.units.append(headerpo)
     lines = inputfile.readlines()
     block = []
     startline = 0
@@ -51,7 +51,7 @@ class txt2po:
       isbreak = not line.strip()
       if isbreak and block:
         thepo = self.convertblock(filename, block, startline)
-        thepofile.elements.append(thepo)
+        thepofile.units.append(thepo)
         block = []
       elif not isbreak:
         if not block:
@@ -59,7 +59,7 @@ class txt2po:
         block.append(line)
     if block:
       thepo = self.convertblock(filename, block, startline)
-      thepofile.elements.append(thepo)
+      thepofile.units.append(thepo)
     return thepofile
 
 def converttxt(inputfile, outputfile, templates):

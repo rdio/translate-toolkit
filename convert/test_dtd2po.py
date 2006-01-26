@@ -16,31 +16,31 @@ class TestDTD2PO:
 
     def singleelement(self, pofile):
         """checks that the pofile contains a single non-header element, and returns it"""
-        assert len(pofile.elements) == 2
-        assert pofile.elements[0].isheader()
-        return pofile.elements[1]
+        assert len(pofile.units) == 2
+        assert pofile.units[0].isheader()
+        return pofile.units[1]
 
     def test_simpleentity(self):
         """checks that a simple dtd entity definition converts properly to a po entry"""
         dtdsource = '<!ENTITY test.me "bananas for sale">\n'
         pofile = self.dtd2po(dtdsource)
-        poelement = self.singleelement(pofile)
-        assert po.unquotefrompo(poelement.msgid) == "bananas for sale"
-        assert po.unquotefrompo(poelement.msgstr) == ""
+        pounit = self.singleelement(pofile)
+        assert po.unquotefrompo(pounit.msgid) == "bananas for sale"
+        assert po.unquotefrompo(pounit.msgstr) == ""
 
     def test_apos(self):
         """apostrophe should not break a single-quoted entity definition, bug 69"""
         dtdsource = "<!ENTITY test.me 'bananas &apos; for sale'>\n"
         pofile = self.dtd2po(dtdsource)
-        poelement = self.singleelement(pofile)
-        assert po.unquotefrompo(poelement.msgid) == "bananas ' for sale"
+        pounit = self.singleelement(pofile)
+        assert po.unquotefrompo(pounit.msgid) == "bananas ' for sale"
 
     def test_emptyentity(self):
         """checks that empty entity definitions survive into po file, bug 15"""
         dtdsource = '<!ENTITY credit.translation "">\n'
         pofile = self.dtd2po(dtdsource)
-        poelement = self.singleelement(pofile)
-        assert "credit.translation" in str(poelement)
+        pounit = self.singleelement(pofile)
+        assert "credit.translation" in str(pounit)
 
     def test_kdecomment_merge(self):
         """test that LOCALIZATION NOTES are added properly as KDE comments and merged with duplicate comments"""
@@ -48,10 +48,10 @@ class TestDTD2PO:
             '<!ENTITY %s "If publishing to a FTP site, enter the HTTP address to browse to:">\n'
         dtdsource = dtdtemplate % ("note1.label", "note1.label") + dtdtemplate % ("note2.label", "note2.label")
         pofile = self.dtd2po(dtdsource)
-        pofile.elements = pofile.elements[1:]
+        pofile.units = pofile.units[1:]
         posource = str(pofile)
         print posource
-        assert posource.count('"_:') <= len(pofile.elements)
+        assert posource.count('"_:') <= len(pofile.units)
 
     def test_donttranslate_label(self):
         """test strangeness when label entity is marked DONT_TRANSLATE and accesskey is not, bug 30"""
@@ -69,8 +69,8 @@ class TestDTD2PO:
         dtdsource = '<!ENTITY  noupdatesfound.intro "First line then \n' + \
           '                                          next lines.">\n'
         pofile = self.dtd2po(dtdsource)
-        poelement = self.singleelement(pofile)
+        pounit = self.singleelement(pofile)
         # We still need to decide how we handle line line breaks in the DTD entities.  It seems that we should actually
         # drop the line break but this has not been implemented yet.
-        assert po.unquotefrompo(poelement.msgid) == "First line then \nnext lines."
+        assert po.unquotefrompo(pounit.msgid) == "First line then \nnext lines."
 

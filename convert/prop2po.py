@@ -49,12 +49,12 @@ class prop2po:
         if theprop.isblank():
           thepo = headerpo
         else:
-          thepofile.elements.append(headerpo)
+          thepofile.units.append(headerpo)
         appendedheader = 1
       if thepo is not None:
         thepo.othercomments = waitingcomments + thepo.othercomments
         waitingcomments = []
-        thepofile.elements.append(thepo)
+        thepofile.units.append(thepo)
     thepofile.removeduplicates(duplicatestyle)
     return thepofile
 
@@ -67,7 +67,7 @@ class prop2po:
     # we try and merge the header po with any comments at the start of the properties file
     appendedheader = 0
     waitingcomments = []
-    # loop through the original file, looking at elements one by one
+    # loop through the original file, looking at units one by one
     for origprop in origpropfile.propelements:
       origpo = self.convertelement(origprop)
       if origpo is None:
@@ -77,7 +77,7 @@ class prop2po:
         if origprop.isblank():
           origpo = headerpo
         else:
-          thepofile.elements.append(headerpo)
+          thepofile.units.append(headerpo)
         appendedheader = 1
       # try and find a translation of the same name...
       if origprop.name in translatedpropfile.index:
@@ -91,7 +91,7 @@ class prop2po:
           origpo.msgstr = translatedpo.msgid
         origpo.othercomments = waitingcomments + origpo.othercomments
         waitingcomments = []
-        thepofile.elements.append(origpo)
+        thepofile.units.append(origpo)
       elif translatedpo is not None:
         print >>sys.stderr, "error converting original properties definition %s" % origprop.name
     thepofile.removeduplicates(duplicatestyle)
@@ -101,7 +101,7 @@ class prop2po:
     """converts a .properties element to a .po element..."""
     # escape unicode
     msgid = theprop.msgid.strip(" ")
-    thepo = po.poelement()
+    thepo = po.pounit()
     thepo.othercomments.extend(theprop.comments)
     # TODO: handle multiline msgid
     if theprop.isblank():

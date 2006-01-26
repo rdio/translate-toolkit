@@ -63,7 +63,7 @@ class po2csv:
 
   def convertfile(self,thepofile,columnorder=None):
     thecsvfile = csvl10n.csvfile(fieldnames=columnorder)
-    for thepo in thepofile.elements:
+    for thepo in thepofile.units:
       thecsv = self.convertelement(thepo)
       if thecsv is not None:
         thecsvfile.csvelements.append(thecsv)

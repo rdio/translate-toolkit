@@ -34,19 +34,19 @@ class html2po:
     htmlparser = html.POHTMLParser(includeuntaggeddata=includeuntagged)
     if includeheader:
       headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-      thepofile.elements.append(headerpo)
+      thepofile.units.append(headerpo)
     contents = inputfile.read()
     htmlparser.feed(contents)
     for blocknum in range(len(htmlparser.blocks)):
       block = htmlparser.blocks[blocknum].strip()
       if not block: continue
-      thepo = po.poelement()
+      thepo = po.pounit()
       thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum+1))
       thepo.msgid = [quote.quotestr(quote.rstripeol(block))]
       if len(thepo.msgid) > 1:
         thepo.msgid = [quote.quotestr("")] + thepo.msgid
       thepo.msgstr = []
-      thepofile.elements.append(thepo)
+      thepofile.units.append(thepo)
     return thepofile
 
 def converthtml(inputfile, outputfile, templates, includeuntagged=False):

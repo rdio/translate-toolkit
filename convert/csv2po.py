@@ -56,7 +56,7 @@ class csv2po:
     self.msgidindex = {}
     self.simpleindex = {}
     self.duplicatesources = []
-    for thepo in self.pofile.elements:
+    for thepo in self.pofile.units:
       sourceparts = []
       for sourcecomment in thepo.sourcecomments:
         sourceparts.append(sourcecomment.replace("#:","",1).strip())
@@ -84,7 +84,7 @@ class csv2po:
 
   def convertelement(self,thecsv):
     """converts csv element to po element"""
-    thepo = po.poelement()
+    thepo = po.pounit()
     thepo.sourcecomments = ["#: " + thecsv.source + "\n"]
     thepo.msgid = [quotecsvstr(line) for line in thecsv.msgid.split('\n')]
     thepo.msgstr = [quotecsvstr(line) for line in thecsv.msgstr.split('\n')]
@@ -138,8 +138,8 @@ class csv2po:
       mergemode = False
     else:
       mergemode = True
-    if self.pofile.elements and self.pofile.elements[0].isheader():
-      headerpo = self.pofile.elements[0]
+    if self.pofile.units and self.pofile.units[0].isheader():
+      headerpo = self.pofile.units[0]
       headerpo.msgstr = [line.replace("CHARSET", "UTF-8").replace("ENCODING", "8bit") for line in headerpo.msgstr]
     else:
       headerpo = self.pofile.makeheader(charset="UTF-8", encoding="8bit")
@@ -161,14 +161,14 @@ class csv2po:
         self.handlecsvelement(thecsv)
       else:
         thepo = self.convertelement(thecsv)
-        self.pofile.elements.append(thepo)
+        self.pofile.units.append(thepo)
     return self.pofile
 
   def getmissing(self):
     """get the number of missing translations..."""
     # TODO: work out how to print out the following if in verbose mode
     missing = 0
-    for thepo in self.pofile.elements:
+    for thepo in self.pofile.units:
       if thepo.isblankmsgstr():
         missing += 1
 

@@ -87,10 +87,10 @@ class pogrepfilter:
   def filterfile(self, thepofile):
     """runs filters on a file"""
     thenewpofile = po.pofile()
-    for thepo in thepofile.elements:
+    for thepo in thepofile.units:
       matches = self.filterelement(thepo)
       if matches:
-        thenewpofile.elements.append(thepo)
+        thenewpofile.units.append(thepo)
     return thenewpofile
 
 class GrepOptionParser(optrecurse.RecursiveOptionParser):

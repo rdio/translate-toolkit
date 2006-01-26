@@ -48,7 +48,7 @@ class po2txt:
   def convertfile(self, inputpo):
     """converts a file to .po format"""
     txtresult = ""
-    for thepo in inputpo.elements:
+    for thepo in inputpo.units:
       if thepo.isheader():
         continue
       txtresult += self.wrapmessage(self.convertmessage(thepo.msgstr)) + "\n" + "\n"
@@ -59,7 +59,7 @@ class po2txt:
     txtresult = templatetext
     # TODO: make a list of blocks of text and translate them individually
     # rather than using replace
-    for thepo in inputpo.elements:
+    for thepo in inputpo.units:
       if thepo.isheader():
         continue
       msgid = self.convertmessage(thepo.msgid)

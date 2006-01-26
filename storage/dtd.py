@@ -19,7 +19,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""classes that hold elements of .dtd files (dtdelement) or entire files (dtdfile)
+"""classes that hold units of .dtd files (dtdelement) or entire files (dtdfile)
 these are specific .dtd files for localisation used by mozilla
 FIXME: add simple test which reads in a file and writes it out again"""
 

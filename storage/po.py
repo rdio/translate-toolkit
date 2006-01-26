@@ -19,12 +19,13 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""classes that hold elements of .po files (poelement) or entire files (pofile)
+"""classes that hold units of .po files (pounit) or entire files (pofile)
 gettext-style .po (or .pot) files are used in translations for KDE et al (see kbabel)"""
 
 from __future__ import generators
 from translate.misc import quote
 from translate.misc import dictutils
+from translate.storage import base
 from translate import __version__
 import sre
 import time
@@ -88,7 +89,7 @@ From the GNU gettext manual:
      msgstr TRANSLATED-STRING
 """
 
-class poelement:
+class pounit(base.TranslationUnit):
   # othercomments = []      #   # this is another comment
   # sourcecomments = []     #   #: sourcefile.xxx:35
   # typecomments = []       #   #, fuzzy
@@ -98,7 +99,7 @@ class poelement:
   # msgid = []
   # msgstr = []
 
-  def __init__(self):
+  def __init__(self, source=None):
     self.othercomments = []
     self.sourcecomments = []
     self.typecomments = []
@@ -109,6 +110,26 @@ class poelement:
     self.msgid_pluralcomments = []
     self.msgid_plural = []
     self.msgstr = []
+    if source:
+      self.setsource(source)
+
+  def getsource(self):
+    """Returns the unescaped msgid"""
+    return unquotefrompo(self.msgid)
+
+  def setsource(self, source):
+    """Sets the msgstr to the given (unescaped) value"""
+    self.msgid = quoteforpo(source)
+  source = property(getsource, setsource)
+
+  def gettarget(self):
+    """Returns the unescaped msgstr"""
+    return unquotefrompo(self.msgstr)
+
+  def settarget(self, target):
+    """Sets the msgstr to the given (unescaped) value"""
+    self.msgstr = quoteforpo(target)
+  target = property(gettarget, settarget)
 
   def copy(self):
     newpo = self.__class__()
@@ -224,7 +245,7 @@ class poelement:
     return len(self.obsoletemessages) > 0
 
   def hasplural(self):
-    """returns whether this poelement contains plural strings..."""
+    """returns whether this pounit contains plural strings..."""
     return len(self.msgid_plural) > 0
 
   def parse(self, src):
@@ -355,7 +376,7 @@ class poelement:
     # this will also discard any comments other than plain othercomments...
     if (len(self.msgid) == 0) or ((len(self.msgid) == 1) and (self.msgid[0] == '""')):
       if not (self.isheader() or self.msgidcomments or self.sourcecomments):
-        return
+        return ""
     lines.extend(self.sourcecomments)
     lines.extend(self.typecomments)
     lines.extend(self.visiblecomments)
@@ -372,8 +393,9 @@ class poelement:
       sources += quote.rstripeol(sourcecomment)[3:].split()
     return sources
 
-class pofile:
-  """this represents a .po file containing various elements"""
+class pofile(base.TranslationStore):
+  """this represents a .po file containing various units"""
+  UnitClass = pounit
   x_generator = "Translate Toolkit %s" % __version__.ver
   header_order = [
     "Project-Id-Version",
@@ -388,11 +410,11 @@ class pofile:
     "Plural-Forms",
     "X-Generator",
     ]
-  def __init__(self, inputfile=None, encoding=None, elementclass=poelement):
+  def __init__(self, inputfile=None, encoding=None, elementclass=pounit):
     """construct a pofile, optionally reading in from inputfile.
     encoding can be specified but otherwise will be read from the PO header"""
     self.elementclass = elementclass
-    self.elements = []
+    self.units = []
     self.filename = ''
     self.encoding = encoding
     if inputfile is not None:
@@ -460,9 +482,9 @@ class pofile:
   def parseheader(self):
     """parses the values in the header into a dictionary"""
     headervalues = dictutils.ordereddict()
-    if len(self.elements) == 0:
+    if len(self.units) == 0:
       return headervalues
-    header = self.elements[0]
+    header = self.units[0]
     if not header.isheader():
       return headervalues
     lineitem = ""
@@ -485,10 +507,10 @@ class pofile:
     headeritems = self.parseheader()
     if not headeritems and not add:
       return
-    header = self.elements[0]
+    header = self.units[0]
     if not header.isheader():
       header = self.makeheader(**kwargs)
-      self.elements.insert(0, header)
+      self.units.insert(0, header)
       headeritems = self.parseheader()
     else:
       headerargs = dictutils.ordereddict()
@@ -539,9 +561,9 @@ class pofile:
   def changeencoding(self, newencoding):
     """changes the encoding on the file"""
     self.encoding = newencoding
-    if not self.elements:
+    if not self.units:
       return
-    header = self.elements[0]
+    header = self.units[0]
     if not (header.isheader() or header.isblank()):
       return
     charsetline = None
@@ -568,17 +590,24 @@ class pofile:
 
   def isempty(self):
     """returns whether the po file doesn't contain any definitions..."""
-    if len(self.elements) == 0:
+    if len(self.units) == 0:
       return 1
     # first we check the header...
-    header = self.elements[0]
+    header = self.units[0]
     if not (header.isheader() or header.isblank()):
       return 0
-    # if there are any other elements, this is only empty if they are blank
-    for thepo in self.elements[1:]:
+    # if there are any other units, this is only empty if they are blank
+    for thepo in self.units[1:]:
       if not thepo.isblank():
         return 0
     return 1
+
+  def parsestring(cls, storestring):
+    """Parses the po file contents in the storestring"""
+    parsedfile = pofile()
+    parsedfile.parse(storestring)
+    return parsedfile
+  parsestring = classmethod(parsestring)
 
   def parse(self, input):
     """parses the given file or source string"""
@@ -600,7 +629,7 @@ class pofile:
           linesprocessed = newpe.parse("\n".join(lines[start:end]))
           start += linesprocessed
           if linesprocessed > 1:
-            self.elements.append(newpe)
+            self.units.append(newpe)
             if self.encoding is None and newpe.isheader():
               headervalues = self.parseheader()
               contenttype = headervalues.get("Content-Type", None)
@@ -615,19 +644,20 @@ class pofile:
       end = end+1
 
   def removeblanks(self):
-    """remove any elements which say they are blank"""
-    self.elements = filter(self.elementclass.isnotblank, self.elements)
+    """remove any units which say they are blank"""
+    self.units = filter(self.elementclass.isnotblank, self.units)
 
   def removeduplicates(self, duplicatestyle="merge"):
     """make sure each msgid is unique ; merge comments etc from duplicates into original"""
     msgiddict = {}
     uniqueelements = []
     # we sometimes need to keep track of what has been marked
-    markedpos = {}
+    # TODO: this is using a list as the pos aren't hashable, but this is slow...
+    markedpos = []
     def addcomment(thepo):
       thepo.msgidcomments.append('"_: %s\\n"' % " ".join(thepo.getsources()))
-      markedpos[thepo] = True
-    for thepo in self.elements:
+      markedpos.append(thepo)
+    for thepo in self.units:
       if duplicatestyle.startswith("msgid_comment"):
         msgid = getunquotedstr(thepo.msgidcomments) + getunquotedstr(thepo.msgid)
       else:
@@ -658,13 +688,13 @@ class pofile:
           addcomment(thepo)
         msgiddict[msgid] = thepo
         uniqueelements.append(thepo)
-    self.elements = uniqueelements
+    self.units = uniqueelements
 
   def makeindex(self):
-    """creates an index of po elements based on source comments"""
+    """creates an index of po units based on source comments"""
     self.sourceindex = {}
     self.msgidindex = {}
-    for thepo in self.elements:
+    for thepo in self.units:
       msgid = getunquotedstr(thepo.msgid)
       self.msgidindex[msgid] = thepo
       if thepo.hasplural():
@@ -678,9 +708,9 @@ class pofile:
           self.sourceindex[source] = thepo
 
   def __str__(self):
-    """convert the elements back to lines"""
+    """convert the units back to lines"""
     lines = []
-    for pe in self.elements:
+    for pe in self.units:
       pesrc = str(pe) + "\n"
       lines.append(pesrc)
     return "".join(self.encode(lines))
@@ -710,10 +740,10 @@ class pofile:
     return newlines
 
   def todict(self):
-    """returns a dictionary of elements based on msgid"""
-    # NOTE: these elements are quoted strings
+    """returns a dictionary of units based on msgid"""
+    # NOTE: these units are quoted strings
     # TODO: make them unquoted strings, if useful...
-    return dict([(" ".join(poel.msgid), poel) for poel in self.elements])
+    return dict([(" ".join(poel.msgid), poel) for poel in self.units])
 
 if __name__ == '__main__':
   import sys

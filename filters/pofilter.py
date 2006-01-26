@@ -71,7 +71,7 @@ class POTeeChecker(checks.TeeChecker):
     return failures
 
 class StandardPOChecker(POChecker):
-  """The standard checks for PO elements"""
+  """The standard checks for PO units"""
   def isfuzzy(self, thepo):
     """check if the po element has been marked fuzzy"""
     return not thepo.isfuzzy()
@@ -128,7 +128,7 @@ class pocheckfilter:
   def filterfile(self, thepofile):
     """runs filters on a file"""
     thenewpofile = po.pofile()
-    for thepo in thepofile.elements:
+    for thepo in thepofile.units:
       filterresult = self.filterelement(thepo)
       if filterresult:
         if filterresult != autocorrect:
@@ -153,9 +153,9 @@ class pocheckfilter:
           for filtername, filtermessage in filterresult:
             if isinstance(filtermessage, checks.SeriousFilterFailure):
               thepo.markfuzzy()
-        thenewpofile.elements.append(thepo)
-    if self.options.includeheader and thenewpofile.elements > 0:
-      thenewpofile.elements.insert(0, thenewpofile.makeheader("UTF-8", "8bit"))
+        thenewpofile.units.append(thepo)
+    if self.options.includeheader and thenewpofile.units > 0:
+      thenewpofile.units.insert(0, thenewpofile.makeheader("UTF-8", "8bit"))
     return thenewpofile
 
 class FilterOptionParser(optrecurse.RecursiveOptionParser):
@@ -223,16 +223,16 @@ def cmdlineparser():
   parser = FilterOptionParser(formats)
   parser.add_option("", "--review", dest="includereview",
     action="store_true", default=True,
-    help="include elements marked for review (default)")
+    help="include units marked for review (default)")
   parser.add_option("", "--noreview", dest="includereview",
     action="store_false", default=True,
-    help="exclude elements marked for review")
+    help="exclude units marked for review")
   parser.add_option("", "--fuzzy", dest="includefuzzy",
     action="store_true", default=True,
-    help="include elements marked fuzzy (default)")
+    help="include units marked fuzzy (default)")
   parser.add_option("", "--nofuzzy", dest="includefuzzy",
     action="store_false", default=True,
-    help="exclude elements marked fuzzy")
+    help="exclude units marked fuzzy")
   parser.add_option("", "--header", dest="includeheader",
     action="store_true", default=False,
     help="include a PO header in the output")

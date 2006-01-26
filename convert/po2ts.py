@@ -34,7 +34,7 @@ class po2ts:
       tsfile = ts.QtTsParser()
     else:
       tsfile = ts.QtTsParser(templatefile)
-    for thepo in inputpo.elements:
+    for thepo in inputpo.units:
       if thepo.isheader() or thepo.isblank():
         continue
       source = po.getunquotedstr(thepo.msgid, includeescapes=False)

@@ -40,7 +40,7 @@ class oo2po:
 
   def makepo(self, part1, part2, key, subkey):
     """makes a po element out of a subkey of two parts"""
-    thepo = po.poelement()
+    thepo = po.pounit()
     thepo.sourcecomments.append("#: " + key + "." + subkey + "\n")
     text1 = getattr(part1, subkey)
     text2 = getattr(part2, subkey)
@@ -67,7 +67,7 @@ class oo2po:
     return oo.normalizefilename(key)
 
   def convertelement(self, theoo):
-    """convert an oo element into a list of po elements"""
+    """convert an oo element into a list of po units"""
     if self.sourcelanguage in theoo.languages:
       part1 = theoo.languages[self.sourcelanguage]
     else:
@@ -95,12 +95,12 @@ class oo2po:
     # create a header for the file
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit", x_accelerator_marker="~")
     headerpo.othercomments.append("# extracted from %s\n" % theoofile.filename)
-    thepofile.elements.append(headerpo)
+    thepofile.units.append(headerpo)
     # go through the oo and convert each element
     for theoo in theoofile.ooelements:
       polist = self.convertelement(theoo)
       for thepo in polist:
-        thepofile.elements.append(thepo)
+        thepofile.units.append(thepo)
     thepofile.removeblanks()
     # TODO: add a switch for duplicates...
     thepofile.removeduplicates(duplicatestyle)

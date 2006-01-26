@@ -32,7 +32,7 @@ class poreplace:
 
   def convertfile(self, thepofile):
     """goes through a po file and converts each element"""
-    for thepo in thepofile.elements:
+    for thepo in thepofile.units:
       thepo.msgstr = [self.convertstring(postr) for postr in thepo.msgstr]
     return thepofile
 

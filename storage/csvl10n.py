@@ -19,7 +19,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""classes that hold elements of comma-separated values (.csv) files (csvelement)
+"""classes that hold units of comma-separated values (.csv) files (csvelement)
 or entire files (csvfile) for use with localisation
 """
 

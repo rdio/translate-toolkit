@@ -29,8 +29,8 @@ from translate.misc import quote
 
 class xliff2po:
   def converttransunit(self, sources, msgid, msgstr):
-    """makes a poelement from the given transunit"""
-    thepo = po.poelement()
+    """makes a pounit from the given transunit"""
+    thepo = po.pounit()
     if sources:
       thepo.sourcecomments.append("#: %s\n" % " ".join(sources))
     msgid = msgid.replace("\n", "\\n\n")
@@ -73,7 +73,7 @@ class xliff2po:
     xlifffile = xliff.XliffParser(inputfile)
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-    # thepofile.elements.append(headerpo)
+    # thepofile.units.append(headerpo)
     for filename, transunits in xlifffile.iteritems():
       for transunit in transunits:
         sources = self.gettransunitsources(transunit)
@@ -92,7 +92,7 @@ class xliff2po:
         except IndexError,e:
           pass
 
-        thepofile.elements.append(thepo)
+        thepofile.units.append(thepo)
     return thepofile
 
 def convertxliff(inputfile, outputfile, templates):

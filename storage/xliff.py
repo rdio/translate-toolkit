@@ -175,7 +175,7 @@ class XliffParser(object):
   def get_elements(self):
     """returns an iterator through the transunits"""
     return [self.make_element(transunit) for filename, transunit in self.iteritems()]
-  elements = property(get_elements)
+  units = property(get_elements)
 
   def __del__(self):
     """clean up the document if required"""

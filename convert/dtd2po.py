@@ -82,7 +82,7 @@ class dtd2po:
     thepo.msgstr = ['""']
 
   def convertelement(self,thedtd):
-    thepo = po.poelement()
+    thepo = po.pounit()
     # remove unwanted stuff
     for commentnum in range(len(thedtd.comments)):
       commenttype,locnote = thedtd.comments[commentnum]
@@ -129,7 +129,7 @@ class dtd2po:
       return accesskeypo
     if accesskeypo is None:
       return labelpo
-    thepo = po.poelement()
+    thepo = po.pounit()
     thepo.sourcecomments += labelpo.sourcecomments
     thepo.sourcecomments += accesskeypo.sourcecomments
     thepo.msgidcomments += labelpo.msgidcomments
@@ -201,7 +201,7 @@ class dtd2po:
     """converts a dtd element from thedtdfile to a po element, handling mixed entities along the way..."""
     # keep track of whether acceskey and label were combined
     if thedtd.entity in self.mixedentities:
-      # use special convertmixed element which produces one poelement with
+      # use special convertmixed element which produces one pounit with
       # both combined for the label and None for the accesskey
       alreadymixed = self.mixedentities[thedtd.entity].get(mixbucket, None)
       if alreadymixed:
@@ -242,7 +242,7 @@ class dtd2po:
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit", x_accelerator_marker="&")
     headerpo.othercomments.append("# extracted from %s\n" % thedtdfile.filename)
-    thepofile.elements.append(headerpo)
+    thepofile.units.append(headerpo)
     thedtdfile.makeindex()
     self.findmixedentities(thedtdfile)
     # go through the dtd and convert each element
@@ -251,7 +251,7 @@ class dtd2po:
         continue
       thepo = self.convertdtdelement(thedtdfile, thedtd)
       if thepo is not None:
-        thepofile.elements.append(thepo)
+        thepofile.units.append(thepo)
     thepofile.removeduplicates(self.duplicatestyle)
     return thepofile
 
@@ -259,7 +259,7 @@ class dtd2po:
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
     headerpo.othercomments.append("# extracted from %s, %s\n" % (origdtdfile.filename, translateddtdfile.filename))
-    thepofile.elements.append(headerpo)
+    thepofile.units.append(headerpo)
     origdtdfile.makeindex()
     self.findmixedentities(origdtdfile)
     translateddtdfile.makeindex()
@@ -284,7 +284,7 @@ class dtd2po:
       if origpo is not None:
         if translatedpo is not None and not self.blankmsgstr:
           origpo.msgstr = translatedpo.msgid
-        thepofile.elements.append(origpo)
+        thepofile.units.append(origpo)
     thepofile.removeduplicates(self.duplicatestyle)
     return thepofile
 

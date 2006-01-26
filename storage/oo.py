@@ -19,7 +19,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""classes that hold elements of .oo files (ooelement) or entire files (oofile)
+"""classes that hold units of .oo files (ooelement) or entire files (oofile)
 these are specific .oo files for localisation exported by OpenOffice - SDF format
 See http://l10n.openoffice.org/L10N_Framework/Intermediate_file_format.html
 FIXME: add simple test which reads in a file and writes it out again"""
