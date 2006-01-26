@@ -6,6 +6,25 @@ from translate.storage import base
 from py import test
 import os
 
+def test_force_override():
+    """Tests that derived classes are not allowed to call certain functions"""
+    class BaseClass:
+        def test(self):
+            base.force_override(self.test, BaseClass)
+            return True
+        def classtest(cls):
+            base.force_override(cls.classtest, BaseClass)
+            return True
+        classtest = classmethod(classtest)
+    class DerivedClass(BaseClass):
+        pass
+    baseobject = BaseClass()
+    assert baseobject.test()
+    assert baseobject.classtest()
+    derivedobject = DerivedClass()
+    assert test.raises(NotImplementedError, derivedobject.test)
+    assert test.raises(NotImplementedError, derivedobject.classtest)
+
 class TestTranslationUnit:
     """Tests a TranslationUnit.
     Derived classes can reuse these tests by pointing UnitClass to a derived Unit"""
@@ -37,7 +56,7 @@ class TestTranslationUnit:
 
     def test_target(self):
         unit = self.UnitClass("Test String")
-        assert unit.target is None
+        assert not unit.target
         unit.settarget("Stressed Ting")
         assert unit.target == "Stressed Ting"
         unit.settarget("Stressed Bling")

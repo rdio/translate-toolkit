@@ -4,6 +4,16 @@
 
 import pickle
 
+def force_override(method, baseclass):
+    """forces derived classes to override method"""
+    if type(method.im_self) == type(baseclass):
+        # then this is a classmethod and im_self is the actual class
+        actualclass = method.im_self
+    else:
+        actualclass = method.im_class
+    if actualclass != baseclass:
+        raise NotImplementedError("%s does not reimplement %s as required by %s" % (actualclass.__name__, method.__name__, baseclass.__name__))
+
 class TranslationUnit:
     def __init__(self, source):
         """Constructs a TranslationUnit containing the given source string"""
@@ -18,7 +28,7 @@ class TranslationUnit:
         """Sets the target string to the given value"""
         self.target = target
 
-class TranslationStore:
+class TranslationStore(object):
     """Base class for stores for multiple translation units of type UnitClass"""
     UnitClass = TranslationUnit
 
@@ -41,10 +51,12 @@ class TranslationStore:
 
     def __str__(self):
         """Converts to a string representation that can be parsed back using parse"""
+        force_override(self.__str__, TranslationStore)
         return pickle.dumps(self)
 
     def parsestring(cls, storestring):
         """Converts the string representation back to an object"""
+        force_override(cls.parsestring, TranslationStore)
         return pickle.loads(storestring)
     parsestring = classmethod(parsestring)
 
