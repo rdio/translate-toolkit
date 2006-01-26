@@ -388,3 +388,15 @@ def test_functions():
     assert checks.passes(stdchecker.functions, "rgb() in percentage", "rgb() kha phesenthe")
     assert checks.fails(stdchecker.functions, "blah string.rgb() blah", "blee bleeb.rgb() blee")
     assert checks.passes(stdchecker.functions, "blah string.rgb() blah", "blee string.rgb() blee")
+
+def test_emails():
+    """tests to see that email addresses are not translated"""
+    stdchecker = checks.StandardChecker()
+    assert checks.fails(stdchecker.emails, "blah bob@example.net blah", "blee kobus@voorbeeld.net blee")
+    assert checks.passes(stdchecker.emails, "blah bob@example.net blah", "blee bob@example.net blee")
+
+def test_urls():
+    """tests to see that URLs are not translated"""
+    stdchecker = checks.StandardChecker()
+    assert checks.fails(stdchecker.urls, "blah http://translate.org.za blah", "blee http://vertaal.org.za blee")
+    assert checks.passes(stdchecker.urls, "blah http://translate.org.za blah", "blee http://translate.org.za blee")
