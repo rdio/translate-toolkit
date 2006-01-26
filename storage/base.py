@@ -43,10 +43,10 @@ class TranslationStore:
         """Converts to a string representation that can be parsed back using parse"""
         return pickle.dumps(self)
 
-    @classmethod
     def parsestring(cls, storestring):
         """Converts the string representation back to an object"""
         return pickle.loads(storestring)
+    parsestring = classmethod(parsestring)
 
     def savefile(self, storefile):
         """Writes the string representation to the given file (or filename)"""
@@ -56,11 +56,11 @@ class TranslationStore:
         storefile.write(storestring)
         storefile.close()
 
-    @classmethod
     def parsefile(cls, storefile):
         """Reads the given file (or opens the given filename) and parses back to an object"""
         if isinstance(storefile, basestring):
             storefile = open(storefile, "r")
         storestring = storefile.read()
         return cls.parsestring(storestring)
+    parsefile = classmethod(parsefile)
 
