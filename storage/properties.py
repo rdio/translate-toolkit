@@ -114,7 +114,7 @@ class propfile:
     if inmultilinemsgid or len(newpe.comments) > 0:
       self.propelements.append(newpe)
 
-  def _str__(self):
+  def __str__(self):
     """convert the propelements back to lines"""
     lines = []
     for pe in self.propelements:
