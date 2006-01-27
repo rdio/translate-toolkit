@@ -74,3 +74,10 @@ class TestDTD2PO:
         # drop the line break but this has not been implemented yet.
         assert po.unquotefrompo(pounit.msgid) == "First line then \nnext lines."
 
+    def test_folding_accesskeys(self):
+	"""test that we fold accesskeys into message strings"""
+	# .label, .accesskey style
+	dtdsource = '<!ENTITY  fileSaveAs.label "Save As...">\n' + \
+           '<!ENTITY  fileSaveAs.accesskey "S">\n'
+        pofile = self.dtd2po(dtdsource)
+        pounit = self.singleelement(pofile)

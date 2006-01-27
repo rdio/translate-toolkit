@@ -58,3 +58,10 @@ class TestProp2PO:
         pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
         assert po.unquotefrompo(pounit.msgid) == "This setence will lose its 4 spaces at the end."
+
+    def xtest_folding_accesskeys(self):
+        """check that we can fold various accesskeys into their associated label"""
+	propsource = r'''cmd_addEngine = Add Engines...
+cmd_addEngine_accesskey = A'''
+	pofile = self.prop2po(propsource)
+        pounit = self.singleelement(pofile)
