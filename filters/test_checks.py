@@ -44,6 +44,11 @@ def test_accelerators():
     assert checks.passes(ooochecker.accelerators, "~File", "~Fayile") 
     assert checks.fails(ooochecker.accelerators, "~File", "Fayile") 
     assert checks.fails(ooochecker.accelerators, "File", "~Fayile") 
+    # Problems:
+    # Accelerator before variable
+    assert checks.fails(mozillachecker.accelerators, "%S &Options", "&%S Ikhetho")
+    assert checks.fails(ooochecker.accelerators, "%PRODUCTNAME% ~Options", "~%PRODUCTNAME% Ikhetho")
+
 
 def test_accronyms():
     """tests acronyms"""
