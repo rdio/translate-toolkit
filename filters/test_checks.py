@@ -49,7 +49,6 @@ def test_accelerators():
     assert checks.fails(mozillachecker.accelerators, "%S &Options", "&%S Ikhetho")
     assert checks.fails(ooochecker.accelerators, "%PRODUCTNAME% ~Options", "~%PRODUCTNAME% Ikhetho")
 
-
 def test_accronyms():
     """tests acronyms"""
     stdchecker = checks.StandardChecker()
@@ -235,6 +234,8 @@ def test_singlequoting():
     assert checks.passes(stdchecker.singlequoting, "It's here.", "Dit is hier.")
     assert checks.passes(stdchecker.singlequoting, r"""_: 'Migrating' formats.\n
 Converting...""", "Kugucula...")
+    assert checks.passes(stdchecker.singlequoting, "Blah 'format' blah.", "Blah blah 'sebopego'.")
+	
 
 # def test_simplecaps():
 #     """tests simple caps"""
@@ -344,6 +345,9 @@ def test_variables_mozilla():
     assert checks.fails(mozillachecker.variables, "%d files of type %s saved.", "%s leers van %s tipe gestoor.")
     assert checks.passes(mozillachecker.variables, "Save $file", "Stoor $file")
     assert checks.fails(mozillachecker.variables, "Save $file", "Stoor $leer")
+    # Double variable problem
+    assert checks.fails(mozillachecker.variables, "Create In &lt;&lt;", "Etsa ka Ho &lt;lt;")
+
 
 def test_variables_openoffice():
     """tests variables in OpenOffice translations"""
@@ -371,6 +375,9 @@ def test_variables_openoffice():
     assert checks.fails(ooochecker.variables, "Save [file]", "Stoor [leer]")
     assert checks.passes(ooochecker.variables, "Save $file", "Stoor $file")
     assert checks.fails(ooochecker.variables, "Save $file", "Stoor $leer")
+    # Variables hidden in KDE comments
+    assert checks.passes(ooochecker.variables, r"""_: Do not translate %PROGRAMNAME% in the text\n
+Start %PROGRAMNAME%""", "Begin %PROGRAMNAME%")
 
 def test_xmltags():
     """tests xml tags"""
