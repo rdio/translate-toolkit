@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from translate.storage import properties
 from translate.misc import wStringIO
@@ -16,7 +17,7 @@ class TestProperties:
 
     def test_simpledefinition(self):
         """checks that a simple properties definition is parsed correctly"""
-        propsource = 'test_me=I can code!'
+        propsource = 'test_me=I can code!\n'
         propfile = self.propparse(propsource)
         assert len(propfile.propelements) == 1
         propelement = propfile.propelements[0]
@@ -29,3 +30,10 @@ class TestProperties:
         propregen = self.propregen(propsource)
         assert propsource == propregen
 
+    def test_unicode_escaping(self):
+	"""check that escapes unicode is converted properly"""
+	propsource = "unicode=\u0411\u0416\u0419\u0428"
+        propfile = self.propparse(propsource)
+        propelement = propfile.propelements[0]
+        assert propelement.name == "unicode"
+        assert propelement.msgid.encode("UTF-8") == "БЖЙШ"
