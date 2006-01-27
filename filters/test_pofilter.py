@@ -41,3 +41,60 @@ class TestPOFilter:
         posource = '#: test.c\nmsgid "At &timeBombURL."\n"label;."\nmsgstr "Tydens &tydBombURL."\n"labeel;."'
         poresult = self.pofilter(posource)
         assert poresult == ""
+
+    def test_non_existant_check(self):
+	"""check that we report an error if a user tries to run a non-existant test"""
+        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["-t nonexistant"])
+	# TODO Not sure how to check for the stderror result of: warning: could not find filter  nonexistant
+        assert poresult == ""
+
+    def test_list_all_tests(self):
+	"""lists all available tests"""
+        poresult = self.pofilter("", cmdlineoptions=["-l"])
+	# TODO again not sure how to check the stderror output
+	assert poresult == ""
+
+    def test_test_against_fuzzy(self):
+	"""test whether to run tests against fuzzy translations"""
+        posource = '#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["--fuzzy"])
+	assert poresult != posource
+        poresult = self.pofilter(posource, cmdlineoptions=["--nofuzzy"])
+	assert poresult == ""
+        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["--fuzzy"])
+	assert poresult != posource
+        poresult = self.pofilter(posource, cmdlineoptions=["--nofuzzy"])
+	assert poresult != posource
+
+    def test_test_against_review(self):
+	"""test whether to run tests against translations marked for review"""
+        posource = '#: test.c\n# (review)\nmsgid "test"\nmsgstr "REST"\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["--review"])
+	assert poresult != posource
+        poresult = self.pofilter(posource, cmdlineoptions=["--noreview"])
+	assert poresult == ""
+        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["--review"])
+	assert poresult != posource
+        poresult = self.pofilter(posource, cmdlineoptions=["--noreview"])
+	assert poresult != posource
+
+    def test_isfuzzy(self):
+	"""tests the extraction of items marked fuzzy"""
+        posource = '#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["--test=isfuzzy"])
+	assert poresult != ""
+        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["--test=isfuzzy"])
+	assert poresult == ""
+
+    def test_isreview(self):
+	"""tests the extraction of items marked review"""
+        posource = '#: test.c\n#, review\nmsgid "test"\nmsgstr "REST"\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["--test=isreview"])
+	assert poresult != ""
+        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["--test=isreview"])
+	assert poresult == ""
