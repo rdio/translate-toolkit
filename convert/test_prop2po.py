@@ -21,6 +21,11 @@ class TestProp2PO:
         assert pofile.units[0].isheader()
         return pofile.units[1]
 
+    def countelements(self, pofile):
+	"""counts the number of non-header entries"""
+        assert pofile.units[0].isheader()
+	return len(pofile.units) - 1
+
     def test_simpleentry(self):
         """checks that a simple properties entry converts properly to a po entry"""
         propsource = 'SAVEENTRY=Save file\n'
@@ -65,3 +70,12 @@ class TestProp2PO:
 cmd_addEngine_accesskey = A'''
 	pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
+
+    def xtest_dont_translate(self):
+	"""check that we know how to ignore don't translate instructions in properties files"""
+	propsource = '''# LOCALIZATION NOTE (1029): DONT_TRANSLATE.
+1029=forward.msg
+'''
+	pofile = self.prop2po(propsource)
+	assert self.countelements(pofile) == 0
+	
