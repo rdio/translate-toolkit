@@ -347,7 +347,8 @@ def test_variables_mozilla():
     assert checks.fails(mozillachecker.variables, "Save $file", "Stoor $leer")
     # Double variable problem
     assert checks.fails(mozillachecker.variables, "Create In &lt;&lt;", "Etsa ka Ho &lt;lt;")
-
+    # Variables at the end of a sentence
+    assert checks.fails(mozillachecker.variables, "...time you start &brandShortName;.", "...lekgetlo le latelang ha o qala &LebitsoKgutshwane la kgwebo;.")
 
 def test_variables_openoffice():
     """tests variables in OpenOffice translations"""
