@@ -37,7 +37,7 @@ class po2csv:
     return " ".join(sourceparts)
 
   def convertelement(self,thepo):
-    thecsv = csvl10n.csvelement()
+    thecsv = csvl10n.csvunit()
     if thepo.isheader():
       thecsv.source = "source"
       thecsv.msgid = "original"
@@ -55,7 +55,7 @@ class po2csv:
     return thecsv
 
   def convertplurals(self,thepo):
-    thecsv = csvl10n.csvelement()
+    thecsv = csvl10n.csvunit()
     thecsv.source = self.convertsource(thepo)
     thecsv.msgid = self.convertstring(thepo.msgid_plural)
     thecsv.msgstr = self.convertstring(thepo.msgstr[1])
@@ -66,11 +66,11 @@ class po2csv:
     for thepo in thepofile.units:
       thecsv = self.convertelement(thepo)
       if thecsv is not None:
-        thecsvfile.csvelements.append(thecsv)
+        thecsvfile.units.append(thecsv)
       if thepo.hasplural():
         thecsv = self.convertplurals(thepo)
         if thecsv is not None:
-          thecsvfile.csvelements.append(thecsv)
+          thecsvfile.units.append(thecsv)
     return thecsvfile
 
 def convertcsv(inputfile, outputfile, templatefile, columnorder=None):

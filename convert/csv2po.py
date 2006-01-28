@@ -90,7 +90,7 @@ class csv2po:
     thepo.msgstr = [quotecsvstr(line) for line in thecsv.msgstr.split('\n')]
     return thepo
 
-  def handlecsvelement(self, thecsv):
+  def handlecsvunit(self, thecsv):
     """handles reintegrating a csv element into the .po file"""
     if len(thecsv.source.strip()) > 0 and thecsv.source in self.sourceindex:
       thepo = self.sourceindex[thecsv.source]
@@ -145,7 +145,7 @@ class csv2po:
       headerpo = self.pofile.makeheader(charset="UTF-8", encoding="8bit")
     headerpo.othercomments.append("# extracted from %s\n" % thecsvfile.filename)
     mightbeheader = True
-    for thecsv in thecsvfile.csvelements:
+    for thecsv in thecsvfile.units:
       if self.charset is not None:
         thecsv.msgid = thecsv.msgid.decode(self.charset)
         thecsv.msgstr = thecsv.msgstr.decode(self.charset)
@@ -158,7 +158,7 @@ class csv2po:
         if len(thecsv.source.strip()) == 0 and thecsv.msgid.find("Content-Type:") != -1:
           continue
       if mergemode:
-        self.handlecsvelement(thecsv)
+        self.handlecsvunit(thecsv)
       else:
         thepo = self.convertelement(thecsv)
         self.pofile.units.append(thepo)

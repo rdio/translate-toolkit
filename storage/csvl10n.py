@@ -19,7 +19,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""classes that hold units of comma-separated values (.csv) files (csvelement)
+"""classes that hold units of comma-separated values (.csv) files (csvunit)
 or entire files (csvfile) for use with localisation
 """
 
@@ -31,6 +31,7 @@ except:
   from translate.misc import csv
 
 from translate.misc import sparse
+from translate.storage import base
 
 class SimpleDictReader:
   def __init__(self, fileobj, fieldnames):
@@ -91,8 +92,9 @@ class SimpleDictReader:
         values[self.fieldnames[fieldnum]] = fields[fieldnum]
     return values
 
-class csvelement:
-  def __init__(self):
+class csvunit(base.TranslationUnit):
+  def __init__(self, source=None):
+    #NOTE: source is not the source language
     self.source = ""
     self.msgid = ""
     self.msgstr = ""
@@ -117,9 +119,12 @@ class csvelement:
       msgstr = msgstr.encode(encoding)
     return {'source':source, 'msgid': msgid, 'msgstr': msgstr}
 
-class csvfile:
+class csvfile(base.TranslationStore):
+  """This class represents a .csv file with various lines. 
+  The default format contains three columns: comments, source, taret"""
+  UnitClass = csvunit
   def __init__(self, inputfile=None, fieldnames=None):
-    self.csvelements = []
+    self.units= []
     if fieldnames is None:
       self.fieldnames = ['source', 'msgid', 'msgstr']
     else:
@@ -136,14 +141,14 @@ class csvfile:
     csvfile = csv.StringIO(csvsrc)
     reader = SimpleDictReader(csvfile, self.fieldnames)
     for row in reader:
-      newce = csvelement()
+      newce = self.UnitClass()
       newce.fromdict(row)
-      self.csvelements.append(newce)
+      self.units.append(newce)
 
   def __str__(self):
     csvfile = csv.StringIO()
     writer = csv.DictWriter(csvfile, self.fieldnames)
-    for ce in self.csvelements:
+    for ce in self.units:
       cedict = ce.todict()
       writer.writerow(cedict)
     csvfile.reset()
