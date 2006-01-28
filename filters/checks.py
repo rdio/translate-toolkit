@@ -625,7 +625,7 @@ class OpenOfficeChecker(StandardChecker):
 
 mozillaconfig = CheckerConfig(
   accelmarkers = ("&"),
-  varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", None), ("#", 1))
+  varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", "$"), ("$", None), ("#", 1))
   )
 
 class MozillaChecker(StandardChecker):
