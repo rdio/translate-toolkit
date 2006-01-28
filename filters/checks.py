@@ -566,6 +566,10 @@ class StandardChecker(TranslationChecker):
     """checks for Gettext compendium conflicts (#-#-#-#-#)"""
     return str2.find("#-#-#-#-#") == -1
 
+  def simpleplurals(self, str1, str2):
+    """checks for English style plural(s) for you to review"""
+    return str1.find("(s)") == -1
+
   def spellcheck(self, str1, str2):
     """checks words that don't pass a spell check"""
     if not self.config.targetlanguage:

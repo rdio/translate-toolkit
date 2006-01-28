@@ -413,3 +413,8 @@ def test_urls():
     stdchecker = checks.StandardChecker()
     assert checks.fails(stdchecker.urls, "blah http://translate.org.za blah", "blee http://vertaal.org.za blee")
     assert checks.passes(stdchecker.urls, "blah http://translate.org.za blah", "blee http://translate.org.za blee")
+
+def test_simpleplurals():
+    """test that we can find English style plural(s)"""
+    stdchecker = checks.StandardChecker()
+    assert checks.fails(stdchecker.simpleplurals, "plural(s)", "meervoud(e)")
