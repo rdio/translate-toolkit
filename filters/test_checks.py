@@ -56,6 +56,9 @@ def test_accronyms():
     assert checks.fails(stdchecker.acronyms, "An HTML file", "'n LMTH leer")
     # We don't mind if you add an acronym to correct bad capitalisation in the original
     assert checks.passes(stdchecker.acronyms, "An html file", "'n HTML leer")
+    # TODO We shouldn't worry about acronyms that appear in a musttranslate file
+    #stdchecker = checks.StandardChecker(checks.CheckerConfig(musttranslatewords=["OK"]))
+    #assert checks.passes(stdchecker.acronyms, "OK", "Kulungile")
 
 def test_blank():
     """tests blank"""
@@ -166,8 +169,15 @@ def test_musttranslatewords():
     # check that we can find words surrounded by punctuation
     assert checks.passes(stdchecker.musttranslatewords, "Click 'Mozilla' button", "Kliek 'Motzille' knoppie")
     assert checks.fails(stdchecker.musttranslatewords, "Click 'Mozilla' button", "Kliek 'Mozilla' knoppie")
+    assert checks.passes(stdchecker.musttranslatewords, 'Click "Mozilla" button', 'Kliek "Motzille" knoppie')
+    assert checks.fails(stdchecker.musttranslatewords, 'Click "Mozilla" button', 'Kliek "Mozilla" knoppie')
+    assert checks.passes(stdchecker.musttranslatewords, "Click (Mozilla) button", "Kliek (Motzille) knoppie")
+    assert checks.fails(stdchecker.musttranslatewords, "Click (Mozilla) button", "Kliek (Mozilla) knoppie")
     assert checks.passes(stdchecker.musttranslatewords, "Click Mozilla!", "Kliek Motzille!")
     assert checks.fails(stdchecker.musttranslatewords, "Click Mozilla!", "Kliek Mozilla!")
+    ## We need to define more word separators to allow us to find those hidden untranslated items
+    #assert checks.fails(stdchecker.musttranslatewords, "Click OK", "Blah we-OK")
+
 
 def test_notranslatewords():
     """tests stopwords"""
@@ -187,6 +197,7 @@ def test_notranslatewords():
     assert checks.passes(stdchecker.musttranslatewords, "Click 'Mozilla' button", "Kliek 'Mozilla' knoppie")
     assert checks.fails(stdchecker.musttranslatewords, "Click Mozilla!", "Kliek Motzille!")
     assert checks.passes(stdchecker.musttranslatewords, "Click Mozilla!", "Kliek Mozilla!")
+    assert checks.fails(stdchecker.musttranslatewords, "Searches (From Opera)", "adosako (kusukela ku- Ophera)")
 
 def test_numbers():
     """test numbers"""
