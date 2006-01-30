@@ -163,6 +163,11 @@ def test_musttranslatewords():
     assert checks.fails(stdchecker.musttranslatewords, "This uses Mozilla. Don't you?", "hierdie gebruik Mozilla soos jy")
     # should always pass if there are no stopwords in the original
     assert checks.passes(stdchecker.musttranslatewords, "This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
+    # check that we can find words surrounded by punctuation
+    assert checks.passes(stdchecker.musttranslatewords, "Click 'Mozilla' button", "Kliek 'Motzille' knoppie")
+    assert checks.fails(stdchecker.musttranslatewords, "Click 'Mozilla' button", "Kliek 'Mozilla' knoppie")
+    assert checks.passes(stdchecker.musttranslatewords, "Click Mozilla!", "Kliek Motzille!")
+    assert checks.fails(stdchecker.musttranslatewords, "Click Mozilla!", "Kliek Mozilla!")
 
 def test_notranslatewords():
     """tests stopwords"""
@@ -175,6 +180,13 @@ def test_notranslatewords():
     assert checks.passes(stdchecker.notranslatewords, "This uses Mozilla. Don't you?", "hierdie gebruik Mozilla soos jy")
     # should always pass if there are no stopwords in the original
     assert checks.passes(stdchecker.notranslatewords, "This uses something else. Don't you?", "hierdie gebruik Mozilla soos jy")
+    # Cope with commas
+    assert checks.passes(stdchecker.notranslatewords, "using Mozilla Task Manager", "šomiša Selaola Mošomo sa Mozilla, gomme")
+    # Find words even if they are embedded in punctuation
+    assert checks.fails(stdchecker.musttranslatewords, "Click 'Mozilla' button", "Kliek 'Motzille' knoppie")
+    assert checks.passes(stdchecker.musttranslatewords, "Click 'Mozilla' button", "Kliek 'Mozilla' knoppie")
+    assert checks.fails(stdchecker.musttranslatewords, "Click Mozilla!", "Kliek Motzille!")
+    assert checks.passes(stdchecker.musttranslatewords, "Click Mozilla!", "Kliek Mozilla!")
 
 def test_numbers():
     """test numbers"""
