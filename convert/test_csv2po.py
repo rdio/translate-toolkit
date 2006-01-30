@@ -11,7 +11,7 @@ class TestCSV2PO:
         inputfile = wStringIO.StringIO(csvsource)
         inputcsv = csvl10n.csvfile(inputfile)
 	if template:
-          templatefile = wStringIO.StringIO(csvsource)
+          templatefile = wStringIO.StringIO(template)
           inputpot = po.pofile(templatefile)
 	else:
 	  inputpot = None
