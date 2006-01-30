@@ -311,6 +311,12 @@ def test_unchanged():
     assert checks.passes(stdchecker.unchanged, "I", "I") 
     assert checks.fails(stdchecker.unchanged, r"""_: KDE comment\n
 Unchanged""", r"Unchanged") 
+    # Variable only messages should be ignored
+    mozillachecker = checks.MozillaChecker()
+    assert checks.passes(mozillachecker.unchanged, "$ProgramName$", "$ProgramName$") 
+    # Don't translate words should be ignored
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["Mozilla"]))
+    assert checks.passes(mozillachecker.unchanged, "Mozilla", "Mozilla") 
 
 def test_untranslated():
     """tests untranslated entries"""
