@@ -26,7 +26,7 @@ from translate.storage import csvl10n
 
 class po2csv:
   def convertstring(self, postr):
-    unquotedstr = po.getunquotedstr(postr)
+    unquotedstr = po.unquotefrompo(postr, joinwithlinebreak=False)
     if len(unquotedstr) >= 1 and unquotedstr[:1] in "-+'": unquotedstr = "\\" + unquotedstr
     return unquotedstr
 
@@ -39,13 +39,13 @@ class po2csv:
   def convertelement(self,thepo):
     thecsv = csvl10n.csvunit()
     if thepo.isheader():
-      thecsv.source = "source"
+      thecsv.sourcecomment = "source"
       thecsv.msgid = "original"
       thecsv.msgstr = "translation"
     elif thepo.isblank():
       return None
     else:
-      thecsv.source = self.convertsource(thepo)
+      thecsv.sourcecomment = self.convertsource(thepo)
       thecsv.msgid = self.convertstring(thepo.msgid)
       # avoid plurals
       msgstr = thepo.msgstr
@@ -56,7 +56,7 @@ class po2csv:
 
   def convertplurals(self,thepo):
     thecsv = csvl10n.csvunit()
-    thecsv.source = self.convertsource(thepo)
+    thecsv.sourcecomment = self.convertsource(thepo)
     thecsv.msgid = self.convertstring(thepo.msgid_plural)
     thecsv.msgstr = self.convertstring(thepo.msgstr[1])
     return thecsv

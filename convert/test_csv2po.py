@@ -19,10 +19,10 @@ class TestCSV2PO:
         outputpo = convertor.convertfile(inputcsv)
         return outputpo
 
-    def singleelement(self, pofile):
+    def singleelement(self, storage):
         """checks that the pofile contains a single non-header element, and returns it"""
-        assert len(pofile.units) == 1
-        return pofile.units[0]
+        assert len(storage.units) == 1
+        return storage.units[0]
 
     def test_simpleentity(self):
         """checks that a simple csv entry definition converts properly to a po entry"""
@@ -48,4 +48,52 @@ msgstr ""
         assert pounit.sourcecomments == ["#: " + "intl.charset.default" + "\n"]
         assert po.unquotefrompo(pounit.msgid) == "ISO-8859-1"
         assert po.unquotefrompo(pounit.msgstr) == "UTF-16"
+
+    def test_newlines(self):
+        """tests multiline po entries"""
+        minicsv = r'''"Random comment
+with continuation","Original text","Langdradige teks
+wat lank aanhou"
+'''
+        pofile = self.csv2po(minicsv)
+        unit = self.singleelement(pofile)
+        assert not unit.sourcecomments == ["#: Random comment\nwith continuation"]
+        assert unit.source == "Original text"
+        print unit.target
+        assert not unit.target == "Langdradige teks\nwat lank aanhou"
+
+    def test_tabs(self):
+        """Test the escaping of tabs"""
+        minicsv = ',"First column\tSecond column","Twee kolomme gesky met \t"'
+        pofile = self.csv2po(minicsv)
+        unit = self.singleelement(pofile)
+        print unit.source
+        assert unit.source == "First column\tSecond column"
+        assert not pofile.findunit("First column\tSecond column").target == "Twee kolomme gesky met \\t"
+
+    def test_quotes(self):
+        """Test the escaping of quotes (and slash)"""
+        minicsv = r''',"Hello ""Everyone""","Good day ""All"""
+,"Use \"".","Gebruik \""."'''
+        print minicsv
+        csvfile = csvl10n.csvfile(wStringIO.StringIO(minicsv))
+        print str(csvfile)
+        pofile = self.csv2po(minicsv)
+        unit = pofile.units[0]
+        assert unit.msgid == ['''"Hello \\"Everyone\\""''']
+        assert pofile.findunit('Hello "Everyone"').target == 'Good day "All"'
+        print str(pofile)
+        for unit in pofile.units:
+            print unit.source
+            print unit.target
+            print
+#        assert pofile.findunit('Use \\".').target == 'Gebruik \\".'
+
+    def test_empties(self):
+        """Tests that things keep working with empty entries"""
+        minicsv = ',Source,'
+        pofile = self.csv2po(minicsv)
+        assert pofile.findunit("Source") is not None
+        assert pofile.findunit("Source").target == ""
+        assert len(pofile.units) == 1
 

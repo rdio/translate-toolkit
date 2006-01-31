@@ -48,9 +48,9 @@ class csv2tbx:
 
   def convertelement(self,thecsv):
     """converts csv element to tbx element"""
-    #TODO: handle comments/source in thecsv.source (thecsv.source is not the source language)
-    term = tbx.tbxunit(thecsv.msgid)
-    term.settarget(thecsv.msgstr)
+    #TODO: handle comments/source in thecsv.sourcecomment
+    term = tbx.tbxunit(thecsv.source)
+    term.settarget(thecsv.target)
     return term
 
   def convertfile(self, thecsvfile):
@@ -59,15 +59,15 @@ class csv2tbx:
     self.tbxfile = tbx.tbxfile()
     for thecsv in thecsvfile.units:
       if self.charset is not None:
-        thecsv.msgid = thecsv.msgid.decode(self.charset)
-        thecsv.msgstr = thecsv.msgstr.decode(self.charset)
+        thecsv.source = thecsv.source.decode(self.charset)
+        thecsv.target = thecsv.target.decode(self.charset)
       if mightbeheader:
         # ignore typical header strings...
         mightbeheader = False
-        if [item.strip().lower() for item in thecsv.source, thecsv.msgid, thecsv.msgstr] == \
+        if [item.strip().lower() for item in thecsv.sourcecomment, thecsv.source, thecsv.target] == \
            ["source", "original", "translation"]:
           continue
-        if len(thecsv.source.strip()) == 0 and thecsv.msgid.find("Content-Type:") != -1:
+        if len(thecsv.sourcecomment.strip()) == 0 and thecsv.source.find("Content-Type:") != -1:
           continue
       term = self.convertelement(thecsv)
       self.tbxfile.addunit(term)
@@ -91,7 +91,7 @@ def main():
   parser.add_option("", "--charset", dest="charset", default=None,
     help="set charset to decode from csv files", metavar="CHARSET")
   parser.add_option("", "--columnorder", dest="columnorder", default=None,
-    help="specify the order and position of columns (source,msgid,msgstr)")
+    help="specify the order and position of columns (comment,source,target)")
   parser.passthrough.append("charset")
   parser.passthrough.append("columnorder")
   parser.run()

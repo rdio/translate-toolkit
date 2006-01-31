@@ -85,15 +85,15 @@ class csv2po:
   def convertelement(self,thecsv):
     """converts csv element to po element"""
     thepo = po.pounit()
-    thepo.sourcecomments = ["#: " + thecsv.source + "\n"]
+    thepo.sourcecomments = ["#: " + thecsv.sourcecomment + "\n"]
     thepo.msgid = [quotecsvstr(line) for line in thecsv.msgid.split('\n')]
     thepo.msgstr = [quotecsvstr(line) for line in thecsv.msgstr.split('\n')]
     return thepo
 
   def handlecsvunit(self, thecsv):
     """handles reintegrating a csv element into the .po file"""
-    if len(thecsv.source.strip()) > 0 and thecsv.source in self.sourceindex:
-      thepo = self.sourceindex[thecsv.source]
+    if len(thecsv.sourcecomment.strip()) > 0 and thecsv.sourcecomment in self.sourceindex:
+      thepo = self.sourceindex[thecsv.sourcecomment]
     elif thecsv.msgid in self.msgidindex:
       thepo = self.msgidindex[thecsv.msgid]
     elif simplify(thecsv.msgid) in self.simpleindex:
@@ -101,13 +101,13 @@ class csv2po:
       if len(thepolist) > 1:
         pofilename = getattr(self.pofile, "filename", "(unknown)")
         matches = "\n  ".join(["possible match: " + po.getunquotedstr(thepo.msgid) for thepo in thepolist])
-        print >>sys.stderr, "%s - csv entry not found in pofile, multiple matches found:\n  location\t%s\n  original\t%s\n  translation\t%s\n  %s" % (pofilename, thecsv.source, thecsv.msgid, thecsv.msgstr, matches)
+        print >>sys.stderr, "%s - csv entry not found in pofile, multiple matches found:\n  location\t%s\n  original\t%s\n  translation\t%s\n  %s" % (pofilename, thecsv.sourcecomment, thecsv.msgid, thecsv.msgstr, matches)
         self.unmatched += 1
         return
       thepo = thepolist[0]
     else:
       pofilename = getattr(self.pofile, "filename", "(unknown)")
-      print >>sys.stderr, "%s - csv entry not found in pofile:\n  location\t%s\n  original\t%s\n  translation\t%s" % (pofilename, thecsv.source, thecsv.msgid, thecsv.msgstr)
+      print >>sys.stderr, "%s - csv entry not found in pofile:\n  location\t%s\n  original\t%s\n  translation\t%s" % (pofilename, thecsv.sourcecomment, thecsv.msgid, thecsv.msgstr)
       self.unmatched += 1
       return
     csvmsgstr = [quotecsvstr(line) for line in thecsv.msgstr.split('\n')]
@@ -152,10 +152,10 @@ class csv2po:
       if mightbeheader:
         # ignore typical header strings...
         mightbeheader = False
-        if [item.strip().lower() for item in thecsv.source, thecsv.msgid, thecsv.msgstr] == \
+        if [item.strip().lower() for item in thecsv.sourcecomment, thecsv.msgid, thecsv.msgstr] == \
            ["source", "original", "translation"]:
           continue
-        if len(thecsv.source.strip()) == 0 and thecsv.msgid.find("Content-Type:") != -1:
+        if len(thecsv.sourcecomment.strip()) == 0 and thecsv.msgid.find("Content-Type:") != -1:
           continue
       if mergemode:
         self.handlecsvunit(thecsv)

@@ -94,34 +94,47 @@ class SimpleDictReader:
 
 class csvunit(base.TranslationUnit):
   def __init__(self, source=None):
-    #NOTE: source is not the source language
-    self.source = ""
-    self.msgid = ""
+    self.sourcecomment = ""
+    self.msgid = source
     self.msgstr = ""
 
+  def getsource(self):
+    return self.msgid
+
+  def setsource(self, source):
+    self.msgid = source
+  source = property(getsource, setsource)
+
+  def gettarget(self):
+    return self.msgstr
+
+  def settarget(self, target):
+    self.msgstr = target
+  target = property(gettarget, settarget)
+
   def fromdict(self, cedict):
-    self.source = cedict.get('source', '')
+    self.sourcecomment = cedict.get('source', '')
     self.msgid = cedict.get('msgid', '')
     self.msgstr = cedict.get('msgstr', '')
-    if self.source is None: self.source = ''
+    if self.sourcecomment is None: self.sourcecomment = ''
     if self.msgid is None: self.msgid = ''
     if self.msgstr is None: self.msgstr = ''
     if self.msgid[:2] in ("\\+", "\\-"): self.msgid = self.msgid[1:]
     if self.msgstr[:2] in ("\\+", "\\-"): self.msgstr = self.msgstr[1:]
 
   def todict(self, encoding='utf-8'):
-    source, msgid, msgstr = self.source, self.msgid, self.msgstr
-    if isinstance(source, unicode):
-      source = source.encode(encoding)
+    sourcecomment, msgid, msgstr = self.sourcecomment, self.msgid, self.msgstr
+    if isinstance(sourcecomment, unicode):
+      sourcecomment = sourcecomment.encode(encoding)
     if isinstance(msgid, unicode):
       msgid = msgid.encode(encoding)
     if isinstance(msgstr, unicode):
       msgstr = msgstr.encode(encoding)
-    return {'source':source, 'msgid': msgid, 'msgstr': msgstr}
+    return {'source':sourcecomment, 'msgid': msgid, 'msgstr': msgstr}
 
 class csvfile(base.TranslationStore):
   """This class represents a .csv file with various lines. 
-  The default format contains three columns: comments, source, taret"""
+  The default format contains three columns: comments, source, target"""
   UnitClass = csvunit
   def __init__(self, inputfile=None, fieldnames=None):
     self.units= []
@@ -153,6 +166,14 @@ class csvfile(base.TranslationStore):
       writer.writerow(cedict)
     csvfile.reset()
     return "".join(csvfile.readlines())
+
+  def parsestring(cls, storestring):
+    """Parses the csv file contents in the storestring"""
+    parsedfile = csvfile()
+    parsedfile.parse(storestring)
+    return parsedfile
+  parsestring = classmethod(parsestring)
+
 
 if __name__ == '__main__':
   import sys
