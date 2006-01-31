@@ -249,20 +249,25 @@ def test_singlequoting():
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.singlequoting, "A 'Hot' plate", "Ipuleti 'elishisa' kunye")
     # FIXME this should pass but doesn't probably to do with our logic that got confused at the end of lines
-    # assert checks.passes(stdchecker.singlequoting, "'Hot' plate", "Ipuleti 'elishisa'")
-    assert checks.passes(stdchecker.singlequoting, "File '%s'.", "'%s' Faele.")
+    assert checks.passes(stdchecker.singlequoting, "'Hot' plate", "Ipuleti 'elishisa'")
     # FIXME newlines also confuse our algorithm for single quotes
-    # assert checks.passes(stdchecker.singlequoting, "File '%s'\n", "'%s' Faele\n")
+    assert checks.passes(stdchecker.singlequoting, "File '%s'\n", "'%s' Faele\n")
     assert checks.fails(stdchecker.singlequoting, "'Hot' plate", "Ipuleti \"elishisa\"")
     assert checks.passes(stdchecker.singlequoting, "It's here.", "Dit is hier.")
+    # We shouldn't see single quotes in KDE comments
     assert checks.passes(stdchecker.singlequoting, r"""_: 'Migrating' formats.\n
 Converting...""", "Kugucula...")
+    # Don't get confused by punctuation that touches a single quote
+    assert checks.passes(stdchecker.singlequoting, "File '%s'.", "'%s' Faele.")
     assert checks.passes(stdchecker.singlequoting, "Blah 'format' blah.", "Blah blah 'sebopego'.")
-	
+    assert checks.passes(stdchecker.singlequoting, "Blah 'format' blah!", "Blah blah 'sebopego'!")
+    assert checks.passes(stdchecker.singlequoting, "Blah 'format' blah?", "Blah blah 'sebopego'?")
 
-# def test_simplecaps():
-#     """tests simple caps"""
-#     stdchecker = checks.StandardChecker()
+def test_simplecaps():
+    """tests simple caps"""
+    stdchecker = checks.StandardChecker()
+    # We should squash 'I' in the source text as it messes with capital detection
+    assert checks.passes(stdchecker.simplecaps, "if you say I want", "as jy se ek wil")
 
 # def test_spellcheck():
 #     """tests simple caps"""
