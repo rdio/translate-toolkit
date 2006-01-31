@@ -94,43 +94,29 @@ class SimpleDictReader:
 
 class csvunit(base.TranslationUnit):
   def __init__(self, source=None):
-    self.sourcecomment = ""
-    self.msgid = source
-    self.msgstr = ""
-
-  def getsource(self):
-    return self.msgid
-
-  def setsource(self, source):
-    self.msgid = source
-  source = property(getsource, setsource)
-
-  def gettarget(self):
-    return self.msgstr
-
-  def settarget(self, target):
-    self.msgstr = target
-  target = property(gettarget, settarget)
+    self.comment = ""
+    self.source = source
+    self.target = ""
 
   def fromdict(self, cedict):
-    self.sourcecomment = cedict.get('source', '')
-    self.msgid = cedict.get('msgid', '')
-    self.msgstr = cedict.get('msgstr', '')
-    if self.sourcecomment is None: self.sourcecomment = ''
-    if self.msgid is None: self.msgid = ''
-    if self.msgstr is None: self.msgstr = ''
-    if self.msgid[:2] in ("\\+", "\\-"): self.msgid = self.msgid[1:]
-    if self.msgstr[:2] in ("\\+", "\\-"): self.msgstr = self.msgstr[1:]
+    self.comment = cedict.get('comment', '')
+    self.source = cedict.get('source', '')
+    self.target = cedict.get('target', '')
+    if self.comment is None: self.comment = ''
+    if self.source is None: self.source = ''
+    if self.target is None: self.target = ''
+    if self.source[:2] in ("\\+", "\\-"): self.source = self.source[1:]
+    if self.target[:2] in ("\\+", "\\-"): self.target = self.target[1:]
 
   def todict(self, encoding='utf-8'):
-    sourcecomment, msgid, msgstr = self.sourcecomment, self.msgid, self.msgstr
-    if isinstance(sourcecomment, unicode):
-      sourcecomment = sourcecomment.encode(encoding)
-    if isinstance(msgid, unicode):
-      msgid = msgid.encode(encoding)
-    if isinstance(msgstr, unicode):
-      msgstr = msgstr.encode(encoding)
-    return {'source':sourcecomment, 'msgid': msgid, 'msgstr': msgstr}
+    comment, source, target = self.comment, self.source, self.target
+    if isinstance(comment, unicode):
+      comment = comment.encode(encoding)
+    if isinstance(source, unicode):
+      source = source.encode(encoding)
+    if isinstance(target, unicode):
+      target = target.encode(encoding)
+    return {'comment':comment, 'source': source, 'target': target}
 
 class csvfile(base.TranslationStore):
   """This class represents a .csv file with various lines. 
@@ -139,7 +125,7 @@ class csvfile(base.TranslationStore):
   def __init__(self, inputfile=None, fieldnames=None):
     self.units= []
     if fieldnames is None:
-      self.fieldnames = ['source', 'msgid', 'msgstr']
+      self.fieldnames = ['comment', 'source', 'target']
     else:
       if isinstance(fieldnames, basestring):
         fieldnames = [fieldname.strip() for fieldname in fieldnames.split(",")]

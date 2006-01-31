@@ -26,11 +26,10 @@ class TestCSV2PO:
 
     def test_simpleentity(self):
         """checks that a simple csv entry definition converts properly to a po entry"""
-        csvsource = '''source,original,translation
+        csvsource = '''comment,original,translation
 intl.charset.default,ISO-8859-1,UTF-16'''
         pofile = self.csv2po(csvsource)
         pounit = self.singleelement(pofile)
-	print dir(pounit)
         assert pounit.sourcecomments == ["#: " + "intl.charset.default" + "\n"]
         assert po.unquotefrompo(pounit.msgid) == "ISO-8859-1"
         assert po.unquotefrompo(pounit.msgstr) == "UTF-16"

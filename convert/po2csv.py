@@ -30,35 +30,35 @@ class po2csv:
     if len(unquotedstr) >= 1 and unquotedstr[:1] in "-+'": unquotedstr = "\\" + unquotedstr
     return unquotedstr
 
-  def convertsource(self,thepo):
-    sourceparts = []
-    for sourcecomment in thepo.sourcecomments:
-      sourceparts.append(sourcecomment.replace("#:","",1).strip())
-    return " ".join(sourceparts)
+  def convertcomments(self,thepo):
+    commentparts = []
+    for comment in thepo.sourcecomments:
+      commentparts.append(comment.replace("#:","",1).strip())
+    return " ".join(commentparts)
 
   def convertelement(self,thepo):
     thecsv = csvl10n.csvunit()
     if thepo.isheader():
-      thecsv.sourcecomment = "source"
-      thecsv.msgid = "original"
-      thecsv.msgstr = "translation"
+      thecsv.comment = "comment"
+      thecsv.source = "original"
+      thecsv.target = "translation"
     elif thepo.isblank():
       return None
     else:
-      thecsv.sourcecomment = self.convertsource(thepo)
-      thecsv.msgid = self.convertstring(thepo.msgid)
+      thecsv.comment = self.convertcomments(thepo)
+      thecsv.source = self.convertstring(thepo.msgid)
       # avoid plurals
-      msgstr = thepo.msgstr
-      if isinstance(msgstr, dict):
-        msgstr = thepo.msgstr[0]
-      thecsv.msgstr = self.convertstring(msgstr)
+      target = thepo.msgstr
+      if isinstance(target, dict):
+        target = thepo.msgstr[0]
+      thecsv.target = self.convertstring(target)
     return thecsv
 
   def convertplurals(self,thepo):
     thecsv = csvl10n.csvunit()
-    thecsv.sourcecomment = self.convertsource(thepo)
-    thecsv.msgid = self.convertstring(thepo.msgid_plural)
-    thecsv.msgstr = self.convertstring(thepo.msgstr[1])
+    thecsv.comment = self.convertcomments(thepo)
+    thecsv.source = self.convertstring(thepo.msgid_plural)
+    thecsv.target = self.convertstring(thepo.msgstr[1])
     return thecsv
 
   def convertfile(self,thepofile,columnorder=None):
@@ -90,7 +90,7 @@ def main():
   formats = {"po":("csv", convertcsv)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.add_option("", "--columnorder", dest="columnorder", default=None,
-    help="specify the order and position of columns (source,msgid,msgstr)")
+    help="specify the order and position of columns (comment,source,target)")
   parser.passthrough.append("columnorder")
   parser.run()
 
