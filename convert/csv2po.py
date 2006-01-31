@@ -99,15 +99,15 @@ class csv2po:
     elif simplify(thecsv.source) in self.simpleindex:
       thepolist = self.simpleindex[simplify(thecsv.source)]
       if len(thepolist) > 1:
-        pofilename = getattr(self.pofile, "filename", "(unknown)")
+        csvfilename = getattr(self.csvfile, "filename", "(unknown)")
         matches = "\n  ".join(["possible match: " + po.getunquotedstr(thepo.msgid) for thepo in thepolist])
-        print >>sys.stderr, "%s - csv entry not found in pofile, multiple matches found:\n  location\t%s\n  original\t%s\n  translation\t%s\n  %s" % (pofilename, thecsv.comment, thecsv.source, thecsv.target, matches)
+        print >>sys.stderr, "%s - csv entry not found in csvfile, multiple matches found:\n  location\t%s\n  original\t%s\n  translation\t%s\n  %s" % (csvfilename, thecsv.comment, thecsv.source, thecsv.target, matches)
         self.unmatched += 1
         return
       thepo = thepolist[0]
     else:
-      pofilename = getattr(self.pofile, "filename", "(unknown)")
-      print >>sys.stderr, "%s - csv entry not found in pofile:\n  location\t%s\n  original\t%s\n  translation\t%s" % (pofilename, thecsv.comment, thecsv.source, thecsv.target)
+      csvfilename = getattr(self.csvfile, "filename", "(unknown)")
+      print >>sys.stderr, "%s - csv entry not found in csvfile:\n  location\t%s\n  original\t%s\n  translation\t%s" % (csvfilename, thecsv.comment, thecsv.source, thecsv.target)
       self.unmatched += 1
       return
     csvtarget = [quotecsvstr(line) for line in thecsv.target.split('\n')]
@@ -133,6 +133,7 @@ class csv2po:
 
   def convertfile(self, thecsvfile):
     """converts a csvfile to a pofile, and returns it. uses templatepo if given at construction"""
+    self.csvfile = thecsvfile
     if self.pofile is None:
       self.pofile = po.pofile()
       mergemode = False
@@ -143,9 +144,9 @@ class csv2po:
       headerpo.msgstr = [line.replace("CHARSET", "UTF-8").replace("ENCODING", "8bit") for line in headerpo.msgstr]
     else:
       headerpo = self.pofile.makeheader(charset="UTF-8", encoding="8bit")
-    headerpo.othercomments.append("# extracted from %s\n" % thecsvfile.filename)
+    headerpo.othercomments.append("# extracted from %s\n" % self.csvfile.filename)
     mightbeheader = True
-    for thecsv in thecsvfile.units:
+    for thecsv in self.csvfile.units:
       if self.charset is not None:
         thecsv.source = thecsv.source.decode(self.charset)
         thecsv.target = thecsv.target.decode(self.charset)
