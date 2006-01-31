@@ -74,6 +74,14 @@ msgstr "Gebruik \\\"."
         assert csvfile.findunit('Hello "Everyone"').target == 'Good day "All"'
         assert csvfile.findunit('Use \\".').target == 'Gebruik \\".'
 
+    def test_singlequotes(self):
+        """Tests that single quotes are preserved correctly"""
+        minipo = '''msgid "'mono'"\nmsgstr "'mono'"\n'''
+        csvfile = self.po2csv(minipo)
+        print str(csvfile)
+        assert csvfile.findunit("'mono'").target == "'mono'"
+        
+
     def test_empties(self):
         """Tests that things keep working with empty entries"""
         minipo = 'msgid "Source"\nmsgstr ""\n\nmsgid ""\nmsgstr ""'
