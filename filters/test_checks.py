@@ -205,6 +205,9 @@ def test_numbers():
     assert checks.passes(stdchecker.numbers, "Netscape 4 was not as good as Netscape 7.", "Netscape 4 was nie so goed soos Netscape 7 nie.")
     # Check for correct detection of degree.  Also check that we aren't getting confused with 1 and 2 byte UTF-8 characters
     assert checks.fails(stdchecker.numbers, "180° turn", "180 turn")
+    assert checks.passes(stdchecker.numbers, "180° turn", "180° turn")
+    assert checks.fails(stdchecker.numbers, "180° turn", "360 turn")
+    assert checks.fails(stdchecker.numbers, "180° turn", "360° turn")
     assert checks.passes(stdchecker.numbers, "180~ turn", "180 turn")
     assert checks.passes(stdchecker.numbers, "180¶ turn", "180 turn")
     # Numbers with multiple decimal points
