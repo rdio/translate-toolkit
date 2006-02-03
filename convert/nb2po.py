@@ -29,7 +29,7 @@ from translate.storage import html
 class nb2po:
   htmlfields = ["BODY"]
 
-  def makepoelement(self, filename, fieldname, fieldvalue):
+  def makepounit(self, filename, fieldname, fieldvalue):
     """makes a pounit"""
     thepo = po.pounit()
     thepo.sourcecomments.append("#: %s#%s\n" % (filename,fieldname))
@@ -46,8 +46,8 @@ class nb2po:
     thepo.msgstr = []
     return thepo
 
-  def makepoelements(self, filename, fieldname, fieldvalue):
-    """makes a list of poelements from an html block"""
+  def makepounits(self, filename, fieldname, fieldvalue):
+    """makes a list of pounits from an html block"""
     thepolist = []
     htmlparser = html.POHTMLParser(includeuntaggeddata = True)
     htmlparser.feed(fieldvalue)
@@ -64,7 +64,7 @@ class nb2po:
           if not line:
             subblock = subblock.strip()
             if subblock:
-              thepo = self.makepoelement(filename, "%s:%d" % (fieldname, blocknum), subblock)
+              thepo = self.makepounit(filename, "%s:%d" % (fieldname, blocknum), subblock)
               thepolist.append(thepo)
             subblock = ""
           else:
@@ -72,10 +72,10 @@ class nb2po:
           blocknum += 1
         subblock = subblock.strip()
         if subblock:
-          thepo = self.makepoelement(filename, "%s:%d" % (fieldname, blocknum), subblock)
+          thepo = self.makepounit(filename, "%s:%d" % (fieldname, blocknum), subblock)
           thepolist.append(thepo)
       else:
-        thepo = self.makepoelement(filename, "%s:%d" % (fieldname, blocknum), block)
+        thepo = self.makepounit(filename, "%s:%d" % (fieldname, blocknum), block)
         thepolist.append(thepo)
         blocknum += 1
     return thepolist
@@ -91,7 +91,7 @@ class nb2po:
     for line in lines:
       if line.strip() == "-----":
         if inlongfield:
-          thepolist = self.makepoelements(filename, longfieldname, longfieldvalue)
+          thepolist = self.makepounits(filename, longfieldname, longfieldvalue)
           thepofile.units.extend(thepolist)
         inlongfield = not inlongfield
         longfieldname, longfieldvalue = None, ""
@@ -108,7 +108,7 @@ class nb2po:
         longfieldname, longfieldvalue = fieldname, fieldvalue
       else:
         # split up into blocks
-        thepo = self.makepoelement(filename, fieldname, fieldvalue)
+        thepo = self.makepounit(filename, fieldname, fieldvalue)
         thepofile.units.append(thepo)
     return thepofile
 
