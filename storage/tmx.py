@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2002-2004 Zuza Software Foundation
+# Copyright 2002-2006 Zuza Software Foundation
 # 
 # This file is part of translate.
 #
@@ -24,46 +24,6 @@
 
 from xml.dom import minidom
 from translate import __version__
-
-# def writexml(self, writer, indent="", addindent="", newl=""):
-#     """a replacement to writexml that formats it more like typical .ts files"""
-#     # indent = current indentation
-#     # addindent = indentation to add to higher levels
-#     # newl = newline string
-#     writer.write(indent+"<" + self.tagName)
-# 
-#     attrs = self._get_attributes()
-#     a_names = attrs.keys()
-#     a_names.sort()
-# 
-#     for a_name in a_names:
-#         writer.write(" %s=\"" % a_name)
-#         _write_data(writer, attrs[a_name].value)
-#         writer.write("\"")
-#     if self.childNodes:
-#         if len(self.childNodes) == 1 and self.childNodes[0].nodeType == self.TEXT_NODE:
-#           writer.write(">")
-#           for node in self.childNodes:
-#               node.writexml(writer,"","","")
-#           writer.write("</%s>%s" % (self.tagName,newl))
-#         else:
-#           writer.write(">%s"%(newl))
-#           for node in self.childNodes:
-#               node.writexml(writer,indent+addindent,addindent,newl)
-#           writer.write("%s</%s>%s" % (indent,self.tagName,newl))
-#     else:
-#         writer.write("/>%s"%(newl))
-# 
-# Element_writexml = minidom.Element.writexml
-# for elementclassname in dir(minidom):
-#   elementclass = getattr(minidom, elementclassname)
-#   if not isinstance(elementclass, type(minidom.Element)):
-#     continue
-#   if not issubclass(elementclass, minidom.Element):
-#     continue
-#   if elementclass.writexml != Element_writexml:
-#     continue
-#   elementclass.writexml = writexml
 
 # TODO: handle comments
 # TODO: handle translation types
@@ -156,48 +116,6 @@ version="1.4"><header></header><body></body></tmx>''')
         if self.getsegmenttext(variant) == sourcetext:
           found = True
     return None
-
-  def getcontextname(self, contextnode):
-    """returns the name of the given context"""
-    namenodes = contextnode.getElementsByTagName("name")
-    if not namenodes:
-      return None
-    return self.getnodetext(namenodes[0])
-
-  def getcontextnode(self, contextname):
-    """finds the contextnode with the given name"""
-    contextnodes = self.document.getElementsByTagName("context")
-    for contextnode in contextnodes:
-      if self.getcontextname(contextnode) == contextname:
-        return contextnode
-    return None
-
-  def getmessagenodes(self, context=None):
-    """returns all the messagenodes, limiting to the given context (name or node) if given"""
-    if context is None:
-      return self.document.getElementsByTagName("message")
-    else:
-      if isinstance(context, (str, unicode)):
-        # look up the context node by name
-        context = self.getcontextnode(context)
-        if context is None:
-          return []
-      return context.getElementsByTagName("message")
-
-  def getmessagesource(self, message):
-    """returns the message source for a given node"""
-    sourcenode = message.getElementsByTagName("source")[0]
-    return self.getnodetext(sourcenode)
-
-  def getmessagetranslation(self, message):
-    """returns the message translation for a given node"""
-    translationnode = message.getElementsByTagName("translation")[0]
-    return self.getnodetext(translationnode)
-
-  def iteritems(self):
-    """iterates through (contextname, messages)"""
-    for contextnode in self.document.getElementsByTagName("context"):
-      yield self.getcontextname(contextnode), self.getmessagenodes(contextnode)
 
   def __del__(self):
     """clean up the document if required"""
