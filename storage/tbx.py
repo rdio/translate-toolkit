@@ -39,6 +39,9 @@ Provisional work is done to make several languages possible."""
             self.document = document
         else:
             self.document = minidom.Document()
+            #print "EK MOET 'N DOKUMENT HÊ!!!"
+            #print "------------------------------------ ============= ----------"
+            #pass
         if empty:
             return
         self.xmlelement = minidom.Element("termEntry")
@@ -66,8 +69,7 @@ Provisional work is done to make several languages possible."""
         langSets = self.xmlelement.getElementsByTagName("langSet")
         sourcelangset = self.createlangset(sourcelang, source)
         if len(langSets) > 0:
-            self.xmlelement.insertBefore(sourcelangset, langSets[0])
-            self.xmlelement.removeChild(langSets[0])
+            self.xmlelement.replaceChild(sourcelangset, langSets[0])
         else:
             self.xmlelement.appendChild(sourcelangset)
             
@@ -99,13 +101,15 @@ Provisional work is done to make several languages possible."""
     def createlangset(self, lang, text):
         """returns a langset xml Element setup with given parameters"""
         langset = self.document.createElement("langSet")
+	assert self.document == langset.ownerDocument
         langset.setAttribute("xml:lang", lang)
         tig = self.document.createElement("tig") # or ntig with termGrp inside
         term = self.document.createElement("term")
         termtext = self.document.createTextNode(text)
-        term.appendChild(termtext)
-        tig.appendChild(term)
+        
         langset.appendChild(tig)
+        tig.appendChild(term)
+        term.appendChild(termtext)
         return langset
 
     def getlangset(self, lang=None, index=None):
@@ -118,7 +122,10 @@ Provisional work is done to make several languages possible."""
                 if set.getAttribute("xml:lang") == lang:
                     return set
         else:#have to use index
-            return langsets[index]
+            if index >= len(langsets):
+                return None
+            else:
+                return langsets[index]
         raise KeyError("No such langSet found")
             
     def gettermtext(self, langset):
@@ -133,8 +140,8 @@ Provisional work is done to make several languages possible."""
     def __str__(self):
         return self.xmlelement.toxml()
 
-    def createfromxmlElement(cls, element):
-        term = tbxunit(None, document=None, empty=True)
+    def createfromxmlElement(cls, element, document):
+        term = tbxunit(None, document=document, empty=True)
         term.xmlelement = element
         return term
     createfromxmlElement = classmethod(createfromxmlElement)
@@ -147,7 +154,7 @@ class tbxfile(base.TranslationStore):
     def __init__(self, inputfile=None, lang='en'):
         super(tbxfile, self).__init__()
         if inputfile is not None:
-            self.document = minidom.parse(inputfile)
+            self.parse("".join(open(inputfile).readlines()))
             assert self.document.documentElement.tagName == "martif"
         else:        
             self.parse('''<?xml version="1.0"?>
@@ -164,9 +171,9 @@ class tbxfile(base.TranslationStore):
     def addsourceunit(self, source):
         #TODO: miskien moet hierdie eerder addsourcestring of iets genoem word?
         """Adds and returns a new term with the given string as first entry."""
-        newterm = super(tbxfile, self).addsourceunit(source)
-        self.document.getElementsByTagName("body")[0].appendChild(newterm.xmlelement)
-        return newterm
+        newunit = self.UnitClass(source, self.document)
+        self.addunit(newunit)
+        return newunit
 
     def addunit(self, unit):
         self.document.getElementsByTagName("body")[0].appendChild(unit.xmlelement)
@@ -184,7 +191,7 @@ class tbxfile(base.TranslationStore):
         if termEntries is None:
             return
         for entry in termEntries:
-            term = tbxunit.createfromxmlElement(entry)
+            term = tbxunit.createfromxmlElement(entry, self.document)
             self.units.append(term)
             assert len(self.units) > 0
 
