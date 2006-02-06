@@ -30,8 +30,24 @@ from translate.misc import wStringIO
 import os
 
 class po2tmx:
-  def convertfile(self, inputfile, tmxfile, sourcelanguage='en', targetlanguage=None):
+  def convertfile(self, inputfile, sourcelanguage='en', targetlanguage=None):
     """converts a .po file to TMX file"""
+    thepofile = inputfile
+    for thepo in thepofile.elements:
+      if thepo.isheader() or thepo.isblank() or thepo.isblankmsgstr() or thepo.isfuzzy():
+        continue
+      source = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False, includeescapes=False)
+      translation = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False, includeescapes=False)
+      if isinstance(source, str):
+        source = source.decode("utf-8")
+      if isinstance(translation, str):
+        translation = translation.decode("utf-8")
+      # TODO place source location in comments
+      tmxfile.addtranslation(source, sourcelanguage, translation, targetlanguage)
+    return tmxfile.getxml()
+  
+  def convertfiles(self, inputfile, tmxfile, sourcelanguage='en', targetlanguage=None):
+    """converts a .po file (possibly many) to TMX file"""
     thepofile = po.pofile(inputfile)
     for thepo in thepofile.units:
       if thepo.isheader() or thepo.isblank() or thepo.isblankmsgstr() or thepo.isfuzzy():
@@ -48,7 +64,7 @@ class po2tmx:
 def convertpo(inputfile, outputfile, templatefile, sourcelanguage='en', targetlanguage=None):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   convertor = po2tmx()
-  convertor.convertfile(inputfile, outputfile.tmxfile, sourcelanguage, targetlanguage)
+  convertor.convertfiles(inputfile, outputfile.tmxfile, sourcelanguage, targetlanguage)
   return 1
 
 class tmxmultifile:
