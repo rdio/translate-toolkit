@@ -48,9 +48,9 @@ class csv2tbx:
 
   def convertelement(self,thecsv):
     """converts csv element to tbx element"""
-    #TODO: handle comments/source in thecsv.sourcecomment
+    #TODO: handle comments/source in thecsv.comment
     term = tbx.tbxunit(thecsv.source)
-    term.settarget(thecsv.target)
+    term.settarget(thecsv.target.decode('utf-8'))
     return term
 
   def convertfile(self, thecsvfile):
@@ -64,10 +64,10 @@ class csv2tbx:
       if mightbeheader:
         # ignore typical header strings...
         mightbeheader = False
-        if [item.strip().lower() for item in thecsv.sourcecomment, thecsv.source, thecsv.target] == \
-           ["source", "original", "translation"]:
+        if [item.strip().lower() for item in thecsv.comment, thecsv.source, thecsv.target] == \
+           ["comment", "original", "translation"]:
           continue
-        if len(thecsv.sourcecomment.strip()) == 0 and thecsv.source.find("Content-Type:") != -1:
+        if len(thecsv.comment.strip()) == 0 and thecsv.source.find("Content-Type:") != -1:
           continue
       term = self.convertelement(thecsv)
       self.tbxfile.addunit(term)
