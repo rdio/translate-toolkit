@@ -82,7 +82,7 @@ def fails(filterfunction, str1, str2):
 
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
-  def __init__(self, targetlanguage=None, accelmarkers=None, varmatches=None, notranslatewords=None, musttranslatewords=None, validchars=None):
+  def __init__(self, targetlanguage=None, accelmarkers=None, varmatches=None, notranslatewords=None, musttranslatewords=None, validchars=None, punctuation=u".,;:!?-@#$%^*_()[]{}/\\'\"<>‘’‚‛“”„‟′″‴‵‶‷‹›«»±³¹²°¿©®×£¥$"):
     # make sure that we initialise empty lists properly (default arguments get reused!)
     if accelmarkers is None:
       accelmarkers = []
@@ -102,6 +102,10 @@ class CheckerConfig(object):
       validchars = validchars.decode("utf-8")
     self.validcharsmap = {}
     self.updatevalidchars(validchars)
+    if isinstance(punctuation, str):
+      punctuation = punctuation.decode("utf-8")
+    self.punctuation = punctuation
+    
   def update(self, otherconfig):
     """combines the info in otherconfig into this config object"""
     self.targetlanguage = otherconfig.targetlanguage or self.targetlanguage
@@ -250,6 +254,8 @@ class StandardChecker(TranslationChecker):
     """checks whether a translation is basically identical to the original string"""
     str1 = self.filteraccelerators(prefilters.removekdecomments(str1))
     str2 = self.filteraccelerators(str2)
+    str1 = self.filtervariables(str1)
+    str2 = self.filtervariables(str2)
     if not (str1.isdigit() or len(str1) < 2) and (str1.strip().lower() == str2.strip().lower()):
       raise FilterFailure("please translate")
     return True
@@ -304,7 +310,7 @@ class StandardChecker(TranslationChecker):
     """checks for bad spacing after punctuation"""
     str1 = self.filteraccelerators(self.filtervariables(str1))
     str2 = self.filteraccelerators(self.filtervariables(str2))
-    for puncchar in ",.?!:;":
+    for puncchar in self.config.punctuation:
       plaincount1 = str1.count(puncchar)
       plaincount2 = str2.count(puncchar)
       spacecount1 = str1.count(puncchar+" ")
@@ -335,6 +341,20 @@ class StandardChecker(TranslationChecker):
         messages.append("accelerator %s is repeated in translation" % accelmarker)
       else:
         messages.append("accelerator %s occurs %d time(s) in original and %d time(s) in translation" % (accelmarker, count1, count2))
+    if messages:
+      raise FilterFailure(messages)
+    return True
+
+  def acceleratedvariables(self, str1, str2):
+    """checks that no variables are accelerated"""
+    messages = []
+    for accelerator in self.config.accelmarkers:
+      for variablestart, variableend in self.config.varmatches:
+        error = accelerator + variablestart
+        if str1.find(error) >= 0:
+          messages.append("original has an accelerated variable")
+        if str2.find(error) >= 0:
+          messages.append("translation has an accelerated variable")
     if messages:
       raise FilterFailure(messages)
     return True
@@ -452,7 +472,7 @@ class StandardChecker(TranslationChecker):
 
   def startcaps(self, str1, str2):
     """checks that the message starts with the correct capitalisation"""
-    punc = "\\.,/?!`'\"[]{}()@#$%^&*_-;:<>"
+    punc = self.config.punctuation
     str1 = self.filteraccelerators(self.filtervariables(prefilters.removekdecomments(str1))).lstrip().lstrip(punc)
     str2 = self.filteraccelerators(self.filtervariables(str2)).lstrip().lstrip(punc)
     if len(str1) > 1 and len(str2) > 1:
@@ -508,8 +528,15 @@ class StandardChecker(TranslationChecker):
     """checks that words configured as untranslatable appear in the translation too"""
     if not self.config.notranslatewords:
       return True
-    words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").split()
-    words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").split()
+    str1 = self.filtervariables(str1)
+    str2 = self.filtervariables(str2)
+    #The above is full of strange quotes and things in utf-8 encoding.
+    #single apostrophe perhaps problematic in words like "doesn't"
+    for seperator in self.config.punctuation:
+      str1 = str1.replace(seperator, " ")
+      str2 = str2.replace(seperator, " ")
+    words1 = self.filteraccelerators(str1).split()
+    words2 = self.filteraccelerators(str2).split()
     stopwords = [word for word in words1 if word in self.config.notranslatewords and word not in words2]
     if stopwords:
       raise FilterFailure("do not translate: %s" % (", ".join(stopwords)))
@@ -519,8 +546,15 @@ class StandardChecker(TranslationChecker):
     """checks that words configured as definitely translatable don't appear in the translation"""
     if not self.config.musttranslatewords:
       return True
-    words1 = self.filteraccelerators(self.filtervariables(str1)).replace(".", " ").split()
-    words2 = self.filteraccelerators(self.filtervariables(str2)).replace(".", " ").split()
+    str1 = self.filtervariables(str1)
+    str2 = self.filtervariables(str2)
+    #The above is full of strange quotes and things in utf-8 encoding.
+    #single apostrophe perhaps problematic in words like "doesn't"
+    for seperator in self.config.punctuation:
+      str1 = str1.replace(seperator, " ")
+      str2 = str2.replace(seperator, " ")
+    words1 = self.filteraccelerators(str1).split()
+    words2 = self.filteraccelerators(str2).split()
     stopwords = [word for word in words1 if word in self.config.musttranslatewords and word in words2]
     if stopwords:
       raise FilterFailure("please translate: %s" % (", ".join(stopwords)))

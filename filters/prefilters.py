@@ -109,7 +109,7 @@ def filterwordswithpunctuation(str1):
   parser.defaulttokenlist.extend(['\\n', '\\"'])
   words = parser.tokenize(str1, [parser.removewhitespace, parser.separatetokens])
   replacements = []
-  for n in range(len(words)):
+  for n in range(len(words)-1):
     testword = words[n]
     if len(testword) > 1:
       # remove any ' in the middle of a word...
