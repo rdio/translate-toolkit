@@ -211,6 +211,9 @@ def test_notranslatewords():
     stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["Sun","NeXT"]))
     assert checks.fails(stdchecker.notranslatewords, "Sun/NeXT Audio", "Odio dza Ḓuvha/TeVHELAHO")
     assert checks.passes(stdchecker.notranslatewords, "Sun/NeXT Audio", "Odio dza Sun/NeXT")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["sendmail"]))
+    assert checks.fails(stdchecker.notranslatewords, "because 'sendmail' could", "ngauri 'rumelameiḽi' a yo")
+    assert checks.passes(stdchecker.notranslatewords, "because 'sendmail' could", "ngauri 'sendmail' a yo")
 
 def test_numbers():
     """test numbers"""
