@@ -30,6 +30,8 @@ to be registered."""
 from translate.convert import convert
 from translate.storage import tbx
 from translate.storage import po
+from translate.storage import csvl10n
+from translate.search import match
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
@@ -44,6 +46,7 @@ class lookupServer(SimpleXMLRPCServer):
         """Loads the initial tbx file from the given filename"""
         SimpleXMLRPCServer.__init__(self, addr, requestHandler=lookupRequestHandler, logRequests=1)
         self.storage = storage
+        print "Serving from %d units" % len(storage.units)
 
     def _dispatch(self, method, params):
         try:
@@ -82,6 +85,12 @@ class lookupServer(SimpleXMLRPCServer):
         else:
             return ""
 
+    def public_matches(self, message, max_candidates=15, min_similarity=50):
+        """Returns matches from the storage with the associated similarity"""
+        matcher = match.matcher(max_candidates, min_similarity)
+        candidates = matcher.matches(message, [unit.source for unit in self.storage.units])
+        return candidates
+
 class lookupOptionParser(convert.ConvertOptionParser):
     """Parser that calls instantiates the lookupServer"""
     def run(self):
@@ -105,7 +114,7 @@ def initpo(inputfile, columnorder=None):
     return po.pofile(inputfile)
 
 def initcsv(inputfile, columnorder=None):
-    return csv.csvfile(inputfile, columnorder)
+    return csvl10n.csvfile(inputfile, columnorder)
 
 def main():
     formats = {"tbx": (None, inittbx), "po": (None, initpo), "csv": (None, initcsv)}

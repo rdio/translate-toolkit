@@ -48,5 +48,12 @@ while text:
 			print "%s -> %s" % (text, target)
 		else:
 			print " (Not found)"
+		candidates = server.matches(text)
+		if len(candidates):
+			print "Likely matches:"
+			for score, candidate in candidates:
+				print "%.2f: %s" % (score, candidate)
+		else:
+			print "No likely matches found"
 	text = sys.stdin.readline()
-		
+
