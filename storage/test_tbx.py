@@ -1,22 +1,14 @@
 #!/usr/bin/env python
 
 from translate.storage import tbx
+from translate.storage import test_base
 from translate.misc import wStringIO
 
-class TestTMXUnit:
-	def test_equality(self):
-		unit1 = tbx.tbxunit("Term1")
-		unit2 = tbx.tbxunit("Term1")
-		unit3 = tbx.tbxunit("Term2")
-		assert unit1 == unit2
-		assert unit1 != unit3
+class TestTBXUnit(test_base.TestTranslationUnit):
+	UnitClass = tbx.tbxunit
 
-class TestTMXfile:
-#	def tbxparse(self, tbxsource):
-#		"""helper that parses tbx source without requiring a file"""
-#		tbxfile = tbx.tbxfile.parsestring(tbxsource)
-#		return tbxfile
-
+class TestTBXfile(test_base.TestTranslationStore):
+	StoreClass = tbx.tbxfile
 	def test_basic(self):
 		tbxfile = tbx.tbxfile()
 		assert tbxfile.units == []
@@ -41,7 +33,6 @@ class TestTMXfile:
 	def test_target(self):
 		tbxfile = tbx.tbxfile()
 		tbxunit = tbxfile.addsourceunit("Concept")
-		#tbxunit.target = "Konsep"
 		tbxunit.settarget("Konsep")
 		newfile = tbx.tbxfile.parsestring(str(tbxfile))
 		print str(tbxfile)
