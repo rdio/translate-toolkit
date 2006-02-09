@@ -72,12 +72,7 @@ class TestPO(test_base.TestTranslationStore):
     def test_getunquotedstr(self):
         """checks that getunquotedstr works as advertised"""
         assert po.getunquotedstr(['"First line\nSecond line"'], includeescapes=False) == "First line\nSecond line"
-        assert po.unquotefrompo(['"Use \\n."']) == "Use \\n."
-        assert po.unquotefrompo([r'''"Use the \\"''']) == 'Use the \\'
-        assert po.unquotefrompo(['"Use \\\\\\"."']) == 'Use \\".'
-
-    def test_unquotefrompo(self):
-        """checks that unquotefrompo works as advertised"""
+        assert po.getunquotedstr(['"Use \\n."'], includeescapes=False) == "Use \\n."
 
     def test_parse_source_string(self):
         """parse a string"""
@@ -90,5 +85,3 @@ class TestPO(test_base.TestTranslationStore):
         posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         pofile = self.poparse(posource)
         assert len(pofile.units) == 1
-
-

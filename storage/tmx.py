@@ -22,118 +22,13 @@
 
 """module for parsing TMX translation memeory files"""
 
-from translate.storage import base
 from xml.dom import minidom
 from translate import __version__
 
 # TODO: handle comments
 # TODO: handle translation types
 
-class tmxunit(base.TranslationUnit):
-  def __init__(self, source, document=None, empty=False):
-    """Constructs a unit containing the given source string"""
-    if document:
-        self.document = document
-    else:
-        self.document = minidom.Document()
-    if empty:
-        return
-    self.xmlelement = document.createElement("tu")
-    #add descrip, note, etc.
-
-    super(tbxunit, self).__init__(source)
-
-  def setsource(self, source, sourcelang='en'):
-    langSets = self.xmlelement.getElementsByTagName("langSet")
-    sourcelangset = self.createlangset(sourcelang, source)
-    if len(langSets) > 0:
-      self.xmlelement.replaceChild(sourcelangset, langSets[0])
-    else:
-      self.xmlelement.appendChild(sourcelangset)
-            
-  def getsource(self):
-    return self.gettermtext(self.getlangset(lang=None, index=0))
-  source = property(getsource, setsource)
-
-    def settarget(self, text, lang='xx', append=False):
-        #XXX: we really need the language - can't really be optional
-        """Sets the "target" string (second language), or alternatively appends to the list"""
-        #Firstly deal with reinitialising to None or setting to identical string
-        if self.gettarget() == text:
-            return
-        langSets = self.xmlelement.getElementsByTagName("langSet")
-        assert len(langSets) > 0
-	if text:
-            langset = self.createlangset(lang, text)
-            if append or len(langSets) == 1:
-                self.xmlelement.appendChild(langset)
-            else:
-                self.xmlelement.insertBefore(langset, langSets[1])
-        if not append and len(langSets) > 1:
-            self.xmlelement.removeChild(langSets[1])
-
-    def gettarget(self, lang=None):
-        """retrieves the "target" text (second entry), or the entry in the specified language, if it exists"""
-        if lang:
-            node = self.getlangset(lang=lang)
-        else:
-            node = self.getlangset(lang=None, index=1)
-        return self.gettermtext(node)
-    target = property(gettarget, settarget)
-                   
-    def createlangset(self, lang, text):
-        """returns a langset xml Element setup with given parameters"""
-        langset = self.document.createElement("langSet")
-	assert self.document == langset.ownerDocument
-        langset.setAttribute("xml:lang", lang)
-        tig = self.document.createElement("tig") # or ntig with termGrp inside
-        term = self.document.createElement("term")
-        termtext = self.document.createTextNode(text)
-        
-        langset.appendChild(tig)
-        tig.appendChild(term)
-        term.appendChild(termtext)
-        return langset
-
-    def getlangset(self, lang=None, index=None):
-        """Retrieves a langSet either by language or by index"""
-        if lang is None and index is None:
-            raise KeyError("No criterea for langSet given")
-        langsets = self.xmlelement.getElementsByTagName("langSet")
-        if lang:
-            for set in langsets:
-                if set.getAttribute("xml:lang") == lang:
-                    return set
-        else:#have to use index
-            if index >= len(langsets):
-                return None
-            else:
-                return langsets[index]
-        raise KeyError("No such langSet found")
-            
-    def gettermtext(self, langset):
-        """Retrieves the term from the given langset"""
-        if langset is None:
-            return None
-        terms = langset.getElementsByTagName("term")
-        if len(terms) == 0:
-            return None
-        return getnodetext(terms[0])
-        
-    def __str__(self):
-        return self.xmlelement.toxml()
-
-    def createfromxmlElement(cls, element, document):
-        term = tbxunit(None, document=document, empty=True)
-        term.xmlelement = element
-        return term
-    createfromxmlElement = classmethod(createfromxmlElement)
-
-
-
-
-class TmxParser(base.TranslationStore):
-  UnitClass = tmxunit
+class TmxParser:
   def __init__(self, inputfile=None, sourcelanguage='en'):
     """make a new TmxParser, reading from the given inputfile if required"""
     self.filename = getattr(inputfile, "filename", None)

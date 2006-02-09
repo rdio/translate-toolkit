@@ -132,16 +132,12 @@ class csvfile(base.TranslationStore):
       self.fieldnames = fieldnames
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
-#      csvsrc = inputfile.read()
- #     inputfile.close()
-      self.parse(inputfile)
+      csvsrc = inputfile.read()
+      inputfile.close()
+      self.parse(csvsrc)
 
-  def parse(self, input):
-    if hasattr(input, "read"):
-      csvsrc = input.read()
-      input.close()
-      input = csvsrc
-    csvfile = csv.StringIO(input)
+  def parse(self, csvsrc):
+    csvfile = csv.StringIO(csvsrc)
     reader = SimpleDictReader(csvfile, self.fieldnames)
     for row in reader:
       newce = self.UnitClass()
