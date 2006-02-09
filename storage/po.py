@@ -62,12 +62,14 @@ def quoteforpo(text):
 def isnewlineescape(escape):
   return escape == "\\n"
 
-def isnewlineortabescape(escape):
+def isescapedinpo(escape):
   return escape == "\\n" or escape == "\\t"
+#  return escape == "\\n" or escape == "\\t" or escape == "\\\""
+#  return escape == "\\n" or escape == "\\t" or escape == "\\\"" or escape == "\\\\"
 
 def extractpoline(line):
   backslash = '\\'
-  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=isnewlineortabescape)[0]
+  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=isescapedinpo)[0]
   return extracted # .replace('\\"', '"')
 
 def unquotefrompo(postr, joinwithlinebreak=True):
@@ -206,8 +208,24 @@ class pounit(base.TranslationUnit):
     """checks whether the msgstr is blank"""
     return self.msgstrlen() == 0
 
-  def hastypecomment(self, typecomment):
-    """check whether the given type comment is present"""
+  def hasothercomment(self):
+    """check for the presence of othercomments"""
+    if len(self.othercomments)>0:
+      #print self.othercomments[:-1]
+	  pass
+    if self.othercomments:
+      return self.othercomments.count > 0
+    else:
+      return False
+    
+  def hastypecomment(self, typecomment=None):
+    """check whether the given type comment is present, or any None is specified"""
+    if not typecomment:
+        if self.typecomments:
+            return self.typecomments.count > 0
+        else:
+            return False
+
     # check for word boundaries properly by using a regular expression...
     return sum(map(lambda tcline: len(sre.findall("\\b%s\\b" % typecomment, tcline)), self.typecomments)) != 0
 
@@ -413,7 +431,7 @@ class pofile(base.TranslationStore):
   def __init__(self, inputfile=None, encoding=None, elementclass=pounit):
     """construct a pofile, optionally reading in from inputfile.
     encoding can be specified but otherwise will be read from the PO header"""
-    self.elementclass = elementclass
+    self.UnitClass = elementclass
     self.units = []
     self.filename = ''
     self.encoding = encoding
@@ -430,7 +448,7 @@ class pofile(base.TranslationStore):
       if key.islower():
         key = key.title()
       headerargs[key] = value
-    headerpo = self.elementclass()
+    headerpo = self.UnitClass()
     headerpo.markfuzzy()
     headerpo.msgid = ['""']
     headeritems = [""]
@@ -625,7 +643,7 @@ class pofile(base.TranslationStore):
       if (end == len(lines)) or (not lines[end].strip()):   # end of lines or blank line
         finished = 0
         while not finished:
-          newpe = self.elementclass()
+          newpe = self.UnitClass()
           linesprocessed = newpe.parse("\n".join(lines[start:end]))
           start += linesprocessed
           if linesprocessed > 1:
@@ -645,7 +663,7 @@ class pofile(base.TranslationStore):
 
   def removeblanks(self):
     """remove any units which say they are blank"""
-    self.units = filter(self.elementclass.isnotblank, self.units)
+    self.units = filter(self.UnitClass.isnotblank, self.units)
 
   def removeduplicates(self, duplicatestyle="merge"):
     """make sure each msgid is unique ; merge comments etc from duplicates into original"""

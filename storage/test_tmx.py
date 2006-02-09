@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from translate.storage import tmx
+from translate.storage import test_base
 from translate.misc import wStringIO
 
 class TestTMX:
@@ -46,4 +47,12 @@ class TestTMX:
         assert tmxfile.translate('Five < ten') == 'Vyf < tien'
         assert xmltext.index('Five &lt; ten')
         assert xmltext.find('Five < ten') == -1
+
+class TestTBXUnit(test_base.TestTranslationUnit):
+    UnitClass = tmx.tmxunit
+
+class TestTBX(test_base.TestTranslationStore):
+#    StoreClass = tmx.tmxfile
+    StoreClass = tmx.TmxParser
+
 

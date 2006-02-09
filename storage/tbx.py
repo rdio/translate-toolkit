@@ -41,7 +41,7 @@ Provisional work is done to make several languages possible."""
             self.document = minidom.Document()
         if empty:
             return
-        self.xmlelement = minidom.Element("termEntry")
+        self.xmlelement = self.document.createElement("termEntry")
         #add descrip, note, etc.
         
         super(tbxunit, self).__init__(source)
