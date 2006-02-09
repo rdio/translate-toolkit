@@ -39,17 +39,12 @@ Provisional work is done to make several languages possible."""
             self.document = document
         else:
             self.document = minidom.Document()
-            #print "EK MOET 'N DOKUMENT HÊ!!!"
-            #print "------------------------------------ ============= ----------"
-            #pass
         if empty:
             return
         self.xmlelement = minidom.Element("termEntry")
         #add descrip, note, etc.
         
-        #super(tbxunit, self).__init__(source)
-        #TODO^
-        self.setsource(source)
+        super(tbxunit, self).__init__(source)
 
     def __eq__(self, other):
         """Compares two terms"""
@@ -80,13 +75,18 @@ Provisional work is done to make several languages possible."""
     def settarget(self, text, lang='xx', append=False):
         #XXX: we really need the language - can't really be optional
         """Sets the "target" string (second language), or alternatively appends to the list"""
+        #Firstly deal with reinitialising to None or setting to identical string
+        if self.gettarget() == text:
+            return
         langSets = self.xmlelement.getElementsByTagName("langSet")
         assert len(langSets) > 0
-        langset = self.createlangset(lang, text)
-        if append or len(langSets) == 1:
-            self.xmlelement.appendChild(langset)
-        else:
-            self.xmlelement.insertBefore(langset, langSets[1])
+	if text:
+            langset = self.createlangset(lang, text)
+            if append or len(langSets) == 1:
+                self.xmlelement.appendChild(langset)
+            else:
+                self.xmlelement.insertBefore(langset, langSets[1])
+        if not append and len(langSets) > 1:
             self.xmlelement.removeChild(langSets[1])
 
     def gettarget(self, lang=None):
