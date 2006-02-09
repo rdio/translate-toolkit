@@ -14,7 +14,7 @@ def force_override(method, baseclass):
     if actualclass != baseclass:
         raise NotImplementedError("%s does not reimplement %s as required by %s" % (actualclass.__name__, method.__name__, baseclass.__name__))
 
-class TranslationUnit:
+class TranslationUnit(object):
     def __init__(self, source):
         """Constructs a TranslationUnit containing the given source string"""
         self.source = source
