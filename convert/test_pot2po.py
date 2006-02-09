@@ -37,12 +37,37 @@ class TestPO2DTD:
         newpo = self.convertpot(potsource)
         assert str(self.singleunit(newpo)) == potsource
 
-    def test_convertpot_merging(self):
+    def test_merging_simple(self):
         """checks that the convertpot function is working for a simple merge"""
         potsource = '''#: simple.label\n#: simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr ""\n'''
         posource = '''#: simple.label\n#: simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
         newpo = self.convertpot(potsource, posource)
         assert str(self.singleunit(newpo)) == posource
+
+    def test_merging_messages_marked_fuzzy(self):
+        """test that when we merge PO files with a fuzzy message that it remains fuzzy"""
+        potsource = '''#: simple.label\n#: simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr ""\n'''
+        posource = '''#: simple.label\n#: simple.accesskey\n#, fuzzy\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
+        newpo = self.convertpot(potsource, posource)
+        assert str(self.singleunit(newpo)) == posource
+
+    def xtest_merging_msgid_change(self):
+        """tests that if the msgid changes but the location stays the same that we merge"""
+        potsource = '''#: simple.label\n#: simple.accesskey\nmsgid "Its &hard coding a newline.\\n"\nmsgstr ""\n'''
+        posource = '''#: simple.label\n#: simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
+        poexpected = '''#: simple.label\n#: simple.accesskey\n#, fuzzy\nmsgid "Its &hard coding a newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
+        newpo = self.convertpot(potsource, posource)
+        print newpo
+        assert str(self.singleunit(newpo)) == poexpected
+
+    def xtest_merging_location_change(self):
+        """tests that if the msgid changes but the location stays the same that we merge"""
+        potsource = '''#: new_simple.label\n#: new_simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr ""\n'''
+        posource = '''#: simple.label\n#: simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
+        poexpected = '''#: new_simple.label\n#: new_simple.accesskey\n#, fuzzy\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
+        newpo = self.convertpot(potsource, posource)
+        print newpo
+        assert str(self.singleunit(newpo)) == poexpected
 
     def test_lines_cut_differently(self):
         """checks that the convertpot function is working"""
@@ -54,9 +79,3 @@ class TestPO2DTD:
         print newpounit
         assert str(newpounit) == poexpected
 
-    def test_merging_messages_marked_fuzzy(self):
-        """test that when we merge PO files with a fuzzy message that it remains fuzzy"""
-        potsource = '''#: simple.label\n#: simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr ""\n'''
-        posource = '''#: simple.label\n#: simple.accesskey\n#, fuzzy\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
-        newpo = self.convertpot(potsource, posource)
-        assert str(self.singleunit(newpo)) == posource
