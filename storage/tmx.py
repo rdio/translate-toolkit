@@ -22,103 +22,66 @@
 
 """module for parsing TMX translation memeory files"""
 
+from translate.storage import lisa
+
 from xml.dom import minidom
 from translate import __version__
 
-# TODO: handle comments
-# TODO: handle translation types
+class tmxunit(lisa.LISAunit):
+    """A single unit in the TMX file."""
+    rootNode = "tu"
+    languageNode = "tuv"
+    textNode = "seg"
+                   
+    def createlanguageNode(self, lang, text):
+        """returns a langset xml Element setup with given parameters"""
+        langset = self.document.createElement(self.languageNode)
+	assert self.document == langset.ownerDocument
+        langset.setAttribute("xml:lang", lang)
+        seg = self.document.createElement(self.textNode)
+        segtext = self.document.createTextNode(text)
+        
+        langset.appendChild(seg)
+        seg.appendChild(segtext)
+        return langset
 
-class TmxParser:
-  def __init__(self, inputfile=None, sourcelanguage='en'):
-    """make a new TmxParser, reading from the given inputfile if required"""
-    self.filename = getattr(inputfile, "filename", None)
-    if inputfile is None:
-      self.document = minidom.parseString('''<?xml version="1.0" encoding="utf-8"?>
+
+class tmxfile(lisa.LISAfile):
+    """Class representing a TMX file store."""
+    UnitClass = tmxunit
+    rootNode = "tmx"
+    bodyNode = "body"
+    XMLskeleton = '''<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE tmx SYSTEM "tmx14.dtd">
-<tmx 
-version="1.4"><header></header><body></body></tmx>''')
-      self.setsourcelanguage(sourcelanguage)
-      # TODO Add header info here
-      self.addheader()
-    else:
-      self.document = minidom.parse(inputfile)
-      assert self.document.documentElement.tagName == "tmx"
-    self.bodynode = self.document.getElementsByTagName("body")[0]
+<tmx version="1.4">
+<header></header>
+<body></body>
+</tmx>'''
+    
+    def __init__(self, inputfile=None, lang='en'):
+        super(tmxfile, self).__init__(inputfile, lang)
+        if inputfile == None:
+            self.addheader()
 
-  def addheader(self):
-    headernode = self.document.getElementsByTagName("header")[0]
-    headernode.setAttribute("creationtool", "Translate Toolkit - po2tmx")
-    headernode.setAttribute("creationtoolversion", __version__.ver)
-    headernode.setAttribute("segtype", "sentence")
-    headernode.setAttribute("o-tmf", "UTF-8")
-    headernode.setAttribute("adminlang", "en")
-    #TODO: consider adminlang. Used for notes, etc. Possibly same as targetlanguage
-    headernode.setAttribute("srclang", self.sourcelanguage)
-    headernode.setAttribute("datatype", "PlainText")
-    #headernode.setAttribute("creationdate", "YYYYMMDDTHHMMSSZ"
-    #headernode.setAttribute("creationid", "CodeSyntax"
+    def addheader(self, lang='en'):
+        headernode = self.document.getElementsByTagName("header")[0]
+        headernode.setAttribute("creationtool", "Translate Toolkit - po2tmx")
+        headernode.setAttribute("creationtoolversion", __version__.ver)
+        headernode.setAttribute("segtype", "sentence")
+        headernode.setAttribute("o-tmf", "UTF-8")
+        headernode.setAttribute("adminlang", "en")
+        #TODO: consider adminlang. Used for notes, etc. Possibly same as targetlanguage
+        headernode.setAttribute("srclang", lang)
+        headernode.setAttribute("datatype", "PlainText")
+        #headernode.setAttribute("creationdate", "YYYYMMDDTHHMMSSZ"
+        #headernode.setAttribute("creationid", "CodeSyntax"
 
-  def setsourcelanguage(self, sourcelanguage):
-    self.sourcelanguage = sourcelanguage
-    headernode = self.document.getElementsByTagName("header")[0]
-    headernode.setAttribute("srclang", self.sourcelanguage)
+    def addtranslation(self, source, srclang, translation, translang):
+        """addtranslation method for testing old unit tests"""
+        unit = self.addsourceunit(source)
+        unit.target = translation
 
-  def addtranslation(self, source, srclang, translation, translang):
-    """adds the given translation (will create the nodes required if asked). Returns success"""
-    tunode = self.document.createElement("tu")
-    self.bodynode.appendChild(tunode)
-
-    # Source
-    tuvnode = self.document.createElement("tuv")
-    tuvnode.setAttribute("xml:lang", srclang)
-    segnode = self.document.createElement("seg")
-    sourcetext = self.document.createTextNode(source)
-    segnode.appendChild(sourcetext)
-    tunode.appendChild(tuvnode).appendChild(segnode)
-
-    # Translation
-    tuvnode = self.document.createElement("tuv")
-    tuvnode.setAttribute("xml:lang", translang)
-    segnode = self.document.createElement("seg")
-    translationtext = self.document.createTextNode(translation)
-    segnode.appendChild(translationtext)
-    tunode.appendChild(tuvnode).appendChild(segnode)
-
-    return True
-
-  def getnodetext(self, node):
-    """returns the node's text by iterating through the child nodes"""
-    return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
-
-  def getxml(self):
-    """return the TMX file as xml"""
-    #we can't do pretty XML as it inserts wrong newlines inside translations
-    return self.document.toxml(encoding="utf-8")
-
-  def getunits(self):
-    return self.document.getElementsByTagName("tu")
-
-  def getvariants(self, unit):
-    return unit.getElementsByTagName("tuv")
-
-  def getsegmenttext(self, variant):
-    #Only one <seg> is allowed per variant
-    return self.getnodetext(variant.getElementsByTagName("seg")[0])
-
-  def translate(self, sourcetext, sourcelang=None, targetlang=None):
-    """translates sourcetext from this memory"""
-    #TODO: consider source and target languages
-    found = False
-    for unit in self.getunits():
-      for variant in self.getvariants(unit):
-        if found:
-          return self.getsegmenttext(variant)
-        if self.getsegmenttext(variant) == sourcetext:
-          found = True
-    return None
-
-  def __del__(self):
-    """clean up the document if required"""
-    if hasattr(self, "document"):
-      self.document.unlink()
+    def translate(self, sourcetext, sourcelang=None, targetlang=None):
+        """method to test old unit tests"""
+        return self.findunit(sourcetext).target
 
