@@ -1,28 +1,42 @@
 from translate.search import match
+from translate.storage import csvl10n
 
 class TestMatch:
     """Test the matching class"""
     def candidatestrings(self, list):
-        """returns only the candidate strings out of the list with (score, string) typles"""
-        return [candidate for score, candidate in list]
+        """returns only the candidate strings out of the list with (score, string) tuples"""
+        return [original for score, original, translation in list]
 
+    def buildcsv(self, sources, targets=None):
+        """Build a csvfile store with the given source and target strings"""
+        if targets is None:
+            targets = [""]*len(sources)
+        else:
+            assert len(sources) == len(targets)
+        csvfile = csvl10n.csvfile()
+        for source, target in zip(sources, targets):
+            unit = csvfile.addsourceunit(source)
+            unit.target = target
+        return csvfile
+            
     def test_matching(self):
         """Test basic matching"""
         matcher = match.matcher()
-        candidates = self.candidatestrings(matcher.matches("hond", ["hand", "asdf", "fdas", "haas", "pond"]))
+        csvfile = self.buildcsv(["hand", "asdf", "fdas", "haas", "pond"])
+        candidates = self.candidatestrings(matcher.matches("hond", csvfile.units))
         candidates.sort()
         assert candidates == ["hand", "pond"]
         message = "Ek skop die bal"
-        candidates = self.candidatestrings(matcher.matches(message, 
+        csvfile = self.buildcsv(
             ["Hy skop die bal", 
             message, 
             "Jannie skop die bal", 
             "Ek skop die balle", 
-            "Niemand skop die bal nie"]))
+            "Niemand skop die bal nie"])
+        candidates = self.candidatestrings(matcher.matches(message, csvfile.units))
         assert len(candidates) == 3
         #test that the 100% match is indeed first:
         assert candidates[0] == message
         candidates.sort()
         assert candidates[1:] == ["Ek skop die balle", "Hy skop die bal"]
 
-	
