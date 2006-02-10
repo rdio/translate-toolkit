@@ -162,22 +162,27 @@ class LISAfile(base.TranslationStore):
     #The XML skeleton to use for empty construction:
     XMLskeleton = ""
 
-    def __init__(self, inputfile=None, lang='en'):
+    def __init__(self, inputfile=None, sourcelanguage='en'):
         super(LISAfile, self).__init__()
+	self.setsourcelanguage(sourcelanguage)
         if inputfile is not None:
-            self.parse("".join(open(inputfile).readlines()))
+            self.parse(open(inputfile).read())
             assert self.document.documentElement.tagName == self.rootNode
         else:        
             self.parse(self.XMLskeleton)
             self.addheader()
 
-    def addheader(self, lang='en'):
+    def addheader(self):
         """Method to be overridden to initialise headers, etc."""
         pass
 
+    def setsourcelanguage(self, sourcelanguage):
+	"""Sets the source language for this store"""
+	self.sourcelanguage = sourcelanguage
+
     def addsourceunit(self, source):
         #TODO: miskien moet hierdie eerder addsourcestring of iets genoem word?
-        """Adds and returns a new term with the given string as first entry."""
+        """Adds and returns a new unit with the given string as first entry."""
         newunit = self.UnitClass(source, self.document)
         self.addunit(newunit)
         return newunit
