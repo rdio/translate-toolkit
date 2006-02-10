@@ -58,12 +58,7 @@ class tmxfile(lisa.LISAfile):
 <body></body>
 </tmx>'''
     
-    def __init__(self, inputfile=None, lang='en'):
-        super(tmxfile, self).__init__(inputfile, lang)
-        if inputfile == None:
-            self.addheader()
-
-    def addheader(self, lang='en'):
+    def addheader(self):
         headernode = self.document.getElementsByTagName("header")[0]
         headernode.setAttribute("creationtool", "Translate Toolkit - po2tmx")
         headernode.setAttribute("creationtoolversion", __version__.ver)
@@ -71,7 +66,7 @@ class tmxfile(lisa.LISAfile):
         headernode.setAttribute("o-tmf", "UTF-8")
         headernode.setAttribute("adminlang", "en")
         #TODO: consider adminlang. Used for notes, etc. Possibly same as targetlanguage
-        headernode.setAttribute("srclang", lang)
+        headernode.setAttribute("srclang", self.sourcelanguage)
         headernode.setAttribute("datatype", "PlainText")
         #headernode.setAttribute("creationdate", "YYYYMMDDTHHMMSSZ"
         #headernode.setAttribute("creationid", "CodeSyntax"
@@ -80,6 +75,8 @@ class tmxfile(lisa.LISAfile):
         """addtranslation method for testing old unit tests"""
         unit = self.addsourceunit(source)
         unit.target = translation
+        unit.xmlelement.getElementsByTagName("tuv")[0].setAttribute("xml:lang", srclang)
+        unit.xmlelement.getElementsByTagName("tuv")[1].setAttribute("xml:lang", translang)
 
     def translate(self, sourcetext, sourcelang=None, targetlang=None):
         """method to test old unit tests"""
