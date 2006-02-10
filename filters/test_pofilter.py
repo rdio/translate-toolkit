@@ -42,6 +42,14 @@ class TestPOFilter:
         poresult = self.pofilter(posource)
         assert poresult == ""
 
+    def test_ignore_if_already_marked(self):
+        """check that we don't add another failing marker is the message is already marked as failed"""
+        posource = '#: test.c\n# (pofilter) untranslated: checks whether a string has been translated at all\nmsgid "Simple string"\n"label;."\nmsgstr ""'
+        # FIXME is says it can't find the test untranslated! Seems something wrong with the cmdline part of this checker
+        poresult = self.pofilter(posource, cmdlineoptions=["--test=untranlated"])
+        print poresult
+        assert poresult == ""
+
     def test_non_existant_check(self):
 	"""check that we report an error if a user tries to run a non-existant test"""
         posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
