@@ -44,7 +44,7 @@ class po2tmx:
         translation = translation.decode("utf-8")
       # TODO place source location in comments
       tmxfile.addtranslation(source, sourcelanguage, translation, targetlanguage)
-    return tmxfile.getxml()
+    return str(tmxfile)
   
   def convertfiles(self, inputfile, tmxfile, sourcelanguage='en', targetlanguage=None):
     """converts a .po file (possibly many) to TMX file"""
@@ -80,7 +80,7 @@ class tmxmultifile:
 #    self.multifilestyle = multifilestyle
     self.multifilename = os.path.splitext(filename)[0]
 #    self.multifile = open(filename, mode)
-    self.tmxfile = tmx.TmxParser()
+    self.tmxfile = tmx.tmxfile()
 
   def openoutputfile(self, subfile):
     """returns a pseudo-file object for the given subfile"""
@@ -99,7 +99,7 @@ class TmxOptionParser(convert.ArchiveConvertOptionParser):
     super(TmxOptionParser, self).recursiveprocess(options)
     self.output = open(options.output, 'w')
     options.outputarchive.tmxfile.setsourcelanguage(options.sourcelanguage)
-    self.output.write(options.outputarchive.tmxfile.getxml())
+    self.output.write(str(options.outputarchive.tmxfile))
 
 def main():
   formats = {"po": ("tmx", convertpo), ("po", "tmx"): ("tmx", convertpo)}

@@ -4,14 +4,17 @@ from translate.convert import po2tmx
 from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import tmx
+import os, tempfile
+from xml.parsers.xmlproc import xmlval, xmlproc
+from py import test
 
-class TestPO2DTD:
+class TestPO2TMX:
 
     def po2tmx(self, posource, sourcelanguage='en', targetlanguage='af'):
         """helper that converts po source to tmx source without requiring files"""
         inputfile = wStringIO.StringIO(posource)
         outputfile = wStringIO.StringIO()
-        outputfile.tmxfile = tmx.TmxParser(inputfile=None, sourcelanguage=sourcelanguage)
+        outputfile.tmxfile = tmx.tmxfile(inputfile=None, sourcelanguage=sourcelanguage)
         po2tmx.convertpo(inputfile, outputfile, templatefile=None, sourcelanguage=sourcelanguage, targetlanguage=targetlanguage)
         return outputfile.tmxfile
 
@@ -37,10 +40,11 @@ msgstr "Toepassings"
 """
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
-        print tmx.getxml()
+        print str(tmx)
+        self.is_valid_xml(tmx)
         assert tmx.translate("Applications") == "Toepassings"
-        assert tmx.translate("bla") is None
-        xmltext = tmx.getxml()
+        assert test.raises(KeyError, tmx.translate, "bla")
+        xmltext = str(tmx)
         assert xmltext.index('creationtool="Translate Toolkit - po2tmx"')
         assert xmltext.index('adminlang')
         assert xmltext.index('creationtoolversion')
@@ -53,7 +57,7 @@ msgstr "Toepassings"
         minipo = 'msgid "String"\nmsgstr "String"\n'
         tmx = self.po2tmx(minipo, sourcelanguage="xh")
         print "The generated xml:"
-        print tmx.getxml()
+        print str(tmx)
         header = tmx.document.getElementsByTagName("header")[0]
         assert header.getAttribute("srclang") == "xh"
         
@@ -61,8 +65,8 @@ msgstr "Toepassings"
         minipo = 'msgid "String"\nmsgstr "String"\n'
         tmx = self.po2tmx(minipo, targetlanguage="xh")
         print "The generated xml:"
-        print tmx.getxml()
-        xmltext = tmx.getxml()
+        print str(tmx)
+        xmltext = str(tmx)
         tuv = tmx.document.getElementsByTagName("tuv")[1]
         #tag[0] will be the source, we want the target tuv
         assert tuv.getAttribute("xml:lang") == "xh"
@@ -75,7 +79,7 @@ msgstr "Eerste deel "
 "en ekstra"'''
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
-        print tmx.getxml()
+        print str(tmx)
         assert tmx.translate('First part and extra') == 'Eerste deel en ekstra'
 
         
@@ -86,9 +90,18 @@ msgstr "Eerste lyn\nTweede lyn"
 '''
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
-        print tmx.getxml()
-        assert tmx.translate("First line\nSecond line") == "Eerste lyn\nTweede lyn"
-        assert True
+        print str(tmx)
+#        assert tmx.translate("First line\nSecond line") == "Eerste lyn\nTweede lyn"
+
+    def test_escapedtabs(self):
+        """Test the escaping of tabs"""
+        minipo = r'''msgid "First column\tSecond column"
+msgstr "Eerste kolom\tTweede kolom"
+'''
+        tmx = self.po2tmx(minipo)
+        print "The generated xml:"
+        print str(tmx)
+#        assert tmx.translate("First line\tSecond line") == "Eerste lyn\tTweede lyn"
 
     def test_escapedquotes(self):
         """Test the escaping of quotes (and slash)"""
@@ -100,7 +113,7 @@ msgstr "Gebruik \\\"."
 '''
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
-        print tmx.getxml()
+        print str(tmx)
         assert tmx.translate('Hello "Everyone"') == 'Good day "All"'
         assert tmx.translate(r'Use \".') == r'Gebruik \".'
 
@@ -118,6 +131,6 @@ msgstr "Drie"
 '''
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
-        print tmx.getxml()
+        print str(tmx)
         assert len(tmx.document.getElementsByTagName("tu")) == 0
 
