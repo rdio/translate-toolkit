@@ -29,29 +29,37 @@ class matcher:
     def __init__(self, max_candidates=15, min_similarity=75, comparer=None):
         """max_candidates is the maximum number of candidates that should be assembled,
         min_similarity is the minimum similarity that must be attained to be included in
-        the result"""
-	if comparer is None:
-	    comparer = Levenshtein.LevenshteinComparer()
-	self.comparer = comparer
+        the result, comparer is an optional Comparer with similarity() function"""
+        if comparer is None:
+            comparer = Levenshtein.LevenshteinComparer()
+        self.comparer = comparer
         self.MAX_CANDIDATES = max_candidates
         self.MIN_SIMILARITY = min_similarity
 
     def matches(self, text, candidates):
         """Returns a list of possible matches for text in candidates with the associated similarity.
-	Return value is a list containing tuples (score, candidate)."""
-	bestcandidates = [(0,"")]*self.MAX_CANDIDATES
+        candidates is a list of base.TranslationUnits
+        Return value is a list containing tuples (score, original, translation)."""
+        bestcandidates = [(0.0,"","")]*self.MAX_CANDIDATES
         heapq.heapify(bestcandidates)
+        #We use self.MIN_SIMILARITY, but if we already know we have max_candidates
+        #that are better, we can adjust min_similarity upwards for speedup
+        min_similarity = self.MIN_SIMILARITY
         for candidate in candidates:
-            similarity = self.comparer.similarity(text, candidate, self.MIN_SIMILARITY)
-            if similarity < self.MIN_SIMILARITY:
+            cmpstring = candidate.source
+            targetstring = candidate.target
+            similarity = self.comparer.similarity(text, cmpstring, min_similarity)
+            if similarity < min_similarity:
                 continue
-            lowestscore, item = bestcandidates[0]
+            lowestscore = bestcandidates[0][0]
             if similarity > lowestscore:
-                heapq.heapreplace(bestcandidates, (similarity, candidate))
+                heapq.heapreplace(bestcandidates, (similarity, cmpstring, targetstring))
+                if min_similarity < bestcandidates[0][0]:
+                    min_similarity = bestcandidates[0][0]
         
         #Remove the empty ones:
         def notzero(item):
-            score, candidate = item
+            score = item[0]
             return score != 0
         bestcandidates = filter(notzero, bestcandidates)
         #Sort for use as a general list, and reverse so the best one is at index 0
