@@ -121,7 +121,7 @@ Provisional work is done to make several languages possible."""
                 return None
             else:
                 return languageNodes[index]
-        raise KeyError("No such languageNode found")
+	return None
             
     def getNodeText(self, languageNode):
         """Retrieves the term from the given languageNode"""
@@ -176,6 +176,10 @@ class LISAfile(base.TranslationStore):
         """Method to be overridden to initialise headers, etc."""
         pass
 
+    def initbody(self):
+        """Initialises self.body so it never needs to be retrieved from the DOM again."""
+	self.body = self.document.getElementsByTagName(self.bodyNode)[0]
+
     def setsourcelanguage(self, sourcelanguage):
 	"""Sets the source language for this store"""
 	self.sourcelanguage = sourcelanguage
@@ -188,7 +192,7 @@ class LISAfile(base.TranslationStore):
         return newunit
 
     def addunit(self, unit):
-        self.document.getElementsByTagName(self.bodyNode)[0].appendChild(unit.xmlelement)
+        self.body.appendChild(unit.xmlelement)
         self.units.append(unit)
 
     def __str__(self):
@@ -199,13 +203,13 @@ class LISAfile(base.TranslationStore):
         """Populates this object from the given xml string"""
         self.document = minidom.parseString(xml)
         assert self.document.documentElement.tagName == self.rootNode
+        self.initbody()	   
         termEntries = self.document.getElementsByTagName(self.UnitClass.rootNode)
         if termEntries is None:
             return
         for entry in termEntries:
             term = self.UnitClass.createfromxmlElement(entry, self.document)
             self.units.append(term)
-            assert len(self.units) > 0
 
     def parsestring(cls, storestring):
         """Parses the string to return the correct file object"""
