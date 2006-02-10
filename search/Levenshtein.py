@@ -59,7 +59,7 @@ class LevenshteinComparer:
         assert 0 <= stoppercentage <= 100
         maxsimilarity = 100 - 100.0*abs(l1 - l2)/l2
         if maxsimilarity < stoppercentage:
-            return maxsimilarity
+            return maxsimilarity * 1.0
 
         #Let's penalise the score in cases where we shorten strings
         penalty = 0
@@ -76,7 +76,7 @@ class LevenshteinComparer:
         stopvalue = math.ceil((100.0 - stoppercentage)/100 * l2)
         dist = self.distance(a, b, stopvalue)
         if dist > stopvalue:
-            return stoppercentage - 1
+            return stoppercentage - 1.0
         
         #If MAX_LEN came into play, we consider the calculated distance to be 
         #representative of the distance between the whole, untrimmed strings
