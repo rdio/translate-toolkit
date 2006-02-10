@@ -37,22 +37,29 @@ while text:
 	if text != "":
 		source = server.lookup(text)
 		if source:
-			print source
+			print source.decode('utf-8')
 			#Lets assume life is simple:
 			if "<termEntry>" in source:
 				#TBX
 				base = minidom.parseString(source)
 				unit = UnitClass.createfromxmlElement(base.documentElement, None)
-				#Do something interesteing with unit
+				#Do something interesting with unit
+			elif "<tu><tuv>" in source:
+				#TMX
+				base = minidom.parseString
+				unit = tmx.createfromxmlElement(base.documentElement, None)
 			target = server.translate(text)
-			print "%s -> %s" % (text, target)
+			print "%s -> %s".decode('utf-8') % (text, target)
 		else:
 			print " (Not found)"
 		candidates = server.matches(text)
+		#alternate example, slightly faster:
+		#candidates = server.matches(text, 5, 70)
 		if len(candidates):
 			print "Likely matches:"
-			for score, candidate in candidates:
-				print "%.2f: %s" % (score, candidate)
+			columnwidth = min(int(len(text)*1.3)+5, 35)
+			for score, original, translation in candidates:
+				print "%6.2f%% %-*s | %s".decode('utf-8') % (score, columnwidth, original, translation)
 		else:
 			print "No likely matches found"
 	text = sys.stdin.readline()

@@ -29,6 +29,7 @@ to be registered."""
 
 from translate.convert import convert
 from translate.storage import tbx
+from translate.storage import tmx
 from translate.storage import po
 from translate.storage import csvl10n
 from translate.search import match
@@ -46,6 +47,7 @@ class lookupServer(SimpleXMLRPCServer):
         """Loads the initial tbx file from the given filename"""
         SimpleXMLRPCServer.__init__(self, addr, requestHandler=lookupRequestHandler, logRequests=1)
         self.storage = storage
+        #self.keys = [unit.source for unit in storage.units]
         print "Serving from %d units" % len(storage.units)
 
     def _dispatch(self, method, params):
@@ -88,7 +90,7 @@ class lookupServer(SimpleXMLRPCServer):
     def public_matches(self, message, max_candidates=15, min_similarity=50):
         """Returns matches from the storage with the associated similarity"""
         matcher = match.matcher(max_candidates, min_similarity)
-        candidates = matcher.matches(message, [unit.source for unit in self.storage.units])
+        candidates = matcher.matches(message, self.storage.units)
         return candidates
 
 class lookupOptionParser(convert.ConvertOptionParser):
@@ -110,6 +112,9 @@ class lookupOptionParser(convert.ConvertOptionParser):
 def inittbx(inputfile, columnorder=None):
     return tbx.tbxfile(inputfile)
 
+def inittmx(inputfile, columnorder=None):
+    return tmx.tmxfile(inputfile)
+
 def initpo(inputfile, columnorder=None):
     return po.pofile(inputfile)
 
@@ -117,7 +122,7 @@ def initcsv(inputfile, columnorder=None):
     return csvl10n.csvfile(inputfile, columnorder)
 
 def main():
-    formats = {"tbx": (None, inittbx), "po": (None, initpo), "csv": (None, initcsv)}
+    formats = {"tbx": (None, inittbx), "tmx": (None, inittmx), "po": (None, initpo), "csv": (None, initcsv)}
     parser = lookupOptionParser(formats, usepots=False, description=__doc__)
     parser.add_option("-a", "--address", dest="address", default="localhost",
                       help="the host to bind to")
