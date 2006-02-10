@@ -64,7 +64,7 @@ class tbxfile(lisa.LISAfile):
 <text><body></body></text>
 </martif>'''
 
-    def addheader(self, lang='en'):
+    def addheader(self):
         """Initialise headers with TBX specific things."""
-	self.document.documentElement.setAttribute("xml:lang", lang)
+	self.document.documentElement.setAttribute("xml:lang", self.sourcelanguage)
 
