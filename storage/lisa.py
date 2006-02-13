@@ -105,7 +105,7 @@ Provisional work is done to make several languages possible."""
     def createlanguageNode(self, lang, text):
         """Returns a xml Element setup with given parameters to represent a 
 	single language entry. Has to be overridden."""
-	return None
+        return None
 
     def getlanguageNode(self, lang=None, index=None):
         """Retrieves a languageNode either by language or by index"""
