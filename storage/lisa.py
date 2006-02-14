@@ -83,7 +83,7 @@ Provisional work is done to make several languages possible."""
             return
         languageNodes = self.xmlelement.getElementsByTagName(self.languageNode)
         assert len(languageNodes) > 0
-	if text:
+        if text:
             languageNode = self.createlanguageNode(lang, text)
             if append or len(languageNodes) == 1:
                 self.xmlelement.appendChild(languageNode)
@@ -94,7 +94,7 @@ Provisional work is done to make several languages possible."""
 
     def gettarget(self, lang=None):
         """retrieves the "target" text (second entry), or the entry in the 
-	specified language, if it exists"""
+        specified language, if it exists"""
         if lang:
             node = self.getlanguageNode(lang=lang)
         else:
@@ -104,7 +104,7 @@ Provisional work is done to make several languages possible."""
                    
     def createlanguageNode(self, lang, text):
         """Returns a xml Element setup with given parameters to represent a 
-	single language entry. Has to be overridden."""
+        single language entry. Has to be overridden."""
         return None
 
     def getlanguageNode(self, lang=None, index=None):
@@ -121,7 +121,7 @@ Provisional work is done to make several languages possible."""
                 return None
             else:
                 return languageNodes[index]
-	return None
+        return None
             
     def getNodeText(self, languageNode):
         """Retrieves the term from the given languageNode"""
@@ -164,9 +164,9 @@ class LISAfile(base.TranslationStore):
 
     def __init__(self, inputfile=None, sourcelanguage='en'):
         super(LISAfile, self).__init__()
-	self.setsourcelanguage(sourcelanguage)
+        self.setsourcelanguage(sourcelanguage)
         if inputfile is not None:
-            self.parse(open(inputfile).read())
+            self.parse(inputfile)
             assert self.document.documentElement.tagName == self.rootNode
         else:        
             self.parse(self.XMLskeleton)
@@ -178,11 +178,11 @@ class LISAfile(base.TranslationStore):
 
     def initbody(self):
         """Initialises self.body so it never needs to be retrieved from the DOM again."""
-	self.body = self.document.getElementsByTagName(self.bodyNode)[0]
+        self.body = self.document.getElementsByTagName(self.bodyNode)[0]
 
     def setsourcelanguage(self, sourcelanguage):
-	"""Sets the source language for this store"""
-	self.sourcelanguage = sourcelanguage
+        """Sets the source language for this store"""
+        self.sourcelanguage = sourcelanguage
 
     def addsourceunit(self, source):
         #TODO: miskien moet hierdie eerder addsourcestring of iets genoem word?
@@ -201,9 +201,14 @@ class LISAfile(base.TranslationStore):
 
     def parse(self, xml):
         """Populates this object from the given xml string"""
+        self.filename = getattr(xml, 'name', '')
+        if hasattr(xml, "read"):
+            posrc = xml.read()
+            xml.close()
+            xml = posrc
         self.document = minidom.parseString(xml)
         assert self.document.documentElement.tagName == self.rootNode
-        self.initbody()	   
+        self.initbody()           
         termEntries = self.document.getElementsByTagName(self.UnitClass.rootNode)
         if termEntries is None:
             return
