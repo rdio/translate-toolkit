@@ -41,7 +41,6 @@ msgstr "Toepassings"
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
         print str(tmx)
-        self.is_valid_xml(tmx)
         assert tmx.translate("Applications") == "Toepassings"
         assert test.raises(KeyError, tmx.translate, "bla")
         xmltext = str(tmx)
