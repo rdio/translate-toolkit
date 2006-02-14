@@ -36,7 +36,7 @@ class tmxunit(lisa.LISAunit):
     def createlanguageNode(self, lang, text):
         """returns a langset xml Element setup with given parameters"""
         langset = self.document.createElement(self.languageNode)
-	assert self.document == langset.ownerDocument
+        assert self.document == langset.ownerDocument
         langset.setAttribute("xml:lang", lang)
         seg = self.document.createElement(self.textNode)
         segtext = self.document.createTextNode(text)
@@ -80,5 +80,5 @@ class tmxfile(lisa.LISAfile):
 
     def translate(self, sourcetext, sourcelang=None, targetlang=None):
         """method to test old unit tests"""
-        return self.findunit(sourcetext).target
+        return getattr(self.findunit(sourcetext), "target", None)
 
