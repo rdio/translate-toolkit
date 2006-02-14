@@ -98,6 +98,14 @@ class csvunit(base.TranslationUnit):
     self.source = source
     self.target = ""
 
+  def remove_spreadsheet_escapes(self, msgid, msgstr):
+    """removes common spreadsheet escapes from two strings"""
+    for spreadsheetescape in ("\\+", "\\-", "\\=", "\\'"):
+      if msgid[:2] == spreadsheetescape and msgstr[:2] == spreadsheetescape:
+        msgid = msgid[1:]
+        msgstr = msgstr[1:]
+    return msgid, msgstr
+
   def fromdict(self, cedict):
     self.comment = cedict.get('comment', '')
     self.source = cedict.get('source', '')
@@ -105,8 +113,7 @@ class csvunit(base.TranslationUnit):
     if self.comment is None: self.comment = ''
     if self.source is None: self.source = ''
     if self.target is None: self.target = ''
-    if self.source[:2] in ("\\+", "\\-"): self.source = self.source[1:]
-    if self.target[:2] in ("\\+", "\\-"): self.target = self.target[1:]
+    self.source, self.target = self.remove_spreadsheet_escapes(self.source, self.target)
 
   def todict(self, encoding='utf-8'):
     comment, source, target = self.comment, self.source, self.target
@@ -145,6 +152,13 @@ class csvfile(base.TranslationStore):
       self.units.append(newce)
 
   def __str__(self):
+    """convert to a string. double check that unicode is handled somehow here"""
+    source = self.getsource()
+    if isinstance(source, unicode):
+      return source.encode(getattr(self, "encoding", "UTF-8"))
+    return source
+
+  def getsource(self):
     csvfile = csv.StringIO()
     writer = csv.DictWriter(csvfile, self.fieldnames)
     for ce in self.units:
