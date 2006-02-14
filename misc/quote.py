@@ -213,6 +213,11 @@ def mozillapropertiesdecode(source):
       s += 1
       continue
     s += 1
+    if s >= len(source):
+      # this is an escape at the end of the line, which implies a continuation...
+      # return the escape to inform the parser
+      output += c
+      continue
     c = source[s]
     s += 1
     if c == '\n': pass
@@ -248,8 +253,6 @@ def mozillapropertiesdecode(source):
       name = source[s:e]
       output += unicodedata.lookup(name)
       s = e + 1
-    elif s >= len(source):
-      raise ValueError("\\ at end of string")
     else:
       output += "\\" + c
   return output
