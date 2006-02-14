@@ -60,29 +60,24 @@ class dtd2po:
     if entity.endswith(".height") or entity.endswith(".width") or entity.endswith(".size"):
       thepo.msgidcomments.append(quote.quotestr("_: Do not translate this.  Only change the numeric values if you need this dialogue box to appear bigger.\\n"))
 
-  def extractdtdstring(self,dtdstring):
-    # extract the string, get rid of quoting
-    if len(dtdstring) == 0: dtdstring = '""'
-    quotechar = dtdstring[0]
-    extracted,quotefinished = quote.extract(dtdstring,quotechar,quotechar,None)
-    if quotechar == "'" and "&apos;" in extracted:
-      extracted = extracted.replace("&apos;", "'")
-    # the quote characters should be the first and last characters in the string
-    # of course there could also be quote characters within the string; not handled here
-    return extracted[1:-1]
-
   def convertstrings(self,thedtd,thepo):
     # extract the string, get rid of quoting
-    unquoted = self.extractdtdstring(thedtd.definition)
-    # escape backslashes...
-    unquoted = unquoted.replace("\\", "\\\\")
+    unquoted = dtd.unquotefromdtd(thedtd.definition)
+    # escape backslashes... but not if they're for a newline
+    unquoted = unquoted.replace("\\", "\\\\").replace("\\\\n", "\\n")
     # now split the string into lines and quote them
-    msgid = [quote.quotestr(line.lstrip()) for line in unquoted.split('\n')]
+    lines = unquoted.split('\n')
+    if len(lines) > 1:
+      msgid = [quote.quotestr(lines[0].rstrip() + ' ')] + \
+              [quote.quotestr(line.lstrip().rstrip() + ' ') for line in lines[1:len(lines)-1]] + \
+              [quote.quotestr(lines[len(lines)-1].lstrip())]
+    else:
+      msgid = [quote.quotestr(lines[0])]
     thepo.msgid = msgid
     thepo.msgstr = ['""']
 
   def convertelement(self,thedtd):
-    thepo = po.pounit()
+    thepo = po.pounit(encoding="UTF-8")
     # remove unwanted stuff
     for commentnum in range(len(thedtd.comments)):
       commenttype,locnote = thedtd.comments[commentnum]
@@ -116,7 +111,10 @@ class dtd2po:
     # do a standard translation
     self.convertcomments(thedtd,thepo)
     self.convertstrings(thedtd,thepo)
-    return thepo
+    if thepo.isblank() and not thepo.getsources():
+      return None
+    else:
+      return thepo
 
   # labelsuffixes and accesskeysuffixes are combined to accelerator notation
   labelsuffixes = (".label", ".title")
@@ -129,7 +127,7 @@ class dtd2po:
       return accesskeypo
     if accesskeypo is None:
       return labelpo
-    thepo = po.pounit()
+    thepo = po.pounit(encoding="UTF-8")
     thepo.sourcecomments += labelpo.sourcecomments
     thepo.sourcecomments += accesskeypo.sourcecomments
     thepo.msgidcomments += labelpo.msgidcomments
@@ -137,8 +135,8 @@ class dtd2po:
     thepo.othercomments += labelpo.othercomments
     thepo.othercomments += accesskeypo.othercomments
     # redo the strings from original dtd...
-    label = self.extractdtdstring(labeldtd.definition).decode('UTF-8')
-    accesskey = self.extractdtdstring(accesskeydtd.definition).decode('UTF-8')
+    label = dtd.unquotefromdtd(labeldtd.definition).decode('UTF-8')
+    accesskey = dtd.unquotefromdtd(accesskeydtd.definition).decode('UTF-8')
     if len(accesskey) == 0:
       return None
     # try and put the & in front of the accesskey in the label...
@@ -303,12 +301,15 @@ def convertdtd(inputfile, outputfile, templatefile, pot=False, duplicatestyle="m
   outputfile.write(outputposrc)
   return 1
 
-if __name__ == '__main__':
+def main(argv=None):
   # handle command line options
   from translate.convert import convert
   formats = {"dtd": ("po", convertdtd), ("dtd", "dtd"): ("po", convertdtd)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, usepots=True, description=__doc__)
   parser.add_duplicates_option()
   parser.passthrough.append("pot")
-  parser.run()
+  parser.run(argv)
+
+if __name__ == '__main__':
+  main()
 
