@@ -361,6 +361,7 @@ class StandardChecker(TranslationChecker):
 
   def variables(self, str1, str2):
     """checks whether variables of various forms are consistent between the two strings"""
+    str1 = prefilters.removekdecomments(str1)
     messages = []
     mismatch1, mismatch2 = [], []
     varnames1, varnames2 = [], []
@@ -378,7 +379,8 @@ class StandardChecker(TranslationChecker):
       vars1 = varchecker(str1)
       vars2 = varchecker(str2)
       if vars1 != vars2:
-        vars1, vars2 = [var for var in vars1 if var not in vars2], [var for var in vars2 if var not in vars1]
+        # we use counts to compare so we can handle multiple variables
+        vars1, vars2 = [var for var in vars1 if vars1.count(var) > vars2.count(var)], [var for var in vars2 if vars1.count(var) < vars2.count(var)]
         # filter variable names we've already seen, so they aren't matched by more than one filter...
         vars1, vars2 = [var for var in vars1 if var not in varnames1], [var for var in vars2 if var not in varnames2]
         varnames1.extend(vars1)

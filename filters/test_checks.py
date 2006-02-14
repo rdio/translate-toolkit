@@ -436,7 +436,12 @@ def test_variables_openoffice():
     assert checks.fails(ooochecker.variables, "Save [file]", "Stoor [leer]")
     assert checks.passes(ooochecker.variables, "Save $file", "Stoor $file")
     assert checks.fails(ooochecker.variables, "Save $file", "Stoor $leer")
+    # Same variable name twice
+    assert checks.fails(ooochecker.variables, r"""Start %PROGRAMNAME% as %PROGRAMNAME%""", "Begin %PROGRAMNAME%")
     # Variables hidden in KDE comments
+    assert checks.passes(ooochecker.variables, r"""_: Do not translate %PROGRAMNAME% in the text\n
+Start %PRODUCTNAME%""", "Begin %PRODUCTNAME%")
+    # Check how this interacts with the same variable name being repeated
     assert checks.passes(ooochecker.variables, r"""_: Do not translate %PROGRAMNAME% in the text\n
 Start %PROGRAMNAME%""", "Begin %PROGRAMNAME%")
 
