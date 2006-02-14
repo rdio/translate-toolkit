@@ -144,6 +144,12 @@ def applytranslation(entity, thedtd, thepo, mixedentities):
           unquotedstr = getaccesskey(unquotedstr)
           if not unquotedstr:
             warnings.warn("Could not find accesskey for %s" % entity)
+          else:
+            original = dtd.unquotefromdtd(thedtd.definition)
+            if original.isupper() and unquotedstr.islower():
+              unquotedstr = unquotedstr.upper()
+            elif original.islower() and unquotedstr.isupper():
+              unquotedstr = unquotedstr.lower()
   # handle invalid left-over ampersands (usually unneeded access key shortcuts)
   unquotedstr = removeinvalidamps(entity, unquotedstr)
   # finally set the new definition in the dtd, but not if its empty
@@ -259,15 +265,18 @@ def convertdtd(inputfile, outputfile, templatefile, includefuzzy=False):
     templatedtd = dtd.dtdfile(templatefile)
     convertor = redtd(templatedtd)
   outputdtd = convertor.convertfile(inputpo, includefuzzy)
-  outputdtdsrc = src(outputdtd)
+  outputdtdsrc = str(outputdtd)
   outputfile.write(outputdtdsrc)
   return 1
 
-if __name__ == '__main__':
+def main(argv=None):
   # handle command line options
   from translate.convert import convert
   formats = {"po": ("dtd", convertdtd), ("po", "dtd"): ("dtd", convertdtd)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.add_fuzzy_option()
-  parser.run()
+  parser.run(argv)
+
+if __name__ == '__main__':
+  main()
 
