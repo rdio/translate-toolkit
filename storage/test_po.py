@@ -94,11 +94,6 @@ class TestPO(test_base.TestTranslationStore):
         print pofile
         assert len(pofile.units) == 2
 
-    def test_getunquotedstr(self):
-        """checks that getunquotedstr works as advertised"""
-        # getunquotedstr should be removed, but while its there it should work!
-        assert po.getunquotedstr(['"First line\nSecond line"'], includeescapes=False) == "First line\nSecond line"
-
     def test_output_str_unicode(self):
         """checks that we can str(element) which is in unicode"""
         posource = u'''#: nb\nmsgid "Norwegian Bokm\xe5l"\nmsgstr ""\n'''
