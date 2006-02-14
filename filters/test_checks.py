@@ -121,6 +121,8 @@ def test_endpunc():
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.endpunc, "Question?", "Correct?")
     assert checks.fails(stdchecker.endpunc, " Question?", "Wrong ?")
+    # Newlines must not mask end punctuation
+    assert checks.fails(stdchecker.endpunc, "Exit change recording mode?\n\n", "Phuma esimeni sekugucula kubhalisa.\n\n")
     mozillachecker = checks.MozillaChecker()
     assert checks.passes(mozillachecker.endpunc, "Upgrades an existing $ProductShortName$ installation.", "Ku antswisiwa ka ku nghenisiwa ka $ProductShortName$.")
     # Real examples
