@@ -80,7 +80,7 @@ def converttxt(inputfile, outputfile, templatefile, wrap=None):
   outputfile.write(outputtxt)
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {("po", "txt"):("txt",converttxt), ("po"):("txt",converttxt)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
@@ -88,5 +88,5 @@ def main():
     parser.add_option("-w", "--wrap", dest="wrap", default=None, type="int",
                       help="set number of columns to wrap text at", metavar="WRAP")
     parser.passthrough.append("wrap")
-  parser.run()
+  parser.run(argv)
 

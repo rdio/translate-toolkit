@@ -29,7 +29,7 @@ from translate.storage import xpi
 from translate import __version__
 from translate.convert import convert
 
-def main():
+def main(argv=None):
   formats = {(None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}
@@ -48,5 +48,5 @@ def main():
   parser = convert.ArchiveConvertOptionParser(formats, usetemplates=True, usepots=True, description=__doc__, archiveformats={"xpi": xpi.XpiFile})
   parser.add_duplicates_option()
   parser.passthrough.append("pot")
-  parser.run()
+  parser.run(argv)
 

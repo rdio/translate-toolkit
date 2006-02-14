@@ -231,9 +231,9 @@ def convertpo(inputfile, outputfile, templatefile):
   outputfile.write(outputxliff)
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {"po": ("xliff", convertpo), ("po", "xliff"): ("xliff", convertpo)}
   parser = convert.ConvertOptionParser(formats, usepots=True, usetemplates=True, description=__doc__)
-  parser.run()
+  parser.run(argv)
 

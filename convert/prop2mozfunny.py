@@ -101,7 +101,7 @@ def po2it(inputfile, outputfile, templatefile, encoding="cp1252", includefuzzy=F
       outputfile.write(line)
   return result
 
-def main():
+def main(argv=None):
   import sys
   # TODO: get encoding from charset.mk, using parameter
   src = sys.stdin.read()

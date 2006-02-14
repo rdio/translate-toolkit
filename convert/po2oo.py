@@ -101,7 +101,7 @@ class reoo:
         theoo = self.index[key] # find the oo
         self.applytranslation(key, subkey, theoo, thepo)
       else:
-        print >>sys.stderr, "couldn't find key %r in po:" % key
+        print >>sys.stderr, "couldn't find key %s from po in %d keys" % (key, len(self.index))
         try:
           polines = str(thepo)
           if isinstance(polines, unicode):
@@ -183,7 +183,7 @@ def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetla
   outputfile.write(outputoosrc)
   return True
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {("po", "oo"):("oo", convertoo)}
   # always treat the input as an archive unless it is a directory
@@ -202,5 +202,5 @@ def main():
   parser.passthrough.append("sourcelanguage")
   parser.passthrough.append("targetlanguage")
   parser.passthrough.append("timestamp")
-  parser.run()
+  parser.run(argv)
 

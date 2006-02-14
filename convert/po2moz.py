@@ -70,7 +70,7 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
       options.outputarchive.close()
     return result
 
-def main():
+def main(argv=None):
   # handle command line options
   formats = {("dtd.po", "dtd"): ("dtd", po2dtd.convertdtd),
              ("properties.po", "properties"): ("properties", po2prop.convertprop),
@@ -93,5 +93,5 @@ def main():
     help="clone xpi structure from the given xpi file")
   parser.add_fuzzy_option()
   parser.replacer = replacer
-  parser.run()
+  parser.run(argv)
 

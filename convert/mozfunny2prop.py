@@ -78,7 +78,7 @@ def it2po(inputfile, outputfile, templatefile, encoding="cp1252", pot=False, dup
     templatepropfile = None
   return prop2po.convertprop(inputpropfile, outputfile, templatepropfile, pot=pot, duplicatestyle=duplicatestyle)
 
-def main():
+def main(argv=None):
   import sys
   lines = sys.stdin.readlines()
   for line in funny2prop(lines):

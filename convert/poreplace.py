@@ -47,13 +47,13 @@ class poreplace:
     outputfile.write(outputposrc)
     return 1
 
-def main(converterclass):
+def main(converterclass, argv=None):
   # handle command line options
   from translate.convert import convert
   replacer = converterclass()
   formats = {"po":("po",replacer.convertpo), "pot":("pot", replacer.convertpo)}
   parser = convert.ConvertOptionParser(formats, usepots=True)
-  parser.run()
+  parser.run(argv)
 
 if __name__ == '__main__':
   main(poreplace)

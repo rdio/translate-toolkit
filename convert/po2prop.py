@@ -119,11 +119,14 @@ def convertprop(inputfile, outputfile, templatefile, includefuzzy=False):
   outputfile.writelines(outputproplines)
   return 1
 
-if __name__ == '__main__':
+def main(argv=None):
   # handle command line options
   from translate.convert import convert
   formats = {("po", "properties"): ("properties", convertprop)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   parser.add_fuzzy_option()
-  parser.run()
+  parser.run(argv)
+
+if __name__ == '__main__':
+  main()
 

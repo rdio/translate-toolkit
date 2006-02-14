@@ -108,7 +108,7 @@ def convertnb(inputfile, outputfile, templatefile, wrap=None):
   outputfile.write(outputhtml)
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {("po", "htm"):("htm",convertnb), ("po"):("htm",convertnb)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
@@ -116,5 +116,5 @@ def main():
     parser.add_option("-w", "--wrap", dest="wrap", default=None, type="int",
                       help="set number of columns to wrap html at", metavar="WRAP")
     parser.passthrough.append("wrap")
-  parser.run()
+  parser.run(argv)
 
