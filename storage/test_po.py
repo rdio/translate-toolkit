@@ -73,7 +73,7 @@ class TestPO(test_base.TestTranslationStore):
         """checks that getunquotedstr works as advertised"""
         # TODO: getunquotedstr is deprecated, this should be removed when it is
         assert po.getunquotedstr(['"First line\nSecond line"'], includeescapes=False) == "First line\nSecond line"
-        #XXX:Failing:assert po.getunquotedstr(['"Use \\n."'], includeescapes=False) == "Use \\n."
+        assert po.getunquotedstr(['"Use \\n."'], includeescapes=False) == "Use \\n."
 
     def test_parse_source_string(self):
         """parse a string"""
