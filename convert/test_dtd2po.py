@@ -134,13 +134,13 @@ class TestDTD2PO:
         pounit = self.singleelement(pofile)
         # We still need to decide how we handle line line breaks in the DTD entities.  It seems that we should actually
         # drop the line break but this has not been implemented yet.
-        assert po.unquotefrompo(pounit.msgid) == "First line then \nnext lines."
+        assert po.unquotefrompo(pounit.msgid, True) == "First line then \nnext lines."
         # No space at the end of the line
         dtdsource = '<!ENTITY  noupdatesfound.intro "First line then\n' + \
           '                                          next lines.">\n'
         pofile = self.dtd2po(dtdsource)
         unit = self.singleelement(pofile)
-        assert po.unquotefrompo(unit.msgid) == "First line then \nnext lines."
+        assert po.unquotefrompo(unit.msgid, True) == "First line then \nnext lines."
 
     def test_folding_accesskeys(self):
 	"""test that we fold accesskeys into message strings"""
@@ -156,7 +156,7 @@ class TestDTD2PO:
           '                                          next lines.">\n'
         pofile = self.dtd2po(dtdsource)
         unit = self.singleelement(pofile)
-        assert po.unquotefrompo(unit.msgid) == "First line then \nnext lines."
+        assert po.unquotefrompo(unit.msgid, True) == "First line then \nnext lines."
 
     def test_preserving_spaces(self):
         """test that we preserve space that appear at the start of the first line of a DTD entity"""
@@ -169,7 +169,7 @@ class TestDTD2PO:
         dtdsource = '<!ENTITY mainWindow.titlemodifiermenuseparator " - with a newline\n    and more text">'
         pofile = self.dtd2po(dtdsource)
         unit = self.singleelement(pofile)
-        assert po.unquotefrompo(unit.msgid) == " - with a newline \nand more text"
+        assert po.unquotefrompo(unit.msgid, True) == " - with a newline \nand more text"
 
     def test_escaping_newline_tabs(self):
         """test that we handle all kinds of newline permutations"""
