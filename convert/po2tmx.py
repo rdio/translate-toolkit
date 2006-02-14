@@ -36,8 +36,8 @@ class po2tmx:
     for thepo in thepofile.elements:
       if thepo.isheader() or thepo.isblank() or thepo.isblankmsgstr() or thepo.isfuzzy():
         continue
-      source = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False, includeescapes=False)
-      translation = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False, includeescapes=False)
+      source = thepo.source
+      translation = thepo.target
       if isinstance(source, str):
         source = source.decode("utf-8")
       if isinstance(translation, str):
@@ -52,8 +52,8 @@ class po2tmx:
     for thepo in thepofile.units:
       if thepo.isheader() or thepo.isblank() or thepo.isblankmsgstr() or thepo.isfuzzy():
         continue
-      source = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False, includeescapes=False)
-      translation = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False, includeescapes=False)
+      source = thepo.source
+      translation = thepo.target
       if isinstance(source, str):
         source = source.decode("utf-8")
       if isinstance(translation, str):
