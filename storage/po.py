@@ -32,25 +32,6 @@ import time
 
 # general functions for quoting / unquoting po strings
 
-def getunquotedstr(lines, joinwithlinebreak=True, includeescapes=True):
-  # TODO: try refactor this into unquotefrompo
-  """unquotes a string from a po file"""
-  if joinwithlinebreak:
-    joiner = "\n"
-  else:
-    joiner = ""
-  if isinstance(lines, dict):
-    # this might happen if people pass in plural msgstrs ...
-    pluralids = lines.keys()
-    pluralids.sort()
-    return joiner.join([getunquotedstr(lines[pluralid], joinwithlinebreak, includeescapes) for pluralid in pluralids])
-  esc = '\\'
-  extractline = lambda line: quote.extractwithoutquotes(line,'"','"',esc,includeescapes=includeescapes)[0]
-  thestr = joiner.join([extractline(line) for line in lines])
-  if thestr[:1] == "\n": thestr = thestr[1:]
-  if thestr[-1:] == "\n": thestr = thestr[:-1]
-  return thestr
-
 def escapeforpo(line):
   """escapes a line for po format. assumes no \n occurs in the line"""
   return line.replace("\\n", "\n").replace('\\', '\\\\').replace("\n", "\\n").replace('"', '\\"').replace('\\\\r', '\\r').replace('\\\\t', '\\t')

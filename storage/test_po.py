@@ -69,12 +69,6 @@ class TestPO(test_base.TestTranslationStore):
         assert po.unquotefrompo(pofile.units[0].msgidcomments) == ""
         assert po.unquotefrompo(pofile.units[1].msgidcomments) == ""
 
-    def test_getunquotedstr(self):
-        """checks that getunquotedstr works as advertised"""
-        # TODO: getunquotedstr is deprecated, this should be removed when it is
-        assert po.getunquotedstr(['"First line\nSecond line"'], includeescapes=False) == "First line\nSecond line"
-        assert po.getunquotedstr(['"Use \\n."'], includeescapes=False) == "Use \\n."
-
     def test_parse_source_string(self):
         """parse a string"""
         posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
