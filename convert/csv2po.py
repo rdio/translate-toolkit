@@ -19,7 +19,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""simple script to convert a comma-separated values (.csv) file to a gettext .po localization file"""
+"""converts comma-separated values (.csv) files to gettext .po localization files"""
 
 import sys
 from translate.misc import quote
@@ -84,7 +84,7 @@ class csv2po:
 
   def convertelement(self,thecsv):
     """converts csv element to po element"""
-    thepo = po.pounit()
+    thepo = po.pounit(encoding="UTF-8")
     thepo.sourcecomments = ["#: " + thecsv.comment + "\n"]
     thepo.msgid = [quotecsvstr(line) for line in thecsv.source.split('\n')]
     thepo.msgstr = [quotecsvstr(line) for line in thecsv.target.split('\n')]
@@ -188,7 +188,7 @@ def convertcsv(inputfile, outputfile, templatefile, charset=None, columnorder=No
   outputfile.write(outputposrc)
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {("csv", "po"): ("po", convertcsv), ("csv", "pot"): ("po", convertcsv), 
              ("csv", None): ("po", convertcsv)}
@@ -199,5 +199,5 @@ def main():
     help="specify the order and position of columns (source,source,target)")
   parser.passthrough.append("charset")
   parser.passthrough.append("columnorder")
-  parser.run()
+  parser.run(argv)
 
