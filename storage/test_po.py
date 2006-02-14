@@ -85,3 +85,11 @@ class TestPO(test_base.TestTranslationStore):
         posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         pofile = self.poparse(posource)
         assert len(pofile.units) == 1
+
+    def test_unicode(self):
+        """check that the po class can handle Unicode characters"""
+        posource = 'msgid ""\nmsgstr ""\n"Content-Type: text/plain; charset=UTF-8\\n"\n\n#: test.c\nmsgid "test"\nmsgstr "rest\xe2\x80\xa6"\n'
+        pofile = self.poparse(posource)
+        print pofile
+        assert len(pofile.units) == 2
+
