@@ -63,24 +63,24 @@ class pogrepfilter:
     if thepo.isheader(): return []
     if thepo.hasplural():
       if self.searchmsgid:
-        unquotedid = po.getunquotedstr(thepo.msgid)
-        unquotedid_plural = po.getunquotedstr(thepo.msgid_plural)
+        unquotedid = po.unquotefrompo(thepo.msgid)
+        unquotedid_plural = po.unquotefrompo(thepo.msgid_plural)
         if self.matches(unquotedid) or self.matches(unquotedid_plural):
           return True
       if self.searchmsgstr:
         if isinstance(thepo.msgstr, dict):
           for msgstr in thepo.msgstr.values():
-            unquotedstr = po.getunquotedstr(msgstr)
+            unquotedstr = po.unquotefrompo(msgstr)
             if self.matches(unquotedstr): return True
         else:
-          unquotedstr = po.getunquotedstr(thepo.msgstr)
+          unquotedstr = po.unquotefrompo(thepo.msgstr)
           if self.matches(unquotedstr): return True
     else:
       if self.searchmsgid:
-        unquotedid = po.getunquotedstr(thepo.msgid)
+        unquotedid = po.unquotefrompo(thepo.msgid)
         if self.matches(unquotedid): return True
       if self.searchmsgstr:
-        unquotedstr = po.getunquotedstr(thepo.msgstr)
+        unquotedstr = po.unquotefrompo(thepo.msgstr)
         if self.matches(unquotedstr): return True
     return False
 

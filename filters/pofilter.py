@@ -102,15 +102,15 @@ class pocheckfilter:
     if not self.options.includefuzzy and thepo.isfuzzy(): return []
     if not self.options.includereview and thepo.isreview(): return []
     if thepo.hasplural():
-      unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
-      unquotedstr = po.getunquotedstr(thepo.msgstr[0], joinwithlinebreak=False)
+      unquotedid = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False)
+      unquotedstr = po.unquotefrompo(thepo.msgstr[0], joinwithlinebreak=False)
       failures = self.checker.run_filters(thepo, unquotedid, unquotedstr)
-      unquotedid = po.getunquotedstr(thepo.msgid_plural, joinwithlinebreak=False)
-      unquotedstr = po.getunquotedstr(thepo.msgstr[1], joinwithlinebreak=False)
+      unquotedid = po.unquotefrompo(thepo.msgid_plural, joinwithlinebreak=False)
+      unquotedstr = po.unquotefrompo(thepo.msgstr[1], joinwithlinebreak=False)
       failures += self.checker.run_filters(thepo, unquotedid, unquotedstr)
     else:
-      unquotedid = po.getunquotedstr(thepo.msgid, joinwithlinebreak=False)
-      unquotedstr = po.getunquotedstr(thepo.msgstr, joinwithlinebreak=False)
+      unquotedid = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False)
+      unquotedstr = po.unquotefrompo(thepo.msgstr, joinwithlinebreak=False)
       failures = self.checker.run_filters(thepo, unquotedid, unquotedstr)
       if failures and self.options.autocorrect:
         # we can't get away with bad unquoting / requoting if we're going to change the result...

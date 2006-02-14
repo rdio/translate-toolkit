@@ -19,7 +19,7 @@ def untranslatedwords(pair):
 
 def wordcount(postr):
   # TODO: po class should understand KDE style plurals
-  unquotedstr = sre.sub("^_n: ", "", po.getunquotedstr(postr))
+  unquotedstr = sre.sub("^_n: ", "", po.unquotefrompo(postr))
   return len(unquotedstr.split())
 
 def wordsinpoel(poel):

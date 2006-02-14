@@ -53,9 +53,9 @@ class podebug:
     source = self.convertsource(thepo)
     if self.openofficeignore(source):
       return thepo
-    msgstr = po.getunquotedstr(thepo.msgstr)
+    msgstr = po.unquotefrompo(thepo.msgstr)
     if not msgstr:
-      msgstr = po.getunquotedstr(thepo.msgid)
+      msgstr = po.unquotefrompo(thepo.msgid)
     msgstr = prefix + msgstr
     thepo.msgstr = [quote.quotestr(line) for line in msgstr.split('\n')]
     return thepo

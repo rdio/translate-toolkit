@@ -84,7 +84,7 @@ def convertpot(inputfile, outputfile, templatefile):
             possiblematches.append(otherpo)
         for otherpo in possiblematches:
           # TODO: do fuzzy merging if not entirely matching
-          if po.getunquotedstr(thepo.msgid, joinwithlinebreak=False) == po.getunquotedstr(otherpo.msgid, joinwithlinebreak=False):
+          if po.unquotefrompo(thepo.msgid, joinwithlinebreak=False) == po.unquotefrompo(otherpo.msgid, joinwithlinebreak=False):
             thepo.merge(otherpo)
             break
         outputpo.units.append(thepo)

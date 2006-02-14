@@ -44,7 +44,7 @@ def mergepofiles(p1, p2, mergeblanks, mergecomments):
     for sourcecomment in po2.sourcecomments:
       entities += quote.rstripeol(sourcecomment)[3:].split()
     if len(entities) == 0:
-      unquotedid = po.getunquotedstr(po2.msgid)
+      unquotedid = po.unquotefrompo(po2.msgid)
       po1 = None
       if unquotedid in p1.msgidindex:
         po1 = p1.msgidindex[unquotedid]
@@ -64,7 +64,7 @@ def mergepofiles(p1, p2, mergeblanks, mergecomments):
           po1 = None
       # if sourceindex was not unique, use the msgidindex
       if po1 is None:
-        unquotedid = po.getunquotedstr(po2.msgid)
+        unquotedid = po.unquotefrompo(po2.msgid)
         if unquotedid in p1.msgidindex:
           po1 = p1.msgidindex[unquotedid]
       # check if we found a matching po element
@@ -73,7 +73,7 @@ def mergepofiles(p1, p2, mergeblanks, mergecomments):
         sys.stderr.write(str(po2) + "\n")
       else:
         if not mergeblanks:
-          unquotedstr = po.getunquotedstr(po2.msgstr)
+          unquotedstr = po.unquotefrompo(po2.msgstr)
           if len(unquotedstr.strip()) == 0: continue
         # finally set the new definition in po1
         po1.merge(po2, overwrite=True, comments=mergecomments)

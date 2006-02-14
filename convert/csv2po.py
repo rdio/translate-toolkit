@@ -61,7 +61,7 @@ class csv2po:
       for comment in thepo.sourcecomments:
         commentparts.append(comment.replace("#:","",1).strip())
       joinedcomment = " ".join(commentparts)
-      unquotedid = po.getunquotedstr(thepo.msgid)
+      unquotedid = po.unquotefrompo(thepo.msgid)
       # the definitive way to match is by source comment (joinedcomment)
       if joinedcomment in self.commentindex:
         # unless more than one thing matches...
@@ -100,7 +100,7 @@ class csv2po:
       thepolist = self.simpleindex[simplify(thecsv.source)]
       if len(thepolist) > 1:
         csvfilename = getattr(self.csvfile, "filename", "(unknown)")
-        matches = "\n  ".join(["possible match: " + po.getunquotedstr(thepo.msgid) for thepo in thepolist])
+        matches = "\n  ".join(["possible match: " + po.unquotefrompo(thepo.msgid) for thepo in thepolist])
         print >>sys.stderr, "%s - csv entry not found in csvfile, multiple matches found:\n  location\t%s\n  original\t%s\n  translation\t%s\n  %s" % (csvfilename, thecsv.comment, thecsv.source, thecsv.target, matches)
         self.unmatched += 1
         return
@@ -113,8 +113,8 @@ class csv2po:
     csvtarget = [quotecsvstr(line) for line in thecsv.target.split('\n')]
     if thepo.hasplural():
       # we need to work out whether we matched the singular or the plural
-      singularid = po.getunquotedstr(thepo.msgid)
-      pluralid = po.getunquotedstr(thepo.msgid_plural)
+      singularid = po.unquotefrompo(thepo.msgid)
+      pluralid = po.unquotefrompo(thepo.msgid_plural)
       if thecsv.source == singularid:
         thepo.msgstr[0] = csvtarget
       elif thecsv.source == pluralid:
