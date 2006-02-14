@@ -21,13 +21,39 @@
 """A class implementing to calculate a similarity based on the Levenshtein 
 distance. See http://en.wikipedia.org/wiki/Levenshtein_distance."""
 
+from translate.search import segment
 import math
+
+DEBUG = 0
 
 class LevenshteinComparer:
     def __init__(self, max_len=200):
         self.MAX_LEN = max_len
 
     def similarity(self, a, b, stoppercentage=40):
+        similarity = self.similarity_real(a, b, stoppercentage)
+        measurements = 1
+        if DEBUG:print similarity
+
+        chr_a = segment.characters(a)
+        chr_b = segment.characters(b)
+        if abs(len(chr_a) - len(a)) + abs(len(chr_b) - len(b)):
+            similarity += self.similarity_real(chr_a, chr_b, stoppercentage)
+            measurements += 1
+            if DEBUG:print self.similarity_real(chr_a, chr_b, stoppercentage)
+        else:
+            similarity *= 2
+            measurements += 1
+            
+        wrd_a = segment.words(a)
+        wrd_b = segment.words(b)
+        if len(wrd_a) + len(wrd_b) > 2:
+            similarity += self.similarity_real(wrd_a, wrd_b, 0)
+            measurements += 1
+            if DEBUG:print self.similarity_real(wrd_a, wrd_b, 0)
+        return similarity / measurements
+
+    def similarity_real(self, a, b, stoppercentage=40):
         """Returns the similarity between a and b based on Levenshtein distance. It
     can stop prematurely as soon as it sees that a and b will be no simmilar than
     the percentage specified in stoppercentage.
@@ -111,6 +137,7 @@ class LevenshteinComparer:
 
 if __name__=="__main__":
     from sys import argv
+    DEBUG = 1
     comparer = LevenshteinComparer()
-    print comparer.similarity(argv[1],argv[2])
+    print "Similarity:\n%s" % comparer.similarity(argv[1],argv[2], 50)
 
