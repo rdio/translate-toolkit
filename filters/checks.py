@@ -80,9 +80,11 @@ def fails(filterfunction, str1, str2):
     filterresult = False
   return not filterresult
 
+punctuation_chars = u'.,;:!?-@#$%^*_()[]{}/\\\'"<>\u2018\u2019\u201a\u201b\u201c\u201d\u201e\u201f\u2032\u2033\u2034\u2035\u2036\u2037\u2039\u203a\xab\xbb\xb1\xb3\xb9\xb2\xb0\xbf\xa9\xae\xd7\xa3\xa5$'
+
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
-  def __init__(self, targetlanguage=None, accelmarkers=None, varmatches=None, notranslatewords=None, musttranslatewords=None, validchars=None, punctuation=u".,;:!?-@#$%^*_()[]{}/\\'\"<>‘’‚‛“”„‟′″‴‵‶‷‹›«»±³¹²°¿©®×£¥$"):
+  def __init__(self, targetlanguage=None, accelmarkers=None, varmatches=None, notranslatewords=None, musttranslatewords=None, validchars=None, punctuation=None):
     # make sure that we initialise empty lists properly (default arguments get reused!)
     if accelmarkers is None:
       accelmarkers = []
@@ -104,6 +106,8 @@ class CheckerConfig(object):
     self.updatevalidchars(validchars)
     if isinstance(punctuation, str):
       punctuation = punctuation.decode("utf-8")
+    elif punctuation is None:
+      punctuation = punctuation_chars
     self.punctuation = punctuation
     
   def update(self, otherconfig):
@@ -535,8 +539,14 @@ class StandardChecker(TranslationChecker):
     #The above is full of strange quotes and things in utf-8 encoding.
     #single apostrophe perhaps problematic in words like "doesn't"
     for seperator in self.config.punctuation:
-      str1 = str1.replace(seperator, " ")
-      str2 = str2.replace(seperator, " ")
+      if isinstance(str1, unicode):
+        str1 = str1.replace(seperator, u" ")
+      else:
+        str1 = str1.replace(seperator.encode("utf-8"), " ")
+      if isinstance(str2, unicode):
+        str2 = str2.replace(seperator, u" ")
+      else:
+        str2 = str2.replace(seperator.encode("utf-8"), " ")
     words1 = self.filteraccelerators(str1).split()
     words2 = self.filteraccelerators(str2).split()
     stopwords = [word for word in words1 if word in self.config.notranslatewords and word not in words2]
