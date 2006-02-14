@@ -55,17 +55,17 @@ class TestZipFiles:
         zip.close()
     
         zip = zipfile.ZipFile(f, "a", compression)   # Modify the ZIP archive
-	try:
+        try:
             for deletename in deletenames:
                 zip.delete(deletename)
-	finally:
+        finally:
             zip.close()
     
         zip = zipfile.ZipFile(f, "r", compression)   # Read the ZIP archive
-	try:
+        try:
             testfailed = zip.testzip()
             readData = zip.read(leftname)
-	finally:
+        finally:
             zip.close()
     
         assert not testfailed
