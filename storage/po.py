@@ -70,7 +70,7 @@ def extractpoline(line):
   extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=isnewlineortabescape)[0]
   return extracted # .replace('\\"', '"')
 
-def unquotefrompo(postr, joinwithlinebreak=True):
+def unquotefrompo(postr, joinwithlinebreak=False):
   if joinwithlinebreak:
     joiner = "\n"
     if postr and postr[0] == '""': postr = postr[1:]
