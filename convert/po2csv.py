@@ -19,7 +19,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""simple script to convert a gettext .po localization file to a comma-separated values (.csv) file"""
+"""convert gettext .po localization files to comma-separated values (.csv) files"""
 
 from translate.storage import po
 from translate.storage import csvl10n
@@ -85,12 +85,12 @@ def convertcsv(inputfile, outputfile, templatefile, columnorder=None):
   outputfile.write(outputcsvsrc)
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {"po":("csv", convertcsv)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.add_option("", "--columnorder", dest="columnorder", default=None,
     help="specify the order and position of columns (comment,source,target)")
   parser.passthrough.append("columnorder")
-  parser.run()
+  parser.run(argv)
 

@@ -40,7 +40,7 @@ class html2po:
     for blocknum in range(len(htmlparser.blocks)):
       block = htmlparser.blocks[blocknum].strip()
       if not block: continue
-      thepo = po.pounit()
+      thepo = po.pounit(encoding="UTF-8")
       thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum+1))
       thepo.msgid = [quote.quotestr(quote.rstripeol(block))]
       if len(thepo.msgid) > 1:
@@ -59,12 +59,12 @@ def converthtml(inputfile, outputfile, templates, includeuntagged=False):
   outputfile.write(outputposrc)
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {"html":("po",converthtml), "htm":("po",converthtml)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.add_option("-u", "--untagged", dest="includeuntagged", default=False, action="store_true",
                     help="include untagged sections")
   parser.passthrough.append("includeuntagged")
-  parser.run()
+  parser.run(argv)
 

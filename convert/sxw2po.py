@@ -69,7 +69,7 @@ class sxw2po:
     for message in sxwdoc.getmessages():
       if not message: continue
       blocknum += 1
-      thepo = po.pounit()
+      thepo = po.pounit(encoding="UTF-8")
       thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum))
       thepo.msgid = [quote.quotestr(quote.rstripeol(message), escapeescapes=1)]
       if len(thepo.msgid) > 1:
@@ -86,9 +86,9 @@ def convertsxw(inputfile, outputfile, templates):
   outputfile.write(outputposrc)
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {"sxw":("po",convertsxw)}
   parser = convert.ConvertOptionParser(formats, description=__doc__)
-  parser.run()
+  parser.run(argv)
 

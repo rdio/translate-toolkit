@@ -29,7 +29,7 @@ from translate.misc import quote
 class txt2po:
   def convertblock(self, filename, block, linenum):
     """makes a pounit based on the current block"""
-    thepo = po.pounit()
+    thepo = po.pounit(encoding="UTF-8")
     thepo.sourcecomments.append("#: %s:%d\n" % (filename,linenum+1))
     thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in block]
     if len(thepo.msgid) > 1:
@@ -72,9 +72,9 @@ def converttxt(inputfile, outputfile, templates):
   outputfile.write(outputposrc)
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {"txt":("po",converttxt), "*":("po",converttxt)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
-  parser.run()
+  parser.run(argv)
 

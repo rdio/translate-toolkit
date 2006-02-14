@@ -101,7 +101,7 @@ class TmxOptionParser(convert.ArchiveConvertOptionParser):
     options.outputarchive.tmxfile.setsourcelanguage(options.sourcelanguage)
     self.output.write(str(options.outputarchive.tmxfile))
 
-def main():
+def main(argv=None):
   formats = {"po": ("tmx", convertpo), ("po", "tmx"): ("tmx", convertpo)}
   archiveformats = {(None, "output"): tmxmultifile, (None, "template"): tmxmultifile}
   parser = TmxOptionParser(formats, usepots=True, usetemplates=False, description=__doc__, archiveformats=archiveformats)
@@ -111,5 +111,5 @@ def main():
                     help="set source language code (default: en)", metavar="LANG")
   parser.passthrough.append("sourcelanguage")
   parser.passthrough.append("targetlanguage")
-  parser.run()
+  parser.run(argv)
 

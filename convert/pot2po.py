@@ -19,7 +19,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""convert a gettext .pot template to a .po translation file, merging in existing translations if present"""
+"""converts gettext .pot template to .po translation files, merging in existing translations if present"""
 
 from translate.storage import po
 
@@ -93,9 +93,9 @@ def convertpot(inputfile, outputfile, templatefile):
   outputfile.write(str(outputpo))
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {"pot": ("po", convertpot), ("pot", "po"): ("po", convertpot)}
   parser = convert.ConvertOptionParser(formats, usepots=True, usetemplates=True, description=__doc__)
-  parser.run()
+  parser.run(argv)
 

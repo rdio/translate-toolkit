@@ -30,7 +30,7 @@ from translate.misc import quote
 class ts2po:
   def convertmessage(self, contextname, messagenum, msgid, msgstr, msgcomments, transtype):
     """makes a pounit from the given message"""
-    thepo = po.pounit()
+    thepo = po.pounit(encoding="UTF-8")
     thepo.sourcecomments.append("#: %s#%d\n" % (contextname, messagenum))
     thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in msgid.split("\n")]
     if len(thepo.msgid) > 1:
@@ -71,9 +71,9 @@ def convertts(inputfile, outputfile, templates):
   outputfile.write(outputposrc)
   return 1
 
-def main():
+def main(argv=None):
   from translate.convert import convert
   formats = {"ts":("po",convertts)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
-  parser.run()
+  parser.run(argv)
 
