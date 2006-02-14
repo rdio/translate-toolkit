@@ -53,7 +53,7 @@ def getunquotedstr(lines, joinwithlinebreak=True, includeescapes=True):
 
 def escapeforpo(line):
   """escapes a line for po format. assumes no \n occurs in the line"""
-  return line.replace("\\n", "\n").replace('\\', '\\\\').replace("\n", "\\n").replace('"', '\\"')
+  return line.replace("\\n", "\n").replace('\\', '\\\\').replace("\n", "\\n").replace('"', '\\"').replace('\\\\r', '\\r').replace('\\\\t', '\\t')
 
 def quoteforpo(text):
   """quotes the given text for a PO file, returning quoted and escaped lines"""
@@ -99,7 +99,8 @@ class pounit(base.TranslationUnit):
   # msgid = []
   # msgstr = []
 
-  def __init__(self, source=None):
+  def __init__(self, source=None, encoding="UTF-8"):
+    self.encoding = encoding
     self.othercomments = []
     self.sourcecomments = []
     self.typecomments = []
@@ -364,7 +365,18 @@ class pounit(base.TranslationUnit):
       partstr += partline + '\n'
     return partstr
 
+  def encodeifneccessary(self, source):
+    """encodes unicode strings and returns other strings unchanged"""
+    if isinstance(source, unicode):
+      return source.encode(getattr(self, "encoding", "UTF-8"))
+    return source
+
   def __str__(self):
+    """convert to a string. double check that unicode is handled somehow here"""
+    source = self.getsource()
+    return self.encodeifneccessary(source)
+
+  def getsource(self):
     """return this po element as a string"""
     lines = []
     lines.extend(self.othercomments)
@@ -384,7 +396,9 @@ class pounit(base.TranslationUnit):
     if self.msgid_plural or self.msgid_pluralcomments:
       lines.append(self.getmsgpartstr("msgid_plural", self.msgid_plural, self.msgid_pluralcomments))
     lines.append(self.getmsgpartstr("msgstr", self.msgstr))
-    return "".join(lines)
+    lines = [self.encodeifneccessary(line) for line in lines]
+    postr = "".join(lines)
+    return postr
 
   def getsources(self):
     """returns the list of sources from sourcecomments in the po element"""
@@ -430,7 +444,7 @@ class pofile(base.TranslationStore):
       if key.islower():
         key = key.title()
       headerargs[key] = value
-    headerpo = self.elementclass()
+    headerpo = self.elementclass(encoding=self.encoding)
     headerpo.markfuzzy()
     headerpo.msgid = ['""']
     headeritems = [""]
@@ -625,7 +639,7 @@ class pofile(base.TranslationStore):
       if (end == len(lines)) or (not lines[end].strip()):   # end of lines or blank line
         finished = 0
         while not finished:
-          newpe = self.elementclass()
+          newpe = self.elementclass(encoding=self.encoding)
           linesprocessed = newpe.parse("\n".join(lines[start:end]))
           start += linesprocessed
           if linesprocessed > 1:
@@ -708,6 +722,13 @@ class pofile(base.TranslationStore):
           self.sourceindex[source] = thepo
 
   def __str__(self):
+    """convert to a string. double check that unicode is handled somehow here"""
+    source = self.getsource()
+    if isinstance(source, unicode):
+      return source.encode(getattr(self, "encoding", "UTF-8"))
+    return source
+
+  def getsource(self):
     """convert the units back to lines"""
     lines = []
     for pe in self.units:
