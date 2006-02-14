@@ -121,6 +121,12 @@ def test_endpunc():
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.endpunc, "Question?", "Correct?")
     assert checks.fails(stdchecker.endpunc, " Question?", "Wrong ?")
+    mozillachecker = checks.MozillaChecker()
+    assert checks.passes(mozillachecker.endpunc, "Upgrades an existing $ProductShortName$ installation.", "Ku antswisiwa ka ku nghenisiwa ka $ProductShortName$.")
+    # Real examples
+    assert checks.passes(stdchecker.endpunc, "A nickname that identifies this publishing site (e.g.: 'MySite')", "Vito ro duvulela leri tirhisiwaka ku kuma sayiti leri ro kandziyisa (xik.: 'Sayiti ra Mina')")
+    # FIXME fix later
+    #assert checks.fails(stdchecker.endpunc, "Question", "Wrong\xe2\x80\xa6")
 
 def test_endwhitespace():
     """tests endwhitespace"""
@@ -214,6 +220,10 @@ def test_notranslatewords():
     stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["sendmail"]))
     assert checks.fails(stdchecker.notranslatewords, "because 'sendmail' could", "ngauri 'rumelameiḽi' a yo")
     assert checks.passes(stdchecker.notranslatewords, "because 'sendmail' could", "ngauri 'sendmail' a yo")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["Base"]))
+    assert checks.fails(stdchecker.notranslatewords, " - %PRODUCTNAME Base: Relation design", " - %PRODUCTNAME Sisekelo: Umsiko wekuhlobana")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["Writer"]))
+    assert checks.fails(stdchecker.notranslatewords, "&[ProductName] Writer/Web", "&[ProductName] Umbhali/iWebhu")
 
 def test_numbers():
     """test numbers"""
@@ -281,6 +291,8 @@ Converting...""", "Kugucula...")
     assert checks.passes(stdchecker.singlequoting, "Blah 'format' blah.", "Blah blah 'sebopego'.")
     assert checks.passes(stdchecker.singlequoting, "Blah 'format' blah!", "Blah blah 'sebopego'!")
     assert checks.passes(stdchecker.singlequoting, "Blah 'format' blah?", "Blah blah 'sebopego'?")
+    # Real examples
+    assert checks.passes(stdchecker.singlequoting, "A nickname that identifies this publishing site (e.g.: 'MySite')", "Vito ro duvulela leri tirhisiwaka ku kuma sayiti leri ro kandziyisa (xik.: 'Sayiti ra Mina')")
 
 def test_simplecaps():
     """tests simple caps"""
@@ -291,6 +303,15 @@ def test_simplecaps():
     # We should squash 'I' in the source text as it messes with capital detection
     ## disabled test until enhancement implemented
     ## assert checks.passes(stdchecker.simplecaps, "if you say I want", "as jy se ek wil")
+    # FIXME disabled for now
+    ## We should remove variables before checking
+    #assert checks.passes(stdchecker.simplecaps, "Could not load %s", "A swi koteki ku panga %S")
+    assert checks.passes(stdchecker.simplecaps, "The element \"%S\" is not recognized.", "Elemente \"%S\" a yi tiveki.")
+    assert checks.passes(stdchecker.simplecaps, "Determine how &brandShortName; connects to the Internet.", "Kuma &brandShortName; hlanganisa eka Internete.")
+    ## If source is ALL CAPS then we should just check that target is also ALL CAPS
+    #assert checks.passes(stdchecker.simplecaps, "COUPDAYS", "COUPMALANGA")
+    # Just some that at times have failed but should always pass
+    assert checks.passes(stdchecker.simplecaps, "Create a query  entering an SQL statement directly.", "Yakha sibuti singena SQL inkhomba yesitatimende.")
 
 # def test_spellcheck():
 #     """tests simple caps"""
