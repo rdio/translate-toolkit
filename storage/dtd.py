@@ -35,6 +35,18 @@ def quotefordtd(source):
   else:
     return quote.quotestr(source)
 
+def unquotefromdtd(source):
+  """unquotes a quoted dtd definition"""
+  # extract the string, get rid of quoting
+  if len(source) == 0: source = '""'
+  quotechar = source[0]
+  extracted,quotefinished = quote.extract(source,quotechar,quotechar,None)
+  if quotechar == "'" and "&apos;" in extracted:
+    extracted = extracted.replace("&apos;", "'")
+  # the quote characters should be the first and last characters in the string
+  # of course there could also be quote characters within the string; not handled here
+  return extracted[1:-1]
+
 class dtdelement:
   """this class represents an entity definition from a dtd file (and possibly associated comments)"""
   def __init__(self):
@@ -98,10 +110,22 @@ class dtdelement:
         (comment, self.incomment) = quote.extract(line,"<!--","-->",None,self.continuecomment)
         # print "comment(%d,%d): " % (self.incomment,self.continuecomment),comment
         self.continuecomment = self.incomment
+        # strip the comment out of what will be parsed
+        line = line.replace(comment, "", 1)
+        # add a end of line of this is the end of the comment
+        if not self.incomment:
+          if line.isspace():
+            comment += line
+            line = ''
+          else:
+            comment += '\n'
+        # check if there's actually an entity definition that's commented out
+        # TODO: parse these, store as obsolete messages
+        # if comment.find('<!ENTITY') <> -1:
+        #   # remove the entity from the comment
+        #   comment, dummy = quote.extractwithoutquotes(comment, ">", "<!ENTITY", None, 1)
         # depending on the type of comment (worked out at the start), put it in the right place
         # make it record the comment and type as a tuple
-        if comment.find('<!ENTITY') <> -1:
-          comment, dummy = quote.extractwithoutquotes(comment, ">", "<!ENTITY", None, 1)
         commentpair = (self.commenttype,comment)
         if self.commenttype == "locfile":
           self.locfilenotes.append(commentpair)
@@ -113,9 +137,6 @@ class dtdelement:
           self.locnotes.append(commentpair)
         elif self.commenttype == "comment":
           self.comments.append(commentpair)
-        line = line.replace(comment, "", 1)
-        # add a end of line of this is the end of the comment
-        if not self.incomment: comment += '\n'
 
       if not self.inentity and not self.incomment:
         entitypos = line.find('<!ENTITY')
@@ -205,12 +226,19 @@ class dtdelement:
     return linesprocessed
 
   def __str__(self):
+    """convert to a string. double check that unicode is handled somehow here"""
+    source = self.getsource()
+    if isinstance(source, unicode):
+      return source.encode(getattr(self, "encoding", "UTF-8"))
+    return source
+
+  def getsource(self):
     """convert the dtd entity back to string form"""
     lines = []
     lines.extend([comment for commenttype,comment in self.comments])
     lines.extend(self.unparsedlines)
     if self.isnull():
-      raise StopIteration()
+      return "\n"
     # for f in self.locfilenotes: yield f
     # for ge in self.locgroupends: yield ge
     # for gs in self.locgroupstarts: yield gs
@@ -265,6 +293,13 @@ class dtdfile:
           self.dtdelements.append(newdtd)
 
   def __str__(self):
+    """convert to a string. double check that unicode is handled somehow here"""
+    source = self.getsource()
+    if isinstance(source, unicode):
+      return source.encode(getattr(self, "encoding", "UTF-8"))
+    return source
+
+  def getsource(self):
     """convert the dtdelements back to source"""
     sources = [str(dtd) for dtd in self.dtdelements]
     return "".join(sources)
@@ -276,8 +311,21 @@ class dtdfile:
       if not dtd.isnull():
         self.index[dtd.entity] = dtd
 
+  def rewrap(self):
+    for dtd in self.dtdelements:
+      lines = dtd.definition.split("\n")
+      if len(lines) > 1:
+        definition = lines[0]
+        for line in lines[1:]:
+          if definition[-1:].isspace() or line[:1].isspace():
+            definition += line
+          else:
+            definition += " " + line
+        dtd.definition = definition
+
 if __name__ == "__main__":
   import sys
   d = dtdfile(sys.stdin)
+  d.rewrap()
   sys.stdout.write(str(d))
 

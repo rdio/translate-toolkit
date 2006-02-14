@@ -23,6 +23,12 @@ class TestDTD:
         assert dtdelement.entity == "test.me"
         assert dtdelement.definition == '"bananas for sale"'
 
+    def test_blanklines(self):
+        """checks that blank lines don't break the parsing or regeneration"""
+        dtdsource = '<!ENTITY test.me "bananas for sale">\n\n'
+        dtdregen = self.dtdregen(dtdsource)
+        assert dtdsource == dtdregen
+
     def test_simpleentity_source(self):
         """checks that a simple dtd entity definition can be regenerated as source"""
         dtdsource = '<!ENTITY test.me "bananas for sale">\n'
@@ -39,5 +45,37 @@ class TestDTD:
         """tests that comment closes with trailing space aren't duplicated"""
         dtdsource = '<!-- little comment --> \n<!ENTITY pane.title "Notifications">\n'
         dtdregen = self.dtdregen(dtdsource)
+        assert dtdsource == dtdregen
+
+    def test_commententity(self):
+        """check that we don't process messages in <!-- comments -->: bug 102"""
+        dtdsource = '''<!-- commenting out until bug 38906 is fixed
+<!ENTITY messagesHeader.label         "Messages"> -->'''
+        dtdfile = self.dtdparse(dtdsource)
+        assert len(dtdfile.dtdelements) == 1
+        dtdelement = dtdfile.dtdelements[0]
+        print dtdelement
+        assert dtdelement.isnull()
+
+    def test_newlines_in_entity(self):
+        """tests that we can handle newlines in the entity itself"""
+        dtdsource = '''<!ENTITY fileNotFound.longDesc "
+<ul>
+  <li>Check the file name for capitalisation or other typing errors.</li>
+  <li>Check to see if the file was moved, renamed or deleted.</li>
+</ul>
+">
+'''
+        dtdregen = self.dtdregen(dtdsource)
+        print dtdregen
+        print dtdsource
+        assert dtdsource == dtdregen
+
+    def test_conflate_comments(self):
+        """Tests that comments don't run onto the same line"""
+        dtdsource = '<!-- test comments -->\n<!-- getting conflated -->\n<!ENTITY sample.txt "hello">\n'
+        dtdregen = self.dtdregen(dtdsource)
+        print dtdsource
+        print dtdregen
         assert dtdsource == dtdregen
 

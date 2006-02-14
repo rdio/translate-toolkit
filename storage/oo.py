@@ -28,6 +28,7 @@ import os
 import sys
 from translate.misc import quote
 from translate.misc import wStringIO
+import warnings
 
 normalfilenamechars = "/#.0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 normalizetable = ""
@@ -68,7 +69,7 @@ class ooline:
   def setparts(self, parts):
     """create a line from its tab-delimited parts"""
     if len(parts) != 15:
-      print >>sys.stderr, "WRONG SIZE: %r" % parts
+      warnings.warn("oo line contains %d parts, it should contain 15: %r" % (len(parts), parts))
       newparts = list(parts)
       if len(newparts) < 15:
         newparts = newparts + [""] * (15-len(newparts))
@@ -86,6 +87,13 @@ class ooline:
             self.languageid, self.text, self.helptext, self.quickhelptext, self.title, self.timestamp)
 
   def __str__(self):
+    """convert to a string. double check that unicode is handled somehow here"""
+    source = self.getsource()
+    if isinstance(source, unicode):
+      return source.encode(getattr(self, "encoding", "UTF-8"))
+    return source
+
+  def getsource(self):
     """return a line in tab-delimited form"""
     return "\t".join(self.getparts()).replace("\n", "\\n")
 
@@ -106,6 +114,13 @@ class ooelement:
     self.lines.append(line)
 
   def __str__(self):
+    """convert to a string. double check that unicode is handled somehow here"""
+    source = self.getsource()
+    if isinstance(source, unicode):
+      return source.encode(getattr(self, "encoding", "UTF-8"))
+    return source
+
+  def getsource(self):
     """return the lines in tab-delimited form"""
     return "\r\n".join([str(line) for line in self.lines])
 
@@ -143,17 +158,28 @@ class oofile:
     else:
       src = input
     for line in src.split("\n"):
-      parts = quote.rstripeol(line).split("\t")
+      line = quote.rstripeol(line)
+      if not line:
+        continue
+      parts = line.split("\t")
       thisline = ooline(parts)
       self.addline(thisline)
 
   def __str__(self):
+    """convert to a string. double check that unicode is handled somehow here"""
+    source = self.getsource()
+    if isinstance(source, unicode):
+      return source.encode(getattr(self, "encoding", "UTF-8"))
+    return source
+
+  def getsource(self):
     """converts all the lines back to tab-delimited form"""
     lines = []
     for oe in self.ooelements:
       if len(oe.lines) > 2:
-        for line in oe.lines:
-          print >>sys.stderr, line.getparts()
+        warnings.warn("contains %d lines (should be 2 at most): languages %r" % (len(oe.lines), oe.languages))
+        oekeys = [line.getkey() for line in oe.lines]
+        warnings.warn("contains %d lines (should be 2 at most): keys %r" % (len(oe.lines), oekeys))
       oeline = str(oe) + "\r\n"
       lines.append(oeline)
     return "".join(lines)
@@ -238,6 +264,7 @@ class oomultifile:
     """returns a pseudo-file object for the given subfile"""
     def onclose(contents):
       self.multifile.write(contents)
+      self.multifile.flush()
     outputfile = wStringIO.CatchStringOutput(onclose)
     outputfile.filename = subfile
     return outputfile
