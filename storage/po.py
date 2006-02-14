@@ -152,16 +152,16 @@ class pounit(base.TranslationUnit):
 
   def msgidlen(self):
     if self.hasplural():
-      return len(getunquotedstr(self.msgid).strip()) + len(getunquotedstr(self.msgid_plural).strip())
+      return len(unquotefrompo(self.msgid).strip()) + len(unquotefrompo(self.msgid_plural).strip())
     else:
-      return len(getunquotedstr(self.msgid).strip())
+      return len(unquotefrompo(self.msgid).strip())
 
   def msgstrlen(self):
     if isinstance(self.msgstr, dict):
-      combinedstr = "\n".join([getunquotedstr(msgstr).strip() for msgstr in self.msgstr.itervalues()])
+      combinedstr = "\n".join([unquotefrompo(msgstr).strip() for msgstr in self.msgstr.itervalues()])
       return len(combinedstr.strip())
     else:
-      return len(getunquotedstr(self.msgstr).strip())
+      return len(unquotefrompo(self.msgstr).strip())
 
   def merge(self, otherpo, overwrite=False, comments=True):
     """merges the otherpo (with the same msgid) into this one
@@ -337,7 +337,7 @@ class pounit(base.TranslationUnit):
       partstr += partlines[0]
       partstartline = 1
     elif len(partcomments) > 0:
-      if len(partlines) > 0 and len(getunquotedstr(partlines[:1])) == 0:
+      if len(partlines) > 0 and len(unquotefrompo(partlines[:1])) == 0:
         # if there is a blank leader line, it must come before the comment
         partstr += partlines[0] + '\n'
         # but if the whole string is blank, leave it in
@@ -503,7 +503,7 @@ class pofile(base.TranslationStore):
       return headervalues
     lineitem = ""
     for line in header.msgstr:
-      line = getunquotedstr([line]).strip()
+      line = unquotefrompo([line]).strip()
       if line.endswith("\\n"):
         lineitem += line[:-2]
       else:
@@ -673,9 +673,9 @@ class pofile(base.TranslationStore):
       markedpos.append(thepo)
     for thepo in self.units:
       if duplicatestyle.startswith("msgid_comment"):
-        msgid = getunquotedstr(thepo.msgidcomments) + getunquotedstr(thepo.msgid)
+        msgid = unquotefrompo(thepo.msgidcomments) + unquotefrompo(thepo.msgid)
       else:
-        msgid = getunquotedstr(thepo.msgid)
+        msgid = unquotefrompo(thepo.msgid)
       if thepo.isheader():
         # header msgids shouldn't be merged...
         uniqueelements.append(thepo)
@@ -709,10 +709,10 @@ class pofile(base.TranslationStore):
     self.sourceindex = {}
     self.msgidindex = {}
     for thepo in self.units:
-      msgid = getunquotedstr(thepo.msgid)
+      msgid = unquotefrompo(thepo.msgid)
       self.msgidindex[msgid] = thepo
       if thepo.hasplural():
-        msgid_plural = getunquotedstr(thepo.msgid_plural)
+        msgid_plural = unquotefrompo(thepo.msgid_plural)
         self.msgidindex[msgid_plural] = thepo
       for source in thepo.getsources():
         if source in self.sourceindex:

@@ -55,8 +55,8 @@ class TestPO(test_base.TestTranslationStore):
         assert len(pofile.units) == 2
         pofile.removeduplicates("merge")
         assert len(pofile.units) == 2
-        assert po.getunquotedstr(pofile.units[0].msgidcomments) == "_: source1\\n"
-        assert po.getunquotedstr(pofile.units[1].msgidcomments) == "_: source2\\n"
+        assert po.unquotefrompo(pofile.units[0].msgidcomments) == "_: source1\\n"
+        assert po.unquotefrompo(pofile.units[1].msgidcomments) == "_: source2\\n"
 
     def test_keep_blanks(self):
         """checks that keeping keeps blanks and doesn't add msgid_comments"""
@@ -66,11 +66,12 @@ class TestPO(test_base.TestTranslationStore):
         pofile.removeduplicates("keep")
         assert len(pofile.units) == 2
         # check we don't add msgidcomments
-        assert po.getunquotedstr(pofile.units[0].msgidcomments) == ""
-        assert po.getunquotedstr(pofile.units[1].msgidcomments) == ""
+        assert po.unquotefrompo(pofile.units[0].msgidcomments) == ""
+        assert po.unquotefrompo(pofile.units[1].msgidcomments) == ""
 
     def test_getunquotedstr(self):
         """checks that getunquotedstr works as advertised"""
+        # TODO: getunquotedstr is deprecated, this should be removed when it is
         assert po.getunquotedstr(['"First line\nSecond line"'], includeescapes=False) == "First line\nSecond line"
         #XXX:Failing:assert po.getunquotedstr(['"Use \\n."'], includeescapes=False) == "Use \\n."
 
