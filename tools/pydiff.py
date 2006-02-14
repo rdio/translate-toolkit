@@ -67,7 +67,7 @@ def main():
     fromfile, tofile = args
     if fromfile == "-" and tofile == "-":
         parser.error("Only one of fromfile and tofile can be read from stdin")
-		    
+
     if os.path.isdir(fromfile):
         if os.path.isdir(tofile):
             differ = DirDiffer(fromfile, tofile, options)
