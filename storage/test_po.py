@@ -93,3 +93,27 @@ class TestPO(test_base.TestTranslationStore):
         print pofile
         assert len(pofile.units) == 2
 
+    def test_getunquotedstr(self):
+        """checks that getunquotedstr works as advertised"""
+        # getunquotedstr should be removed, but while its there it should work!
+        assert po.getunquotedstr(['"First line\nSecond line"'], includeescapes=False) == "First line\nSecond line"
+
+    def test_output_str_unicode(self):
+        """checks that we can str(element) which is in unicode"""
+        posource = u'''#: nb\nmsgid "Norwegian Bokm\xe5l"\nmsgstr ""\n'''
+        pofile = po.pofile(wStringIO.StringIO(posource.encode("UTF-8")), encoding="UTF-8")
+        assert len(pofile.units) == 1
+        print str(pofile)
+        thepo = pofile.units[0]
+        assert str(thepo) == posource.encode("UTF-8")
+        # extra test: what if we set the msgid to a unicode? this happens in prop2po etc
+        thepo.source = u"Norwegian Bokm\xe5l"
+        assert str(thepo) == posource.encode("UTF-8")
+        # Now if we set the msgstr to Unicode
+        # this is an escaped half character (1/2)
+        halfstr = "\xbd ...".decode("latin-1")
+        thepo.target = halfstr
+        assert halfstr in str(thepo).decode("UTF-8")
+        thepo.target = halfstr.encode("UTF-8")
+        assert halfstr.encode("UTF-8") in thepo.getsource()
+
