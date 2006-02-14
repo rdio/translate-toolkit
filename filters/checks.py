@@ -514,7 +514,7 @@ class StandardChecker(TranslationChecker):
       word = word.strip(":;.,()'\"")
       if word.isupper() and len(word) > 1 and word not in vars1:
         if self.filteraccelerators(self.filtervariables(str2)).find(word) == -1:
-	  acronyms.append(word)
+          acronyms.append(word)
     if acronyms:
       raise FilterFailure("acronyms should not be translated: " + ", ".join(acronyms))
     return True
@@ -704,8 +704,8 @@ kdeconfig = CheckerConfig(
 
 class KdeChecker(StandardChecker):
   def __init__(self, **kwargs):
-	# TODO allow setup of KDE plural and translator comments so that they do
-	# not create false postives
+    # TODO allow setup of KDE plural and translator comments so that they do
+    # not create false postives
     checkerconfig = kwargs.get("checkerconfig", None)
     if checkerconfig is None:
       checkerconfig = CheckerConfig()
