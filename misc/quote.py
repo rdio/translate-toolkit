@@ -178,7 +178,7 @@ propertyescapes = {
 
 controlchars = {
   # the reverse of the above...
-  "\b": "\\b", "\f": "\\f", "\t": "\\t", "\n": "\\n", "\v": "\\v", "\a": "\\a"
+  "\b": "\\b", "\f": "\\f", "\t": "\\t", "\n": "\\n", "\v": "\\v"
   }
 
 def escapecontrols(source):
