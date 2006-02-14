@@ -21,7 +21,7 @@ class TestTBXfile(test_base.TestTranslationStore):
 		assert len(newfile.units) == 1
 		assert newfile.units[0].source == "Bla"
 		assert newfile.findunit("Bla").source == "Bla"
-		assert test.raises(KeyError, newfile.findunit, "dit")
+		assert newfile.findunit("dit") is None
 
 	def test_source(self):
 		tbxfile = tbx.tbxfile()
@@ -29,7 +29,7 @@ class TestTBXfile(test_base.TestTranslationStore):
 		tbxunit.source = "Term"
 		newfile = tbx.tbxfile.parsestring(str(tbxfile))
 		print str(tbxfile)
-		assert test.raises(KeyError, newfile.findunit, "Concept")
+		assert newfile.findunit("Concept") is None
 		assert newfile.findunit("Term") is not None
 	
 	def test_target(self):

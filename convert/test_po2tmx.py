@@ -42,7 +42,7 @@ msgstr "Toepassings"
         print "The generated xml:"
         print str(tmx)
         assert tmx.translate("Applications") == "Toepassings"
-        assert test.raises(KeyError, tmx.translate, "bla")
+        assert tmx.translate("bla") is None
         xmltext = str(tmx)
         assert xmltext.index('creationtool="Translate Toolkit - po2tmx"')
         assert xmltext.index('adminlang')

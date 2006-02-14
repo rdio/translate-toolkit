@@ -21,7 +21,7 @@ class TestTMXfile(test_base.TestTranslationStore):
 
     def test_translate(self):
         tmxfile= tmx.tmxfile()
-        assert test.raises(KeyError, tmxfile.translate, "Anything")
+        assert tmxfile.translate("Anything") is None
         tmxfile.addtranslation("A string of characters", "en", "'n String karakters", "af")
         assert tmxfile.translate("A string of characters") == "'n String karakters"
 

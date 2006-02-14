@@ -47,7 +47,7 @@ class TranslationStore(object):
         for unit in self.units:
             if unit.source == source:
                 return unit
-        raise KeyError("Unit with source string %r not found" % source)
+        return None
 
     def __str__(self):
         """Converts to a string representation that can be parsed back using parse"""

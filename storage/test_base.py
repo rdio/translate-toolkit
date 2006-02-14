@@ -97,7 +97,7 @@ class TestTranslationStore:
         unit2 = store.addsourceunit("Blessed String")
         assert store.findunit("Test String") == unit1
         assert store.findunit("Blessed String") == unit2
-        assert test.raises(KeyError, store.findunit, ("Nest String",))
+        assert store.findunit("Nest String") is None
 
     def reparse(self, store):
         """converts the store to a string and back to a store again"""
