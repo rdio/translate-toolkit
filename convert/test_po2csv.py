@@ -80,11 +80,12 @@ msgstr "Gebruik \\\"."
         csvfile = self.po2csv(minipo)
         print str(csvfile)
         assert csvfile.findunit("source 'source'").target == "target 'target'"
-        # Start quotes are escaped for spreadsheets
+        # Make sure we don't mess with start quotes until writing
         minipo = '''msgid "'source'"\nmsgstr "'target'"\n'''
         csvfile = self.po2csv(minipo)
         print str(csvfile)
-        assert csvfile.findunit(r"\'source'").target == r"\'target'"
+        assert csvfile.findunit(r"'source'").target == r"'target'"
+        # TODO check that we escape on writing not in the internal representation
 
     def test_empties(self):
         """Tests that things keep working with empty entries"""
