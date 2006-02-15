@@ -44,11 +44,11 @@ class TestPOFilter:
 
     def test_ignore_if_already_marked(self):
         """check that we don't add another failing marker is the message is already marked as failed"""
-        posource = '#: test.c\n# (pofilter) untranslated: checks whether a string has been translated at all\nmsgid "Simple string"\n"label;."\nmsgstr ""'
-        # FIXME is says it can't find the test untranslated! Seems something wrong with the cmdline part of this checker
-        poresult = self.pofilter(posource, cmdlineoptions=["--test=untranlated"])
+        posource = '#: test.c\n# (pofilter) untranslated: checks whether a string has been translated at all\nmsgid "Simple string"\nmsgstr ""'
+        poexpected = posource + '\n\n'
+        poresult = self.pofilter(posource, cmdlineoptions=["--test=untranslated"])
         print poresult
-        assert poresult == ""
+        assert poresult == poexpected
 
     def test_non_existant_check(self):
 	"""check that we report an error if a user tries to run a non-existant test"""
@@ -92,17 +92,19 @@ class TestPOFilter:
     def test_isfuzzy(self):
 	"""tests the extraction of items marked fuzzy"""
         posource = '#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n'
+        poexpected = '# (pofilter) isfuzzy: check if the po element has been marked fuzzy\n#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n\n'
         poresult = self.pofilter(posource, cmdlineoptions=["--test=isfuzzy"])
-	assert poresult != ""
+	assert poresult == poexpected
         posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
         poresult = self.pofilter(posource, cmdlineoptions=["--test=isfuzzy"])
 	assert poresult == ""
 
     def test_isreview(self):
 	"""tests the extraction of items marked review"""
-        posource = '#: test.c\n#, review\nmsgid "test"\nmsgstr "REST"\n'
+        posource = '# (review)\n#: test.c\nmsgid "test"\nmsgstr "REST"'
+        poexpected = posource + '\n\n'
         poresult = self.pofilter(posource, cmdlineoptions=["--test=isreview"])
-	assert poresult != ""
+	assert poresult == poexpected
         posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
         poresult = self.pofilter(posource, cmdlineoptions=["--test=isreview"])
 	assert poresult == ""
