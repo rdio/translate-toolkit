@@ -101,13 +101,13 @@ class csv2po:
       if len(thepolist) > 1:
         csvfilename = getattr(self.csvfile, "filename", "(unknown)")
         matches = "\n  ".join(["possible match: " + po.unquotefrompo(thepo.msgid) for thepo in thepolist])
-        print >>sys.stderr, "%s - csv entry not found in csvfile, multiple matches found:\n  location\t%s\n  original\t%s\n  translation\t%s\n  %s" % (csvfilename, thecsv.comment, thecsv.source, thecsv.target, matches)
+        print >>sys.stderr, "%s - csv entry not found in pofile, multiple matches found:\n  location\t%s\n  original\t%s\n  translation\t%s\n  %s" % (csvfilename, thecsv.comment, thecsv.source, thecsv.target, matches)
         self.unmatched += 1
         return
       thepo = thepolist[0]
     else:
       csvfilename = getattr(self.csvfile, "filename", "(unknown)")
-      print >>sys.stderr, "%s - csv entry not found in csvfile:\n  location\t%s\n  original\t%s\n  translation\t%s" % (csvfilename, thecsv.comment, thecsv.source, thecsv.target)
+      print >>sys.stderr, "%s - csv entry not found in pofile:\n  location\t%s\n  original\t%s\n  translation\t%s" % (csvfilename, thecsv.comment, thecsv.source, thecsv.target)
       self.unmatched += 1
       return
     csvtarget = [quotecsvstr(line) for line in thecsv.target.split('\n')]
