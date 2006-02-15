@@ -76,11 +76,15 @@ msgstr "Gebruik \\\"."
 
     def test_singlequotes(self):
         """Tests that single quotes are preserved correctly"""
-        minipo = '''msgid "'mono'"\nmsgstr "'mono'"\n'''
+        minipo = '''msgid "source 'source'"\nmsgstr "target 'target'"\n'''
         csvfile = self.po2csv(minipo)
         print str(csvfile)
-        #XXX:Failing: assert csvfile.findunit("'mono'").target == "'mono'"
-        
+        assert csvfile.findunit("source 'source'").target == "target 'target'"
+        # Start quotes are escaped for spreadsheets
+        minipo = '''msgid "'source'"\nmsgstr "'target'"\n'''
+        csvfile = self.po2csv(minipo)
+        print str(csvfile)
+        assert csvfile.findunit(r"\'source'").target == r"\'target'"
 
     def test_empties(self):
         """Tests that things keep working with empty entries"""
