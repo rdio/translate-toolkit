@@ -44,7 +44,7 @@ class TestPOFilter:
 
     def test_ignore_if_already_marked(self):
         """check that we don't add another failing marker is the message is already marked as failed"""
-        posource = '#: test.c\n# (pofilter) untranslated: checks whether a string has been translated at all\nmsgid "Simple string"\nmsgstr ""'
+        posource = '# (pofilter) untranslated: checks whether a string has been translated at all\n#: test.c\nmsgid "Simple string"\nmsgstr ""'
         poexpected = posource + '\n\n'
         poresult = self.pofilter(posource, cmdlineoptions=["--test=untranslated"])
         print poresult
