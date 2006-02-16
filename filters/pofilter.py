@@ -149,7 +149,9 @@ class pocheckfilter:
                   thepo.othercomments.append("# %s\n" % reviewmessage)
                 thepo.settypecomment("review", False)
             else:
-              thepo.othercomments.append("# (pofilter) %s: %s\n" % (filtername, filtermessage))
+              newcomment = "# (pofilter) %s: %s\n" % (filtername, filtermessage)
+              if newcomment not in thepo.othercomments:
+                thepo.othercomments.append(newcomment)
           for filtername, filtermessage in filterresult:
             if isinstance(filtermessage, checks.SeriousFilterFailure):
               thepo.markfuzzy()
