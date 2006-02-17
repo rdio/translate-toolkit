@@ -98,13 +98,13 @@ class csvunit(base.TranslationUnit):
     self.source = source
     self.target = ""
 
-  def remove_spreadsheet_escapes(self, msgid, msgstr):
+  def remove_spreadsheet_escapes(self, source, target):
     """removes common spreadsheet escapes from two strings"""
     for spreadsheetescape in ("\\+", "\\-", "\\=", "\\'"):
-      if msgid[:2] == spreadsheetescape and msgstr[:2] == spreadsheetescape:
-        msgid = msgid[1:]
-        msgstr = msgstr[1:]
-    return msgid, msgstr
+      if source[:2] == spreadsheetescape and target[:2] == spreadsheetescape:
+        source = source[1:]
+        target = target[1:]
+    return source, target
 
   def fromdict(self, cedict):
     self.comment = cedict.get('comment', '')
