@@ -507,12 +507,13 @@ class StandardChecker(TranslationChecker):
   def acronyms(self, str1, str2):
     """checks that acronyms that appear are unchanged"""
     acronyms = []
-    vars1 = []
+    allowed = []
     for startmatch, endmatch in self.config.varmatches:
-      vars1 += decoration.getvariables(startmatch, endmatch)(str1)
+      allowed += decoration.getvariables(startmatch, endmatch)(str1)
+    allowed = self.config.musttranslatewords.keys()
     for word in self.filteraccelerators(self.filtervariables(str1)).split():
-      word = word.strip(":;.,()'\"")
-      if word.isupper() and len(word) > 1 and word not in vars1:
+      word = word.strip(self.config.punctuation)
+      if word.isupper() and len(word) > 1 and word not in allowed:
         if self.filteraccelerators(self.filtervariables(str2)).find(word) == -1:
           acronyms.append(word)
     if acronyms:

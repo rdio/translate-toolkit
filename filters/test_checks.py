@@ -64,9 +64,9 @@ def test_accronyms():
     assert checks.fails(stdchecker.acronyms, "An HTML file", "'n LMTH leer")
     # We don't mind if you add an acronym to correct bad capitalisation in the original
     assert checks.passes(stdchecker.acronyms, "An html file", "'n HTML leer")
-    # TODO We shouldn't worry about acronyms that appear in a musttranslate file
-    #stdchecker = checks.StandardChecker(checks.CheckerConfig(musttranslatewords=["OK"]))
-    #assert checks.passes(stdchecker.acronyms, "OK", "Kulungile")
+    # We shouldn't worry about acronyms that appear in a musttranslate file
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(musttranslatewords=["OK"]))
+    assert checks.passes(stdchecker.acronyms, "OK", "Kulungile")
 
 def test_blank():
     """tests blank"""
