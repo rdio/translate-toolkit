@@ -35,10 +35,6 @@ class po2txt:
   def __init__(self, wrap=None):
     self.wrap = wrap
 
-  def convertmessage(self, message):
-    """converts a po message to a string"""
-    return po.getunquotedstr(message, includeescapes=False)
-
   def wrapmessage(self, message):
     """rewraps text as required"""
     if self.wrap is None:
@@ -62,8 +58,8 @@ class po2txt:
     for thepo in inputpo.units:
       if thepo.isheader():
         continue
-      msgid = self.convertmessage(thepo.msgid)
-      msgstr = self.wrapmessage(self.convertmessage(thepo.msgstr))
+      msgid = thepo.source
+      msgstr = self.wrapmessage(thepo.target)
       txtresult = txtresult.replace(msgid, msgstr)
     return txtresult
 

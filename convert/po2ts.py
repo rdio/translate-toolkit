@@ -37,8 +37,8 @@ class po2ts:
     for thepo in inputpo.units:
       if thepo.isheader() or thepo.isblank():
         continue
-      source = po.getunquotedstr(thepo.msgid, includeescapes=False)
-      translation = po.getunquotedstr(thepo.msgstr, includeescapes=False)
+      source = thepo.source
+      translation = thepo.target
       if len(thepo.othercomments) >0 :
         extractline = lambda line: line[2:-1]
         joiner = "\n"
