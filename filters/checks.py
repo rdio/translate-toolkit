@@ -510,7 +510,7 @@ class StandardChecker(TranslationChecker):
     allowed = []
     for startmatch, endmatch in self.config.varmatches:
       allowed += decoration.getvariables(startmatch, endmatch)(str1)
-    allowed = self.config.musttranslatewords.keys()
+    allowed += self.config.musttranslatewords.keys()
     for word in self.filteraccelerators(self.filtervariables(str1)).split():
       word = word.strip(self.config.punctuation)
       if word.isupper() and len(word) > 1 and word not in allowed:
