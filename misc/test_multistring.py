@@ -11,10 +11,10 @@ class TestMultistring(test_autoencode.TestAutoencode):
         s1 = t("test")
         assert type(s1) == t
         assert s1 == "test"
-        assert s1.alt == ["test"]
+        assert s1.strings == ["test"]
         s2 = t(["test", "me"])
         assert type(s2) == t
         assert s2 == "test"
-        assert s2.alt == ["test", "me"]
+        assert s2.strings == ["test", "me"]
         assert s2 != s1
 

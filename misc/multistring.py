@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Supports a hybrid Unicode string that can also have a list of alternate strings in the alt attribute"""
+"""Supports a hybrid Unicode string that can also have a list of alternate strings in the strings attribute"""
 
 from translate.misc import autoencode
 
@@ -11,16 +11,16 @@ class multistring(autoencode.autoencode):
                 raise ValueError("multistring must contain at least one string")
             mainstring = string[0]
             newstring = multistring.__new__(newtype, string[0], encoding, errors)
-            newstring.alt = [newstring] + [autoencode.autoencode.__new__(autoencode.autoencode, altstring, encoding, errors) for altstring in string[1:]]
+            newstring.strings = [newstring] + [autoencode.autoencode.__new__(autoencode.autoencode, altstring, encoding, errors) for altstring in string[1:]]
         else:
             newstring = autoencode.autoencode.__new__(newtype, string, encoding, errors)
-            newstring.alt = [newstring]
+            newstring.strings = [newstring]
         return newstring
 
     def __init__(self, *args, **kwargs):
         super(multistring, self).__init__(*args, **kwargs)
-        if not hasattr(self, "alt"):
-            self.alt = []    
+        if not hasattr(self, "strings"):
+            self.strings = []    
 
     def __cmp__(self, otherstring):
         if isinstance(otherstring, multistring):
@@ -28,7 +28,7 @@ class multistring(autoencode.autoencode):
             if parentcompare:
                 return parentcompare
             else:
-                return cmp(self.alt[1:], otherstring.alt[1:])
+                return cmp(self.strings[1:], otherstring.strings[1:])
         elif isinstance(otherstring, autoencode.autoencode):
             return autoencode.autoencode(self).__cmp__(otherstring)
         elif isinstance(otherstring, unicode):
@@ -39,9 +39,6 @@ class multistring(autoencode.autoencode):
             return cmp(type(self), type(otherstring))
 
     def __repr__(self):
-        if not hasattr(self, "alt"):
-            print id(self), "has no alt"
-            return super(multistring, self).__repr__()
-        parts = [autoencode.autoencode.__repr__(self)] + [repr(a) for a in self.alt]
-        return "multistring(" + "/".join(parts) + ")"
+        parts = [autoencode.autoencode.__repr__(self)] + [repr(a) for a in self.strings[1:]]
+        return "multistring([" + ",".join(parts) + "])"
 
