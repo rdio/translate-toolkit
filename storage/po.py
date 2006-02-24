@@ -23,6 +23,7 @@
 gettext-style .po (or .pot) files are used in translations for KDE et al (see kbabel)"""
 
 from __future__ import generators
+from translate.misc.multistring import multistring
 from translate.misc import quote
 from translate.misc import dictutils
 from translate.storage import base
@@ -57,7 +58,7 @@ def unquotefrompo(postr, joinwithlinebreak=False):
     if postr and postr[0] == '""': postr = postr[1:]
   else:
     joiner = ""
-  return joiner.join([extractpoline(line) for line in postr])
+  return multistring(joiner.join([extractpoline(line) for line in postr]))
 
 """
 From the GNU gettext manual:
@@ -97,7 +98,10 @@ class pounit(base.TranslationUnit):
 
   def getsource(self):
     """Returns the unescaped msgid"""
-    return unquotefrompo(self.msgid)
+    multi = unquotefrompo(self.msgid)
+    if self.hasplural():
+      multi.strings.append(self.msgid_plural)
+    return multi
 
   def setsource(self, source):
     """Sets the msgstr to the given (unescaped) value"""
@@ -106,7 +110,13 @@ class pounit(base.TranslationUnit):
 
   def gettarget(self):
     """Returns the unescaped msgstr"""
-    return unquotefrompo(self.msgstr)
+    multi = multistring("")
+    if isinstance(self.msgstr, dict):
+        for key, value in self.msgstr.iteritems():
+            multi.strings.append(str(unquotefrompo(value)))
+    else:
+        multi = unquotefrompo(self.msgstr)
+    return multi
 
   def settarget(self, target):
     """Sets the msgstr to the given (unescaped) value"""

@@ -2,10 +2,18 @@
 
 from translate.storage import po
 from translate.storage import test_base
+from translate.misc.multistring import multistring
 from translate.misc import wStringIO
 
 class TestPOUnit(test_base.TestTranslationUnit):
     UnitClass = po.pounit
+    def test_plurals(self):
+        """Tests that plurals are handled correctly."""
+        unit = self.UnitClass("Cow")
+        unit.msgid_plural = "Cows"
+        assert isinstance(unit.source, multistring)
+        assert unit.source.strings == ["Cow", "Cows"]
+        assert unit.source == "Cow"
 
 class TestPO(test_base.TestTranslationStore):
     StoreClass = po.pofile
@@ -107,3 +115,16 @@ class TestPO(test_base.TestTranslationStore):
         thepo.target = halfstr.encode("UTF-8")
         assert halfstr.encode("UTF-8") in thepo.getsource()
 
+    def test_plurals(self):
+        posource = r'''msgid "Cow"
+msgid_plural "Cows"
+msgstr[0] "Koei"
+msgstr[1] "Koeie"
+'''
+        pofile = po.pofile(wStringIO.StringIO(posource))
+        assert len(pofile.units) == 1
+        unit = pofile.units[0]
+        assert isinstance(unit.target, multistring)
+        print unit.target.strings
+        assert unit.target == "Koei"
+        assert unit.target.strings == ["Koei", "Koeie"]
