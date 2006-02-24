@@ -11,10 +11,10 @@ class multistring(autoencode.autoencode):
                 raise ValueError("multistring must contain at least one string")
             mainstring = string[0]
             newstring = multistring.__new__(newtype, string[0], encoding, errors)
-            newstring.alt = [autoencode.autoencode.__new__(autoencode.autoencode, altstring, encoding, errors) for altstring in string[1:]]
+            newstring.alt = [newstring] + [autoencode.autoencode.__new__(autoencode.autoencode, altstring, encoding, errors) for altstring in string[1:]]
         else:
             newstring = autoencode.autoencode.__new__(newtype, string, encoding, errors)
-            newstring.alt = []
+            newstring.alt = [newstring]
         return newstring
 
     def __init__(self, *args, **kwargs):
@@ -28,7 +28,7 @@ class multistring(autoencode.autoencode):
             if parentcompare:
                 return parentcompare
             else:
-                return cmp(self.alt, otherstring.alt)
+                return cmp(self.alt[1:], otherstring.alt[1:])
         elif isinstance(otherstring, autoencode.autoencode):
             return autoencode.autoencode(self).__cmp__(otherstring)
         elif isinstance(otherstring, unicode):
