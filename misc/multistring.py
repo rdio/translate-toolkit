@@ -36,7 +36,7 @@ class multistring(autoencode.autoencode):
         elif isinstance(otherstring, str):
             return cmp(str(self), otherstring)
         else:
-            return cmp(basestring(self), otherstring)
+            return cmp(type(self), type(otherstring))
 
     def __repr__(self):
         if not hasattr(self, "alt"):
