@@ -110,12 +110,10 @@ class pounit(base.TranslationUnit):
 
   def gettarget(self):
     """Returns the unescaped msgstr"""
-    multi = multistring("")
     if isinstance(self.msgstr, dict):
-        for key, value in self.msgstr.iteritems():
-            multi.strings.append(str(unquotefrompo(value)))
+      multi = multistring(map(unquotefrompo, self.msgstr.values()))
     else:
-        multi = unquotefrompo(self.msgstr)
+      multi = unquotefrompo(self.msgstr)
     return multi
 
   def settarget(self, target):
