@@ -58,7 +58,7 @@ def unquotefrompo(postr, joinwithlinebreak=False):
     if postr and postr[0] == '""': postr = postr[1:]
   else:
     joiner = ""
-  return multistring(joiner.join([extractpoline(line) for line in postr]))
+  return joiner.join([extractpoline(line) for line in postr])
 
 """
 From the GNU gettext manual:
@@ -98,7 +98,7 @@ class pounit(base.TranslationUnit):
 
   def getsource(self):
     """Returns the unescaped msgid"""
-    multi = unquotefrompo(self.msgid)
+    multi = multistring(unquotefrompo(self.msgid), self.encoding)
     if self.hasplural():
       multi.strings.append(self.msgid_plural)
     return multi
@@ -111,9 +111,9 @@ class pounit(base.TranslationUnit):
   def gettarget(self):
     """Returns the unescaped msgstr"""
     if isinstance(self.msgstr, dict):
-      multi = multistring(map(unquotefrompo, self.msgstr.values()))
+      multi = multistring(map(unquotefrompo, self.msgstr.values()), self.encoding)
     else:
-      multi = unquotefrompo(self.msgstr)
+      multi = multistring(unquotefrompo(self.msgstr), self.encoding)
     return multi
 
   def settarget(self, target):
