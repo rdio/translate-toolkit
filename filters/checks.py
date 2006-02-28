@@ -252,6 +252,7 @@ class StandardChecker(TranslationChecker):
   """simply defines a bunch of tests..."""
   def untranslated(self, str1, str2):
     """checks whether a string has been translated at all"""
+    str2 = prefilters.removekdecomments(str2)
     return not (len(str1.strip()) > 0 and len(str2) == 0)
 
   def unchanged(self, str1, str2):
@@ -417,7 +418,7 @@ class StandardChecker(TranslationChecker):
 
   def numbers(self, str1, str2):
     """checks whether numbers of various forms are consistent between the two strings"""
-    return helpers.funcmatch(str1, str2, decoration.getnumbers)
+    return helpers.countsmatch(str1, str2, decoration.getnumbers(str1))
 
   def startwhitespace(self, str1, str2):
     """checks whether whitespace at the beginning of the strings matches"""

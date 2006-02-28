@@ -72,6 +72,7 @@ def test_blank():
     """tests blank"""
     stdchecker = checks.StandardChecker()
     assert checks.fails(stdchecker.blank, "Save as", " ")
+    assert checks.fails(stdchecker.blank, "_: KDE comment\\n\nSimple string", "  ")
 
 def test_brackets():
     """tests brackets"""
@@ -247,6 +248,8 @@ def test_numbers():
     # FIXME - again locale intelligence should allow us to use other decimal seperators
     assert checks.fails(stdchecker.numbers, "R57.60", "R57,60")
     assert checks.fails(stdchecker.numbers, "1,000.00", "1 000,00")
+    # You should be able to reorder numbers
+    assert checks.passes(stdchecker.numbers, "40-bit RC2 encryption with RSA and an MD5", "Umbhalo ocashile i-RC2 onamabhithi angu-40 one-RSA ne-MD5")
 
 def test_puncspacing():
     """tests spacing after punctuation"""
@@ -387,6 +390,8 @@ def test_untranslated():
     stdchecker = checks.StandardChecker()
     assert checks.fails(stdchecker.untranslated, "I am untranslated", "")
     assert checks.passes(stdchecker.untranslated, "I am translated", "Ek is vertaal")
+    # KDE comments that make it into translations should not mask untranslated test
+    assert checks.fails(stdchecker.untranslated, "_: KDE comment\\n\nI am untranslated", "_: KDE comment\\n\n")
 
 def test_validchars():
     """tests valid characters"""
