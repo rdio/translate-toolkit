@@ -366,17 +366,6 @@ class ArchiveConvertOptionParser(ConvertOptionParser):
     else:
       return super(ArchiveConvertOptionParser, self).processfile(fileprocessor, options, fullinputpath, fulloutputpath, fulltemplatepath)
 
-  def splitinputext(self, inputpath):
-    """splits a inputpath into name and extension"""
-    # TODO: not sure if this should be here, was in po2moz
-    d, n = os.path.dirname(inputpath), os.path.basename(inputpath)
-    s = n.find(".")
-    if s == '-1':
-      return (inputpath, "")
-    root = os.path.join(d, n[:s])
-    ext = n[s+1:]
-    return (root, ext)
-
 def main(argv=None):
   parser = ArchiveConvertOptionParser({}, description=__doc__)
   parser.run(argv)

@@ -60,6 +60,17 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
           # FIXME: this is unlikely to work because it has no jar files
           options.outputarchive = xpi.XpiFile(options.output, "w", locale=newlang, region=newregion)
 
+  def splitinputext(self, inputpath):
+    """splits a inputpath into name and extension"""
+    # TODO: not sure if this should be here, was in po2moz
+    d, n = os.path.dirname(inputpath), os.path.basename(inputpath)
+    s = n.find(".")
+    if s == '-1':
+      return (inputpath, "")
+    root = os.path.join(d, n[:s])
+    ext = n[s+1:]
+    return (root, ext)
+
   def recursiveprocess(self, options):
     """recurse through directories and convert files"""
     self.replacer.replacestring = options.locale
