@@ -27,7 +27,7 @@ class TestCSV2PO:
 
     def test_simpleentity(self):
         """checks that a simple csv entry definition converts properly to a po entry"""
-        csvheader = 'source,original,translation\n'
+        csvheader = 'comment,original,translation\n'
         csvsource = 'intl.charset.default,ISO-8859-1,UTF-16'
         # Headerless
         pofile = self.csv2po(csvsource)
