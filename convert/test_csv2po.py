@@ -21,14 +21,19 @@ class TestCSV2PO:
 
     def singleelement(self, storage):
         """checks that the pofile contains a single non-header element, and returns it"""
+        print storage.getsource()
         assert len(storage.units) == 1
         return storage.units[0]
 
     def test_simpleentity(self):
         """checks that a simple csv entry definition converts properly to a po entry"""
-        csvsource = '''comment,original,translation
-intl.charset.default,ISO-8859-1,UTF-16'''
+        csvheader = 'source,original,translation\n'
+        csvsource = 'intl.charset.default,ISO-8859-1,UTF-16'
+        # Headerless
         pofile = self.csv2po(csvsource)
+        pounit = self.singleelement(pofile)
+        # With header
+        pofile = self.csv2po(csvheader + csvsource)
         pounit = self.singleelement(pofile)
         assert pounit.sourcecomments == ["#: " + "intl.charset.default" + "\n"]
         assert po.unquotefrompo(pounit.msgid) == "ISO-8859-1"
