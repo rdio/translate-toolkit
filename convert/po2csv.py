@@ -26,9 +26,7 @@ from translate.storage import csvl10n
 
 class po2csv:
   def convertstring(self, postr):
-    unquotedstr = po.unquotefrompo(postr, joinwithlinebreak=False)
-    if len(unquotedstr) >= 1 and unquotedstr[:1] in "-+'": unquotedstr = "\\" + unquotedstr
-    return unquotedstr
+    return po.unquotefrompo(postr, joinwithlinebreak=False)
 
   def convertcomments(self,thepo):
     commentparts = []

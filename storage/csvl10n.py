@@ -93,17 +93,28 @@ class SimpleDictReader:
     return values
 
 class csvunit(base.TranslationUnit):
+  spreadsheetescapes = [("+", "\\+"), ("-", "\\-"), ("=", "\\="), ("'", "\\'")]
   def __init__(self, source=None):
     self.comment = ""
     self.source = source
     self.target = ""
 
+  def add_spreadsheet_escapes(self, source, target):
+    """add common spreadsheet escapes to two strings"""
+    for unescaped, escaped in self.spreadsheetescapes:
+      if source.startswith(unescaped):
+        source = source.replace(unescaped, escaped, 1)
+      if target.startswith(unescaped):
+        target = target.replace(unescaped, escaped, 1)
+    return source, target
+
   def remove_spreadsheet_escapes(self, source, target):
-    """removes common spreadsheet escapes from two strings"""
-    for spreadsheetescape in ("\\+", "\\-", "\\=", "\\'"):
-      if source[:2] == spreadsheetescape and target[:2] == spreadsheetescape:
-        source = source[1:]
-        target = target[1:]
+    """remove common spreadsheet escapes from two strings"""
+    for unescaped, escaped in self.spreadsheetescapes:
+      if source.startswith(escaped):
+        source = source.replace(escaped, unescaped, 1)
+      if target.startswith(escaped):
+        target = target.replace(escaped, unescaped, 1)
     return source, target
 
   def fromdict(self, cedict):
@@ -117,6 +128,7 @@ class csvunit(base.TranslationUnit):
 
   def todict(self, encoding='utf-8'):
     comment, source, target = self.comment, self.source, self.target
+    source, target = self.add_spreadsheet_escapes(source, target)
     if isinstance(comment, unicode):
       comment = comment.encode(encoding)
     if isinstance(source, unicode):
