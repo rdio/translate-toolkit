@@ -101,6 +101,7 @@ def findmarkedvariables(str1, startmarker, endmarker, ignorelist=[]):
   variables = []
   currentpos = 0
   while currentpos >= 0:
+    variable = None
     currentpos = str1.find(startmarker, currentpos)
     if currentpos >= 0:
       startmatch = currentpos
@@ -134,8 +135,9 @@ def findmarkedvariables(str1, startmarker, endmarker, ignorelist=[]):
             startmatch = startmatch2
         variable = str1[currentpos:endmatch]
         currentpos = endmatch + len(endmarker)
-      if len(variable) > 0 and variable.replace("_","").isalnum() and (variable not in ignorelist):
-        variables.append((startmatch, variable))
+      if variable is not None and variable not in ignorelist:
+        if not variable or variable.replace("_","").isalnum():
+          variables.append((startmatch, variable))
   return variables
 
 def getaccelerators(accelmarker, ignorelist=[]):
