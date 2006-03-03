@@ -30,6 +30,7 @@ from translate.storage import base
 from translate import __version__
 import sre
 import time
+import codecs
 
 # general functions for quoting / unquoting po strings
 
@@ -60,6 +61,18 @@ def unquotefrompo(postr, joinwithlinebreak=False):
     joiner = ""
   return joiner.join([extractpoline(line) for line in postr])
 
+def encodingToUse(encoding):
+  """Tests whether the given encoding is known in the python runtime, or returns none."""
+  if encoding == "CHARSET": return None
+  return encoding
+#  if encoding is None: return False
+#  return True
+#  try:
+#    tuple = codecs.lookup(encoding)
+#  except LookupError:
+#    return False
+#  return True
+
 """
 From the GNU gettext manual:
      WHITE-SPACE
@@ -82,7 +95,7 @@ class pounit(base.TranslationUnit):
   # msgstr = []
 
   def __init__(self, source=None, encoding="UTF-8"):
-    self.encoding = encoding
+    self.encoding = encodingToUse(encoding)
     self.othercomments = []
     self.sourcecomments = []
     self.typecomments = []
@@ -100,12 +113,18 @@ class pounit(base.TranslationUnit):
     """Returns the unescaped msgid"""
     multi = multistring(unquotefrompo(self.msgid), self.encoding)
     if self.hasplural():
-      multi.strings.append(self.msgid_plural)
+      multi.strings.append(unquotefrompo(self.msgid_plural))
     return multi
 
   def setsource(self, source):
     """Sets the msgstr to the given (unescaped) value"""
-    self.msgid = quoteforpo(source)
+    if isinstance(source, multistring):
+      source = source.strings
+    if isinstance(source, list):
+      self.msgid = quoteforpo(source[0])
+      self.msgid_plural = quoteforpo(source[1])
+    else:
+      self.msgid = quoteforpo(source)
   source = property(getsource, setsource)
 
   def gettarget(self):
@@ -118,7 +137,14 @@ class pounit(base.TranslationUnit):
 
   def settarget(self, target):
     """Sets the msgstr to the given (unescaped) value"""
-    self.msgstr = quoteforpo(target)
+    if isinstance(target, multistring):
+      target = target.strings
+    if isinstance(target, list):
+      self.msgstr = dict(zip(range(len(target)), map(quoteforpo, target)))
+    elif isinstance(target, dict):
+      self.msgstr = dict(zip(target.keys(), map(quoteforpo, target.values())))
+    else:
+      self.msgstr = quoteforpo(target)
   target = property(gettarget, settarget)
 
   def copy(self):
@@ -419,7 +445,7 @@ class pofile(base.TranslationStore):
     self.elementclass = elementclass
     self.units = []
     self.filename = ''
-    self.encoding = encoding
+    self.encoding = encodingToUse(encoding)
     if inputfile is not None:
       self.parse(inputfile)
 
@@ -563,7 +589,7 @@ class pofile(base.TranslationStore):
 
   def changeencoding(self, newencoding):
     """changes the encoding on the file"""
-    self.encoding = newencoding
+    self.encoding = encodingToUse(newencoding)
     if not self.units:
       return
     header = self.units[0]

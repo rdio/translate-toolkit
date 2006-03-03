@@ -101,13 +101,11 @@ def getnodetext(node):
   return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
 
 # commented out modifications to minidom classes
-'''
 minidom._get_elements_by_tagName_helper = getElementsByTagName
 minidom.Document.getElementsByTagName = getElementsByTagName
 minidom.Node.getElementsByTagName = getElementsByTagName
 minidom.Document.searchElementsByTagName = searchElementsByTagName
 minidom.Element.searchElementsByTagName = searchElementsByTagName
-'''
 
 class QtTsParser:
   contextancestors = dict.fromkeys(["TS"])
