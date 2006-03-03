@@ -350,6 +350,10 @@ def test_startcaps():
     assert checks.passes(stdchecker.startcaps, "find", u"šind")
     assert checks.fails(stdchecker.startcaps, "Find", u"šind")
     assert checks.fails(stdchecker.startcaps, "find", u"Šind")
+    # Unicode further down the Unicode tables
+    assert checks.passes(stdchecker.startcaps, "A text enclosed...", u"Ḽiṅwalwa ḽo katelwaho...")
+    assert checks.fails(stdchecker.startcaps, "A text enclosed...", u"ḽiṅwalwa ḽo katelwaho...")
+
     # Accelerators
     stdchecker = checks.StandardChecker(checks.CheckerConfig(accelmarkers="&"))
     assert checks.passes(stdchecker.startcaps, "&Find", "Vi&nd")
@@ -442,6 +446,10 @@ def test_variables_mozilla():
     assert checks.fails(mozillachecker.variables, "...time you start &brandShortName;.", "...lekgetlo le latelang ha o qala &LebitsoKgutshwane la kgwebo;.")
     # Ensure that we can detect two variables of the same name with one faulty
     assert checks.fails(mozillachecker.variables, "&brandShortName; successfully downloaded and installed updates. You will have to restart &brandShortName; to complete the update.", "&brandShortName; ḽo dzhenisa na u longela khwinifhadzo zwavhuḓi. Ni ḓo tea u thoma hafhu &DzinaḼipfufhi ḽa pfungavhuṇe; u itela u fhedzisa khwinifha dzo.")
+    # We must detect entities in their fullform, ie with fullstop in the middle.
+    assert checks.fails(mozillachecker.variables, "Welcome to the &pluginWizard.title;", "Wamkelekile kwi&Sihloko Soncedo lwe-plugin;")
+    # Variables that are missing in quotes should be detected
+    assert checks.fails(mozillachecker.variables, "\"%S\" is an executable file.... Are you sure you want to launch \"%S\"?", ".... Uyaqiniseka ukuthi ufuna ukuqalisa I\"%S\"?")
 
 def test_variables_openoffice():
     """tests variables in OpenOffice translations"""
