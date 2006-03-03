@@ -27,8 +27,8 @@ from HTMLParser import HTMLParser
 
 class POHTMLParser(HTMLParser):
   markingtags = ["p", "title", "h1", "h2", "h3", "td", "div", "li", "span"]
-  markingattrs = []
-  includeattrs = ["alt", "standby"]
+  markingattrs = ["lang"]
+  includeattrs = ["alt"]
   def __init__(self, includeuntaggeddata):
     self.blocks = []
     self.currentblock = ""
@@ -49,7 +49,6 @@ class POHTMLParser(HTMLParser):
     self.currenttag = None
 
   def handle_starttag(self, tag, attrs):
-    print "'%s','%s'" %(tag, attrs)
     newblock = 0
     if tag in self.markingtags:
       newblock = 1

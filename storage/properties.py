@@ -22,7 +22,6 @@
 """classes that hold units of .properties files (propelement) or entire files (propfile)
 these files are used in translating Mozilla and other software"""
 
-from translate.storage import base
 from translate.misc import quote
 
 # the rstripeols convert dos <-> unix nicely as well
@@ -30,29 +29,13 @@ from translate.misc import quote
 
 eol = "\n"
 
-class propelement(base.TranslationUnit):
+class propelement:
   """an element of a properties file i.e. a name and value, and any comments associated"""
   def __init__(self):
     """construct a blank propelement"""
     self.name = ""
     self.msgid = ""
     self.comments = []
-
-  def getsource(self):
-    return self.msgid
-
-  def setsource(self, text):
-    self.msgid = text
-  source = property(getsource, setsource)
-
-  def gettarget(self):
-    return self.msgid
-
-  def settarget(self, text):
-    self.msgid = text
-  source = property(getsource, setsource)
-
-
 
   def isblank(self):
     """returns whether this is a blank element, containing only comments..."""

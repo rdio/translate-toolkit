@@ -67,25 +67,6 @@ for elementclassname in dir(minidom):
   elementclass.writexml = writexml
 '''
 
-#class xliffunit(lisa.LISAunit):
-#    """A single unit in the XLIFF file."""
-#    rootNode = "trans-unit"
-#    languageNode = "target"
-#    textNode = "seg"
-#                   
-#    def createlanguageNode(self, lang, text):
-#        """returns a langset xml Element setup with given parameters"""
-#        langset = self.document.createElement(self.languageNode)
-#        assert self.document == langset.ownerDocument
-#        langset.setAttribute("xml:lang", lang)
-#        seg = self.document.createElement(self.textNode)
-#        segtext = self.document.createTextNode(text)
-#        
-#        langset.appendChild(seg)
-#        seg.appendChild(segtext)
-#        return langset
-
-
 def getText(nodelist):
   """joins together the text from all the text nodes in the nodelist and their children"""
   rc = []
@@ -194,11 +175,7 @@ class XliffParser(object):
   def get_elements(self):
     """returns an iterator through the transunits"""
     return [self.make_element(transunit) for filename, transunit in self.iteritems()]
-
-  def getunits(self):
-    """Returns a list of all units in all files."""
-    return self.gettransunitnodes()
-  units = property(getunits)
+  units = property(get_elements)
 
   def __del__(self):
     """clean up the document if required"""
