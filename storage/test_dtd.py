@@ -79,3 +79,11 @@ class TestDTD:
         print dtdregen
         assert dtdsource == dtdregen
 
+    def test_localisation_notes(self):
+        """test to ensure that we retain the localisation note correctly"""
+        dtdsource = '''<!--LOCALIZATION NOTE (publishFtp.label): Edit box appears beside this label -->
+<!ENTITY publishFtp.label "If publishing to a FTP site, enter the HTTP address to browse to:">
+'''
+        dtdregen = self.dtdregen(dtdsource)
+        assert dtdsource == dtdregen
+
