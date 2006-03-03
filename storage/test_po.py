@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from translate.storage import po
 from translate.storage import test_base
@@ -10,10 +11,26 @@ class TestPOUnit(test_base.TestTranslationUnit):
     def test_plurals(self):
         """Tests that plurals are handled correctly."""
         unit = self.UnitClass("Cow")
-        unit.msgid_plural = "Cows"
+        unit.msgid_plural = ['"Cows"']
         assert isinstance(unit.source, multistring)
         assert unit.source.strings == ["Cow", "Cows"]
         assert unit.source == "Cow"
+
+        unit.target = ["Koei", "Koeie"]
+        assert isinstance(unit.target, multistring)
+        assert unit.target.strings == ["Koei", "Koeie"]
+        assert unit.target == "Koei"
+
+        unit.target = {0:"Koei", 3:"Koeie"}
+        assert isinstance(unit.target, multistring)
+        assert unit.target.strings == ["Koei", "Koeie"]
+        assert unit.target == "Koei"
+
+        unit.target = [u"Sk\u00ear", u"Sk\u00eare"]
+        assert isinstance(unit.target, multistring)
+        assert unit.target.strings == [u"Sk\u00ear", u"Sk\u00eare"]
+        assert unit.target.strings == [u"Sk\u00ear", u"Sk\u00eare"]
+        assert unit.target == u"Sk\u00ear"
 
 class TestPO(test_base.TestTranslationStore):
     StoreClass = po.pofile
@@ -128,3 +145,15 @@ msgstr[1] "Koeie"
         print unit.target.strings
         assert unit.target == "Koei"
         assert unit.target.strings == ["Koei", "Koeie"]
+
+        posource = r'''msgid "Skaap"
+msgid_plural "Skape"
+msgstr[0] "Sheep"
+'''
+        pofile = po.pofile(wStringIO.StringIO(posource))
+        assert len(pofile.units) == 1
+        unit = pofile.units[0]
+        assert isinstance(unit.target, multistring)
+        print unit.target.strings
+        assert unit.target == "Sheep"
+        assert unit.target.strings == ["Sheep"]
