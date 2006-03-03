@@ -45,3 +45,13 @@ class TestPOMerge:
         assert po.unquotefrompo(pounit.msgid) == "Simple String"
         assert po.unquotefrompo(pounit.msgstr) == "Dimpled King"
 
+    def test_reflowed_source_comments(self):
+        """ensure that we don't duplicate source comments (locations) if they have been reflowed"""
+        templatepo = '''#: newMenu.label\n#: newMenu.accesskey\nmsgid "&New"\nmsgstr ""\n'''
+        newpo = '''#: newMenu.label newMenu.accesskey\nmsgid "&New"\nmsgstr "&Nuwe"\n'''
+        expectedpo = '''#: newMenu.label\n#: newMenu.accesskey\nmsgid "&New"\nmsgstr "&Nuwe"\n\n'''
+        pofile = self.mergepo(templatepo, newpo)
+        pounit = self.singleunit(pofile)
+        print pofile
+        assert pofile.getsource() == expectedpo
+
