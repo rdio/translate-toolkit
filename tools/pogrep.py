@@ -32,9 +32,13 @@ class pogrepfilter:
     if searchparts:
       self.searchmsgid = "msgid" in searchparts
       self.searchmsgstr = "msgstr" in searchparts
+      self.searchcomment = 'comment' in searchparts
+      self.searchsource = 'source' in searchparts
     else:
       self.searchmsgid = True
       self.searchmsgstr = True
+      self.searchcomment = False
+      self.searchsource = False
     self.ignorecase = ignorecase
     if self.ignorecase:
       self.searchstring = self.searchstring.lower()
@@ -82,6 +86,10 @@ class pogrepfilter:
       if self.searchmsgstr:
         unquotedstr = po.unquotefrompo(thepo.msgstr)
         if self.matches(unquotedstr): return True
+      if self.searchcomment:
+        if self.matches(" ".join(thepo.othercomments)): return True
+      if self.searchsource:
+        if self.matches(" ".join(thepo.sourcecomments)): return True
     return False
 
   def filterfile(self, thepofile):
@@ -145,12 +153,12 @@ def runpogrep(inputfile, outputfile, templatefile, checkfilter):
   outputfile.write(str(tofile))
   return 1
 
-def main():
+def cmdlineparser():
   formats = {"po":("po", runpogrep), "pot":("pot", runpogrep), None:("po", runpogrep)}
   parser = GrepOptionParser(formats)
   parser.add_option("", "--search", dest="searchparts",
-    action="append", type="choice", choices=["msgid", "msgstr"],
-    metavar="SEARCHPARTS", help="searches the given parts")
+    action="append", type="choice", choices=["msgid", "msgstr", "comment", "source"],
+    metavar="SEARCHPARTS", help="searches the given parts (msgid, msgstr, comment, source)")
   parser.add_option("-I", "--ignore-case", dest="ignorecase",
     action="store_true", default=False, help="ignore case distinctions")
   parser.add_option("-e", "--regexp", dest="useregexp",
@@ -162,5 +170,8 @@ def main():
     metavar="ACCELERATOR", help="ignores the given accelerator when matching")
   parser.set_usage()
   parser.passthrough.append('checkfilter')
-  parser.run()
+  return parser
 
+def main():
+  parser = cmdlineparser()
+  parser.run()

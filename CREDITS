@@ -25,4 +25,5 @@ Nicolas François: po4a integration
 Ognyan Kulev: testing and fixes
 Pavel Janík: testing
 Thomas Fogwill: portal code
+Tom Cato Amundsen: patch to enable pogrep to search anywhere in the PO unit
 
