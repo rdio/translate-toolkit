@@ -28,8 +28,8 @@ from translate.storage import html
 from translate.misc import quote
 
 class html2po:
-  def convertfile(self, inputfile, filename, includeheader, includeuntagged=False):
-    """converts a file to .po format"""
+  def convertfile(self, inputfile, filename, includeheader, includeuntagged=False, duplicatestyle="msgid_comment"):
+    """converts a html file to .po format"""
     thepofile = po.pofile()
     htmlparser = html.POHTMLParser(includeuntaggeddata=includeuntagged)
     if includeheader:
@@ -47,14 +47,15 @@ class html2po:
         thepo.msgid = [quote.quotestr("")] + thepo.msgid
       thepo.msgstr = []
       thepofile.units.append(thepo)
+    thepofile.removeduplicates(duplicatestyle)
     return thepofile
 
-def converthtml(inputfile, outputfile, templates, includeuntagged=False):
+def converthtml(inputfile, outputfile, templates, includeuntagged=False, duplicatestyle="msgid_comment"):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   convertor = html2po()
   outputfilepos = outputfile.tell()
   includeheader = outputfilepos == 0
-  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader, includeuntagged)
+  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader, includeuntagged, duplicatestyle=duplicatestyle)
   outputposrc = str(outputpo)
   outputfile.write(outputposrc)
   return 1
@@ -66,5 +67,6 @@ def main(argv=None):
   parser.add_option("-u", "--untagged", dest="includeuntagged", default=False, action="store_true",
                     help="include untagged sections")
   parser.passthrough.append("includeuntagged")
+  parser.add_duplicates_option()
   parser.run(argv)
 

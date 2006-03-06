@@ -150,6 +150,15 @@ class TestHTML2PO:
         self.compareunit(pofile, 3, "Ordered One")
         self.compareunit(pofile, 4, "Ordered Two")
 
+    def test_duplicates(self):
+        """check that we use the default style of msgid_comments to disambiguate duplicate messages"""
+        markup = "<html><head></head><body><p>Duplicate</p><p>Duplicate</p></body></html>"
+        pofile = self.html2po(markup)
+        self.countunits(pofile, 2)
+        # FIXME change this so that we check that the KDE comment is correctly added
+        self.compareunit(pofile, 1, "Duplicate")
+        self.compareunit(pofile, 2, "Duplicate")
+
 class TestHTML2POCommand(test_convert.TestConvertCommand, TestHTML2PO):
     """Tests running actual html2po commands on files"""
     convertmodule = html2po
