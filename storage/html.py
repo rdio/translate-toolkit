@@ -26,9 +26,9 @@ from HTMLParser import HTMLParser
 
 
 class POHTMLParser(HTMLParser):
-  markingtags = ["p", "title", "h1", "h2", "h3", "td", "div", "li", "span"]
-  markingattrs = ["lang"]
-  includeattrs = ["alt"]
+  markingtags = ["p", "title", "h1", "h2", "h3", "h4", "h5", "h6", "th", "td", "div", "li", "dt", "dd", "address", "caption"]
+  markingattrs = []
+  includeattrs = ["alt", "summary"]
   def __init__(self, includeuntaggeddata):
     self.blocks = []
     self.currentblock = ""
