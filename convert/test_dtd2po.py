@@ -99,6 +99,10 @@ class TestDTD2PO:
 <!ENTITY region.Altitude "Very High">'''
         pofile = self.dtd2po(dtdsource)
         assert self.countelements(pofile) == 0
+        dtdsource = '''<!-- LOCALIZATION NOTE (exampleOpenTag.label): DONT_TRANSLATE: they are text for HTML tagnames: "<i>" and "</i>" -->
+<!ENTITY exampleOpenTag.label "&lt;i&gt;">'''
+        pofile = self.dtd2po(dtdsource)
+        assert self.countelements(pofile) == 0
 
     def test_donttranslate_label(self):
         """test strangeness when label entity is marked DONT_TRANSLATE and accesskey is not, bug 30"""
@@ -142,13 +146,21 @@ class TestDTD2PO:
         unit = self.singleelement(pofile)
         assert po.unquotefrompo(unit.msgid, True) == "First line then \nnext lines."
 
-    def test_folding_accesskeys(self):
+    def test_accesskeys_folding(self):
 	"""test that we fold accesskeys into message strings"""
 	# .label, .accesskey style
 	dtdsource = '<!ENTITY  fileSaveAs.label "Save As...">\n' + \
            '<!ENTITY  fileSaveAs.accesskey "S">\n'
         pofile = self.dtd2po(dtdsource)
         pounit = self.singleelement(pofile)
+        assert pounit.source == "&Save As..."
+
+    def test_accesskeys_mismatch(self):
+        """check that we can handle accesskeys that don't match and thus can't be folded into the .label entry"""
+	dtdsource = '<!ENTITY  fileSave.label "Save">\n' + \
+           '<!ENTITY  fileSave.accesskey "z">\n'
+        pofile = self.dtd2po(dtdsource)
+        assert self.countelements(pofile) == 2
 
     def test_carriage_return_in_multiline_dtd(self):
         """test that we create nice PO files when we find a \r\n in a multiline DTD element"""
