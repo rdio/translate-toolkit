@@ -84,17 +84,18 @@ class TestHTML2PO:
         self.compareunit(pofile, 4, "Two")
 
     def test_table_complex(self):
-        markup = '''<table summary="This is the summary"><caption>A caption</caption><thead><tr><th>Heading One</th><th>Heading Two</th></thead><tfoot><tr><td>Foot One</td><td>Foot Two</td></tr></tfoot><tbody><tr><td>One</td><td>Two</td></tr></tbody></table>'''
+        markup = '''<table summary="This is the summary"><caption>A caption</caption><thead><tr><th abbr="Head 1">Heading One</th><th>Heading Two</th></thead><tfoot><tr><td>Foot One</td><td>Foot Two</td></tr></tfoot><tbody><tr><td>One</td><td>Two</td></tr></tbody></table>'''
         pofile = self.html2po(markup)
-        self.countunits(pofile, 8)
+        self.countunits(pofile, 9)
         self.compareunit(pofile, 1, "This is the summary")
         self.compareunit(pofile, 2, "A caption")
-        self.compareunit(pofile, 3, "Heading One")
-        self.compareunit(pofile, 4, "Heading Two")
-        self.compareunit(pofile, 5, "Foot One")
-        self.compareunit(pofile, 6, "Foot Two")
-        self.compareunit(pofile, 7, "One")
-        self.compareunit(pofile, 8, "Two")
+        self.compareunit(pofile, 3, "Head 1")
+        self.compareunit(pofile, 4, "Heading One")
+        self.compareunit(pofile, 5, "Heading Two")
+        self.compareunit(pofile, 6, "Foot One")
+        self.compareunit(pofile, 7, "Foot Two")
+        self.compareunit(pofile, 8, "One")
+        self.compareunit(pofile, 9, "Two")
         
     def test_address(self):
         """Test to see if the address element is extracted"""
