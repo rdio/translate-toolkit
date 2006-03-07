@@ -73,6 +73,26 @@ class TestPO(test_base.TestTranslationStore):
         assert len(pofile.units) == 1
         assert pofile.units[0].getsources() == ["source1", "source2"]
 
+    def test_merge_mixed_sources(self):
+        """checks that merging works with different source location styles"""
+        posource = '''
+#: source1
+#: source2
+msgid "test"
+msgstr ""
+
+#: source1 source2
+msgid "test"
+msgstr ""
+'''
+        pofile = self.poparse(posource)
+        print str(pofile)
+        assert len(pofile.units) == 2
+        pofile.removeduplicates("merge")
+        print str(pofile)
+        assert len(pofile.units) == 1
+        assert pofile.units[0].getsources() == ["source1", "source2"]
+
     def test_merge_blanks(self):
         """checks that merging adds msgid_comments to blanks"""
         posource = '#: source1\nmsgid ""\nmsgstr ""\n\n#: source2\nmsgid ""\nmsgstr ""\n'

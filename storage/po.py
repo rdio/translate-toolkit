@@ -182,7 +182,7 @@ class pounit(base.TranslationUnit):
     """merges the otherpo (with the same msgid) into this one
     overwrite non-blank self.msgstr only if overwrite is True
     merge comments only if comments is True"""
-    def mergelists(list1, list2):
+    def mergelists(list1, list2, split=False):
       if unicode in [type(item) for item in list2] + [type(item) for item in list1]:
         for position, item in enumerate(list1):
           if isinstance(item, str):
@@ -190,10 +190,22 @@ class pounit(base.TranslationUnit):
         for position, item in enumerate(list2):
           if isinstance(item, str):
             list2[position] = item.decode("utf-8")
-      list1.extend([item for item in list2 if not item in list1])
+      if split:
+        splitlist1 = []
+        splitlist2 = []
+        prefix = "#"
+        for item in list1:
+          splitlist1.extend(item.split()[1:])
+          prefix = item.split()[0]
+        for item in list2:
+          splitlist2.extend(item.split()[1:])
+          prefix = item.split()[0]
+        list1.extend(["%s %s\n" % (prefix,item) for item in splitlist2 if not item in splitlist1])
+      else:
+        list1.extend([item for item in list2 if not item in list1])
     if comments:
       mergelists(self.othercomments, otherpo.othercomments)
-      mergelists(self.sourcecomments, otherpo.sourcecomments)
+      mergelists(self.sourcecomments, otherpo.sourcecomments, split=True)
       mergelists(self.typecomments, otherpo.typecomments)
       mergelists(self.visiblecomments, otherpo.visiblecomments)
       mergelists(self.obsoletemessages, otherpo.obsoletemessages)
