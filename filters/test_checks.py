@@ -17,6 +17,19 @@ def test_construct():
     gnomechecker = checks.GnomeChecker()
     kdechecker = checks.KdeChecker()
 
+def test_accelerator_markers():
+    """test that we have the correct accelerator marker for the various default configs"""
+    stdchecker = checks.StandardChecker()
+    assert stdchecker.config.accelmarkers == []
+    mozillachecker = checks.MozillaChecker()
+    assert mozillachecker.config.accelmarkers == ["&"]
+    ooochecker = checks.OpenOfficeChecker()
+    assert ooochecker.config.accelmarkers == ["~"]
+    gnomechecker = checks.GnomeChecker()
+    assert gnomechecker.config.accelmarkers == ["_"]
+    kdechecker = checks.KdeChecker()
+    assert kdechecker.config.accelmarkers == ["&"]
+    
 def test_accelerators():
     """tests accelerators"""
     stdchecker = checks.StandardChecker(checks.CheckerConfig(accelmarkers="&"))
@@ -129,7 +142,7 @@ def test_endpunc():
     # Real examples
     assert checks.passes(stdchecker.endpunc, "A nickname that identifies this publishing site (e.g.: 'MySite')", "Vito ro duvulela leri tirhisiwaka ku kuma sayiti leri ro kandziyisa (xik.: 'Sayiti ra Mina')")
     # FIXME fix later
-    #assert checks.fails(stdchecker.endpunc, "Question", "Wrong\xe2\x80\xa6")
+    assert checks.fails(stdchecker.endpunc, "Question", "Wrong\xe2\x80\xa6")
 
 def test_endwhitespace():
     """tests endwhitespace"""
@@ -298,6 +311,10 @@ Converting...""", "Kugucula...")
     assert checks.passes(stdchecker.singlequoting, "Blah 'format' blah?", "Blah blah 'sebopego'?")
     # Real examples
     assert checks.passes(stdchecker.singlequoting, "A nickname that identifies this publishing site (e.g.: 'MySite')", "Vito ro duvulela leri tirhisiwaka ku kuma sayiti leri ro kandziyisa (xik.: 'Sayiti ra Mina')")
+    #assert checks.passes(stdchecker.singlequoting, "isn't", "ayikho")
+    # Afrikaans 'n
+    assert checks.passes(stdchecker.singlequoting, "Please enter a different site name.", "Tik 'n ander werfnaam in.")
+    assert checks.passes(stdchecker.singlequoting, "\"%name%\" already exists. Please enter a different site name.", "\"%name%\" bestaan reeds. Tik 'n ander werfnaam in.")
 
 def test_simplecaps():
     """tests simple caps"""
@@ -450,6 +467,8 @@ def test_variables_mozilla():
     assert checks.fails(mozillachecker.variables, "Welcome to the &pluginWizard.title;", "Wamkelekile kwi&Sihloko Soncedo lwe-plugin;")
     # Variables that are missing in quotes should be detected
     assert checks.fails(mozillachecker.variables, "\"%S\" is an executable file.... Are you sure you want to launch \"%S\"?", ".... Uyaqiniseka ukuthi ufuna ukuqalisa I\"%S\"?")
+    # printf style variables
+    assert checks.fails(mozillachecker.variables, "... for user %.100s on %.100s:", "... lomuntu osebenzisa i-%. I-100s e-100s:")
 
 def test_variables_openoffice():
     """tests variables in OpenOffice translations"""
