@@ -87,3 +87,11 @@ class TestDTD:
         dtdregen = self.dtdregen(dtdsource)
         assert dtdsource == dtdregen
 
+    def test_entitityreference_in_source(self):
+        """checks that an &entity; in the source is retained"""
+        dtdsource = '<!ENTITY % realBrandDTD SYSTEM "chrome://branding/locale/brand.dtd">\n%realBrandDTD;\n'
+        dtdregen = self.dtdregen(dtdsource)
+        print dtdsource
+        print dtdregen
+        assert dtdsource == dtdregen
+
