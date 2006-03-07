@@ -95,3 +95,9 @@ class TestDTD:
         print dtdregen
         assert dtdsource == dtdregen
 
+    def test_comment_following(self):
+        """check that comments that appear after and entity are not pushed onto another line"""
+        dtdsource = '<!ENTITY textZoomEnlargeCmd.commandkey2 "="> <!-- + is above this key on many keyboards -->'
+        dtdregen = self.dtdregen(dtdsource)
+        assert dtdsource == dtdregen
+   

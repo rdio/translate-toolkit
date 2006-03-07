@@ -38,3 +38,9 @@ class TestProperties:
         propelement = propfile.propelements[0]
         assert propelement.name == "unicode"
         assert propelement.msgid.encode("UTF-8") == "БЖЙШ"
+
+    def test_newlines_startend(self):
+        """check that we preserver \n that appear at start and end of properties"""
+        propsource = "newlines=\\ntext\\n\n"
+        propregen = self.propregen(propsource)
+        assert propsource == propregen
