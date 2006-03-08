@@ -103,6 +103,10 @@ class TestDTD2PO:
 <!ENTITY exampleOpenTag.label "&lt;i&gt;">'''
         pofile = self.dtd2po(dtdsource)
         assert self.countelements(pofile) == 0
+        dtdsource = '''<!-- LOCALIZATION NOTE (serverDirectory.label): DONT_TRANSLATE "IMAP" -->
+<!ENTITY imapAdvanced.label "Advanced IMAP Server Settings">'''
+        pofile = self.dtd2po(dtdsource)
+        assert self.countelements(pofile) == 1
 
     def test_donttranslate_label(self):
         """test strangeness when label entity is marked DONT_TRANSLATE and accesskey is not, bug 30"""
