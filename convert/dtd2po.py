@@ -97,7 +97,7 @@ class dtd2po:
         # if it's for this entity, process it
         if thedtd.entity == entity:
           # if it says don't translate (and nothing more),
-          if actualnote == "DONT_TRANSLATE":
+          if actualnote.startswith("DONT_TRANSLATE"):
             # take out the entity,definition and the DONT_TRANSLATE comment
             thedtd.entity = ""
             thedtd.definition = ""
