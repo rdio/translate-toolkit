@@ -177,6 +177,7 @@ class CheckerConfig(object):
     self.notranslatewords.update(otherconfig.notranslatewords)
     self.musttranslatewords.update(otherconfig.musttranslatewords)
     self.validcharsmap.update(otherconfig.validcharsmap)
+    self.punctuation += otherconfig.punctuation
     #TODO: consider also updating in the following cases:
     self.ignoretags = otherconfig.ignoretags
     self.canchangetags = otherconfig.canchangetags
