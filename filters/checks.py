@@ -63,7 +63,6 @@ def intuplelist(pair, list):
       if z in [None, c]:
         return pattern
   return pair
-        
 
 def tagproperties(strings, ignore):
   """Returns all the properties in the XML/HTML tag string as (key,value),
@@ -76,9 +75,12 @@ def tagproperties(strings, ignore):
     #TODO: remove escaped strings once usage is audited
     pairs = sre.findall(" (\w*)=((\\\\?\".*?\\\\?\")|(\\\\?'.*?\\\\?'))", string)
     for property, value, a, b in pairs:
+      #Strip the quotes:
       value = value[1:-1]
+
       canignore = False
-      if intuplelist((tag,property,value), ignore) != (tag,property,value):
+      if (tag, property, value) in ignore or \
+          intuplelist((tag,property,value), ignore) != (tag,property,value):
         canignore = True
         break
       if not canignore:
@@ -675,6 +677,7 @@ class StandardChecker(TranslationChecker):
       for property2 in properties2:
         filtered2 += [intuplelist(property2, self.config.canchangetags)]
       
+      #TODO: consider the consequences of different ordering of attributes/tags
       if filtered1 != filtered2:
         return False
     return True

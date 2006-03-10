@@ -530,13 +530,16 @@ def test_xmltags():
 def test_ooxmltags():
     """Tests the xml tags in OpenOffice.org translations for quality as done in gsicheck"""
     ooochecker = checks.OpenOfficeChecker()
-    print ooochecker.config.ignoretags
-    print ooochecker.config.canchangetags
+    #some attributes can be changed or removed
     assert checks.fails(ooochecker.xmltags, "<img src=\"a.jpg\" width=\"400\">", "<img src=\"b.jpg\" width=\"500\">")
     assert checks.passes(ooochecker.xmltags, "<img src=\"a.jpg\" width=\"400\">", "<img src=\"a.jpg\" width=\"500\">")
     assert checks.passes(ooochecker.xmltags, "<img src=\"a.jpg\" width=\"400\">", "<img src=\"a.jpg\">")
     assert checks.passes(ooochecker.xmltags, "<img src=\"a.jpg\">", "<img src=\"a.jpg\" width=\"400\">")
     assert checks.passes(ooochecker.xmltags, "<alt xml-lang=\"ab\">text</alt>", "<alt>teks</alt>")
+    assert checks.passes(ooochecker.xmltags, "<ahelp visibility=\"visible\">bla</ahelp>", "<ahelp>blu</ahelp>")
+    assert checks.fails(ooochecker.xmltags, "<ahelp visibility=\"visible\">bla</ahelp>", "<ahelp visibility=\"invisible\">blu</ahelp>")
+    assert checks.fails(ooochecker.xmltags, "<ahelp visibility=\"invisible\">bla</ahelp>", "<ahelp>blu</ahelp>")
+    #some attributes can be changed, but not removed
     assert checks.passes(ooochecker.xmltags, "<link name=\"John\">", "<link name=\"Jan\">")
     assert checks.fails(ooochecker.xmltags, "<link name=\"John\">", "<link naam=\"Jan\">")
 
