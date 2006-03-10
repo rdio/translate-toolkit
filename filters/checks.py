@@ -44,7 +44,47 @@ except ImportError:
   except ImportError:
     def dospellcheck(text, lang):
       return []
+    
+def tagname(string):
+  """Returns the name of the XML/HTML tag in string"""
+  return sre.match("<[\s/]*(\w*)", string).groups(1)[0]
 
+def intuplelist(pair, list):
+  """Tests to see if pair == (a,b,c) is in list, but handles None entries in 
+  list as wildcards (only allowed in positions "a" and "c"). We take a shortcut
+  by only considering "c" if "b" has already matched."""
+  a,b,c = pair
+  if (b,c) == (None, None):
+    #This is a tagname
+    return pair
+  for pattern in list:
+    x,y,z = pattern
+    if (x,y) in [(a,b), (None, b)]:
+      if z in [None, c]:
+        return pattern
+  return pair
+        
+
+def tagproperties(strings, ignore):
+  """Returns all the properties in the XML/HTML tag string as (key,value),
+  but ignore those combinations specified in ignore."""
+  properties = []
+  for string in strings:
+    tag = tagname(string)
+    properties += [(tag, None, None)]
+    #Now we isolate the attribute pairs. We allow escaped quotes
+    #TODO: remove escaped strings once usage is audited
+    pairs = sre.findall(" (\w*)=((\\\\?\".*?\\\\?\")|(\\\\?'.*?\\\\?'))", string)
+    for property, value, a, b in pairs:
+      value = value[1:-1]
+      canignore = False
+      if intuplelist((tag,property,value), ignore) != (tag,property,value):
+        canignore = True
+        break
+      if not canignore:
+        properties += [(tag, property, value)]
+  return properties
+    
 # actual test methods
 
 class FilterFailure(Exception):
@@ -82,9 +122,19 @@ def fails(filterfunction, str1, str2):
 
 punctuation_chars = u'.,;:!?-@#$%^*_()[]{}/\\\'"<>\u2018\u2019\u201a\u201b\u201c\u201d\u201e\u201f\u2032\u2033\u2034\u2035\u2036\u2037\u2039\u203a\xab\xbb\xb1\xb3\xb9\xb2\xb0\xbf\xa9\xae\xd7\xa3\xa5$'
 
+#(tag, attribute, value) specifies a certain attribute which can be changed/
+#ignored if it exists inside tag. In the case where there is a third element
+#in the tuple, it indicates a property value that can be ignored if present 
+#(like defaults, for example)
+#If a certain item is None, it indicates that it is relevant for all values of
+#the property/tag that is specified as None. A non-None value of "value"
+#indicates that the value of the attribute must be taken into account.
+common_ignoretags = [(None, "xml-lang", None)]
+common_canchangetags = [("img", "alt", None)]
+
 class CheckerConfig(object):
   """object representing the configuration of a checker"""
-  def __init__(self, targetlanguage=None, accelmarkers=None, varmatches=None, notranslatewords=None, musttranslatewords=None, validchars=None, punctuation=None):
+  def __init__(self, targetlanguage=None, accelmarkers=None, varmatches=None, notranslatewords=None, musttranslatewords=None, validchars=None, punctuation=None, ignoretags=None, canchangetags=None):
     # make sure that we initialise empty lists properly (default arguments get reused!)
     if accelmarkers is None:
       accelmarkers = []
@@ -109,6 +159,15 @@ class CheckerConfig(object):
     elif punctuation is None:
       punctuation = punctuation_chars
     self.punctuation = punctuation
+    if ignoretags is None:
+      self.ignoretags = common_ignoretags
+    else:
+      self.ignoretags = ignoretags
+    if canchangetags is None:
+      self.canchangetags = common_canchangetags
+    else:
+      self.canchangetags = canchangetags
+    
     
   def update(self, otherconfig):
     """combines the info in otherconfig into this config object"""
@@ -118,6 +177,9 @@ class CheckerConfig(object):
     self.notranslatewords.update(otherconfig.notranslatewords)
     self.musttranslatewords.update(otherconfig.musttranslatewords)
     self.validcharsmap.update(otherconfig.validcharsmap)
+    #TODO: consider also updating in the following cases:
+    self.ignoretags = otherconfig.ignoretags
+    self.canchangetags = otherconfig.canchangetags
   def updatevalidchars(self, validchars):
     """updates the map that eliminates valid characters"""
     if validchars is None:
@@ -601,10 +663,20 @@ class StandardChecker(TranslationChecker):
     """checks that XML/HTML tags have not been translated"""
     str1 = prefilters.removekdecomments(str1)
     tags = sre.findall("<[^>]+>", str1)
-    # TODO break down translatable tags eg <img alt="blah">
-    if len(tags) == 1 and len(tags[0]) == len(str1):
-      return True
-    return helpers.countsmatch(str1, str2, tags)
+    if len(tags) > 0:
+      tags2 = sre.findall("<[^>]+>", str2)
+      properties1 = tagproperties(tags, self.config.ignoretags)
+      properties2 = tagproperties(tags2, self.config.ignoretags)
+      filtered1 = []
+      filtered2 = []
+      for property1 in properties1:
+        filtered1 += [intuplelist(property1, self.config.canchangetags)]
+      for property2 in properties2:
+        filtered2 += [intuplelist(property2, self.config.canchangetags)]
+      
+      if filtered1 != filtered2:
+        return False
+    return True
 
   def kdecomments(self, str1, str2):
     """checks to ensure that no KDE style comments appear in the translation"""
@@ -659,7 +731,9 @@ class StandardChecker(TranslationChecker):
 
 openofficeconfig = CheckerConfig(
   accelmarkers = ("~"),
-  varmatches = (("&", ";"), ("%", "%"), ("%", None), ("%", 0), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("#", 1), ("#", 0), ("($", ")"), ("$[", "]"), ("[", "]"), ("$", None))
+  varmatches = (("&", ";"), ("%", "%"), ("%", None), ("%", 0), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("#", 1), ("#", 0), ("($", ")"), ("$[", "]"), ("[", "]"), ("$", None)),
+  ignoretags = [("alt", "xml-lang", None), ("ahelp", "visibility", "visible"), ("img", "width", None), ("img", "height", None)],
+  canchangetags = [("link", "name", None)]
   )
 
 class OpenOfficeChecker(StandardChecker):

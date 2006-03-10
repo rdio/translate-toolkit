@@ -520,8 +520,25 @@ def test_xmltags():
     assert checks.passes(stdchecker.xmltags, "Do it <b>now</b>", "Doen dit <b>nou</b>")
     assert checks.passes(stdchecker.xmltags, "Click <img src=\"img.jpg\">here</img>", "Klik <img src=\"img.jpg\">hier</img>")
     assert checks.fails(stdchecker.xmltags, "Click <img src=\"image.jpg\">here</img>", "Klik <img src=\"prent.jpg\">hier</img>")
+    assert checks.passes(stdchecker.xmltags, "Click <img src=\"img.jpg\" alt=\"picture\">here</img>", "Klik <img src=\"img.jpg\" alt=\"prentjie\">hier</img>")
     assert checks.passes(stdchecker.xmltags, "Start with the &lt;start&gt; tag", "Begin met die &lt;begin&gt;")
-    #TODO: test tags like alt, longdsc that can be translated
+
+    assert checks.fails(stdchecker.xmltags, "Click <a href=\"page.html\">", "Klik <a hverw=\"page.html\">")
+    assert checks.passes(stdchecker.xmltags, "Click <a xml-lang=\"en\" href=\"page.html\">", "Klik <a xml-lang=\"af\" href=\"page.html\">")
+    assert checks.fails(stdchecker.xmltags, "Click <a href=\"page.html\" target=\"koei\">", "Klik <a href=\"page.html\">")
+
+def test_ooxmltags():
+    """Tests the xml tags in OpenOffice.org translations for quality as done in gsicheck"""
+    ooochecker = checks.OpenOfficeChecker()
+    print ooochecker.config.ignoretags
+    print ooochecker.config.canchangetags
+    assert checks.fails(ooochecker.xmltags, "<img src=\"a.jpg\" width=\"400\">", "<img src=\"b.jpg\" width=\"500\">")
+    assert checks.passes(ooochecker.xmltags, "<img src=\"a.jpg\" width=\"400\">", "<img src=\"a.jpg\" width=\"500\">")
+    assert checks.passes(ooochecker.xmltags, "<img src=\"a.jpg\" width=\"400\">", "<img src=\"a.jpg\">")
+    assert checks.passes(ooochecker.xmltags, "<img src=\"a.jpg\">", "<img src=\"a.jpg\" width=\"400\">")
+    assert checks.passes(ooochecker.xmltags, "<alt xml-lang=\"ab\">text</alt>", "<alt>teks</alt>")
+    assert checks.passes(ooochecker.xmltags, "<link name=\"John\">", "<link name=\"Jan\">")
+    assert checks.fails(ooochecker.xmltags, "<link name=\"John\">", "<link naam=\"Jan\">")
 
 def test_functions():
     """tests to see that funtions() are not translated"""
