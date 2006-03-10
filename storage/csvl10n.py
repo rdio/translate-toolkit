@@ -165,12 +165,12 @@ class csvfile(base.TranslationStore):
 
   def __str__(self):
     """convert to a string. double check that unicode is handled somehow here"""
-    source = self.getsource()
+    source = self.getoutput()
     if isinstance(source, unicode):
       return source.encode(getattr(self, "encoding", "UTF-8"))
     return source
 
-  def getsource(self):
+  def getoutput(self):
     csvfile = csv.StringIO()
     writer = csv.DictWriter(csvfile, self.fieldnames)
     for ce in self.units:

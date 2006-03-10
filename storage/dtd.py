@@ -227,12 +227,12 @@ class dtdelement:
 
   def __str__(self):
     """convert to a string. double check that unicode is handled somehow here"""
-    source = self.getsource()
+    source = self.getoutput()
     if isinstance(source, unicode):
       return source.encode(getattr(self, "encoding", "UTF-8"))
     return source
 
-  def getsource(self):
+  def getoutput(self):
     """convert the dtd entity back to string form"""
     lines = []
     lines.extend([comment for commenttype,comment in self.comments])
@@ -294,12 +294,12 @@ class dtdfile:
 
   def __str__(self):
     """convert to a string. double check that unicode is handled somehow here"""
-    source = self.getsource()
+    source = self.getoutput()
     if isinstance(source, unicode):
       return source.encode(getattr(self, "encoding", "UTF-8"))
     return source
 
-  def getsource(self):
+  def getoutput(self):
     """convert the dtdelements back to source"""
     sources = [str(dtd) for dtd in self.dtdelements]
     return "".join(sources)

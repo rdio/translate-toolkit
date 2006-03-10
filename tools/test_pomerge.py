@@ -53,5 +53,5 @@ class TestPOMerge:
         pofile = self.mergepo(templatepo, newpo)
         pounit = self.singleunit(pofile)
         print pofile
-        assert pofile.getsource() == expectedpo
+        assert pofile.getoutput() == expectedpo
 
