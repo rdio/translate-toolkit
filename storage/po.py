@@ -392,18 +392,18 @@ class pounit(base.TranslationUnit):
       partstr += partline + '\n'
     return partstr
 
-  def encodeifneccessary(self, source):
+  def encodeifneccessary(self, output):
     """encodes unicode strings and returns other strings unchanged"""
-    if isinstance(source, unicode):
-      return source.encode(getattr(self, "encoding", "UTF-8"))
-    return source
+    if isinstance(output, unicode):
+      return output.encode(getattr(self, "encoding", "UTF-8"))
+    return output
 
   def __str__(self):
     """convert to a string. double check that unicode is handled somehow here"""
-    source = self.getsource()
-    return self.encodeifneccessary(source)
+    output = self.getoutput()
+    return self.encodeifneccessary(output)
 
-  def getsource(self):
+  def getoutput(self):
     """return this po element as a string"""
     lines = []
     lines.extend(self.othercomments)
@@ -651,7 +651,7 @@ class pofile(base.TranslationStore):
   parsestring = classmethod(parsestring)
 
   def parse(self, input):
-    """parses the given file or source string"""
+    """parses the given file or file source string"""
     self.filename = getattr(input, 'name', '')
     if hasattr(input, "read"):
       posrc = input.read()
@@ -750,12 +750,12 @@ class pofile(base.TranslationStore):
 
   def __str__(self):
     """convert to a string. double check that unicode is handled somehow here"""
-    source = self.getsource()
-    if isinstance(source, unicode):
-      return source.encode(getattr(self, "encoding", "UTF-8"))
-    return source
+    output = self.getoutput()
+    if isinstance(output, unicode):
+      return output.encode(getattr(self, "encoding", "UTF-8"))
+    return output
 
-  def getsource(self):
+  def getoutput(self):
     """convert the units back to lines"""
     lines = []
     for pe in self.units:
