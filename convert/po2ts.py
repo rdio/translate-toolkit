@@ -55,7 +55,7 @@ class po2ts:
         source = source.decode("utf-8")
       if isinstance(translation, str):
         translation = translation.decode("utf-8")
-      for sourcelocation in thepo.getsources():
+      for sourcelocation in thepo.getids():
         if "#" in sourcelocation:
           contextname = sourcelocation[:sourcelocation.find("#")]
         else:

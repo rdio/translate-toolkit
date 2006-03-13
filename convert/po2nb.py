@@ -57,7 +57,7 @@ class po2nb:
     for thepo in inputpo.units:
       if thepo.isheader():
         continue
-      for source in thepo.getsources():
+      for source in thepo.getids():
         filename, fieldname = source.split("#", 1)
         fieldvalue = self.convertmessage(thepo.msgstr)
         if not fieldvalue.strip():

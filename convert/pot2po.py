@@ -78,7 +78,7 @@ def convertpot(inputfile, outputfile, templatefile):
     if not thepo.isheader():
       if templatefile:
         possiblematches = []
-        for source in thepo.getsources():
+        for source in thepo.getids():
           otherpo = templatepo.sourceindex.get(source, None)
           if otherpo is not None:
             possiblematches.append(otherpo)

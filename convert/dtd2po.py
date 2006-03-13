@@ -111,7 +111,7 @@ class dtd2po:
     # do a standard translation
     self.convertcomments(thedtd,thepo)
     self.convertstrings(thedtd,thepo)
-    if thepo.isblank() and not thepo.getsources():
+    if thepo.isblank() and not thepo.getids():
       return None
     else:
       return thepo

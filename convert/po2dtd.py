@@ -170,7 +170,7 @@ class redtd:
     return self.dtdfile
 
   def handlepoelement(self, thepo):
-    entities = thepo.getsources()
+    entities = thepo.getids()
     mixedentities = getmixedentities(entities)
     for entity in entities:
       if self.dtdfile.index.has_key(entity):
