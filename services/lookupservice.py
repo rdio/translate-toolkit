@@ -102,7 +102,7 @@ class lookupOptionParser(convert.ConvertOptionParser):
         self.usepsyco(options)
         inputbase, inputext = self.splitinputext(options.input)
         asdf, storagebuilder = self.outputoptions[inputext, None]
-        storage = storagebuilder(options.input)
+        storage = storagebuilder(open(options.input))
         server = lookupServer((options.address, int(options.port)), storage)
         try:
             server.serve_forever()
