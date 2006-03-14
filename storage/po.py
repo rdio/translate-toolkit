@@ -208,7 +208,7 @@ class pounit(base.TranslationUnit):
         list1.extend([item for item in list2 if not item in list1])
     if comments:
       mergelists(self.othercomments, otherpo.othercomments)
-      mergelists(self.automaticcomments, otherpo.automaticcomments)
+      self.automaticcomments = otherpo.automaticcomments
       mergelists(self.sourcecomments, otherpo.sourcecomments, split=True)
       mergelists(self.typecomments, otherpo.typecomments)
       mergelists(self.visiblecomments, otherpo.visiblecomments)

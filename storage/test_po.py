@@ -8,6 +8,7 @@ from translate.misc import wStringIO
 
 class TestPOUnit(test_base.TestTranslationUnit):
     UnitClass = po.pounit
+
     def test_plurals(self):
         """Tests that plurals are handled correctly."""
         unit = self.UnitClass("Cow")
@@ -43,6 +44,18 @@ class TestPO(test_base.TestTranslationStore):
     def poregen(self, posource):
         """helper that converts po source to pofile object and back"""
         return str(self.poparse(posource))
+
+    def pomerge(self, oldmessage, newmessage):
+        """helper that merges two messages"""
+        dummyfile = wStringIO.StringIO(oldmessage)
+        oldpofile = po.pofile(dummyfile)
+        oldunit = oldpofile.units[0]
+        dummyfile2 = wStringIO.StringIO(newmessage)
+        newpofile = po.pofile(dummyfile2)
+        newunit = newpofile.units[0]
+        oldunit.merge(newunit)
+        print oldunit
+        return str(oldunit)
 
     def test_simpleentry(self):
         """checks that a simple po entry is parsed correctly"""
@@ -189,3 +202,11 @@ msgstr[0] "Sheep"
         assert pofile.units[0].automaticcomments == ["#. automatic comment\n"]
         assert pofile.units[0].sourcecomments == ["#: source comment\n"]
         assert pofile.units[0].typecomments == ["#, fuzzy\n"]
+
+    def test_merging_automaticcomments(self):
+        """checks that new automatic comments override old ones"""
+        oldsource = '#. old comment\n#: line:10\nmsgid "One"\nmsgstr "Een"\n'
+        newsource = '#. new comment\n#: line:10\nmsgid "One"\nmsgstr ""\n'
+        expected = '#. new comment\n#: line:10\nmsgid "One"\nmsgstr "Een"\n'
+        assert self.pomerge(oldsource, newsource) == expected
+
