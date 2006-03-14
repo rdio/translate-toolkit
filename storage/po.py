@@ -86,6 +86,7 @@ From the GNU gettext manual:
 
 class pounit(base.TranslationUnit):
   # othercomments = []      #   # this is another comment
+  # automaticcomments = []  #   #. comment extracted from the source code
   # sourcecomments = []     #   #: sourcefile.xxx:35
   # typecomments = []       #   #, fuzzy
   # visiblecomments = []    #   #_ note to translator  (this is nonsense)
@@ -97,6 +98,7 @@ class pounit(base.TranslationUnit):
   def __init__(self, source=None, encoding="UTF-8"):
     self.encoding = encodingToUse(encoding)
     self.othercomments = []
+    self.automaticcomments = []
     self.sourcecomments = []
     self.typecomments = []
     self.visiblecomments = []
@@ -150,6 +152,7 @@ class pounit(base.TranslationUnit):
   def copy(self):
     newpo = self.__class__()
     newpo.othercomments = self.othercomments[:]
+    newpo.automaticcomments = self.automaticcomments[:]
     newpo.sourcecomments = self.sourcecomments[:]
     newpo.typecomments = self.typecomments[:]
     newpo.visiblecomments = self.visiblecomments[:]
@@ -205,6 +208,7 @@ class pounit(base.TranslationUnit):
         list1.extend([item for item in list2 if not item in list1])
     if comments:
       mergelists(self.othercomments, otherpo.othercomments)
+      mergelists(self.automaticcomments, otherpo.automaticcomments)
       mergelists(self.sourcecomments, otherpo.sourcecomments, split=True)
       mergelists(self.typecomments, otherpo.typecomments)
       mergelists(self.visiblecomments, otherpo.visiblecomments)
@@ -292,7 +296,9 @@ class pounit(base.TranslationUnit):
         if inmsgstr:
           # if we're already in the message string, this is from the next element
           break
-        if line[1] == ':':
+        if line[1] == '.':
+          self.automaticcomments.append(line)
+        elif line[1] == ':':
           self.sourcecomments.append(line)
         elif line[1] == ',':
           self.typecomments.append(line)
@@ -416,6 +422,7 @@ class pounit(base.TranslationUnit):
     if (len(self.msgid) == 0) or ((len(self.msgid) == 1) and (self.msgid[0] == '""')):
       if not (self.isheader() or self.msgidcomments or self.sourcecomments):
         return ""
+    lines.extend(self.automaticcomments)
     lines.extend(self.sourcecomments)
     lines.extend(self.typecomments)
     lines.extend(self.visiblecomments)

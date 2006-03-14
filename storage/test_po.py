@@ -177,3 +177,15 @@ msgstr[0] "Sheep"
         print unit.target.strings
         assert unit.target == "Sheep"
         assert unit.target.strings == ["Sheep"]
+
+    def test_posections(self):
+        """checks the content of all the expected sections of a PO message"""
+        posource = '# other comment\n#. automatic comment\n#: source comment\n#, fuzzy\nmsgid "One"\nmsgstr "Een"\n'
+        pofile = self.poparse(posource)
+        print pofile
+        assert len(pofile.units) == 1
+        assert str(pofile) == posource + '\n'
+        assert pofile.units[0].othercomments == ["# other comment\n"]
+        assert pofile.units[0].automaticcomments == ["#. automatic comment\n"]
+        assert pofile.units[0].sourcecomments == ["#: source comment\n"]
+        assert pofile.units[0].typecomments == ["#, fuzzy\n"]
