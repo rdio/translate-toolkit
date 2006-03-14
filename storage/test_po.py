@@ -51,8 +51,11 @@ class TestPO(test_base.TestTranslationStore):
         oldpofile = po.pofile(dummyfile)
         oldunit = oldpofile.units[0]
         dummyfile2 = wStringIO.StringIO(newmessage)
-        newpofile = po.pofile(dummyfile2)
-        newunit = newpofile.units[0]
+        if newmessage:
+          newpofile = po.pofile(dummyfile2)
+          newunit = newpofile.units[0]
+        else:
+          newunit = po.pounit()
         oldunit.merge(newunit)
         print oldunit
         return str(oldunit)
@@ -208,5 +211,12 @@ msgstr[0] "Sheep"
         oldsource = '#. old comment\n#: line:10\nmsgid "One"\nmsgstr "Een"\n'
         newsource = '#. new comment\n#: line:10\nmsgid "One"\nmsgstr ""\n'
         expected = '#. new comment\n#: line:10\nmsgid "One"\nmsgstr "Een"\n'
+        assert self.pomerge(oldsource, newsource) == expected
+
+    def test_merging_obsoleting_messages(self):
+        """check that we obsolete messages no longer present in the new file"""
+        oldsource = '#: obsoleteme:10\nmsgid "One"\nmsgstr "Een"\n'
+        newsource = ''
+        expected = '#~ msgid "One"\n#~ msgstr "Een"\n'
         assert self.pomerge(oldsource, newsource) == expected
 
