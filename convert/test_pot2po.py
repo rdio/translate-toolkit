@@ -79,3 +79,12 @@ class TestPO2DTD:
         print newpounit
         assert str(newpounit) == poexpected
 
+    def test_merging_automatic_comments(self):
+        """ensure that we can merge #. comments correctly"""
+        potsource = '''#. Row 35\nmsgid "&About"\nmsgstr ""\n'''
+        posource = '''#. Row 35\nmsgid "&About"\nmsgstr "&Info"\n'''
+        newpo = self.convertpot(potsource, posource)
+        newpounit = self.singleunit(newpo)
+        print newpounit
+        assert str(newpounit) == posource
+        
