@@ -120,6 +120,9 @@ def test_doublespacing():
     assert checks.passes(stdchecker.doublespacing, "Sentence. Another sentence.", "Sin. No double spacing.")
     assert checks.fails(stdchecker.doublespacing, "Sentence.  Another sentence.", "Sin. Missing the double space.")
     assert checks.fails(stdchecker.doublespacing, "Sentence. Another sentence.", "Sin.  Uneeded double space in translation.")
+    ooochecker = checks.OpenOfficeChecker()
+    assert checks.passes(ooochecker.doublespacing, "Execute %PROGRAMNAME Calc", "Blah %PROGRAMNAME Calc")
+    assert checks.passes(ooochecker.doublespacing, "Execute %PROGRAMNAME Calc", "Blah % PROGRAMNAME Calc")
 
 def test_doublewords():
     """tests doublewords"""
@@ -469,6 +472,9 @@ def test_variables_mozilla():
     assert checks.fails(mozillachecker.variables, "\"%S\" is an executable file.... Are you sure you want to launch \"%S\"?", ".... Uyaqiniseka ukuthi ufuna ukuqalisa I\"%S\"?")
     # printf style variables
     assert checks.fails(mozillachecker.variables, "... for user %.100s on %.100s:", "... lomuntu osebenzisa i-%. I-100s e-100s:")
+    # False positive $ style variables
+    assert checks.passes(mozillachecker.variables, "for reporting $ProductShortName$ crash information", "okokubika ukwaziswa kokumosheka kwe-$ProductShortName$")
+ 
 
 def test_variables_openoffice():
     """tests variables in OpenOffice translations"""
