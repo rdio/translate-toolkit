@@ -372,8 +372,8 @@ class StandardChecker(TranslationChecker):
 
   def doublespacing(self, str1, str2):
     """checks for bad double-spaces by comparing to original"""
-    str1 = self.filteraccelerators(self.filtervariables(str1))
-    str2 = self.filteraccelerators(self.filtervariables(str2))
+    str1 = self.filteraccelerators(str1)
+    str2 = self.filteraccelerators(str2)
     return helpers.countmatch(str1, str2, "  ")
 
   def puncspacing(self, str1, str2):
