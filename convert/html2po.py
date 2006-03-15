@@ -62,6 +62,9 @@ def converthtml(inputfile, outputfile, templates, includeuntagged=False, duplica
 
 def main(argv=None):
   from translate.convert import convert
+  from translate.misc import stdiotell
+  import sys
+  sys.stdout = stdiotell.StdIOWrapper(sys.stdout)
   formats = {"html":("po",converthtml), "htm":("po",converthtml), "xhtml":("po",converthtml)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.add_option("-u", "--untagged", dest="includeuntagged", default=False, action="store_true",
