@@ -28,11 +28,13 @@ class TestProp2PO:
         """checks that the pofile contains a single non-header element, and returns it"""
         assert len(pofile.units) == 2
         assert pofile.units[0].isheader()
+        print pofile
         return pofile.units[1]
 
     def countelements(self, pofile):
 	"""counts the number of non-header entries"""
         assert pofile.units[0].isheader()
+        print pofile
 	return len(pofile.units) - 1
 
     def test_simpleentry(self):
@@ -103,6 +105,15 @@ reduce the number of cached connections."""
         print repr(pofile.units[1].msgstr)
         assert self.countelements(pofile) == 1
 
+    def test_comments(self):
+        """test to ensure that we take comments from .properties and place them in .po"""
+        propsource = '''# Comment
+prefPanel-smime=Security'''
+	pofile = self.prop2po(propsource)
+        pounit = self.singleelement(pofile)
+        # FIXME This should probably become "#. Comment" to be fully correct in PO format
+        assert pounit.othercomments == ["# Comment\n"]
+
     def xtest_folding_accesskeys(self):
         """check that we can fold various accesskeys into their associated label"""
 	propsource = r'''cmd_addEngine = Add Engines...
@@ -117,6 +128,18 @@ cmd_addEngine_accesskey = A'''
 '''
 	pofile = self.prop2po(propsource)
 	assert self.countelements(pofile) == 0
+
+    def xtest_localization_notes(self):
+        """check that we fold localisation notes into KDE comments"""
+        propsource = '''# Description of import module
+## @name OUTLOOKIMPORT_DESCRIPTION
+## @loc None
+## LOCALIZATION NOTE (2001): In this item, don't translate "Outlook"
+2001=Outlook mail and address books
+'''
+	pofile = self.prop2po(propsource)
+        pounit = self.singleelement(pofile)
+        assert po.unquotefrompo(pounit.msgid) == '''_: In this item, don't translate "Outlook"\\n\nOutlook mail and address books'''
 
 class TestProp2POCommand(test_convert.TestConvertCommand, TestProp2PO):
     """Tests running actual prop2po commands on files"""
