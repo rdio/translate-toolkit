@@ -41,13 +41,16 @@ class po2html:
       return message
     return "\n".join([textwrap.fill(line, self.wrap, replace_whitespace=False) for line in message.split("\n")])
 
-  def convertfile(self, inputpo):
+  def convertfile(self, inputpo, includefuzzy):
     """converts a file to .po format"""
     htmlresult = ""
     for thepo in inputpo.units:
       if thepo.isheader():
         continue
-      htmlresult += self.wrapmessage(thepo.target) + "\n" + "\n"
+      if includefuzzy or not thepo.isfuzzy():
+        htmlresult += self.wrapmessage(thepo.target) + "\n" + "\n"
+      else:
+        htmlresult += self.wrapmessage(thepo.source) + "\n" + "\n"
     return htmlresult
  
   def mergefile(self, inputpo, templatetext):
@@ -64,12 +67,12 @@ class po2html:
         htmlresult = htmlresult.replace(msgid, msgstr)
     return htmlresult
 
-def converthtml(inputfile, outputfile, templatefile, wrap=None):
+def converthtml(inputfile, outputfile, templatefile, wrap=None, includefuzzy=False):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   inputpo = po.pofile(inputfile)
   convertor = po2html(wrap=wrap)
   if templatefile is None:
-    outputhtml = convertor.convertfile(inputpo)
+    outputhtml = convertor.convertfile(inputpo, includefuzzy)
   else:
     templatetext = templatefile.read()
     outputhtml = convertor.mergefile(inputpo, templatetext)
@@ -79,11 +82,15 @@ def converthtml(inputfile, outputfile, templatefile, wrap=None):
 
 def main(argv=None):
   from translate.convert import convert
-  formats = {("po", "htm"):("htm",converthtml), ("po", "html"):("html",converthtml), ("po"):("html",converthtml)}
+  from translate.misc import stdiotell
+  import sys
+  sys.stdout = stdiotell.StdIOWrapper(sys.stdout)
+  formats = {("po", "htm"):("htm",converthtml), ("po", "html"):("html",converthtml), ("po", "xhtml"):("xhtml",converthtml), ("po"):("html",converthtml)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   if textwrap is not None:
     parser.add_option("-w", "--wrap", dest="wrap", default=None, type="int",
                       help="set number of columns to wrap html at", metavar="WRAP")
     parser.passthrough.append("wrap")
+  parser.add_fuzzy_option()
   parser.run(argv)
 
