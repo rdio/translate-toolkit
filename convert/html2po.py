@@ -50,7 +50,7 @@ class html2po:
     thepofile.removeduplicates(duplicatestyle)
     return thepofile
 
-def converthtml(inputfile, outputfile, templates, includeuntagged=False, duplicatestyle="msgid_comment"):
+def converthtml(inputfile, outputfile, templates, includeuntagged=False, pot=False, duplicatestyle="msgid_comment"):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   convertor = html2po()
   outputfilepos = outputfile.tell()
@@ -71,5 +71,6 @@ def main(argv=None):
                     help="include untagged sections")
   parser.passthrough.append("includeuntagged")
   parser.add_duplicates_option()
+  parser.passthrough.append("pot")
   parser.run(argv)
 

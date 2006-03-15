@@ -24,6 +24,7 @@
 import os.path
 from translate.convert import dtd2po
 from translate.convert import prop2po
+from translate.convert import html2po
 from translate.convert import mozfunny2prop
 from translate.storage import xpi
 from translate import __version__
@@ -34,7 +35,7 @@ def main(argv=None):
              ("*", "*"): ("*", convert.copyinput),
              "*": ("*", convert.copyinput)}
   # handle formats that convert to .po files
-  converters = [("dtd", dtd2po.convertdtd), ("properties", prop2po.convertprop),
+  converters = [("dtd", dtd2po.convertdtd), ("properties", prop2po.convertprop), ("xhtml", html2po.converthtml),
       ("it", mozfunny2prop.it2po), ("ini", mozfunny2prop.it2po), ("inc", mozfunny2prop.inc2po)]
   for format, converter in converters:
     formats[(format, format)] = (format + ".po", converter)
