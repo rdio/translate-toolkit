@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from translate.storage import po
 from translate.filters import pofilter
@@ -108,3 +109,12 @@ class TestPOFilter:
         posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
         poresult = self.pofilter(posource, cmdlineoptions=["--test=isreview"])
 	assert poresult == ""
+
+    def test_unicode(self):
+        """tests that we can handle UTF-8 encoded characters when there is no known header specified encoding"""
+        posource = '#: test.c\nmsgid "Bézier"\nmsgstr "Bézier"'
+        poexpected = posource + '\n\n'
+        poresult = self.pofilter(posource)
+	assert poresult == poexpected
+
+
