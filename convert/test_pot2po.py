@@ -29,6 +29,7 @@ class TestPO2DTD:
         """checks that the pofile contains a single non-header unit, and returns it"""
         assert len(pofile.units) == 2
         assert pofile.units[0].isheader()
+        print pofile.units[1]
         return pofile.units[1]
 
     def test_convertpot_blank(self):
@@ -76,15 +77,30 @@ class TestPO2DTD:
         poexpected = '''#: simple.label\nmsgid "Line split "\n"differently"\nmsgstr "Lyne verskillend gesny"\n'''
         newpo = self.convertpot(potsource, posource)
         newpounit = self.singleunit(newpo)
-        print newpounit
         assert str(newpounit) == poexpected
 
-    def test_merging_automatic_comments(self):
+    def test_merging_automatic_comments_dont_duplicate(self):
         """ensure that we can merge #. comments correctly"""
         potsource = '''#. Row 35\nmsgid "&About"\nmsgstr ""\n'''
         posource = '''#. Row 35\nmsgid "&About"\nmsgstr "&Info"\n'''
         newpo = self.convertpot(potsource, posource)
         newpounit = self.singleunit(newpo)
-        print newpounit
         assert str(newpounit) == posource
+
+    def test_merging_automatic_comments_new_overides_old(self):
+        """ensure that new #. comments override the old comments"""
+        potsource = '''#. new comment\n#: someline.c\nmsgid "&About"\nmsgstr ""\n'''
+        posource = '''#. old comment\n#: someline.c\nmsgid "&About"\nmsgstr "&Info"\n'''
+        poexpected = '''#. new comment\n#: someline.c\nmsgid "&About"\nmsgstr "&Info"\n'''
+        newpo = self.convertpot(potsource, posource)
+        newpounit = self.singleunit(newpo)
+        assert str(newpounit) == poexpected
+        
+    def test_merging_new_before_obsolete(self):
+        """test to check that we place new blank message before obsolete messages"""
+        potsource = '''#: newline.c\nmsgid "&About"\nmsgstr ""\n'''
+        posource = '''#~ msgid "Old"\n#~ msgstr "Oud"\n'''
+        newpo = self.convertpot(potsource, posource)
+        newpounit = self.singleunit(newpo)
+        assert str(newpounit) == potsource + posource
         
