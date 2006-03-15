@@ -27,6 +27,8 @@ class StringIO:
     def __init__(self, buf = ''):
         if not isinstance(buf, (str, unicode)):
             buf = str(buf)
+        if isinstance(buf, unicode):
+            buf = buf.encode('utf-8')
         self.len = len(buf)
         self.buf = cStringIO.StringIO()
         self.buf.write(buf)
