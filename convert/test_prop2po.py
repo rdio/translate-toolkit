@@ -8,12 +8,17 @@ from translate.storage import po
 from translate.storage import properties
 
 class TestProp2PO:
-    def prop2po(self, propsource):
+    def prop2po(self, propsource, proptemplate=None):
         """helper that converts .properties source to po source without requiring files"""
         inputfile = wStringIO.StringIO(propsource)
         inputprop = properties.propfile(inputfile)
         convertor = prop2po.prop2po()
-        outputpo = convertor.convertfile(inputprop)
+        if proptemplate:
+          templatefile = wStringIO.StringIO(proptemplate)
+          templateprop = properties.propfile(templatefile)
+          outputpo = convertor.mergefiles(templateprop, inputprop)
+        else:
+          outputpo = convertor.convertfile(inputprop)
         return outputpo
 
     def convertprop(self, propsource):
@@ -140,6 +145,23 @@ cmd_addEngine_accesskey = A'''
 	pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
         assert po.unquotefrompo(pounit.msgid) == '''_: In this item, don't translate "Outlook"\\n\nOutlook mail and address books'''
+
+    def test_emptyproperty(self):
+        """checks that empty property definitions survive into po file"""
+        propsource = '# comment\ncredit='
+        pofile = self.prop2po(propsource)
+        pounit = self.singleelement(pofile)
+        assert "credit" in str(pounit)
+
+    def test_emptyproperty_translated(self):
+        """checks that if we translate an empty property it makes it into the PO"""
+        proptemplate = 'credit='
+        propsource = 'credit=Translators Names'
+        pofile = self.prop2po(propsource, proptemplate)
+        unit = self.singleelement(pofile)
+        print unit
+        assert "credit" in str(unit)
+        assert po.unquotefrompo(unit.msgstr) == "Translators Names"
 
 class TestProp2POCommand(test_convert.TestConvertCommand, TestProp2PO):
     """Tests running actual prop2po commands on files"""
