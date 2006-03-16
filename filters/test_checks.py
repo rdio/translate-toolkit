@@ -475,7 +475,7 @@ def test_variables_mozilla():
     # False positive $ style variables
     assert checks.passes(mozillachecker.variables, "for reporting $ProductShortName$ crash information", "okokubika ukwaziswa kokumosheka kwe-$ProductShortName$")
     # We shouldn't mask variables within variables.  This should highlight &brandShortName as missing and &amp as extra
-    assert checks.fails(mozillachecker.variables, "&brandShortName;", "&amp;brandShortName;"
+    assert checks.fails(mozillachecker.variables, "&brandShortName;", "&amp;brandShortName;")
 
 def test_variables_openoffice():
     """tests variables in OpenOffice translations"""
