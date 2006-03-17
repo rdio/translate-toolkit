@@ -734,8 +734,8 @@ class StandardChecker(TranslationChecker):
 # code to actually run the tests (use unittest?)
 
 openofficeconfig = CheckerConfig(
-  accelmarkers = ("~"),
-  varmatches = (("&", ";"), ("%", "%"), ("%", None), ("%", 0), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("#", 1), ("#", 0), ("($", ")"), ("$[", "]"), ("[", "]"), ("$", None)),
+  accelmarkers = ["~"],
+  varmatches = [("&", ";"), ("%", "%"), ("%", None), ("%", 0), ("$(", ")"), ("$", "$"), ("${", "}"), ("#", "#"), ("#", 1), ("#", 0), ("($", ")"), ("$[", "]"), ("[", "]"), ("$", None)],
   ignoretags = [("alt", "xml-lang", None), ("ahelp", "visibility", "visible"), ("img", "width", None), ("img", "height", None)],
   canchangetags = [("link", "name", None)]
   )
@@ -750,8 +750,8 @@ class OpenOfficeChecker(StandardChecker):
     StandardChecker.__init__(self, **kwargs)
 
 mozillaconfig = CheckerConfig(
-  accelmarkers = ("&"),
-  varmatches = (("&", ";"), ("%", "%"), ("%", 1), ("$", "$"), ("$", None), ("#", 1))
+  accelmarkers = ["&"],
+  varmatches = [("&", ";"), ("%", "%"), ("%", 1), ("$", "$"), ("$", None), ("#", 1)]
   )
 
 class MozillaChecker(StandardChecker):
@@ -764,8 +764,8 @@ class MozillaChecker(StandardChecker):
     StandardChecker.__init__(self, **kwargs)
 
 gnomeconfig = CheckerConfig(
-  accelmarkers = ("_"),
-  varmatches = (("%", 1), ("$(", ")"))
+  accelmarkers = ["_"],
+  varmatches = [("%", 1), ("$(", ")")]
   )
 
 class GnomeChecker(StandardChecker):
@@ -778,8 +778,8 @@ class GnomeChecker(StandardChecker):
     StandardChecker.__init__(self, **kwargs)
 
 kdeconfig = CheckerConfig(
-  accelmarkers = ("&"),
-  varmatches = (("%", 1),)
+  accelmarkers = ["&"],
+  varmatches = [("%", 1)]
   )
 
 class KdeChecker(StandardChecker):
