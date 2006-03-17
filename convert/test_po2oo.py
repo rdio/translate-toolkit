@@ -55,6 +55,15 @@ class TestPO2OO:
         newoo = self.convertoo(posource, ootemplate, language="zu")
         assert newoo == ootemplate + ooexpected
 
+    def test_pofilter(self):
+        """Tests integration with pofilter"""
+	#Some bad po with a few errors:
+	posource = '#: sourcefile.bla#ID_NUMBER.txet.gnirts\nmsgid "<tag cow=\\"3\\">Mistake."\nmsgstr "  <etiket koei=\\"3\\">(fout)"'
+        filter = po2oo.filter
+	pofile = po.pofile()
+	pofile.parse(posource)
+	assert not filter.validelement(pofile.units[0], "dummy.po", "exclude")
+
     def test_roundtrip_simple(self):
         """checks that simple strings make it through a oo->po->oo roundtrip"""
         self.check_roundtrip('Hello')
@@ -85,6 +94,7 @@ class TestPO2OOCommand(test_convert.TestConvertCommand, TestPO2OO):
         assert "-T, --keeptimestamp" in help_string
         assert "--nonrecursiveoutput" in help_string
         assert "--nonrecursivetemplate" in help_string
+        assert "--filteraction" in help_string
 
     def merge2oo(self, oosource, posource):
         """helper that merges po translations to oo source through files"""
