@@ -293,7 +293,7 @@ class TeeChecker:
   def getfilters(self, excludefilters=None, limitfilters=None):
     """returns dictionary of available filters, including/excluding those in the given lists"""
     if excludefilters is None:
-      excluefilters = {}
+      excludefilters = {}
     filterslist = [checker.getfilters(excludefilters, limitfilters) for checker in self.checkers]
     self.combinedfilters = {}
     for filters in filterslist:
