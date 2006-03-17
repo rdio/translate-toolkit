@@ -55,3 +55,12 @@ class TestPOMerge:
         print pofile
         assert pofile.getoutput() == expectedpo
 
+    def test_merge_dont_delete_unassociated_comments(self):
+        """ensure that we do not delete comments in the PO file that are not assocaited with a message block"""
+        templatepo = '''# Lonely comment\n\n# Translation comment\nmsgid "Bob"\nmsgstr "Toolmaker"\n'''
+        mergepo = '''# Translation comment\nmsgid "Bob"\nmsgstr "Builder"\n'''
+        expectedpo = '''# Lonely comment\n\n# Translation comment\nmsgid "Bob"\nmsgstr "Builder"\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        pounit = self.singleunit(pofile)
+        print pofile
+        assert pofile.getoutput() == expectedpo
