@@ -58,11 +58,11 @@ class TestPO2OO:
     def test_pofilter(self):
         """Tests integration with pofilter"""
 	#Some bad po with a few errors:
-	posource = '#: sourcefile.bla#ID_NUMBER.txet.gnirts\nmsgid "<tag cow=\\"3\\">Mistake."\nmsgstr "  <etiket koei=\\"3\\">(fout)"'
+	posource = '#: sourcefile.bla#ID_NUMBER.txet.gnirts\nmsgid "<tag cow=\\"3\\">Mistake."\nmsgstr "  <etiket koei=\\"3\\">(fout) "'
         filter = po2oo.filter
 	pofile = po.pofile()
 	pofile.parse(posource)
-	assert not filter.validelement(pofile.units[0], "dummy.po", "exclude")
+	assert not filter.validelement(pofile.units[0], "dummyname.po", "exclude")
 
     def test_roundtrip_simple(self):
         """checks that simple strings make it through a oo->po->oo roundtrip"""

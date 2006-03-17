@@ -29,17 +29,22 @@ import sys
 import os
 from translate.storage import oo
 from translate.storage import po
+from translate.filters import pofilter
+from translate.filters import checks
+from translate.filters import autocorrect 
+from translate.misc import optparse
 from translate.misc import quote
 import time
 from translate import __version__
 
 class reoo:
-  def __init__(self, templatefile, languages=None, timestamp=None, includefuzzy=False, long_keys=False):
+  def __init__(self, templatefile, languages=None, timestamp=None, includefuzzy=False, long_keys=False, filteraction="exclude"):
     """construct a reoo converter for the specified languages (timestamp=0 means leave unchanged)"""
     # languages is a pair of language ids
     self.long_keys = long_keys
     self.readoo(templatefile)
     self.languages = languages
+    self.filteraction = filteraction
     if timestamp is None:
       self.timestamp = time.localtime(time.time())
     else:
@@ -153,7 +158,8 @@ class reoo:
     # translate the strings
     for thepo in self.p.units:
       # there may be more than one element due to msguniq merge
-      self.handlepoelement(thepo)
+      if filter.validelement(thepo, self.p.filename, self.filteraction):
+        self.handlepoelement(thepo)
     # return the modified oo file object
     return self.o
 
@@ -161,9 +167,44 @@ def getmtime(filename):
   import stat
   return time.localtime(os.stat(filename)[stat.ST_MTIME])
 
-def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetlanguage=None, timestamp=None, includefuzzy=False, multifilestyle="single"):
+class oopocheckfilter(pofilter.pocheckfilter):
+  def validelement(self, thepo, filename, filteraction):
+    """Returns whether or not to use thepo in conversion. (filename is just for error reporting)"""
+    if filteraction == "none": return True
+    filterresult = self.filterelement(thepo)
+    if filterresult:
+      if filterresult != autocorrect:
+        for filtername, filtermessage in filterresult:
+          if filtername in self.options.error:
+            print >> sys.stderr, "Error at %s::%s: %s" % (filename, thepo.getids()[0], filtermessage)
+            return not filteraction in ["exclude", "exclude-serious"]
+          if filtername in self.options.warning or self.options.alwayswarn:
+            print >> sys.stderr, "Warning at %s::%s: %s" % (filename, thepo.getids()[0], filtermessage)
+            return not filteraction in ["exclude"]
+    return True
+
+class oofilteroptions:
+  error = ['variables', 'xmltags', 'escapes']
+  warning = ['blank']
+  #To only issue warnings for tests listed in warning, change the following to False:
+  alwayswarn = True
+  limitfilters = error + warning
+  #To use all available tests, uncomment the following:
+  #limitfilters = []
+  #To exclude certain tests, list them in here:
+  excludefilters = {}
+  includefuzzy = False
+  includereview = False
+  includeheader = False
+  autocorrect = False
+
+options = oofilteroptions()
+filter = oopocheckfilter(options, [checks.OpenOfficeChecker, pofilter.StandardPOChecker], checks.openofficeconfig)
+
+def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetlanguage=None, timestamp=None, includefuzzy=False, multifilestyle="single", filteraction=None):
   inputpo = po.pofile()
   inputpo.parse(inputfile.read())
+  inputpo.filename = getattr(inputfile, 'name', '')
   if not targetlanguage:
     raise ValueError("You must specify the target language")
   if not sourcelanguage:
@@ -176,7 +217,7 @@ def convertoo(inputfile, outputfile, templatefile, sourcelanguage=None, targetla
     raise ValueError("must have template file for oo files")
     # convertor = po2oo()
   else:
-    convertor = reoo(templatefile, languages=languages, timestamp=timestamp, includefuzzy=includefuzzy, long_keys=multifilestyle != "single")
+    convertor = reoo(templatefile, languages=languages, timestamp=timestamp, includefuzzy=includefuzzy, long_keys=multifilestyle != "single", filteraction=filteraction)
   outputoo = convertor.convertfile(inputpo)
   # TODO: check if we need to manually delete missing items
   outputoosrc = str(outputoo)
@@ -197,10 +238,13 @@ def main(argv=None):
                     help="don't change the timestamps of the strings")
   parser.add_option("", "--nonrecursiveoutput", dest="allowrecursiveoutput", default=True, action="store_false", help="don't treat the output oo as a recursive store")
   parser.add_option("", "--nonrecursivetemplate", dest="allowrecursivetemplate", default=True, action="store_false", help="don't treat the template oo as a recursive store")
+  parser.add_option("", "--filteraction", dest="filteraction", default="exclude-critical", metavar="ACTION",
+                    help="action on pofilter failure: none, warn, exclude-serious, exclude")
   parser.add_fuzzy_option()
   parser.add_multifile_option()
   parser.passthrough.append("sourcelanguage")
   parser.passthrough.append("targetlanguage")
   parser.passthrough.append("timestamp")
+  parser.passthrough.append("filteraction")
   parser.run(argv)
 
