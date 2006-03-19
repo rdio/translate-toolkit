@@ -200,6 +200,15 @@ class TestDTD2PO:
         # \n in a dtd should also appear as \n in the PO file
         assert po.unquotefrompo(thepo.msgid) == r"A hard coded newline.\nAnd tab\t and a \r carriage return."
 
+    def test_abandoned_accelerator(self):
+        """test that when a language DTD has an accelerator but the template DTD does not that we abandon the accelerator"""
+        dtdtemplate = '<!ENTITY test.label "Test">\n'
+        dtdlanguage = '<!ENTITY test.label "Toets">\n<!ENTITY test.accesskey "T">\n'
+        pofile = self.dtd2po(dtdlanguage, dtdtemplate)
+        unit = self.singleelement(pofile)
+        assert po.unquotefrompo(unit.msgid) == "Test"
+        assert po.unquotefrompo(unit.msgstr) == "Toets"
+
 class TestDTD2POCommand(test_convert.TestConvertCommand, TestDTD2PO):
     """Tests running actual dtd2po commands on files"""
     convertmodule = dtd2po
