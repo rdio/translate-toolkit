@@ -163,6 +163,13 @@ cmd_addEngine_accesskey = A'''
         assert "credit" in str(unit)
         assert po.unquotefrompo(unit.msgstr) == "Translators Names"
 
+    def test_newlines_in_value(self):
+        """check that we can carry newlines that appear in the property value into the PO"""
+        propsource = '''prop=\\nvalue\\n\n'''
+        pofile = self.prop2po(propsource)
+        unit = self.singleelement(pofile)
+        assert unit.msgid == "\\nvalue\\n\n"
+
 class TestProp2POCommand(test_convert.TestConvertCommand, TestProp2PO):
     """Tests running actual prop2po commands on files"""
     convertmodule = prop2po
