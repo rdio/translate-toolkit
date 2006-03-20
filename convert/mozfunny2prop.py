@@ -78,6 +78,9 @@ def it2po(inputfile, outputfile, templatefile, encoding="cp1252", pot=False, dup
     templatepropfile = None
   return prop2po.convertprop(inputpropfile, outputfile, templatepropfile, pot=pot, duplicatestyle=duplicatestyle)
 
+def ini2po(inputfile, outputfile, templatefile, encoding="UTF-8", pot=False, duplicatestyle="msgid_comment"):
+  it2po(inputfile=inputfile, outputfile=outputfile, templatefile=templatefile, encoding=encoding, pot=pot, duplicatestyle=duplicatestyle)
+
 def main(argv=None):
   import sys
   lines = sys.stdin.readlines()

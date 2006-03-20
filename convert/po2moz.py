@@ -88,7 +88,7 @@ def main(argv=None):
              ("properties.po", "properties"): ("properties", po2prop.convertprop),
              ("xhtml.po", "xhtml"): ("xhtml", po2html.converthtml),
              ("it.po", "it"): ("it", prop2mozfunny.po2it),
-             ("ini.po", "ini"): ("ini", prop2mozfunny.po2it),
+             ("ini.po", "ini"): ("ini", prop2mozfunny.po2ini),
              ("inc.po", "inc"): ("inc", prop2mozfunny.po2inc),
              # (None, "*"): ("*", convert.copytemplate),
              ("*", "*"): ("*", convert.copyinput),

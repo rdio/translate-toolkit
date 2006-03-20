@@ -36,7 +36,7 @@ def main(argv=None):
              "*": ("*", convert.copyinput)}
   # handle formats that convert to .po files
   converters = [("dtd", dtd2po.convertdtd), ("properties", prop2po.convertprop), ("xhtml", html2po.converthtml),
-      ("it", mozfunny2prop.it2po), ("ini", mozfunny2prop.it2po), ("inc", mozfunny2prop.inc2po)]
+      ("it", mozfunny2prop.it2po), ("ini", mozfunny2prop.ini2po), ("inc", mozfunny2prop.inc2po)]
   for format, converter in converters:
     formats[(format, format)] = (format + ".po", converter)
     formats[format] = (format + ".po", converter)
