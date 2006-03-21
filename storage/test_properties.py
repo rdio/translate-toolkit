@@ -41,6 +41,15 @@ class TestProperties:
 
     def test_newlines_startend(self):
         """check that we preserver \n that appear at start and end of properties"""
-        propsource = "newlines=\\ntext\\n\n"
+        propsource = "newlines=\\ntext\\n"
         propregen = self.propregen(propsource)
-        assert propsource == propregen
+        assert propsource + '\n' == propregen
+
+    def test_whitespace_removal(self):
+        """check that we remove extra whitespace around property"""
+        propsource = '''  whitespace  =  Start \n'''
+        propfile = self.propparse(propsource)
+        propelement = propfile.propelements[0]
+        assert propelement.name == "whitespace"
+        assert propelement.msgid == "Start "
+     
