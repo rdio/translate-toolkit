@@ -53,3 +53,16 @@ class TestPOGrep:
         poresult = self.pogrep(posource, "test", ["--search=comment"])
         assert poresult == ""
 
+    def test_unicode_message_searchstring(self):
+        """check that we can grep unicode messages and use unicode search strings"""
+        poascii = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rest"\n\n'
+        pounicode = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rešṱ"\n\n'
+        queryascii = 'rest'
+        queryunicode = 'rešṱ'
+        for source, search, expected in [(poascii, queryascii, poascii), 
+                                         (poascii, queryunicode, ''),
+                                         (pounicode, queryascii, ''),
+                                         (pounicode, queryunicode, pounicode)]:
+          print "Source:\n%s\nSearch: %s\n" % (source, search)
+          poresult = self.pogrep(source, search)
+          assert poresult == expected
