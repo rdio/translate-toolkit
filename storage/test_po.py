@@ -206,17 +206,21 @@ msgstr[0] "Sheep"
         assert pofile.units[0].sourcecomments == ["#: source comment\n"]
         assert pofile.units[0].typecomments == ["#, fuzzy\n"]
 
+    def test_obsolete(self):
+        """Tests that obsolete messages work"""
+        posource = '#~ msgid "Old thing"\n#~ msgstr "Ou ding"\n"'
+        pofile = self.poparse(posource)
+        print pofile
+        assert pofile.isempty()
+        assert len(pofile.units) == 1
+        unit = pofile.units[0]
+        assert unit.isobsolete()
+        assert unit.obsoletemessages == ['#~ msgid "Old thing"\n', '#~ msgstr "Ou ding"\n']
+
     def test_merging_automaticcomments(self):
         """checks that new automatic comments override old ones"""
         oldsource = '#. old comment\n#: line:10\nmsgid "One"\nmsgstr "Een"\n'
         newsource = '#. new comment\n#: line:10\nmsgid "One"\nmsgstr ""\n'
         expected = '#. new comment\n#: line:10\nmsgid "One"\nmsgstr "Een"\n'
         assert self.pomerge(newsource, oldsource) == expected
-
-    def test_merging_obsoleting_messages(self):
-        """check that we obsolete messages no longer present in the new file"""
-        oldsource = '#: obsoleteme:10\nmsgid "One"\nmsgstr "Een"\n'
-        newsource = ''
-        expected = '#~ msgid "One"\n#~ msgstr "Een"\n'
-        assert self.pomerge(oldsource, newsource) == expected
 
