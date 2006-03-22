@@ -111,6 +111,8 @@ class TestPOT2PO:
         potsource = '''#: newline.c\nmsgid "&About"\nmsgstr ""\n'''
         posource = '''#~ msgid "Old"\n#~ msgstr "Oud"\n'''
         newpo = self.convertpot(potsource, posource)
-        newpounit = self.singleunit(newpo)
-        assert str(newpounit) == potsource + posource
-
+        assert len(newpo.units) == 3
+        assert newpo.units[0].isheader()
+        assert newpo.units[2].isobsolete()
+        newpo.units = newpo.units[1:]
+        assert str(newpo) == potsource + "\n" + posource + "\n"
