@@ -101,8 +101,8 @@ def po2it(inputfile, outputfile, templatefile, encoding="cp1252", includefuzzy=F
       outputfile.write(line)
   return result
 
-def po2ini((inputfile, outputfile, templatefile, encoding="UTF-8", includefuzzy=False):
-  po2it(inputfile=inputfile, outputfile=outputfile, templatefile=templatefile, encoding=encoding, includefuzzy=includefuzzy):
+def po2ini(inputfile, outputfile, templatefile, encoding="UTF-8", includefuzzy=False):
+  po2it(inputfile=inputfile, outputfile=outputfile, templatefile=templatefile, encoding=encoding, includefuzzy=includefuzzy)
 
 def main(argv=None):
   import sys
