@@ -103,4 +103,15 @@ class TestPO2DTD:
         newpo = self.convertpot(potsource, posource)
         newpounit = self.singleunit(newpo)
         assert str(newpounit) == potsource + posource
+
+    def test_merging_obsoleting_messages(self):
+        """check that we obsolete messages no longer present in the new file"""
+        potsource = ''
+        posource = '#: obsoleteme:10\nmsgid "One"\nmsgstr "Een"\n'
+        expected = '#~ msgid "One"\n#~ msgstr "Een"\n'
+        newpo = self.convertpot(potsource, posource)
+        print str(newpo)
+        newpounit = self.singleunit(newpo)
+        assert str(newpounit) == expected
+
         
