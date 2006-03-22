@@ -96,14 +96,6 @@ class TestPO2DTD:
         newpounit = self.singleunit(newpo)
         assert str(newpounit) == poexpected
         
-    def test_merging_new_before_obsolete(self):
-        """test to check that we place new blank message before obsolete messages"""
-        potsource = '''#: newline.c\nmsgid "&About"\nmsgstr ""\n'''
-        posource = '''#~ msgid "Old"\n#~ msgstr "Oud"\n'''
-        newpo = self.convertpot(potsource, posource)
-        newpounit = self.singleunit(newpo)
-        assert str(newpounit) == potsource + posource
-
     def test_merging_obsoleting_messages(self):
         """check that we obsolete messages no longer present in the new file"""
         potsource = ''
@@ -114,4 +106,11 @@ class TestPO2DTD:
         newpounit = self.singleunit(newpo)
         assert str(newpounit) == expected
 
-        
+    def test_merging_new_before_obsolete(self):
+        """test to check that we place new blank message before obsolete messages"""
+        potsource = '''#: newline.c\nmsgid "&About"\nmsgstr ""\n'''
+        posource = '''#~ msgid "Old"\n#~ msgstr "Oud"\n'''
+        newpo = self.convertpot(potsource, posource)
+        newpounit = self.singleunit(newpo)
+        assert str(newpounit) == potsource + posource
+
