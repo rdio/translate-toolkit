@@ -278,6 +278,20 @@ class pounit(base.TranslationUnit):
   def isobsolete(self):
     return len(self.obsoletemessages) > 0
 
+  def makeobsolete(self):
+    """Makes this unit obsolete"""
+    self.obsoletemessages.extend(["#~ msgid %s\n" % msgid for msgid in self.msgid])
+    self.obsoletemessages.extend(["#~ msgid_plural %s\n" % msgid for msgid in self.msgid_plural])
+    if isinstance(self.msgstr, dict):
+      for (id, msgstr) in self.msgstr.iteritems():
+        self.obsoletemessages.extend(["#~ msgstr[%s] %s\n" % (id, msgstrpart) for msgstrpart in msgstr])
+    else:
+      self.obsoletemessages.extend(["#~ msgstr %s\n" % msgstr for msgstr in self.msgstr])
+    self.msgid = []
+    self.msgstr = []
+    self.sourcecomments = []
+    self.automaticcomments = []
+
   def hasplural(self):
     """returns whether this pounit contains plural strings..."""
     return len(self.msgid_plural) > 0

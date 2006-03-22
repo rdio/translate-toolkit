@@ -210,12 +210,43 @@ msgstr[0] "Sheep"
         """Tests that obsolete messages work"""
         posource = '#~ msgid "Old thing"\n#~ msgstr "Ou ding"\n"'
         pofile = self.poparse(posource)
-        print pofile
         assert pofile.isempty()
         assert len(pofile.units) == 1
         unit = pofile.units[0]
         assert unit.isobsolete()
         assert unit.obsoletemessages == ['#~ msgid "Old thing"\n', '#~ msgstr "Ou ding"\n']
+
+    def test_makeobsolete(self):
+        """Tests making a unit obsolete"""
+        posource = '#. The automatic one\n#: test.c\nmsgid "test"\nmsgstr "rest"\n'
+        poexpected = '#~ msgid "test"\n#~ msgstr "rest"\n'
+        pofile = self.poparse(posource)
+        print pofile
+        unit = pofile.units[0]
+        assert not unit.isobsolete()
+        unit.makeobsolete()
+        assert unit.isobsolete()
+        print pofile
+        assert str(unit) == poexpected
+        
+        posource = r'''msgid "Cow"
+msgid_plural "Cows"
+msgstr[0] "Koei"
+msgstr[1] "Koeie"
+'''
+        poexpected = '''#~ msgid "Cow"
+#~ msgid_plural "Cows"
+#~ msgstr[0] "Koei"
+#~ msgstr[1] "Koeie"
+'''
+        pofile = self.poparse(posource)
+        print pofile
+        unit = pofile.units[0]
+        assert not unit.isobsolete()
+        unit.makeobsolete()
+        assert unit.isobsolete()
+        print pofile
+        assert str(unit) == poexpected
 
     def test_merging_automaticcomments(self):
         """checks that new automatic comments override old ones"""
