@@ -6,7 +6,7 @@ from translate.storage import po
 from py import test
 import warnings
 
-class TestPO2DTD:
+class TestPOT2PO:
     def setup_method(self, method):
         warnings.resetwarnings()
 
