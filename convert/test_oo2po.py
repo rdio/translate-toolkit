@@ -39,6 +39,14 @@ class TestOO2PO:
         assert r"Tab \t Tab" in poelementsrc
         assert r"CR \r CR" in poelementsrc
 
+    def test_msgid_bug_error_address(self):
+        """tests the we have the correct url for reporting msgid bugs"""
+        oosource = r"wizards	source\formwizard\dbwizres.src	0	string	RID_DB_FORM_WIZARD_START + 19				0	en-US	Newline \n Newline Tab \t Tab CR \r CR				20050924 09:13:58"
+        bug_url = '''http://qa.openoffice.org/issues/enter_bug.cgi''' + ('''?subcomponent=ui&comment=&short_desc=Localization issue in file: &component=l10n&form_name=enter_issue''').replace(" ", "%20").replace(":", "%3A")
+        pofile = self.oo2po(oosource)
+        assert pofile.units[0].isheader()
+        assert bug_url in str(pofile.units[0])
+
 class TestOO2POCommand(test_convert.TestConvertCommand, TestOO2PO):
     """Tests running actual oo2po commands on files"""
     convertmodule = oo2po
@@ -78,3 +86,4 @@ class TestOO2POCommand(test_convert.TestConvertCommand, TestOO2PO):
         self.run_command("simple.oo", "simple.pot", pot=True, multifile="onefile")
         assert os.path.isfile(self.get_testfilename("simple.pot"))
 
+        
