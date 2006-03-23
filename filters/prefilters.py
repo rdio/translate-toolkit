@@ -107,6 +107,7 @@ def filterwordswithpunctuation(str1):
   """goes through a list of known words that have punctuation and removes the punctuation from them"""
   parser = sparse.SimpleParser()
   parser.defaulttokenlist.extend(['\\n', '\\"'])
+  parser.quotechars = ()
   words = parser.tokenize(str1, [parser.removewhitespace, parser.separatetokens])
   replacements = []
   for n in range(len(words)-1):
