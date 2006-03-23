@@ -38,10 +38,12 @@ class oo2po:
     self.blankmsgstr = blankmsgstr
     self.long_keys = long_keys
 
-  def makepo(self, part1, part2, key, subkey):
+  def makepo(self, part1, part2, translators_comment, key, subkey):
     """makes a po element out of a subkey of two parts"""
     thepo = po.pounit(encoding="UTF-8")
     thepo.sourcecomments.append("#: " + key + "." + subkey + "\n")
+    if getattr(translators_comment, subkey).strip() != "":
+      thepo.automaticcomments.append("#. " + getattr(translators_comment, subkey))
     text1 = getattr(part1, subkey)
     text2 = getattr(part2, subkey)
     thepo.msgid = po.quoteforpo(text1)
@@ -82,10 +84,14 @@ class oo2po:
       else:
         # if the language doesn't exist, the translation is missing ... so make it blank
         part2 = oo.ooline()
+    if "x-comment" in theoo.languages:
+      translators_comment = theoo.languages["x-comment"]
+    else:
+      translators_comment = oo.ooline()
     key = self.makekey(part1.getkey())
-    textpo = self.makepo(part1, part2, key, 'text')
-    quickhelppo = self.makepo(part1, part2, key, 'quickhelptext')
-    titlepo = self.makepo(part1, part2, key, 'title')
+    textpo = self.makepo(part1, part2, translators_comment, key, 'text')
+    quickhelppo = self.makepo(part1, part2, translators_comment, key, 'quickhelptext')
+    titlepo = self.makepo(part1, part2, translators_comment, key, 'title')
     polist = [textpo, quickhelppo, titlepo]
     return polist
 
