@@ -94,6 +94,15 @@ def convertpot(inputfile, outputfile, templatefile):
         outputpo.units.append(thepo)
       else:
         outputpo.units.append(thepo)
+
+  #Let's take care of obsoleted messages
+  if templatefile:
+    for unit in templatepo.units:
+      if not inputpo.findunit(unit.source):
+        #not in .pot, make it obsolete
+        unit.makeobsolete()
+      if unit.isobsolete():
+        outputpo.units.append(unit)
   outputfile.write(str(outputpo))
   return 1
 
