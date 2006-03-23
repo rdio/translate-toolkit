@@ -44,7 +44,7 @@ class pogrepfilter:
       self.searchstring = self.searchstring.lower()
     self.useregexp = useregexp
     if self.useregexp:
-      self.searchpattern = sre.compile(self.searchstring)
+      self.searchpattern = sre.compile(self.searchstring.decode("UTF-8"))
     self.invertmatch = invertmatch
     self.accelchar = accelchar
 
@@ -57,7 +57,7 @@ class pogrepfilter:
     if self.useregexp:
       found = self.searchpattern.search(teststr)
     else:
-      found = teststr.find(self.searchstring) != -1
+      found = teststr.find(self.searchstring.decode("UTF-8")) != -1
     if self.invertmatch:
       found = not found
     return found
