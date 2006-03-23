@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from translate.storage import po
 from translate.tools import pogrep
@@ -65,4 +66,18 @@ class TestPOGrep:
                                          (pounicode, queryunicode, pounicode)]:
           print "Source:\n%s\nSearch: %s\n" % (source, search)
           poresult = self.pogrep(source, search)
+          assert poresult == expected
+
+    def test_unicode_message_regex_searchstring(self):
+        """check that we can grep unicode messages and use unicode regex search strings"""
+        poascii = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rest"\n\n'
+        pounicode = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rešṱ"\n\n'
+        queryascii = 'rest'
+        queryunicode = 'rešṱ'
+        for source, search, expected in [(poascii, queryascii, poascii), 
+                                         (poascii, queryunicode, ''),
+                                         (pounicode, queryascii, ''),
+                                         (pounicode, queryunicode, pounicode)]:
+          print "Source:\n%s\nSearch: %s\n" % (source, search)
+          poresult = self.pogrep(source, search, ["--regexp"])
           assert poresult == expected
