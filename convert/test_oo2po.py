@@ -50,21 +50,21 @@ class TestOO2PO:
     def test_x_comment_inclusion(self):
         """test that we can merge x-comment language entries into comment sections of the PO file"""
         en_USsource = r"wizards	source\formwizard\dbwizres.src	0	string	RID_DB_FORM_WIZARD_START + 19				0	en-US	Text		Quickhelp	Title	20050924 09:13:58"
-        #for comment, expected in [("Comment", "#. Comment"), ("  ", None), ("",[])]:
         xcommentsource = r"wizards	source\formwizard\dbwizres.src	0	string	RID_DB_FORM_WIZARD_START + 19				0	x-comment	%s		%s	%s	20050924 09:13:58"
         # Real comment
         comment = "Comment"
+        expected = comment + "\n"
         commentsource = en_USsource + '\n' + xcommentsource % (comment, comment, comment)
         pofile = self.oo2po(commentsource)
         textunit = pofile.units[1]
         assert textunit.source == "Text"
-        assert '#. %s' % comment in textunit.automaticcomments
+        assert '#. %s' % expected in textunit.automaticcomments
         quickhelpunit = pofile.units[2]
         assert quickhelpunit.source == "Quickhelp"
-        assert '#. %s' % comment in quickhelpunit.automaticcomments
+        assert '#. %s' % expected in quickhelpunit.automaticcomments
         titleunit = pofile.units[3]
         assert titleunit.source == "Title"
-        assert '#. %s' % comment in titleunit.automaticcomments
+        assert '#. %s' % expected in titleunit.automaticcomments
         # Whitespace and blank
         for comment in ("   ", ""):
           commentsource = en_USsource + '\n' + xcommentsource % (comment, comment, comment)
