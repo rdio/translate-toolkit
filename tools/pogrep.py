@@ -24,11 +24,15 @@
 from translate.storage import po
 from translate.misc import optrecurse
 import sre
+import locale
 
 class pogrepfilter:
-  def __init__(self, searchstring, searchparts, ignorecase=False, useregexp=False, invertmatch=False, accelchar=None):
+  def __init__(self, searchstring, searchparts, ignorecase=False, useregexp=False, invertmatch=False, accelchar=None, encoding='utf-8'):
     """builds a pocheckfilter using the given checker"""
-    self.searchstring = searchstring
+    if isinstance(searchstring, unicode):
+      self.searchstring = searchstring
+    else:
+      self.searchstring = searchstring.decode(encoding)
     if searchparts:
       self.searchmsgid = "msgid" in searchparts
       self.searchmsgstr = "msgstr" in searchparts
@@ -44,7 +48,7 @@ class pogrepfilter:
       self.searchstring = self.searchstring.lower()
     self.useregexp = useregexp
     if self.useregexp:
-      self.searchpattern = sre.compile(self.searchstring.decode("UTF-8"))
+      self.searchpattern = sre.compile(self.searchstring)
     self.invertmatch = invertmatch
     self.accelchar = accelchar
 
@@ -57,7 +61,7 @@ class pogrepfilter:
     if self.useregexp:
       found = self.searchpattern.search(teststr)
     else:
-      found = teststr.find(self.searchstring.decode("UTF-8")) != -1
+      found = teststr.find(self.searchstring) != -1
     if self.invertmatch:
       found = not found
     return found
@@ -140,7 +144,7 @@ class GrepOptionParser(optrecurse.RecursiveOptionParser):
     (options, args) = self.parse_args()
     options.inputformats = self.inputformats
     options.outputoptions = self.outputoptions
-    options.checkfilter = pogrepfilter(options.searchstring, options.searchparts, options.ignorecase, options.useregexp, options.invertmatch, options.accelchar)
+    options.checkfilter = pogrepfilter(options.searchstring, options.searchparts, options.ignorecase, options.useregexp, options.invertmatch, options.accelchar, locale.getpreferredencoding())
     self.usepsyco(options)
     self.recursiveprocess(options)
 
