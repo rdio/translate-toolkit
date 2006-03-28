@@ -62,8 +62,9 @@ def unquotefrompo(postr, joinwithlinebreak=False):
   return joiner.join([extractpoline(line) for line in postr])
 
 def encodingToUse(encoding):
-  """Tests whether the given encoding is known in the python runtime, or returns none."""
-  if encoding == "CHARSET": return None
+  """Tests whether the given encoding is known in the python runtime, or returns utf-8.
+  This function is used to ensure that a valid encoding is always used."""
+  if encoding == "CHARSET": return 'utf-8'
   return encoding
 #  if encoding is None: return False
 #  return True
