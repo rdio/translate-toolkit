@@ -419,7 +419,6 @@ class pounit(base.TranslationUnit):
     """encodes unicode strings and returns other strings unchanged"""
     if isinstance(output, unicode):
       encoding = encodingToUse(getattr(self, "encoding", "UTF-8"))
-      if encoding is None
       return output.encode(encoding)
     return output
 
@@ -703,7 +702,7 @@ class pofile(base.TranslationStore):
               if contenttype is not None:
                 charsetmatch = sre.search("charset=([^ ]*)", contenttype)
                 if charsetmatch:
-                  self.encoding charsetmatch.group(1)
+                  self.encoding = charsetmatch.group(1)
                 # now that we know the encoding, decode the whole file
                 if self.encoding is not None and self.encoding.lower() != 'charset':
                   lines = self.decode(lines)
