@@ -418,7 +418,7 @@ class pounit(base.TranslationUnit):
   def encodeifneccessary(self, output):
     """encodes unicode strings and returns other strings unchanged"""
     if isinstance(output, unicode):
-      return output.encode(getattr(self, "encoding", "UTF-8"))
+      return output.encode(encodingToUse(getattr(self, "encoding", "UTF-8")))
     return output
 
   def __str__(self):
