@@ -451,7 +451,7 @@ class pounit(base.TranslationUnit):
     # this will also discard any comments other than plain othercomments...
     if (len(self.msgid) == 0) or ((len(self.msgid) == 1) and (self.msgid[0] == '""')):
       if not (self.isheader() or self.msgidcomments or self.sourcecomments):
-        return ""
+        return "".join(lines)
     lines.extend(self.automaticcomments)
     lines.extend(self.sourcecomments)
     lines.extend(self.typecomments)
@@ -704,6 +704,7 @@ class pofile(base.TranslationStore):
       posrc = input.read()
       input.close()
       input = posrc
+    # TODO: change this to a proper parser that doesn't do line-by-line madness
     lines = input.split("\n")
     start = 0
     end = 0
@@ -716,7 +717,8 @@ class pofile(base.TranslationStore):
           newpe = self.elementclass(encoding=self.encoding)
           linesprocessed = newpe.parse("\n".join(lines[start:end]))
           start += linesprocessed
-          if linesprocessed > 1:
+          # TODO: find a better way of working out if we actually read anything
+          if linesprocessed >= 1 and newpe.getoutput():
             self.units.append(newpe)
             if self.encoding is None and newpe.isheader():
               headervalues = self.parseheader()
