@@ -255,3 +255,9 @@ msgstr[1] "Koeie"
         expected = '#. new comment\n#: line:10\nmsgid "One"\nmsgstr "Een"\n'
         assert self.pomerge(newsource, oldsource) == expected
 
+    def test_unassociated_comments(self):
+	"""tests behaviour of unassociated comments."""
+	oldsource = '# old lonesome comment\n\nmsgid "one"\nmsgstr "een"\n'
+        oldfile = self.poparse(oldsource)
+	print "__str__", str(oldfile)
+	assert len(oldfile.units) == 2
