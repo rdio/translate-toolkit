@@ -261,3 +261,4 @@ msgstr[1] "Koeie"
         oldfile = self.poparse(oldsource)
 	print "__str__", str(oldfile)
 	assert len(oldfile.units) == 2
+	assert str(oldfile).find("# old lonesome comment\n\n") >= 0
