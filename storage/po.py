@@ -98,19 +98,30 @@ class pounit(base.TranslationUnit):
 
   def __init__(self, source=None, encoding="UTF-8"):
     self.encoding = encodingToUse(encoding)
-    self.othercomments = []
-    self.automaticcomments = []
-    self.sourcecomments = []
-    self.typecomments = []
-    self.visiblecomments = []
     self.obsoletemessages = []
-    self.msgidcomments = []
+    self.initallcomments(blankall=True)
     self.msgid = []
     self.msgid_pluralcomments = []
     self.msgid_plural = []
     self.msgstr = []
     if source:
       self.setsource(source)
+
+  def initallcomments(self, blankall=False):
+    """Initialises allcomments"""
+    if blankall:
+      self.othercomments = []
+      self.automaticcomments = []
+      self.sourcecomments = []
+      self.typecomments = []
+      self.visiblecomments = []
+      self.msgidcomments = []
+    self.allcomments = [self.othercomments, 
+                        self.automaticcomments, 
+                        self.sourcecomments, 
+                        self.typecomments, 
+                        self.visiblecomments, 
+                        self.msgidcomments]
 
   def getsource(self):
     """Returns the unescaped msgid"""
@@ -160,6 +171,7 @@ class pounit(base.TranslationUnit):
     if hasattr(self, "obsoletemessages"):
       newpo.obsoletemessages = self.obsoletemessages[:]
     newpo.msgidcomments = self.msgidcomments[:]
+    newpo.initallcomments()
     newpo.msgid = self.msgid[:]
     newpo.msgid_pluralcomments = self.msgid_pluralcomments[:]
     newpo.msgid_plural = self.msgid_plural[:]
