@@ -486,6 +486,18 @@ class pofile(base.TranslationStore):
     if inputfile is not None:
       self.parse(inputfile)
 
+  def header(self):
+    """Returns the header element, or None. Only the first element is allowed
+    to be a header. Note that this could still return an empty header element,
+    if present."""
+    if len(self.units) == 0:
+      return None
+    candidate = self.units[0]
+    if candidate.isheader():
+      return candidate
+    else:
+      return None
+
   def makeheader(self, charset="CHARSET", encoding="ENCODING", project_id_version=None, pot_creation_date=None, po_revision_date=None, last_translator=None, language_team=None, mime_version=None, plural_forms=None, report_msgid_bugs_to=None, **kwargs):
     """create a header for the given filename. arguments are specially handled, kwargs added as key: value
     pot_creation_date can be None (current date) or a value (datetime or string)
@@ -548,10 +560,8 @@ class pofile(base.TranslationStore):
   def parseheader(self):
     """parses the values in the header into a dictionary"""
     headervalues = dictutils.ordereddict()
-    if len(self.units) == 0:
-      return headervalues
-    header = self.units[0]
-    if not header.isheader():
+    header = self.header()
+    if not header:
       return headervalues
     lineitem = ""
     for line in header.msgstr:
@@ -573,8 +583,8 @@ class pofile(base.TranslationStore):
     headeritems = self.parseheader()
     if not headeritems and not add:
       return
-    header = self.units[0]
-    if not header.isheader():
+    header = self.header()
+    if not header:
       header = self.makeheader(**kwargs)
       self.units.insert(0, header)
       headeritems = self.parseheader()
@@ -629,8 +639,8 @@ class pofile(base.TranslationStore):
     self.encoding = encodingToUse(newencoding)
     if not self.units:
       return
-    header = self.units[0]
-    if not (header.isheader() or header.isblank()):
+    header = self.header()
+    if not header or header.isblank():
       return
     charsetline = None
     headerstr = unquotefrompo(header.msgstr, True)
