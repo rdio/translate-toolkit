@@ -7,7 +7,7 @@ from translate.misc import wStringIO
 from py import test
 
 class TestTMXUnit(test_base.TestTranslationUnit):
-	UnitClass = tmx.tmxunit
+    UnitClass = tmx.tmxunit
 
 class TestTMXfile(test_base.TestTranslationStore):
     StoreClass = tmx.tmxfile
