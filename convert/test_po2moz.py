@@ -10,7 +10,7 @@ class TestPO2Moz:
   pass
 
 class TestPO2MozCommand(test_convert.TestConvertCommand, TestPO2Moz):
-    """Tests running actual html2po commands on files"""
+    """Tests running actual po2moz commands on files"""
     convertmodule = po2moz
     defaultoptions = {"progress": "none"}
 
