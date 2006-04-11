@@ -160,6 +160,15 @@ class TestHTML2PO:
         self.compareunit(pofile, 1, "Duplicate")
         self.compareunit(pofile, 2, "Duplicate")
 
+    def test_multiline(self):
+        """check that we correctly place double quotes around strings from multiline tag content"""
+        markup = '<p>First line.\nSecond line.\nThird line.</p>'
+        expected = 'msgid "First line."\n"Second line."\n"Third line."\nmsgstr ""\n'
+        pofile = self.html2po(markup)
+        self.countunits(pofile, 1)
+        print expected
+        assert pofile.units[0].getmsgpartstr("msgid", pofile.units[0].msgid) == expected
+
 class TestHTML2POCommand(test_convert.TestConvertCommand, TestHTML2PO):
     """Tests running actual html2po commands on files"""
     convertmodule = html2po
