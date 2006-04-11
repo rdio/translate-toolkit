@@ -340,13 +340,13 @@ class StandardChecker(TranslationChecker):
     """checks whether a translation is much shorter than the original string"""
     len1 = len(prefilters.removekdecomments(str1).strip())
     len2 = len(str2.strip())
-    return not ((len1 > 0) and (0 < len2 < (len1 * 0.1)))
+    return not ((len1 > 0) and (0 < len2 < (len1 * 0.1)) or ((len1 > 1) and (len2 == 1)))
 
   def long(self, str1, str2):
     """checks whether a translation is much longer than the original string"""
     len1 = len(prefilters.removekdecomments(str1).strip())
     len2 = len(str2.strip())
-    return not ((len1 > 0) and (0 < len1 < (len2 * 0.1)))
+    return not ((len1 > 0) and (0 < len1 < (len2 * 0.1)) or ((len1 == 1) and (len2 > 1))) 
 
   def escapes(self, str1, str2):
     """checks whether escaping is consistent between the two strings"""

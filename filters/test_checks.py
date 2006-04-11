@@ -187,6 +187,7 @@ def test_long():
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.long, "I am normal", "Ek is ook normaal")
     assert checks.fails(stdchecker.long, "Short.", "Kort.......................................................................................")
+    assert checks.fails(stdchecker.long, "a", "bc")
 
 def test_musttranslatewords():
     """tests stopwords"""
@@ -293,6 +294,7 @@ def test_short():
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.short, "I am normal", "Ek is ook normaal")
     assert checks.fails(stdchecker.short, "I am a very long sentence", "Ek")
+    assert checks.fails(stdchecker.short, "abcde", "c")
 
 def test_singlequoting():
     """tests single quotes"""
