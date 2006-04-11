@@ -20,6 +20,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
+"""Converts a OpenOffice Writer files to Gettext .po files"""
+
 from translate.storage import po
 from translate.misc import quote
 from translate.misc import xmlwrapper
