@@ -76,6 +76,18 @@ class TestConvertCommand:
         testfile = open(self.get_testfilename(filename))
         return testfile.read()
 
+    def help_check(self, options, option, last=False):
+        """check that a help string occurs and remove it"""
+        assert option in options 
+        newoptions = []
+        for line in options.splitlines():
+          if option in line or not line.lstrip().startswith("-"):
+            continue
+          newoptions.append(line)
+        if last:
+           assert newoptions == []
+        return "\n".join(newoptions)
+
     def test_help(self):
         """tests getting help (returning the help_string so further tests can be done)"""
         stdout = sys.stdout
@@ -93,6 +105,16 @@ class TestConvertCommand:
         assert convertsummary in help_string.replace("\n", " ")
         usageline = help_string[:help_string.find("\n")]
         assert usageline.startswith("usage: ") and "[--version] [-h|--help]" in usageline
-        assert "--progress=PROGRESS" in help_string
-        return help_string
+        options = help_string[help_string.find("options:\n"):]
+        options = options[options.find("\n")+1:]
+        options = self.help_check(options, "--progress=PROGRESS")
+        options = self.help_check(options, "--version")
+        options = self.help_check(options, "-h, --help")
+        options = self.help_check(options, "--manpage")
+        options = self.help_check(options, "--errorlevel=ERRORLEVEL")
+        options = self.help_check(options, "--psyco=MODE")
+        options = self.help_check(options, "-iINPUT, --input=INPUT")
+        options = self.help_check(options, "-xEXCLUDE, --exclude=EXCLUDE")
+        options = self.help_check(options, "-oOUTPUT, --output=OUTPUT")
+        return options
 

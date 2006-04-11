@@ -30,8 +30,8 @@ class TestPO2HtmlCommand(test_convert.TestConvertCommand, TestPO2Html):
 
     def test_help(self):
         """tests getting help"""
-        help_string = test_convert.TestConvertCommand.test_help(self)
-        assert "-wWRAP, --wrap=WRAP" in help_string
-        assert "--fuzzy" in help_string
-        assert "--nofuzzy" in help_string
-
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "-tTEMPLATE, --template=TEMPLATE")
+        options = self.help_check(options, "-wWRAP, --wrap=WRAP")
+        options = self.help_check(options, "--fuzzy")
+        options = self.help_check(options, "--nofuzzy", last=True)

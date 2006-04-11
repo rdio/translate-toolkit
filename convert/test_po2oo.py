@@ -88,13 +88,17 @@ class TestPO2OOCommand(test_convert.TestConvertCommand, TestPO2OO):
 
     def test_help(self):
         """tests getting help"""
-        help_string = test_convert.TestConvertCommand.test_help(self)
-        assert "--source-language=LANG" in help_string
-        assert "--language=LANG" in help_string
-        assert "-T, --keeptimestamp" in help_string
-        assert "--nonrecursiveoutput" in help_string
-        assert "--nonrecursivetemplate" in help_string
-        assert "--filteraction" in help_string
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "--source-language=LANG")
+        options = self.help_check(options, "--language=LANG")
+        options = self.help_check(options, "-T, --keeptimestamp")
+        options = self.help_check(options, "--nonrecursiveoutput")
+        options = self.help_check(options, "--nonrecursivetemplate")
+        options = self.help_check(options, "--filteraction")
+        options = self.help_check(options, "--fuzzy")
+        options = self.help_check(options, "--nofuzzy")
+        options = self.help_check(options, "-tTEMPLATE, --template=TEMPLATE")
+        options = self.help_check(options, "--multifile=MULTIFILESTYLE", last=True)
 
     def merge2oo(self, oosource, posource):
         """helper that merges po translations to oo source through files"""

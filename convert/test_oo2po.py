@@ -85,10 +85,13 @@ class TestOO2POCommand(test_convert.TestConvertCommand, TestOO2PO):
 
     def test_help(self):
         """tests getting help"""
-        help_string = test_convert.TestConvertCommand.test_help(self)
-        assert "--source-language=LANG" in help_string
-        assert "--language=LANG" in help_string
-        assert "--nonrecursiveinput" in help_string
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "--source-language=LANG")
+        options = self.help_check(options, "--language=LANG")
+        options = self.help_check(options, "-P, --pot")
+        options = self.help_check(options, "--duplicates=DUPLICATESTYLE")
+        options = self.help_check(options, "--multifile=MULTIFILESTYLE")
+        options = self.help_check(options, "--nonrecursiveinput", last=True)
 
     def test_simple_pot(self):
         """tests the simplest possible conversion to a pot file"""

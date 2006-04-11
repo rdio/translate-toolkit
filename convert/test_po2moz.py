@@ -16,8 +16,9 @@ class TestPO2MozCommand(test_convert.TestConvertCommand, TestPO2Moz):
 
     def test_help(self):
         """tests getting help"""
-        help_string = test_convert.TestConvertCommand.test_help(self)
-        assert "-lLOCALE, --locale=LOCALE" in help_string
-        assert "--clonexpi=CLONEXPI" in help_string
-        assert "--fuzzy" in help_string
-        assert "--nofuzzy" in help_string
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "-tTEMPLATE, --template=TEMPLATE")
+        options = self.help_check(options, "-lLOCALE, --locale=LOCALE")
+        options = self.help_check(options, "--clonexpi=CLONEXPI")
+        options = self.help_check(options, "--fuzzy")
+        options = self.help_check(options, "--nofuzzy", last=True)
