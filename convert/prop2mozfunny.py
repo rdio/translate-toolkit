@@ -102,7 +102,8 @@ def po2it(inputfile, outputfile, templatefile, encoding="cp1252", includefuzzy=F
   return result
 
 def po2ini(inputfile, outputfile, templatefile, encoding="UTF-8", includefuzzy=False):
-  po2it(inputfile=inputfile, outputfile=outputfile, templatefile=templatefile, encoding=encoding, includefuzzy=includefuzzy)
+  """wraps po2prop but converts outputfile to properties first using UTF-8 encoding"""
+  return po2it(inputfile=inputfile, outputfile=outputfile, templatefile=templatefile, encoding=encoding, includefuzzy=includefuzzy)
 
 def main(argv=None):
   import sys
