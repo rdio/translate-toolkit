@@ -82,6 +82,16 @@ class TestPO2OO:
         self.check_roundtrip(r'''"Single-Quote Escape \' "''')
         self.check_roundtrip(r"""'Both Quotes "" '' '""")
 
+    def test_default_timestamp(self):
+        """test to ensure that we revert to the default timestamp"""
+        oointro, oooutro = r'svx	source\dialog\numpages.src	0	string	RID_SVXPAGE_NUM_OPTIONS	STR_BULLET			0	en-US	Text				', '\r\n'
+        posource = '''#: numpages.src#RID_SVXPAGE_NUM_OPTIONS.STR_BULLET.string.text\nmsgid "Text"\nmsgstr "Text"\n'''
+        inputfile = wStringIO.StringIO(posource)
+        outputfile = wStringIO.StringIO()
+        templatefile = wStringIO.StringIO(oointro + '20050924 09:13:58' + oooutro)
+        assert po2oo.convertoo(inputfile, outputfile, templatefile, targetlanguage="en-US")
+        assert outputfile.getvalue() == oointro + '2002-02-02 02:02:02' + oooutro
+
 class TestPO2OOCommand(test_convert.TestConvertCommand, TestPO2OO):
     """Tests running actual po2oo commands on files"""
     convertmodule = po2oo

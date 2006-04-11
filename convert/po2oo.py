@@ -46,11 +46,11 @@ class reoo:
     self.languages = languages
     self.filteraction = filteraction
     if timestamp is None:
-      self.timestamp = time.localtime(time.time())
+      self.timestamp = time.strptime("2002-02-02 02:02:02", "%Y-%m-%d %H:%M:%S")
     else:
       self.timestamp = timestamp
     if self.timestamp:
-      self.timestamp_str = time.strftime("%Y%m%d %H:%M:%S", self.timestamp)
+      self.timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S", self.timestamp)
     else:
       self.timestamp_str = None
     self.includefuzzy = includefuzzy
