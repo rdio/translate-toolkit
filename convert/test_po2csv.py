@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from translate.convert import po2csv
+from translate.convert import test_convert
 from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import csvl10n
@@ -94,3 +95,14 @@ msgstr "Gebruik \\\"."
         assert csvfile.findunit("Source") is not None
         assert csvfile.findunit("Source").target == ""
         assert len(csvfile.units) == 1
+
+class TestPO2CSVCommand(test_convert.TestConvertCommand, TestPO2CSV):
+    """Tests running actual po2csv commands on files"""
+    convertmodule = po2csv
+
+    def test_help(self):
+        """tests getting help"""
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "-P, --pot")
+        options = self.help_check(options, "--columnorder=COLUMNORDER", last=True)
+

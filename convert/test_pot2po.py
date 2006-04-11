@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from translate.convert import pot2po
+from translate.convert import test_convert
 from translate.misc import wStringIO
 from translate.storage import po
 from py import test
@@ -116,3 +117,14 @@ class TestPOT2PO:
         assert newpo.units[2].isobsolete()
         newpo.units = newpo.units[1:]
         assert str(newpo) == potsource + "\n" + posource + "\n"
+
+class TestPOT2POCommand(test_convert.TestConvertCommand, TestPOT2PO):
+    """Tests running actual pot2po commands on files"""
+    convertmodule = pot2po
+
+    def test_help(self):
+        """tests getting help"""
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "-tTEMPLATE, --template=TEMPLATE")
+        options = self.help_check(options, "-P, --pot", last=True)
+

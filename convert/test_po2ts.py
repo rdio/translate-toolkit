@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from translate.convert import po2ts
+from translate.convert import test_convert
 from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import ts
@@ -30,3 +31,12 @@ msgstr "asdf"'''
         assert "Term" in tsfile
         assert "asdf" in tsfile
 
+class TestPO2TSCommand(test_convert.TestConvertCommand, TestPO2TS):
+    """Tests running actual po2ts commands on files"""
+    convertmodule = po2ts
+
+    def test_help(self):
+        """tests getting help"""
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "-tTEMPLATE, --template=TEMPLATE")
+        options = self.help_check(options, "-P, --pot", last=True)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from translate.convert import po2tmx
+from translate.convert import test_convert
 from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import tmx
@@ -132,4 +133,15 @@ msgstr "Drie"
         print "The generated xml:"
         print str(tmx)
         assert len(tmx.document.getElementsByTagName("tu")) == 0
+
+class TestPO2TMXCommand(test_convert.TestConvertCommand, TestPO2TMX):
+    """Tests running actual po2tmx commands on files"""
+    convertmodule = po2tmx
+
+    def test_help(self):
+        """tests getting help"""
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "-P, --pot")
+        options = self.help_check(options, "-lLANG, --language=LANG")
+        options = self.help_check(options, "--source-language=LANG", last=True)
 

@@ -175,3 +175,10 @@ class TestProp2POCommand(test_convert.TestConvertCommand, TestProp2PO):
     convertmodule = prop2po
     defaultoptions = {"progress": "none"}
 
+    def test_help(self):
+        """tests getting help"""
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "-P, --pot")
+        options = self.help_check(options, "-tTEMPLATE, --template=TEMPLATE")
+        options = self.help_check(options, "--duplicates=DUPLICATESTYLE", last=True)
+

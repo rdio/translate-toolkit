@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from translate.convert import csv2po
+from translate.convert import test_convert
 from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import csvl10n
@@ -101,3 +102,13 @@ wat lank aanhou"
         assert pofile.findunit("Source").target == ""
         assert len(pofile.units) == 1
 
+class TestCSV2POCommand(test_convert.TestConvertCommand, TestCSV2PO):
+    """Tests running actual csv2po commands on files"""
+    convertmodule = csv2po
+
+    def test_help(self):
+        """tests getting help"""
+        options = test_convert.TestConvertCommand.test_help(self)
+        options = self.help_check(options, "-tTEMPLATE, --template=TEMPLATE")
+        options = self.help_check(options, "--charset=CHARSET")
+        options = self.help_check(options, "--columnorder=COLUMNORDER", last=True)
