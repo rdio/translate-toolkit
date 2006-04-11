@@ -42,6 +42,7 @@ class html2po:
       if not block: continue
       thepo = po.pounit(encoding="UTF-8")
       thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum+1))
+      block = block.split("\n")
       thepo.msgid = [quote.quotestr(quote.rstripeol(block))]
       if len(thepo.msgid) > 1:
         thepo.msgid = [quote.quotestr("")] + thepo.msgid

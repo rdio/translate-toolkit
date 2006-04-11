@@ -259,7 +259,17 @@ def mozillapropertiesdecode(source):
 
 def quotestr(source, escapeescapes=0):
   "Returns a doublequote-delimited quoted string, escaping double quotes with backslash"
-  return '"' + escapequotes(source, escapeescapes) + '"'
+  if isinstance(source, list):
+    firstline = True
+    for line in source:
+      if firstline:
+        newsource = '"' + escapequotes(line, escapeescapes) + '"'     
+        firstline = False
+      else:
+        newsource = newsource + '\n' + '"' + escapequotes(line, escapeescapes) + '"'
+    return newsource
+  else:
+    return '"' + escapequotes(source, escapeescapes) + '"'
 
 def singlequotestr(source):
   "Returns a doublequote-delimited quoted string, escaping single quotes with themselves"

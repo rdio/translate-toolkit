@@ -10,3 +10,11 @@ class TestQuote:
       for control in (u"\u0005", u"\u0006", u"\u0007", u"\u0011"):
         string = prefix + control + suffix
         assert quote.escapecontrols(string) == string
+
+  def test_quote_wrapping(self):
+      """test that we can wrap strings in double quotes"""
+      string = 'A string'
+      assert quote.quotestr(string) == '"A string"'
+      list = ['One', 'Two']
+      assert quote.quotestr(list) == '"One"\n"Two"'
+

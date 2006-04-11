@@ -163,7 +163,7 @@ class TestHTML2PO:
     def test_multiline(self):
         """check that we correctly place double quotes around strings from multiline tag content"""
         markup = '<p>First line.\nSecond line.\nThird line.</p>'
-        expected = 'msgid "First line."\n"Second line."\n"Third line."\nmsgstr ""\n'
+        expected = 'msgid "First line."\n"Second line."\n"Third line."\n'
         pofile = self.html2po(markup)
         self.countunits(pofile, 1)
         print expected
