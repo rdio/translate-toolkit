@@ -143,6 +143,8 @@ class ConflictOptionParser(optrecurse.RecursiveOptionParser):
     """work out which strings are conflicting"""
     self.conflictmap = {}
     for msgid, translations in self.textmap.iteritems():
+      if len(msgid) <= 1:
+        continue
       if len(translations) > 1:
         uniquetranslations = dict.fromkeys([msgstr for msgstr, thepo, filename in translations])
         if len(uniquetranslations) > 1:
