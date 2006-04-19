@@ -22,6 +22,7 @@
 
 """module for parsing .xliff files for translation"""
 
+from translate.storage import lisa
 from xml.dom import minidom
 
 def writexml(self, writer, indent="", addindent="", newl=""):
@@ -67,118 +68,214 @@ for elementclassname in dir(minidom):
   elementclass.writexml = writexml
 '''
 
-def getText(nodelist):
-  """joins together the text from all the text nodes in the nodelist and their children"""
-  rc = []
-  for node in nodelist:
-    if node.nodeType == node.TEXT_NODE:
-      rc.append(node.data)
-    elif node.nodeType == node.ELEMENT_NODE:
-      rc += getText(node.childNodes)
-  return ''.join(rc)
-
-# TODO: handle comments
 # TODO: handle translation types
 
-class XliffParser(object):
-  """a parser for xliff files"""
-  def __init__(self, inputfile=None):
-    """make a new XliffParser, reading from the given inputfile if required"""
-    self.filename = getattr(inputfile, "filename", None)
-    if inputfile is None:
-      self.document = minidom.parseString('''<?xml version="1.0" ?><xliff version='1.1' xmlns='urn:oasis:names:tc:xliff:document:1.1' xmlns:po='urn:oasis:names:tc:xliff:document:1.1:po-guide'></xliff>''')
-    else:
-      self.document = minidom.parse(inputfile)
-      assert self.document.documentElement.tagName == "xliff"
+class xliffunit(lisa.LISAunit):
+    """A single term in the xliff file.""" 
+    rootNode = "trans-unit"
+    languageNode = "source"
+    textNode = ""
 
-  def addtransunit(self, filename, transunitnode, createifmissing=False):
-    """adds the given trans-unit (will create the nodes required if asked). Returns success"""
-    filenode = self.getfilenode(filename)
-    if filenode is None:
-      if not createifmissing:
-        return False
-      filenode = self.createfilenode(filename)
-      self.document.documentElement.appendChild(filenode)
-    for transunit in self.gettransunitnodes(filenode):
-      pass
-    if not createifmissing:
-      return False
-    filenode.appendChild(transunitnode)
-    # transunitnode.setIdAttribute("message1")
-    return True
+    #TODO: id and all the trans-unit level stuff
 
-  def createfilenode(self, filename):
-    """creates a filenode with the given filename"""
-    filenode = self.document.createElement("file")
-    filenode.setAttribute("original", filename)
-    return filenode
+    def createlanguageNode(self, lang, text, purpose):
+        """returns an xml Element setup with given parameters"""
+        #TODO: for now we do source, but we have to test if it is target, perhaps 
+        # with parameter. Alternatively, we can use lang, if supplied, since an xliff 
+        #file has to conform to the bilingual nature promised by the header.
+        assert purpose
+        langset = self.document.createElement(purpose)
+        #TODO: check language
+#        langset.setAttribute("xml:lang", lang)
 
-  def getnodetext(self, node):
-    """returns the node's text by iterating through the child nodes"""
-    return getText(node.childNodes)
+#        message = self.document.createTextNode(text)
+#        langset.appendChild(message)
+        self.createPHnodes(langset, text)
+        return langset
+    
+    def getlanguageNodes(self):
+        """We override this to get source and target nodes."""
+        return self.xmlelement.getElementsByTagName(self.languageNode) + \
+                self.xmlelement.getElementsByTagName("target")
 
-  def getxml(self,pretty=True):
-    """return the ts file as xml"""
-    if pretty:
-        xml = self.document.toprettyxml(indent="    ", encoding="utf-8")
-    else:
-        xml = self.document.toxml(encoding="utf-8")
-    xml = "\n".join([line for line in xml.split("\n") if line.strip()])
-    return xml
+    def addnote(self, text, origin=None):
+        """Add a note specifically in a "note" tag"""
+        note = self.document.createElement("note")
+        note.appendChild(self.document.createTextNode(text))
+        if origin:
+            note.setAttribute("from", origin)
+        self.xmlelement.appendChild(note)        
 
-  def getfilename(self, filenode):
-    """returns the name of the given file"""
-    return filenode.getAttribute("original")
+    def getnotes(self):
+        """Returns the text from all the notes"""
+        return lisa.getText(self.xmlelement.getElementsByTagName("note"))
 
-  def getfilenode(self, filename):
-    """finds the filenode with the given name"""
-    filenodes = self.document.getElementsByTagName("file")
-    for filenode in filenodes:
-      if self.getfilename(filenode) == filename:
+    def isfuzzy(self):
+        targetnode = self.getlanguageNode(lang=None, index=1)
+        return not targetnode is None and targetnode.getAttribute("state-qualifier") == "fuzzy-match"
+
+    def markfuzzy(self, value=True):
+        targetnode = self.getlanguageNode(lang=None, index=1)
+        if targetnode:
+            if value:
+                targetnode.setAttribute("state", "needs-review-translation")
+                targetnode.setAttribute("state-qualifier", "fuzzy-match")
+            elif self.isfuzzy():                
+                targetnode.removeAttribute("state")
+                targetnode.removeAttribute("state-qualifier")
+
+    def marktranslated(self):
+        targetnode = self.getlanguageNode(lang=None, index=1)
+        if not targetnode:
+            return
+        if self.isfuzzy():
+            targetnode.removeAttribute("state-qualifier", "fuzzy-match")
+        targetnode.setAttribute("state", "translated")
+
+    def setid(self, id):
+        self.xmlelement.setAttribute("id", id)
+
+    def createcontextgroup(self, name, contexts=None, purpose=None):
+        """Add the context group to the trans-unit with contexts a list with
+        (type, text) tuples describing each context."""
+        assert contexts
+        group = self.document.createElement("context-group")
+        group.setAttribute("name", name)
+        if purpose:
+            group.setAttribute("purpose", purpose)
+        for type, text in contexts:
+            context = self.document.createElement("context")
+            context.setAttribute("context-type", type)
+            nodetext = self.document.createTextNode(text)
+            context.appendChild(nodetext)
+            group.appendChild(context)
+        self.xmlelement.appendChild(group)
+
+
+class xlifffile(lisa.LISAfile):
+    """Class representing a XLIFF file store."""
+    UnitClass = xliffunit
+    rootNode = "xliff"
+    bodyNode = "body"
+    XMLskeleton = '''<?xml version="1.0" ?>
+<xliff version='1.1' xmlns='urn:oasis:names:tc:xliff:document:1.1'>
+ <file original='NoName' source-language='en' datatype='plaintext'>
+  <body>
+  </body>
+ </file>
+</xliff>'''
+
+    def __init__(self,*args,**kwargs):
+        lisa.LISAfile.__init__(self,*args,**kwargs)
+        self._filename = "NoName"
+        self._messagenum = 0
+
+    def addheader(self):
+        """Initialise the file header."""
+        self.document.getElementsByTagName("file")[0].setAttribute("source-language", self.sourcelanguage)
+
+    def createfilenode(self, filename, sourcelanguage=None, datatype='plaintext'):
+        """creates a filenode with the given filename. All parameters are needed
+        for XLIFF compliance."""
+        self.removedefaultfile()
+        if sourcelanguage is None:
+            sourcelanguage = self.sourcelanguage
+        filenode = self.document.createElement("file")
+        filenode.setAttribute("original", filename)
+        filenode.setAttribute("source-language", sourcelanguage)
+        filenode.setAttribute("datatype", datatype)
+        bodyNode = self.document.createElement(self.bodyNode)
+        filenode.appendChild(bodyNode)
         return filenode
-    return None
 
-  def gettransunitnodes(self, filenode=None):
-    """returns all the transunitnodes, limiting to the given file (name or node) if given"""
-    if filenode is None:
-      return self.document.getElementsByTagName("trans-unit")
-    else:
-      if isinstance(filenode, (str, unicode)):
-        # look up the file node by name
-        filenode = self.getfilenode(filenode)
-        if filenode is None:
-          return []
-      return filenode.getElementsByTagName("trans-unit")
+    def getfilename(self, filenode):
+        """returns the name of the given file"""
+        return filenode.getAttribute("original")
 
-  def gettransunitsource(self, transunit):
-    """returns the transunit source for a given node"""
-    sourcenode = transunit.getElementsByTagName("source")[0]
-    return self.getnodetext(sourcenode)
-
-  def gettransunittarget(self, transunit):
-    """returns the transunit target for a given node"""
-    try:
-        translationnode = transunit.getElementsByTagName("target")[0]
-    except IndexError,e:
+    def getfilenode(self, filename):
+        """finds the filenode with the given name"""
+        filenodes = self.document.getElementsByTagName("file")
+        for filenode in filenodes:
+            if self.getfilename(filenode) == filename:
+                return filenode
         return None
-    return self.getnodetext(translationnode)
 
-  def iteritems(self):
-    """iterates through (file, transunits)"""
-    for filenode in self.document.getElementsByTagName("file"):
-      yield self.getfilename(filenode), self.gettransunitnodes(filenode)
+    def removedefaultfile(self):
+        """We want to remove the default file-tag as soon as possible if we 
+        know if still present and empty."""
+        filenodes = self.document.getElementsByTagName("file")
+        if len(filenodes) > 1:
+            for filenode in filenodes:
+                if filenode.getAttribute("original") == "NoName" and \
+                        not filenode.getElementsByTagName(self.UnitClass.rootNode):
+                    self.document.documentElement.removeChild(filenode)
+                break
 
-  def make_element(self, transunit):
-    """converts a transunit into an element that has the required properties"""
-    return transunit
+    def getheadernode(self, filenode, createifmissing=False):
+        """finds the header node for the given filenode"""
+        headernodes = list(filenode.getElementsByTagName("header"))
+        if headernodes:
+            return headernodes[0]
+        if not createifmissing:
+            return None
+        headernode = minidom.Element("header")
+        filenode.appendChild(headernode)
+        return headernode
 
-  def get_elements(self):
-    """returns an iterator through the transunits"""
-    return [self.make_element(transunit) for filename, transunit in self.iteritems()]
-  units = property(get_elements)
+    def getbodynode(self, filenode, createifmissing=False):
+        """finds the body node for the given filenode"""
+        bodynodes = list(filenode.getElementsByTagName("body"))
+        if bodynodes:
+            return bodynodes[0]
+        if not createifmissing:
+            return None
+        bodynode = self.document.createElement("body")
+        filenode.appendChild(bodynode)
+        return bodynode
 
-  def __del__(self):
-    """clean up the document if required"""
-    if hasattr(self, "document"):
-      self.document.unlink()
+    def addsourceunit(self, source, filename="NoName", createifmissing=False):
+        """adds the given trans-unit to the last used body node if the filename has changed it uses the slow method instead (will create the nodes required if asked). Returns success"""
+        if self._filename != filename:
+            if not self.switchfile(filename, createifmissing):
+              return None
+        unit = super(xlifffile, self).addsourceunit(source)
+        self._messagenum += 1
+        unit.setid("messages_%d" % self._messagenum)
+        unit.xmlelement.setAttribute("xml:space", "preserve")
+        return unit
 
+    def switchfile(self, filename, createifmissing=False):
+        """adds the given trans-unit (will create the nodes required if asked). Returns success"""
+        self._filename = filename
+        filenode = self.getfilenode(filename)
+        if filenode is None:
+            if not createifmissing:
+                return False
+            filenode = self.createfilenode(filename)
+            self.document.documentElement.appendChild(filenode)
+
+        self.body = self.getbodynode(filenode, createifmissing=createifmissing)
+        if self.body is None:
+            return False
+        self._messagenum = len(list(self.body.getElementsByTagName("trans-unit")))
+        #TODO: was 0 based before - consider
+    #    messagenum = len(self.units)
+        #TODO: we want to number them consecutively inside a body/file tag
+        #instead of globally in the whole XLIFF file, but using len(self.units)
+        #will be much faster
+        return True
+    
+    def creategroup(self, filename="NoName", createifmissing=False, restype=None):
+        """adds a group tag into the specified file"""
+        if self._filename != filename:
+            if not self.switchfile(filename, createifmissing):
+              return None
+        group = self.document.createElement("group")
+        if restype:
+            group.setAttribute("restype", restype)
+        self.body.appendChild(group)
+        return group
+        
+    def __str__(self):
+        self.removedefaultfile()
+        return super(xlifffile, self).__str__()
