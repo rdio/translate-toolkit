@@ -49,8 +49,8 @@ msgstr "Eerste lyn\nTweede lyn"
 '''
         csvfile = self.po2csv(minipo)
         unit = self.singleelement(csvfile)
-        assert unit.source == "First line\\nSecond line"
-        assert "Eerste lyn\\nTweede lyn"
+        assert unit.source == "First line\nSecond line"
+        assert unit.target == "Eerste lyn\nTweede lyn"
 
     def test_escapedtabs(self):
         """Test the escaping of tabs"""
@@ -59,9 +59,9 @@ msgstr "Eerste kolom\tTweede kolom"
 '''
         csvfile = self.po2csv(minipo)
         unit = self.singleelement(csvfile)
-        assert unit.source == "First column\\tSecond column"
-        assert "Eerste kolom\\tTweede kolom"
-        assert csvfile.findunit("First column\\tSecond column").target == "Eerste kolom\\tTweede kolom"
+        assert unit.source == "First column\tSecond column"
+        assert unit.target == "Eerste kolom\tTweede kolom"
+        assert csvfile.findunit("First column\tSecond column").target == "Eerste kolom\tTweede kolom"
 
     def test_escapedquotes(self):
         """Test the escaping of quotes (and slash)"""
