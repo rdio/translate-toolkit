@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """tests for storage base classes"""
 
@@ -61,6 +62,8 @@ class TestTranslationUnit:
         assert unit.target == "Stressed Ting"
         unit.settarget("Stressed Bling")
         assert unit.target == "Stressed Bling"
+        unit.settarget("")
+        assert unit.target == ""
 
 class TestTranslationStore:
     """Tests a TranslationStore.
@@ -87,6 +90,8 @@ class TestTranslationStore:
         """Tests adding a new unit with a source string"""
         store = self.StoreClass()
         unit = store.addsourceunit("Test String")
+        print str(unit)
+        print str(store)
         assert len(store.units) == 1
         assert unit.source == "Test String"
 
@@ -98,6 +103,16 @@ class TestTranslationStore:
         assert store.findunit("Test String") == unit1
         assert store.findunit("Blessed String") == unit2
         assert store.findunit("Nest String") is None
+
+    def test_translate(self):
+        """Tests the translate method and non-ascii characters."""
+        store = self.StoreClass()
+        unit = store.addsourceunit("scissor")
+        unit.target = u"skêr"
+        unit = store.addsourceunit(u"Beziér curve")
+        unit.target = u"Beziér-kurwe"
+        assert store.translate("scissor") == u"skêr"
+        assert store.translate(u"Beziér curve") == u"Beziér-kurwe"
 
     def reparse(self, store):
         """converts the store to a string and back to a store again"""
@@ -138,3 +153,9 @@ class TestTranslationStore:
         newstore = self.StoreClass.parsefile(self.filename)
         self.check_equality(store, newstore)
 
+    def test_markup(self):
+        """Tests that markup survives the roundtrip. Most usefull for xml types."""
+        store = self.StoreClass()
+        unit = store.addsourceunit("<vark@hok.org> %d keer %2$s")
+        unit.target = "bla"
+        assert store.translate("<vark@hok.org> %d keer %2$s") == "bla"

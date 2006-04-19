@@ -28,6 +28,15 @@ class TranslationUnit(object):
         """Sets the target string to the given value"""
         self.target = target
 
+    def addnote(self, text):
+        """Adds a note (comment)"""
+        pass
+
+    def hasplural(self):
+        """Tells whether or not this specific unit has plural strings."""
+	#TODO: Reconsider
+        return False
+
 class TranslationStore(object):
     """Base class for stores for multiple translation units of type UnitClass"""
     UnitClass = TranslationUnit
@@ -48,6 +57,13 @@ class TranslationStore(object):
             if unit.source == source:
                 return unit
         return None
+
+    def translate(self, source):
+        unit = self.findunit(source)
+	if unit and unit.target:
+            return unit.target
+        else:
+            return None
 
     def __str__(self):
         """Converts to a string representation that can be parsed back using parse"""
