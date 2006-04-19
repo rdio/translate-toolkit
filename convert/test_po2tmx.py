@@ -91,7 +91,7 @@ msgstr "Eerste lyn\nTweede lyn"
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
         print str(tmx)
-#        assert tmx.translate("First line\nSecond line") == "Eerste lyn\nTweede lyn"
+	assert tmx.translate("First line\nSecond line") == "Eerste lyn\nTweede lyn"
 
     def test_escapedtabs(self):
         """Test the escaping of tabs"""
@@ -101,7 +101,7 @@ msgstr "Eerste kolom\tTweede kolom"
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
         print str(tmx)
-#        assert tmx.translate("First line\tSecond line") == "Eerste lyn\tTweede lyn"
+	assert tmx.translate("First column\tSecond column") == "Eerste kolom\tTweede kolom"
 
     def test_escapedquotes(self):
         """Test the escaping of quotes (and slash)"""
