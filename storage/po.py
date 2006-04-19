@@ -59,7 +59,7 @@ def unquotefrompo(postr, joinwithlinebreak=False):
     if postr and postr[0] == '""': postr = postr[1:]
   else:
     joiner = ""
-  return joiner.join([extractpoline(line) for line in postr])
+  return joiner.join([extractpoline(line).replace("\\n", "\n").replace("\\t", "\t") for line in postr])
 
 def encodingToUse(encoding):
   """Tests whether the given encoding is known in the python runtime, or returns utf-8.
