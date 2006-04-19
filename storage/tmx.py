@@ -33,7 +33,7 @@ class tmxunit(lisa.LISAunit):
     languageNode = "tuv"
     textNode = "seg"
                    
-    def createlanguageNode(self, lang, text):
+    def createlanguageNode(self, lang, text, purpose):
         """returns a langset xml Element setup with given parameters"""
         langset = self.document.createElement(self.languageNode)
         assert self.document == langset.ownerDocument

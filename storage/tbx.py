@@ -33,7 +33,7 @@ Provisional work is done to make several languages possible."""
     languageNode = "langSet"
     textNode = "term"
                    
-    def createlanguageNode(self, lang, text):
+    def createlanguageNode(self, lang, text, purpose):
         """returns a langset xml Element setup with given parameters"""
         langset = self.document.createElement(self.languageNode)
 	assert self.document == langset.ownerDocument
