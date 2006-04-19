@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from translate.convert import po2tmx
 from translate.convert import test_convert
@@ -91,7 +92,7 @@ msgstr "Eerste lyn\nTweede lyn"
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
         print str(tmx)
-	assert tmx.translate("First line\nSecond line") == "Eerste lyn\nTweede lyn"
+        assert tmx.translate("First line\nSecond line") == "Eerste lyn\nTweede lyn"
 
     def test_escapedtabs(self):
         """Test the escaping of tabs"""
@@ -101,7 +102,7 @@ msgstr "Eerste kolom\tTweede kolom"
         tmx = self.po2tmx(minipo)
         print "The generated xml:"
         print str(tmx)
-	assert tmx.translate("First column\tSecond column") == "Eerste kolom\tTweede kolom"
+        assert tmx.translate("First column\tSecond column") == "Eerste kolom\tTweede kolom"
 
     def test_escapedquotes(self):
         """Test the escaping of quotes (and slash)"""
@@ -133,6 +134,16 @@ msgstr "Drie"
         print "The generated xml:"
         print str(tmx)
         assert len(tmx.document.getElementsByTagName("tu")) == 0
+
+    def test_nonunicode(self):
+        """Tests that non-unicde conversion works."""
+        minipo = r'''msgid "Bézier curve"
+msgstr "Bézier-kurwe"
+'''
+        tmx = self.po2tmx(minipo)
+        print str(tmx)
+        assert tmx.translate(u"Bézier curve") == u"Bézier-kurwe"
+
 
 class TestPO2TMXCommand(test_convert.TestConvertCommand, TestPO2TMX):
     """Tests running actual po2tmx commands on files"""
