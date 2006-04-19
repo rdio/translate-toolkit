@@ -135,8 +135,8 @@ msgstr "Drie"
         print str(tmx)
         assert len(tmx.document.getElementsByTagName("tu")) == 0
 
-    def test_nonunicode(self):
-        """Tests that non-unicde conversion works."""
+    def test_nonascii(self):
+        """Tests that non-ascii conversion works."""
         minipo = r'''msgid "Bézier curve"
 msgstr "Bézier-kurwe"
 '''
