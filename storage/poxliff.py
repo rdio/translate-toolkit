@@ -25,6 +25,7 @@ xliff. """
 
 from translate.storage import po
 from translate.storage import xliff
+from translate.storage import lisa 
 from translate.misc.multistring import multistring
 from xml.dom import minidom
 
@@ -58,15 +59,19 @@ class PoXliffUnit(xliff.xliffunit):
 
     def __eq__(self, other):
         if isinstance(other, PoXliffUnit):
-            if len(selfunits) != len(other.units):
+            if len(self.units) != len(other.units):
                 return False
-            for i in range(len(self.units)):
-                if not self.units[i] == other.units[i]:
+            if len(self.units) == 0:
+                return True
+            if not super(PoXliffUnit, self).__eq__(other):
+                return False
+            for i in range(len(self.units)-1):
+                if not self.units[i+1] == other.units[i+1]:
                     return False
             return True
         if len(self.units) == 1:
             if isinstance(other, lisa.LISAunit):
-                return self.units[0] == other
+                return super(PoXliffUnit, self).__eq__(other)
             else:
                 return self.source == other.source and self.target == other.target
 
@@ -85,7 +90,8 @@ class PoXliffUnit(xliff.xliffunit):
             self.target = target
 
     def getsource(self):
-        strings = [unit.source for unit in self.units]
+        strings = [super(PoXliffUnit, self).getsource()]
+        strings.extend([unit.source for unit in self.units[1:]])
         return multistring(strings)
     source = property(getsource, setsource)
     
@@ -184,13 +190,14 @@ class PoXliffUnit(xliff.xliffunit):
 
     def createfromxmlElement(cls, element, document):
         if element.tagName == "trans-unit":
-            return super(PoXliffUnit, self).createfromxmlElement(cls, element, document)
+            return xliff.xliffunit.createfromxmlElement(element, document)
         assert element.tagName == "group"
         group = cls(None, document, empty=True)
         units = element.getElementsByTagName("trans-unit")
         for unit in units:
-            group.units.append(super(PoXliffUnit, self).createfromxmlElement(cls, unit, document))
+            group.units.append(xliff.xliffunit.createfromxmlElement(unit, document))
         group._plural = True
+    createfromxmlElement = classmethod(createfromxmlElement)
 
     def hasplural(self):
         return self._plural
