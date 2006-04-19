@@ -50,7 +50,7 @@ class xliff2po:
   def gettransunitsources(self, transunit):
     """takes a transunit node and finds the location, returning it in po-style list of sources"""
     sources = []
-    for contextgroupnode in transunit.getElementsByTagName("context-group"):
+    for contextgroupnode in transunit.xmlelement.getElementsByTagName("context-group"):
       contextname = contextgroupnode.getAttribute("name")
       if contextname == "x-po-reference":
         sourcefile = ""
@@ -70,27 +70,27 @@ class xliff2po:
 
   def convertfile(self, inputfile):
     """converts a .xliff file to .po format"""
-    xlifffile = xliff.XliffParser(inputfile)
+    xlifffile = xliff.xlifffile(inputfile)
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
     # thepofile.units.append(headerpo)
-    for filename, transunits in xlifffile.iteritems():
-      for transunit in transunits:
+#    for filename, transunits in xlifffile.units:
+    # TODO: support multiple files
+    if True:
+      for transunit in xlifffile.units:
+	a =  str(xlifffile.units[0])
+	#TODO: wat gaan hier aan? XXX XXX
         sources = self.gettransunitsources(transunit)
-        source = xlifffile.gettransunitsource(transunit)
-        target = xlifffile.gettransunittarget(transunit)
+        source = transunit.source
+        target = transunit.target
 
         if target is None:
           target = ''
         thepo = self.converttransunit(sources, source, target)
 
         # Check if fuzzy
-        try:
-          targetnode = transunit.getElementsByTagName("target")[0]
-          if targetnode.getAttribute("state-qualifier") == "fuzzy-match":
-            thepo.markfuzzy()
-        except IndexError,e:
-          pass
+        if transunit.isfuzzy():
+          thepo.markfuzzy()
 
         thepofile.units.append(thepo)
     return thepofile
