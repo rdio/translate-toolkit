@@ -234,6 +234,19 @@ class PoXliffUnit(xliff.xliffunit):
                 comments.append(text)
         return "\n".join(comments)
     
+    def gettranslatorcomments(self):       
+        """Returns the translator comments (x-po-trancomment), which corresponds
+        to the # style po comments."""
+        def hastrancomment((type, text)):
+            return type == "x-po-trancomment"
+        groups = self.getcontextgroups("po-entry")
+        comments = []
+        for group in groups:
+            commentpairs = filter(hastrancomment, group)
+            for (type,text) in commentpairs:
+                comments.append(text)
+        return "\n".join(comments)
+    
     def createfromxmlElement(cls, element, document):
         if element.tagName == "trans-unit":
             object = cls(None, document=document, empty=True)
