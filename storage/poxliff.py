@@ -221,6 +221,19 @@ class PoXliffUnit(xliff.xliffunit):
             references.append(sourcefile)
         return references
 
+    def getautomaticcomments(self):
+        """Returns the automatic comments (x-po-autocomment), which corresponds
+        to the #. style po comments."""
+        def hasautocomment((type, text)):
+            return type == "x-po-autocomment"
+        groups = self.getcontextgroups("po-entry")
+        comments = []
+        for group in groups:
+            commentpairs = filter(hasautocomment, group)
+            for (type,text) in commentpairs:
+                comments.append(text)
+        return "\n".join(comments)
+    
     def createfromxmlElement(cls, element, document):
         if element.tagName == "trans-unit":
             object = cls(None, document=document, empty=True)
