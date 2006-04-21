@@ -80,6 +80,8 @@ def test_accronyms():
     # We shouldn't worry about acronyms that appear in a musttranslate file
     stdchecker = checks.StandardChecker(checks.CheckerConfig(musttranslatewords=["OK"]))
     assert checks.passes(stdchecker.acronyms, "OK", "Kulungile")
+    # Assert punctuation should not hide accronyms
+    assert checks.fails(stdchecker.acronyms, "Location (URL) not found", "Blah blah blah")
 
 def test_blank():
     """tests blank"""
