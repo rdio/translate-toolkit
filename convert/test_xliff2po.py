@@ -97,3 +97,25 @@ garbage</context>
         potext = str(pofile)
         assert potext.index("#. Note that this is\n#. garbage\n") >= 0
 
+    def test_locations(self):
+        """Tests location comments (#:)"""
+        minixlf = self.xliffskeleton % '''<trans-unit id="1">
+        <source>nonsense</source>
+        <target>matlhapolosa</target>
+        <context-group name="po-reference" purpose="location">
+            <context context-type="sourcefile">example.c</context>
+            <context context-type="linenumber">123</context>
+            </context-group>
+        <context-group name="po-reference" purpose="location">
+            <context context-type="sourcefile">place.py</context>
+        </context-group>
+</trans-unit>'''
+        pofile = self.xliff2po(minixlf)
+        assert pofile.translate("nonsense") == "matlhapolosa"
+        assert pofile.translate("bla") is None
+        unit = pofile.units[0]
+        ids = unit.getids()
+        assert len(ids) == 2
+        assert "example.c:123" in ids
+        assert "place.py" in ids
+
