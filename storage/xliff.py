@@ -123,6 +123,10 @@ class xliffunit(lisa.LISAunit):
             elif self.isfuzzy():                
                 targetnode.removeAttribute("state")
                 targetnode.removeAttribute("state-qualifier")
+        else:
+            #If there is no target, we can't really indicate fuzzyness, so we set
+            #approved to "no"
+            self.xmlelement.setAttribute("approved", "no")
 
     def marktranslated(self):
         targetnode = self.getlanguageNode(lang=None, index=1)
