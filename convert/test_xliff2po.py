@@ -119,3 +119,27 @@ garbage</context>
         assert "example.c:123" in ids
         assert "place.py" in ids
 
+    def test_fuzzy(self):
+        """Tests fuzzyness"""
+        minixlf = self.xliffskeleton % '''<trans-unit approved="no">
+            <source>book</source>
+        </trans-unit>
+        <trans-unit id="2" approved="yes">
+            <source>nonsense</source>
+            <target>matlhapolosa</target>
+        </trans-unit>
+        <trans-unit id="2" approved="no">
+            <source>verb</source>
+            <target state="needs-review-translation">lediri</target>
+        </trans-unit>'''
+        pofile = self.xliff2po(minixlf)
+        assert pofile.translate("nonsense") == "matlhapolosa"
+        assert pofile.translate("verb") == "lediri"
+        assert pofile.translate("book") is None
+        assert pofile.translate("bla") is None
+        assert len(pofile.units) == 3
+        #TODO: decide if this one should be fuzzy:
+        #assert pofile.units[0].isfuzzy()
+        assert not pofile.units[1].isfuzzy()
+        assert pofile.units[2].isfuzzy()
+        
