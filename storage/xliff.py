@@ -125,7 +125,8 @@ class xliffunit(lisa.LISAunit):
                 targetnode.removeAttribute("state-qualifier")
         else:
             #If there is no target, we can't really indicate fuzzyness, so we set
-            #approved to "no"
+            #approved to "no", but we don't take it into account in isfuzzy()
+            #TODO: review decision
             self.xmlelement.setAttribute("approved", "no")
 
     def marktranslated(self):

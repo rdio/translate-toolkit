@@ -76,3 +76,14 @@ class TestXLIFFfile(test_base.TestTranslationStore):
         unit.markfuzzy(True)
         assert unit.isfuzzy()
 
+        #If there is no target, we can't really indicate fuzzyness, so we set
+        #approved to "no". If we want isfuzzy() to reflect that, the line can
+        #be uncommented
+        unit.target = None
+        assert unit.target is None
+        print unit
+        unit.markfuzzy(True)
+        assert unit.xmlelement.getAttribute("approved") == "no"
+        #assert unit.isfuzzy()
+
+
