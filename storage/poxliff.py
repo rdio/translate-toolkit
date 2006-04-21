@@ -28,6 +28,7 @@ from translate.storage import xliff
 from translate.storage import lisa 
 from translate.misc.multistring import multistring
 from xml.dom import minidom
+import xml
 
 def hasplurals(thing):
     if not isinstance(thing, multistring):
@@ -38,7 +39,6 @@ class PoXliffUnit(xliff.xliffunit):
     """A class to specifically handle the plural units created from a po file."""
     def __init__(self, source, document=None, empty=False):
         self.units = []
-        self._plural = False
         if document:
             self.document = document
         else:
@@ -49,10 +49,8 @@ class PoXliffUnit(xliff.xliffunit):
 
         if not hasplurals(source):
             super(PoXliffUnit, self).__init__(source, self.document)
-            self.units = [self]
             return
 
-        self._plural = True
         self.xmlelement = self.document.createElement("group")
         self.xmlelement.setAttribute("restype", "x-gettext-plurals")
         self.setsource(source)
@@ -82,7 +80,10 @@ class PoXliffUnit(xliff.xliffunit):
         else:
             target = self.target
             for unit in self.units:
-                self.xmlelement.removeChild(unit.xmlelement)
+                try:
+                    self.xmlelement.removeChild(unit.xmlelement)
+                except xml.dom.NotFoundErr:
+                    pass
             self.units = []
             for s in source.strings:
                 self.units.append(xliff.xliffunit(s, self.document))
@@ -144,8 +145,14 @@ class PoXliffUnit(xliff.xliffunit):
             else:
                 return None
         else:
-            a = super(PoXliffUnit, self).gettarget()
-            return a
+            return super(PoXliffUnit, self).gettarget()
+
+#        strings = [super(PoXliffUnit, self).gettarget()]
+#        strings.extend([unit.target for unit in self.units[1:]])
+#        if strings:
+#            return multistring(strings)
+#        else:
+#            return None
     target = property(gettarget, settarget)
 
     def addnote(self, text, origin=None):
@@ -169,8 +176,15 @@ class PoXliffUnit(xliff.xliffunit):
             return lisa.getText(notetags)
 
 #    def isfuzzy(self):
-#       """We only need to check the first element, so we can simply inherit"""
-
+#       #We only need to check the first element, so we can simply inherit, but
+#       #for compatibility with po we might want to also return true if 
+#       #approved=no and target string is empty.  
+#       if super(PoXliffUnit, self).isfuzzy():
+#           return True
+#       if self.target is None and self.xmlelement.getAttribute("approved") == "no":
+#           return True
+#       return False
+       
     def markfuzzy(self, value=True):
         super(PoXliffUnit, self).markfuzzy(value)
         for unit in self.units[1:]:
@@ -190,17 +204,19 @@ class PoXliffUnit(xliff.xliffunit):
 
     def createfromxmlElement(cls, element, document):
         if element.tagName == "trans-unit":
-            return xliff.xliffunit.createfromxmlElement(element, document)
+            object = cls(None, document=document, empty=True)
+            object.xmlelement = element
+            return object
         assert element.tagName == "group"
         group = cls(None, document, empty=True)
         units = element.getElementsByTagName("trans-unit")
         for unit in units:
             group.units.append(xliff.xliffunit.createfromxmlElement(unit, document))
-        group._plural = True
+        return group
     createfromxmlElement = classmethod(createfromxmlElement)
 
     def hasplural(self):
-        return self._plural
+        return self.xmlelement.tagName == "group"
 
 
 class PoXliffFile(xliff.xlifffile):
