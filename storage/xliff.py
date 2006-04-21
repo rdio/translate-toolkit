@@ -110,10 +110,15 @@ class xliffunit(lisa.LISAunit):
         """Returns the text from all the notes"""
         return lisa.getText(self.xmlelement.getElementsByTagName("note"))
 
+    def isapproved(self):
+        return self.xmlelement.getAttribute("approved") == "yes"
+
     def isfuzzy(self):
         targetnode = self.getlanguageNode(lang=None, index=1)
-        return not targetnode is None and targetnode.getAttribute("state-qualifier") == "fuzzy-match"
-
+        return not targetnode is None and \
+                (targetnode.getAttribute("state-qualifier") == "fuzzy-match" or \
+                targetnode.getAttribute("state") == "needs-review-translation")
+                
     def markfuzzy(self, value=True):
         targetnode = self.getlanguageNode(lang=None, index=1)
         if targetnode:
@@ -123,7 +128,7 @@ class xliffunit(lisa.LISAunit):
             elif self.isfuzzy():                
                 targetnode.removeAttribute("state")
                 targetnode.removeAttribute("state-qualifier")
-        else:
+        elif value:
             #If there is no target, we can't really indicate fuzzyness, so we set
             #approved to "no", but we don't take it into account in isfuzzy()
             #TODO: review decision
