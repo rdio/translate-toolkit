@@ -151,6 +151,23 @@ class xliffunit(lisa.LISAunit):
             group.appendChild(context)
         self.xmlelement.appendChild(group)
 
+    def getcontextgroups(self, name):
+        """Returns the contexts in the context groups with the specified name"""
+        groups = []
+        grouptags = self.xmlelement.getElementsByTagName("context-group")
+        for group in grouptags:
+            if group.getAttribute("name") == name:
+                contexts = group.getElementsByTagName("context")
+                pairs = []
+                for context in contexts:
+                    pairs.append((context.getAttribute("context-type"), lisa.getText(context)))
+                groups.append(pairs) #not extend
+        return groups
+        
+    def getrestype(self):
+        """returns the restype attribute in the trans-unit tag"""
+        return self.xmlelement.getAttribute("restype")
+
 
 class xlifffile(lisa.LISAfile):
     """Class representing a XLIFF file store."""
