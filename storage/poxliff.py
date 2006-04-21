@@ -202,6 +202,25 @@ class PoXliffUnit(xliff.xliffunit):
             for i in range(len(self.units)):
                 self.units[i].setid("messages_%s[%d]" % (id, i))
 
+    def getreferences(self):
+        """Returns all the references (source locations)"""
+        groups = self.getcontextgroups("po-reference")
+        references = []
+        for group in groups:
+            sourcefile = ""
+            linenumber = ""
+            for (type,text) in group:
+                print "(%s,%s)" %(type, text)
+                if type == "sourcefile":
+                    sourcefile = text
+                elif type == "linenumber":
+                    linenumber = text
+            assert sourcefile
+            if linenumber:
+                sourcefile = sourcefile + ":" + linenumber
+            references.append(sourcefile)
+        return references
+
     def createfromxmlElement(cls, element, document):
         if element.tagName == "trans-unit":
             object = cls(None, document=document, empty=True)
