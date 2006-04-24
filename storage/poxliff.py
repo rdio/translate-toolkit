@@ -29,6 +29,7 @@ from translate.storage import lisa
 from translate.misc.multistring import multistring
 from xml.dom import minidom
 import xml
+import re
 
 def hasplurals(thing):
     if not isinstance(thing, multistring):
@@ -254,6 +255,7 @@ class PoXliffUnit(xliff.xliffunit):
             return object
         assert element.tagName == "group"
         group = cls(None, document, empty=True)
+        group.xmlelement = element
         units = element.getElementsByTagName("trans-unit")
         for unit in units:
             group.units.append(xliff.xliffunit.createfromxmlElement(unit, document))
@@ -312,4 +314,34 @@ class PoXliffFile(xliff.xlifffile):
                 self.units.append(unit)
         
         return self.units[-pluralnum]
+
+    def parse(self, xml):
+        """Populates this object from the given xml string"""
+        #TODO: Make more robust
+        def ispluralgroup(node):
+            """determines whether the xml node refers to a getttext plural"""
+            return node.getAttribute("restype") == "x-gettext-plurals"
+        
+        def issingularunit(node):
+            """determindes whether the xml node contains a plural like id"""
+            return re.match("\\d\[\\d\\]", node.getAttribute("id")) is None
+        
+        self.filename = getattr(xml, 'name', '')
+        if hasattr(xml, "read"):
+            xmlsrc = xml.read()
+            xml.close()
+            xml = xmlsrc
+        self.document = minidom.parseString(xml)
+        assert self.document.documentElement.tagName == self.rootNode
+        self.initbody()
+        groups = self.document.getElementsByTagName("group")
+        pluralgroups = filter(ispluralgroup, groups)
+        termEntries = self.document.getElementsByTagName(self.UnitClass.rootNode)
+        singularunits = filter(issingularunit, termEntries)
+        
+        if termEntries is None:
+            return
+        for entry in singularunits + pluralgroups:
+            term = self.UnitClass.createfromxmlElement(entry, self.document)
+            self.units.append(term)
 
