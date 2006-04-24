@@ -111,7 +111,9 @@ class PoXliffUnit(xliff.xliffunit):
         if sourcel < targetl:
             sources = source.strings + [source.strings[-1]] * (targetl - sourcel)
             targets = text.strings
+            id = self.getid()
             self.source = multistring(sources)
+            self.setid(id)
         elif targetl < sourcel:
             targets = text.strings + [""] * (sourcel - targetl)
         else:
