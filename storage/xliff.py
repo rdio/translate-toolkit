@@ -139,11 +139,15 @@ class xliffunit(lisa.LISAunit):
         if not targetnode:
             return
         if self.isfuzzy():
+            #TODO: consider
             targetnode.removeAttribute("state-qualifier", "fuzzy-match")
         targetnode.setAttribute("state", "translated")
 
     def setid(self, id):
         self.xmlelement.setAttribute("id", id)
+
+    def getid(self):
+        return self.xmlelement.getAttribute("id")
 
     def createcontextgroup(self, name, contexts=None, purpose=None):
         """Add the context group to the trans-unit with contexts a list with
