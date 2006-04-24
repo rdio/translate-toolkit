@@ -271,7 +271,7 @@ class xlifffile(lisa.LISAfile):
               return None
         unit = super(xlifffile, self).addsourceunit(source)
         self._messagenum += 1
-        unit.setid("messages_%d" % self._messagenum)
+        unit.setid("%d" % self._messagenum)
         unit.xmlelement.setAttribute("xml:space", "preserve")
         return unit
 
