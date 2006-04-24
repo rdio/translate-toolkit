@@ -125,7 +125,7 @@ class PoXliffUnit(xliff.xliffunit):
 #        for (src, tgt) in zip(sources, targets):
 #            unit = self.UnitClass(src, self.document)
 #            unit.target = tgt
-#            unit.setid("messages_%d[%d]" % (self._messagenum, pluralnum))
+#            unit.setid("%d[%d]" % (self._messagenum, pluralnum))
 #            pluralnum += 1
 #            group.appendChild(unit)
 
@@ -133,7 +133,7 @@ class PoXliffUnit(xliff.xliffunit):
 #            for string in sources[pluralnum:]:
 #                unit = self.UnitClass(src, self.document)
 #                unit.xmlelement.setAttribute("translate", "no")
-#                unit.setid("messages_%d[%d]" % (self._messagenum, pluralnum))
+#                unit.setid("%d[%d]" % (self._messagenum, pluralnum))
 #                pluralnum += 1
 #                group.appendChild(unit)
         
@@ -198,10 +198,9 @@ class PoXliffUnit(xliff.xliffunit):
 
     def setid(self, id):
         self.xmlelement.setAttribute("id", id)
-        return
         if len(self.units) > 1:
             for i in range(len(self.units)):
-                self.units[i].setid("messages_%s[%d]" % (id, i))
+                self.units[i].setid("%s[%d]" % (id, i))
 
     def getreferences(self):
         """Returns all the references (source locations)"""
@@ -299,7 +298,7 @@ class PoXliffFile(xliff.xlifffile):
         for (src, tgt) in zip(sources, targets):
             unit = self.UnitClass(src, self.document)
             unit.target = tgt
-            unit.setid("messages_%d[%d]" % (self._messagenum, pluralnum))
+            unit.setid("%d[%d]" % (self._messagenum, pluralnum))
             pluralnum += 1
             group.appendChild(unit.xmlelement)
             self.units.append(unit)
@@ -308,7 +307,7 @@ class PoXliffFile(xliff.xlifffile):
             for string in sources[pluralnum:]:
                 unit = self.UnitClass(src, self.document)
                 unit.xmlelement.setAttribute("translate", "no")
-                unit.setid("messages_%d[%d]" % (self._messagenum, pluralnum))
+                unit.setid("%d[%d]" % (self._messagenum, pluralnum))
                 pluralnum += 1
                 group.appendChild(unit.xmlelement)
                 self.units.append(unit)
