@@ -43,6 +43,10 @@ class TestPOXLIFFUnit(test_xliff.TestXLIFFUnit):
         assert unit.getid() == "20"
         assert unit.units[1].getid() == "20[1]"
 
+        unit.target = ["utshani", "uutshani", "uuutshani"]
+        assert unit.getid() == "20"
+        assert unit.units[1].getid() == "20[1]"
+
 class TestPOXLIFFfile(test_xliff.TestXLIFFfile):
     StoreClass = poxliff.PoXliffFile
     xliffskeleton = '''<?xml version="1.0" ?>
