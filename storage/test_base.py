@@ -159,3 +159,16 @@ class TestTranslationStore:
         unit = store.addsourceunit("<vark@hok.org> %d keer %2$s")
         unit.target = "bla"
         assert store.translate("<vark@hok.org> %d keer %2$s") == "bla"
+
+    def test_nonascii(self):
+        store = self.StoreClass()
+        unit = store.addsourceunit(u"Beziér curve")
+        string = u"Beziér-kurwe"
+        unit.target = string.encode("utf-8")
+        answer = store.translate(u"Beziér curve")
+        if isinstance(answer, str):
+            answer = answer.decode("utf-8")
+        assert answer == u"Beziér-kurwe"
+        #Just test that __str__ doesn't raise exception:
+        src = str(store)
+
