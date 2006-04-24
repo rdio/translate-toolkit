@@ -30,6 +30,19 @@ class TestPOXLIFFUnit(test_xliff.TestXLIFFUnit):
         assert unit.target.strings == [u"Sk\u00ear", u"Sk\u00eare"]
         assert unit.target == u"Sk\u00ear"
 
+    def test_ids(self):
+        """Tests that ids are assigned correctly, especially for plurals"""
+        unit = self.UnitClass("gras")
+        assert unit.getid() == ""
+        unit.setid("4")
+        assert unit.getid() == "4"
+
+        unit = self.UnitClass(multistring(["shoe", "shoes"]))
+        assert unit.getid() == ""
+        unit.setid("20")
+        assert unit.getid() == "20"
+        assert unit.units[1].getid() == "20[1]"
+
 class TestPOXLIFFfile(test_xliff.TestXLIFFfile):
     StoreClass = poxliff.PoXliffFile
     xliffskeleton = '''<?xml version="1.0" ?>
