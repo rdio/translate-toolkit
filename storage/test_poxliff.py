@@ -32,3 +32,29 @@ class TestPOXLIFFUnit(test_xliff.TestXLIFFUnit):
 
 class TestPOXLIFFfile(test_xliff.TestXLIFFfile):
     StoreClass = poxliff.PoXliffFile
+    xliffskeleton = '''<?xml version="1.0" ?>
+<xliff version="1.1" xmlns="urn:oasis:names:tc:xliff:document:1.1">
+  <file original="filename.po" source-language="en-US" datatype="po">
+    <body>
+        %s
+    </body>
+  </file>
+</xliff>'''
+
+
+    def test_parse(self):
+        minixlf = self.xliffskeleton % '''<group restype="x-gettext-plurals">
+        <trans-unit id="1[0]" xml:space="preserve">
+            <source>cow</source>
+            <target>inkomo</target>
+        </trans-unit>
+        <trans-unit id="1[1]" xml:space="preserve">
+            <source>cows</source>
+            <target>iinkomo</target>
+        </trans-unit>
+</group>'''
+        xlifffile = self.StoreClass.parsestring(minixlf)
+        assert len(xlifffile.units) == 1
+        assert xlifffile.translate("cow") == "inkomo"
+        assert xlifffile.units[0].source == "cow"
+        assert xlifffile.units[0].source == multistring(["cow", "cows"])
