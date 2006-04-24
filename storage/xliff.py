@@ -95,8 +95,16 @@ class xliffunit(lisa.LISAunit):
     
     def getlanguageNodes(self):
         """We override this to get source and target nodes."""
-        return self.xmlelement.getElementsByTagName(self.languageNode) + \
-                self.xmlelement.getElementsByTagName("target")
+        sources = self.xmlelement.getElementsByTagName(self.languageNode)
+        targets = self.xmlelement.getElementsByTagName("target")
+        sourcesl = len(sources)
+        targetsl = len(targets)
+        nodes = []
+        for pair in zip(sources, targets):
+            nodes.extend(list(pair))
+        if sourcesl > targetsl:
+            nodes.extend(sources[- (sourcesl - targetsl):])
+        return nodes
 
     def addnote(self, text, origin=None):
         """Add a note specifically in a "note" tag"""
