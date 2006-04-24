@@ -3,7 +3,7 @@
 from translate.convert import po2xliff
 from translate.misc import wStringIO
 from translate.storage import po
-from translate.storage import xliff
+from translate.storage import poxliff
 from translate.storage import lisa
 import os, tempfile
 from xml.parsers.xmlproc import xmlval, xmlproc
@@ -16,7 +16,7 @@ class TestPO2XLIFF:
 	pofile = po.pofile(posource)
 	convertor = po2xliff.po2xliff()
 	outputxliff = convertor.convertfile(pofile, None)
-	return xliff.xlifffile(outputxliff)
+	return poxliff.PoXliffFile(outputxliff)
 	
     def getnode(self, xliff):
         """Retrieves the trans-unit node from the dom"""
@@ -241,9 +241,8 @@ msgstr[1] "iinkomo"
         print "The generated xml:"
         xmltext = str(xliff)
         print xmltext
-#        assert len(xliff.units) == 1
+	assert len(xliff.units) == 1
         assert xliff.translate("cow") == "inkomo"
-        assert xliff.translate("cows") == "iinkomo"
         
     def test_funny_plurals(self):
         minipo = r'''msgid "cow"
@@ -256,7 +255,6 @@ msgstr[2] "iiinkomo"
         print "The generated xml:"
         xmltext = str(xliff)
         print xmltext
-#        assert len(xliff.units) == 1
+	assert len(xliff.units) == 1
         assert xliff.translate("cow") == "inkomo"
-        assert xliff.translate("cows") == "iinkomo"
         
