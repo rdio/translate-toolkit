@@ -145,6 +145,8 @@ Provisional work is done to make several languages possible."""
 
     def createPHnodes(self, parent, text):
         """Create the text node in parent containing all the ph tags"""
+        if isinstance(text, str):
+            text = text.decode("utf-8")
         start = 0
         for i,m in enumerate(_getPhMatches(text)):
             #pretext
@@ -255,7 +257,7 @@ class LISAfile(base.TranslationStore):
             xml = posrc
         self.document = minidom.parseString(xml)
         assert self.document.documentElement.tagName == self.rootNode
-        self.initbody()           
+        self.initbody()
         termEntries = self.document.getElementsByTagName(self.UnitClass.rootNode)
         if termEntries is None:
             return

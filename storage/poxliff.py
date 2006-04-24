@@ -160,6 +160,8 @@ class PoXliffUnit(xliff.xliffunit):
 
     def addnote(self, text, origin=None):
         """Add a note specifically in a "note" tag"""
+        if isinstance(text, str):
+            text = text.decode("utf-8")
         note = self.document.createElement("note")
         note.appendChild(self.document.createTextNode(text))
         if origin:

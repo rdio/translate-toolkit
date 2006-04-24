@@ -108,6 +108,8 @@ class xliffunit(lisa.LISAunit):
 
     def addnote(self, text, origin=None):
         """Add a note specifically in a "note" tag"""
+        if isinstance(text, str):
+            text = text.decode("utf-8")
         note = self.document.createElement("note")
         note.appendChild(self.document.createTextNode(text))
         if origin:
@@ -166,6 +168,8 @@ class xliffunit(lisa.LISAunit):
         if purpose:
             group.setAttribute("purpose", purpose)
         for type, text in contexts:
+            if isinstance(text, str):
+                text = text.decode("utf-8")
             context = self.document.createElement("context")
             context.setAttribute("context-type", type)
             nodetext = self.document.createTextNode(text)
