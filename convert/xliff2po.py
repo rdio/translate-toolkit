@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2002-2004 Zuza Software Foundation
+# Copyright 2002-2006 Zuza Software Foundation
 # 
 # This file is part of translate.
 #
@@ -24,74 +24,57 @@
 You can convert back to .xliff using po2xliff"""
 
 from translate.storage import po
-from translate.storage import xliff
+from translate.storage import poxliff as xliff
 from translate.misc import quote
 
 class xliff2po:
-  def converttransunit(self, sources, msgid, msgstr):
+  def converttransunit(self, transunit):
     """makes a pounit from the given transunit"""
     thepo = po.pounit()
-    if sources:
-      thepo.sourcecomments.append("#: %s\n" % " ".join(sources))
-    msgid = msgid.replace("\n", "\\n\n")
-    msgstr = msgstr.replace("\n", "\\n\n")
-    thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in msgid.split("\n")]
-    if len(thepo.msgid) > 1:
-      thepo.msgid = [quote.quotestr("")] + thepo.msgid
-    thepo.msgstr = [quote.quotestr(quote.rstripeol(line)) for line in msgstr.split("\n")]
-    if len(thepo.msgstr) > 1:
-      thepo.msgstr = [quote.quotestr("")] + thepo.msgstr
+
+    #Header
+    if not transunit.getrestype() == "x-gettext-domain-header":
+      thepo.source = transunit.source
+    thepo.target = transunit.target
+
+    #Location comments
+    references = transunit.getreferences()
+    if references:
+      thepo.sourcecomments.append("#: %s\n" % " ".join(references))
+
+    #Translator comments
+    notes = transunit.getnotes()
+    trancomments = transunit.gettranslatorcomments()
+    if notes == trancomments or trancomments.find(notes) >= 0:
+      notes = ""
+    elif notes.find(trancomments) >= 0:
+      trancomments = notes
+      notes = ""
+    trancomments = trancomments + notes
+    if trancomments:
+      thepo.othercomments.extend(["# %s\n" % comment for comment in trancomments.split("\n")])
+    
+    #Automatic comments
+    autocomments = transunit.getautomaticcomments()
+    if autocomments:
+      thepo.automaticcomments.extend(["#. %s\n" % comment for comment in autocomments.split("\n")])
+
+    #See 5.6.1 of the spec. We should not check fuzzyness, but approved attribute
+    if not transunit.isapproved():
+      thepo.markfuzzy(True)
+    
     return thepo
-
-  def getnodetext(self, node):
-    """returns the node's text by iterating through the child nodes"""
-    return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
-
-  def gettransunitsources(self, transunit):
-    """takes a transunit node and finds the location, returning it in po-style list of sources"""
-    sources = []
-    for contextgroupnode in transunit.xmlelement.getElementsByTagName("context-group"):
-      contextname = contextgroupnode.getAttribute("name")
-      if contextname == "x-po-reference":
-        sourcefile = ""
-        linenumber = None
-        for contextnode in contextgroupnode.getElementsByTagName("context"):
-          contexttype = contextnode.getAttribute("context-type")
-          contexttext = self.getnodetext(contextnode)
-          if contexttype == "sourcefile":
-            sourcefile = contexttext
-          elif contexttype == "linenumber":
-            linenumber = contexttext
-        source = ""
-        if sourcefile: source += sourcefile
-        if linenumber: source += ":" + linenumber
-        if source: sources.append(source)
-    return sources
 
   def convertfile(self, inputfile):
     """converts a .xliff file to .po format"""
-    xlifffile = xliff.xlifffile(inputfile)
+    PoXliffFile = xliff.PoXliffFile(inputfile)
     thepofile = po.pofile()
     headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-    # thepofile.units.append(headerpo)
-#    for filename, transunits in xlifffile.units:
+    # for filename, transunits in PoXliffFile.units:
     # TODO: support multiple files
     if True:
-      for transunit in xlifffile.units:
-	a =  str(xlifffile.units[0])
-	#TODO: wat gaan hier aan? XXX XXX
-        sources = self.gettransunitsources(transunit)
-        source = transunit.source
-        target = transunit.target
-
-        if target is None:
-          target = ''
-        thepo = self.converttransunit(sources, source, target)
-
-        # Check if fuzzy
-        if transunit.isfuzzy():
-          thepo.markfuzzy()
-
+      for transunit in PoXliffFile.units:
+        thepo = self.converttransunit(transunit)
         thepofile.units.append(thepo)
     return thepofile
 
