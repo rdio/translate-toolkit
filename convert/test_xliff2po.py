@@ -143,3 +143,22 @@ garbage</context>
         assert not pofile.units[1].isfuzzy()
         assert pofile.units[2].isfuzzy()
         
+    def test_plurals(self):
+        """Tests fuzzyness"""
+        minixlf = self.xliffskeleton % '''<group restype="x-gettext-plurals">
+        <trans-unit id="1[0]" xml:space="preserve">
+            <source>cow</source>
+            <target>inkomo</target>
+        </trans-unit>
+        <trans-unit id="1[1]" xml:space="preserve">
+            <source>cows</source>
+            <target>iinkomo</target>
+        </trans-unit>
+</group>'''
+        pofile = self.xliff2po(minixlf)
+        potext = str(pofile)
+        assert len(pofile.units) == 1
+        assert potext.index('msgid_plural "cows"')
+        assert potext.index('msgstr[0] "inkomo"')
+        assert potext.index('msgstr[1] "iinkomo"')
+
