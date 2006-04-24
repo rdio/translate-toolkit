@@ -36,11 +36,20 @@ import codecs
 
 def escapeforpo(line):
   """escapes a line for po format. assumes no \n occurs in the line"""
-  return line.replace("\\n", "\n").replace('\\', '\\\\').replace("\n", "\\n").replace('"', '\\"').replace('\\\\r', '\\r').replace('\\\\t', '\\t')
+  return line.replace('\\', '\\\\').replace('\n', '\\n').replace('"', '\\"').replace('\t', '\\t').replace('\\\\r', '\\r')
 
 def quoteforpo(text):
   """quotes the given text for a PO file, returning quoted and escaped lines"""
-  return ['"' + escapeforpo(line) + '"' for line in text.split("\n")]
+  polines = []
+  if text is None:
+    return polines
+  lines = text.split("\n")
+  if len(lines) > 1:
+    polines.extend(['""'])
+    polines.extend(['"' + escapeforpo(line) + '\\n"' for line in lines[:-1]])
+    
+  polines.extend(['"' + escapeforpo(lines[-1]) + '"'])
+  return polines
 
 def isnewlineescape(escape):
   return escape == "\\n"
@@ -59,7 +68,7 @@ def unquotefrompo(postr, joinwithlinebreak=False):
     if postr and postr[0] == '""': postr = postr[1:]
   else:
     joiner = ""
-  return joiner.join([extractpoline(line).replace("\\n", "\n").replace("\\t", "\t") for line in postr])
+  return joiner.join([extractpoline(line) for line in postr])
 
 def encodingToUse(encoding):
   """Tests whether the given encoding is known in the python runtime, or returns utf-8.
@@ -128,7 +137,7 @@ class pounit(base.TranslationUnit):
     multi = multistring(unquotefrompo(self.msgid), self.encoding)
     if self.hasplural():
       multi.strings.append(unquotefrompo(self.msgid_plural))
-    return multi
+    return multi.replace("\\n", "\n").replace("\\t", "\t")
 
   def setsource(self, source):
     """Sets the msgstr to the given (unescaped) value"""
@@ -136,7 +145,8 @@ class pounit(base.TranslationUnit):
       source = source.strings
     if isinstance(source, list):
       self.msgid = quoteforpo(source[0])
-      self.msgid_plural = quoteforpo(source[1])
+      if len(source) > 1:
+        self.msgid_plural = quoteforpo(source[1])
     else:
       self.msgid = quoteforpo(source)
   source = property(getsource, setsource)
@@ -147,7 +157,7 @@ class pounit(base.TranslationUnit):
       multi = multistring(map(unquotefrompo, self.msgstr.values()), self.encoding)
     else:
       multi = multistring(unquotefrompo(self.msgstr), self.encoding)
-    return multi
+    return multi.replace("\\n", "\n").replace("\\t", "\t")
 
   def settarget(self, target):
     """Sets the msgstr to the given (unescaped) value"""
