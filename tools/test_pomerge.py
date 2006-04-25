@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from translate.tools import pomerge
 from translate.storage import po
@@ -71,3 +72,26 @@ class TestPOMerge:
         mergepo = '''msgid "First part\\n"\n"Second part"\nmsgstr ""\n"Eerste deel\\n"\n"Tweede deel"'''
         pofile = self.mergepo(templatepo, mergepo)
         assert str(pofile) == templatepo
+
+        templatepo = '''msgid "Use a scissor"\nmsgstr "Gebruik 'n sker "\n"om dit te doen"\n'''
+        mergepo = '''msgid "Use a scissor"\nmsgstr "Gebruik 'n skêr om dit te doen"\n'''
+        expectedpo = '''msgid "Use a scissor"\nmsgstr "Gebruik 'n skêr "\n"om dit te doen"\n\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        assert str(pofile) == expectedpo
+
+        templatepo = '''msgid "To do it, use a scissor, please."\nmsgstr "Om dit te doen, "\n"gebruik 'n sker, "\n"asseblief."\n'''
+        mergepo = '''msgid "To do it, use a scissor, please."\nmsgstr "Om dit te doen, gebruik 'n skêr, asseblief."\n'''
+        expectedpo = '''msgid "To do it, use a scissor, please."\nmsgstr "Om dit te doen, "\n"gebruik 'n skêr, "\n"asseblief."\n\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        assert str(pofile) == expectedpo
+        mergepo = '''msgid "To do it, use a scissor, please."\nmsgstr "Om dit te doen, gebruik 'n skêr, "\n"asseblief."\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        assert str(pofile) == expectedpo
+        mergepo = '''msgid "To do it, use a scissor, please."\nmsgstr ""\n"Om dit te doen, "\n"gebruik 'n skêr, asseblief."\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        assert str(pofile) == expectedpo
+
+        mergepo = '''msgid ""\n"To do it, use a scissor, "\n"please."\nmsgstr ""\n"Om dit te doen, "\n"gebruik 'n skêr, asseblief."\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        assert str(pofile) == expectedpo
+
