@@ -95,3 +95,8 @@ class TestPOMerge:
         pofile = self.mergepo(templatepo, mergepo)
         assert str(pofile) == expectedpo
 
+        templatepo = '''msgid "To do it, use a scissor, please."\nmsgstr ""\n"Om dit te doen, "\n"gebruik 'n sker, "\n"asseblief."\n'''
+        mergepo = '''msgid "To do it, use a scissor, please."\nmsgstr "Om dit te doen, gebruik 'n skêr, asseblief."\n'''
+        expectedpo = '''msgid "To do it, use a scissor, please."\nmsgstr ""\n"Om dit te doen, "\n"gebruik 'n skêr, "\n"asseblief."\n\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        assert str(pofile) == expectedpo
