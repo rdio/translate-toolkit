@@ -64,3 +64,10 @@ class TestPOMerge:
         pounit = self.singleunit(pofile)
         print pofile
         assert pofile.getoutput() == expectedpo
+
+    def test_preserve_format(self):
+        """Tests that the layout of the po doesn't change unnecessarily"""
+        templatepo = '''msgid "First part\\nSecond part"\nmsgstr ""\n"Eerste deel\\nTweede deel"\n\n'''
+        mergepo = '''msgid "First part\\n"\n"Second part"\nmsgstr ""\n"Eerste deel\\n"\n"Tweede deel"'''
+        pofile = self.mergepo(templatepo, mergepo)
+        assert str(pofile) == templatepo
