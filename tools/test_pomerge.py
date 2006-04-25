@@ -100,3 +100,12 @@ class TestPOMerge:
         expectedpo = '''msgid "To do it, use a scissor, please."\nmsgstr ""\n"Om dit te doen, "\n"gebruik 'n skêr, "\n"asseblief."\n\n'''
         pofile = self.mergepo(templatepo, mergepo)
         assert str(pofile) == expectedpo
+
+    def test_merge_dos2unix(self):
+        """Test that merging a comment line with dos newlines doesn't add a new line"""
+        templatepo = '''# User comment\n#. Automatic comment\n# (pofilter) Translate Toolkit comment\n#: location_comment.c:110\nmsgid "File"\nmsgstr "File"\n\n'''
+        mergepo =  '''# User comment\r\n#. Automatic comment\r\n# (pofilter) Translate Toolkit comment\r\n#: location_comment.c:110\r\nmsgid "File"\r\nmsgstr "Ifayile"\r\n\r\n'''
+        expectedpo = '''# User comment\n#. Automatic comment\n# (pofilter) Translate Toolkit comment\n#: location_comment.c:110\nmsgid "File"\nmsgstr "Ifayile"\n\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        assert str(pofile) == expectedpo
+
