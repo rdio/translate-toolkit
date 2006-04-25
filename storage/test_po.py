@@ -262,3 +262,11 @@ msgstr[1] "Koeie"
 	print "__str__", str(oldfile)
 	assert len(oldfile.units) == 2
 	assert str(oldfile).find("# old lonesome comment\n\n") >= 0
+
+    def test_reflowing(self):
+        minipo = '''msgid "One\\nTwo"\nmsgstr "Een\\n"\n"Twee"\n\n'''
+        pofile = self.poparse(minipo)
+        print str(pofile)
+        print
+        print pofile.units[0].msgstr
+        assert False

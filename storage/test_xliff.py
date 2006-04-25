@@ -86,4 +86,3 @@ class TestXLIFFfile(test_base.TestTranslationStore):
         assert unit.xmlelement.getAttribute("approved") == "no"
         #assert unit.isfuzzy()
 
-

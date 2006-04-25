@@ -38,8 +38,10 @@ def escapeforpo(line):
   """escapes a line for po format. assumes no \n occurs in the line"""
   return line.replace('\\', '\\\\').replace('\n', '\\n').replace('"', '\\"').replace('\t', '\\t').replace('\\\\r', '\\r')
 
-def quoteforpo(text):
+def quoteforpo(text, template=None):
   """quotes the given text for a PO file, returning quoted and escaped lines"""
+  if template:
+    return quoteforpofromtemplate(text, template)
   polines = []
   if text is None:
     return polines
@@ -50,6 +52,42 @@ def quoteforpo(text):
     
   polines.extend(['"' + escapeforpo(lines[-1]) + '"'])
   return polines
+
+def quoteforpofromtemplate(text, template):
+  """Same as quoteforpo, but try to to use same format as template as far as
+  possible. template is a list of polines (such as pounit.msgstr)"""
+  templatetext = unquotefrompo(template)
+  #unchanged is a list containing tuples indicating
+  #    (start in text, end in text, quoted part)
+  unchanged = []
+  index = -1
+  searchfrom = 0
+  for part in template:
+    unquotedpart = unquotefrompo([part])
+    if len(unquotedpart) == 0:
+      continue
+    index = text.find(unquotedpart, searchfrom)
+    if index >= 0:
+      searchfrom = index + len(unquotedpart)
+      unchanged.append((index, searchfrom, part))
+
+  #index indicates up to where in text we have processed:
+  index = 0
+  polines = []    
+  while index < len(text):
+    if len(unchanged) == 0:
+      polines.extend(quoteforpo(text[index:]))
+      index = len(text)
+    else:
+      (start, end, part) = unchanged.pop(0)
+      if index < start:
+        polines.extend(quoteforpo(text[index:start]))
+      polines.append(part)
+      index = end
+  if len(template) > 1 and template[0] == '""':
+    polines = ['""'] + polines
+    
+  return polines 
 
 def isnewlineescape(escape):
   return escape == "\\n"
@@ -146,9 +184,9 @@ class pounit(base.TranslationUnit):
     if isinstance(source, list):
       self.msgid = quoteforpo(source[0])
       if len(source) > 1:
-        self.msgid_plural = quoteforpo(source[1])
+        self.msgid_plural = quoteforpo(source[1], self.msgid_plural)
     else:
-      self.msgid = quoteforpo(source)
+      self.msgid = quoteforpo(source, self.msgid)
   source = property(getsource, setsource)
 
   def gettarget(self):
@@ -163,14 +201,15 @@ class pounit(base.TranslationUnit):
     """Sets the msgstr to the given (unescaped) value"""
     if target == self.target:
       return
-    if isinstance(target, multistring):
+    if isinstance(target, multistring) and len(target.strings) > 1:
       target = target.strings
+    #TODO: use template for quoteforpo where possible
     if isinstance(target, list):
       self.msgstr = dict(zip(range(len(target)), map(quoteforpo, target)))
     elif isinstance(target, dict):
       self.msgstr = dict(zip(target.keys(), map(quoteforpo, target.values())))
     else:
-      self.msgstr = quoteforpo(target)
+      self.msgstr = quoteforpo(target, template=self.msgstr)
   target = property(gettarget, settarget)
 
   def copy(self):
@@ -242,8 +281,7 @@ class pounit(base.TranslationUnit):
       mergelists(self.obsoletemessages, otherpo.obsoletemessages)
       mergelists(self.msgidcomments, otherpo.msgidcomments)
     if self.isblankmsgstr() or overwrite:
-      if self.target != otherpo.target:
-        self.msgstr = otherpo.msgstr
+      self.target = otherpo.target
     elif otherpo.isblankmsgstr():
       if self.msgid != otherpo.msgid:
         self.markfuzzy()
