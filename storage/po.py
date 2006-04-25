@@ -161,6 +161,8 @@ class pounit(base.TranslationUnit):
 
   def settarget(self, target):
     """Sets the msgstr to the given (unescaped) value"""
+    if target == self.target:
+      return
     if isinstance(target, multistring):
       target = target.strings
     if isinstance(target, list):
@@ -240,7 +242,8 @@ class pounit(base.TranslationUnit):
       mergelists(self.obsoletemessages, otherpo.obsoletemessages)
       mergelists(self.msgidcomments, otherpo.msgidcomments)
     if self.isblankmsgstr() or overwrite:
-      self.msgstr = otherpo.msgstr
+      if self.target != otherpo.target:
+        self.msgstr = otherpo.msgstr
     elif otherpo.isblankmsgstr():
       if self.msgid != otherpo.msgid:
         self.markfuzzy()
