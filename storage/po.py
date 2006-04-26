@@ -56,6 +56,9 @@ def quoteforpo(text, template=None):
 def quoteforpofromtemplate(text, template):
   """Same as quoteforpo, but try to to use same format as template as far as
   possible. template is a list of polines (such as pounit.msgstr)"""
+  for position, item in enumerate(template):
+    if not isinstance(item, unicode):
+      template[position] = item.decode('utf-8')
   templatetext = unquotefrompo(template)
   #unchanged is a list containing tuples indicating
   #    (start in text, end in text, quoted part)
