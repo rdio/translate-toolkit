@@ -287,7 +287,6 @@ class pounit(base.TranslationUnit):
           item = item.rstrip() + lineend
           if item not in list1:
             list1.append(item)
-        list1.extend([item for item in list2 if not item in list1])
     if comments:
       mergelists(self.othercomments, otherpo.othercomments)
       #We don't bring acros otherpo.automaticcomments as we consider ourself
