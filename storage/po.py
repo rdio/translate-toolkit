@@ -250,6 +250,7 @@ class pounit(base.TranslationUnit):
     overwrite non-blank self.msgstr only if overwrite is True
     merge comments only if comments is True"""
     def mergelists(list1, list2, split=False):
+      #decode where necessary
       if unicode in [type(item) for item in list2] + [type(item) for item in list1]:
         for position, item in enumerate(list1):
           if isinstance(item, str):
@@ -257,6 +258,18 @@ class pounit(base.TranslationUnit):
         for position, item in enumerate(list2):
           if isinstance(item, str):
             list2[position] = item.decode("utf-8")
+            
+      #Determine the newline style of list1
+      lineend = ""
+      if list1:
+        if list1[0]:
+          for candidate in ["\n", "\r", "\n\r"]:
+            if list1[0].endswith(candidate):
+              lineend = candidate
+      if not lineend:
+        lineend = "\n"
+        
+      #Split if directed to do so:    
       if split:
         splitlist1 = []
         splitlist2 = []
@@ -267,8 +280,13 @@ class pounit(base.TranslationUnit):
         for item in list2:
           splitlist2.extend(item.split()[1:])
           prefix = item.split()[0]
-        list1.extend(["%s %s\n" % (prefix,item) for item in splitlist2 if not item in splitlist1])
+        list1.extend(["%s %s%s" % (prefix,item,lineend) for item in splitlist2 if not item in splitlist1])
       else:
+        #Normal merge, but conform to list1 newline style
+        for item in list2:
+          item = item.rstrip() + lineend
+          if item not in list1:
+            list1.append(item)
         list1.extend([item for item in list2 if not item in list1])
     if comments:
       mergelists(self.othercomments, otherpo.othercomments)
