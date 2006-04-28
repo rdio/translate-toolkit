@@ -42,10 +42,14 @@ def extract(source,startdelim,enddelim,escape,startinstring=0):
   lenend = len(enddelim)
   lenescape = len(escape)
   startdelim_places = find_all(source, startdelim)
-  enddelim_places = find_all(source, enddelim)
+  if startdelim == enddelim:
+    enddelim_places = startdelim_places[:]
+  else:
+    enddelim_places = find_all(source, enddelim)
   if escape is not None:
     escape_places = find_all(source, escape)
     last_escape_pos = -1
+    # filter escaped escapes
     true_escape = False
     true_escape_places = []
     for escape_pos in escape_places:
@@ -59,6 +63,7 @@ def extract(source,startdelim,enddelim,escape,startinstring=0):
     enddelim_places = [pos + lenend for pos in enddelim_places if pos - lenescape not in true_escape_places]
   else:
     enddelim_places = [pos + lenend for pos in enddelim_places]
+  # get a unique sorted list of the significant places in the string
   significant_places = dict.fromkeys([0] + startdelim_places + enddelim_places + [len(source)-1]).keys()
   significant_places.sort()
   extracted = ""
