@@ -24,7 +24,7 @@ def test_extract():
     assert quote.extract("<quoted\\>", "<", ">", "\\", 0) == ("<quoted\\>", True)
 
 def test_extractwithoutquotes():
-    """tests the extract function"""
+    """tests the extractwithoutquotes function"""
     assert quote.extractwithoutquotes("the <quoted> part", "<", ">", "\\", 0) == ("quoted", False)
     assert quote.extractwithoutquotes("the 'quoted' part", "'", "'", "\\", 0) == ("quoted", False)
     assert quote.extractwithoutquotes("the 'isn\\'t escaping fun' part", "'", "'", "\\", 0) == ("isn\\'t escaping fun", False)
@@ -39,6 +39,13 @@ def test_extractwithoutquotes():
     assert quote.extractwithoutquotes("<quoted><again\\\\", "<", ">", "\\", 0, False) == ("quotedagain\\", True)
     # escaping of quote char
     assert quote.extractwithoutquotes("<quoted\\>", "<", ">", "\\", 0, False) == ("quoted>", True)
+
+def isnewlineortabescape(escape):
+  return escape == "\\n" or escape == "\\t"
+
+def test_extractwithoutquotes_passfunc():
+    """tests the extractwithoutquotes function with a function for includeescapes as a parameter"""
+    assert quote.extractwithoutquotes("<test \\r \\n \\t \\\\>", "<", ">", "\\", 0, isnewlineortabescape) == ("<test r \\n \\t \\>", False)
 
 class TestQuote:
 
