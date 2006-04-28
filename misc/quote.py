@@ -22,7 +22,8 @@
 """string processing utilities for extracting strings with various kinds of delimiters"""
 
 def find_all(searchin, substr):
-  """returns a list of locations where substr occurs in searchin"""
+  """returns a list of locations where substr occurs in searchin
+  locations are not allowed to overlap"""
   location = 0
   locations = []
   while location != -1:
@@ -33,7 +34,8 @@ def find_all(searchin, substr):
   return locations
 
 def extract(source,startdelim,enddelim,escape,startinstring=0):
-  """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping"""
+  """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping
+  returns tuple of (quoted string with quotes, still in string at end)"""
   # note that this returns the quote characters as well... even internally
   instring = startinstring
   inescape = 0

@@ -2,6 +2,25 @@
 
 from translate.misc import quote
 
+def test_find_all():
+    """tests the find_all function"""
+    assert quote.find_all("", "a") == []
+    assert quote.find_all("a", "b") == []
+    assert quote.find_all("a", "a") == [0]
+    assert quote.find_all("aa", "a") == [0, 1]
+    assert quote.find_all("abba", "ba") == [2]
+    # check we skip the whole instance
+    assert quote.find_all("banana", "ana") == [1]
+
+def test_extract():
+    """tests the extract function"""
+    assert quote.extract("the <quoted> part", "<", ">", "\\", 0) == ("<quoted>", False)
+    assert quote.extract("the 'quoted' part", "'", "'", "\\", 0) == ("'quoted'", False)
+    assert quote.extract("the 'isn\\'t escaping fun' part", "'", "'", "\\", 0) == ("'isn\\'t escaping fun'", False)
+    assert quote.extract("the 'isn\\'t something ", "'", "'", "\\", 0) == ("'isn\\'t something ", True)
+    assert quote.extract("<quoted>\\", "<", ">", "\\", 0) == ("<quoted>", False)
+    assert quote.extract("<quoted>\\\\<again>", "<", ">", "\\", 0) == ("<quoted><again>", False)
+
 class TestQuote:
 
   def test_mozilla_control_escapes(self):
