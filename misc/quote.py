@@ -38,50 +38,41 @@ def extract(source,startdelim,enddelim,escape,startinstring=0):
   returns tuple of (quoted string with quotes, still in string at end)"""
   # note that this returns the quote characters as well... even internally
   instring = startinstring
-  inescape = 0
-  # remember where the last start of the string was so we don't look for and end marker before that
-  # or alternatively, where the last escape ended. so lastspecial >= laststart
-  laststart = 0
-  lastspecial = 0
   lenstart = len(startdelim)
   lenend = len(enddelim)
-  if escape is None: escape = "&&&&&&&&&&&&&&&NOESCAPE&&&&&&&&&&&&&&&&&&"
+  lenescape = len(escape)
   startdelim_places = find_all(source, startdelim)
   enddelim_places = find_all(source, enddelim)
-  escape_places = find_all(source, escape)
-  after_escape_places = [n+1 for n in escape_places]
-  significant_places = dict.fromkeys([0] + startdelim_places + enddelim_places + escape_places + after_escape_places + [len(source)-1]).keys()
+  if escape is not None:
+    escape_places = find_all(source, escape)
+    last_escape_pos = -1
+    true_escape = False
+    true_escape_places = []
+    for escape_pos in escape_places:
+      if escape_pos - lenescape in escape_places:
+        true_escape = not true_escape
+      else:
+        true_escape = True
+      if true_escape:
+        true_escape_places.append(escape_pos)
+    startdelim_places = [pos for pos in startdelim_places if pos - lenescape not in true_escape_places]
+    enddelim_places = [pos + lenend for pos in enddelim_places if pos - lenescape not in true_escape_places]
+  else:
+    enddelim_places = [pos + lenend for pos in enddelim_places]
+  significant_places = dict.fromkeys([0] + startdelim_places + enddelim_places + [len(source)-1]).keys()
   significant_places.sort()
   extracted = ""
   lastpos = 0
-  for pos in range(len(source)):
-    c = source[pos]
-    if instring and inescape:
-      # if in an escape, just add to the string
-      extracted += c
-      lastspecial = pos+1
-    elif instring and ((pos-lenend < lastspecial) or ((pos-lenend) not in enddelim_places)):
-      # if we're in the string and we're not at the end, add to the string
-      extracted += c
-    else:
-      if instring and (pos-lenend >= lastspecial) and ((pos-lenend) in enddelim_places) and (not inescape):
-        # if we're in the string and we find we've just passed the end, mark that we're out
-        instring = not instring
-      if (not instring) and (pos in startdelim_places) and (not inescape):
-        # if we're not in the string and we find the start, add to the string and mark that we're in
-        instring = not instring
-        laststart = pos + lenstart
-        lastspecial = laststart
-        extracted += c
-    if (pos in escape_places) and (not inescape):
-      inescape = 1
-    else:
-      inescape = 0
-    lastpos = pos + 1
-  # if we're right at the end, just check if we've just had an end...
-  pos = len(source)
-  if instring and (pos-lenend >= laststart) and ((pos-lenend) in enddelim_places) and (not inescape):
-    instring = not instring
+  for pos in significant_places:
+    if instring and pos in enddelim_places and lastpos != pos - lenstart:
+      extracted += source[lastpos:pos]
+      instring = False
+      lastpos = pos
+    elif (not instring) and pos in startdelim_places:
+      instring = True
+      lastpos = pos
+  if instring:
+    extracted += source[lastpos:]
   return (extracted,instring)
 
 def extractfromlines(lines,startdelim,enddelim,escape):
