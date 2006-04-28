@@ -859,23 +859,6 @@ class pofile(base.TranslationStore):
         uniqueelements.append(thepo)
     self.units = uniqueelements
 
-  def makeindex(self):
-    """creates an index of po units based on source comments (locations)"""
-    self.locationindex = {}
-    self.sourceindex = {}
-    for thepo in self.units:
-      msgid = unquotefrompo(thepo.msgid)
-      self.sourceindex[msgid] = thepo
-      if thepo.hasplural():
-        msgid_plural = unquotefrompo(thepo.msgid_plural)
-        self.sourceindex[msgid_plural] = thepo
-      for location in thepo.getlocations():
-        if location in self.locationindex:
-          # if sources aren't unique, don't use them
-          self.locationindex[location] = None
-        else:
-          self.locationindex[location] = thepo
-
   def __str__(self):
     """convert to a string. double check that unicode is handled somehow here"""
     output = self.getoutput()

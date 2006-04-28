@@ -28,6 +28,11 @@ class TranslationUnit(object):
         """Sets the target string to the given value"""
         self.target = target
 
+    def getlocations(self):
+        """A list of source code locations. Shouldn't be implemented if the
+        format doesn't support it."""
+        return []
+
     def addnote(self, text):
         """Adds a note (comment)"""
         pass
@@ -64,6 +69,22 @@ class TranslationStore(object):
             return unit.target
         else:
             return None
+
+    def makeindex(self):
+        """Indexes the items in this store. At least .sourceindex should be usefull."""
+        self.locationindex = {}
+        self.sourceindex = {}
+        for unit in self.units:
+            self.sourceindex[unit.source] = unit
+            if unit.hasplural():
+                plural_source = unit.source.strings[1]
+                self.sourceindex[plural_source] = unit
+            for location in unit.getlocations():
+                if location in self.locationindex:
+                    # if sources aren't unique, don't use them
+                    self.locationindex[location] = None
+                else:
+                    self.locationindex[location] = unit
 
     def __str__(self):
         """Converts to a string representation that can be parsed back using parse"""
