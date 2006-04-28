@@ -38,9 +38,9 @@ class xliff2po:
     thepo.target = transunit.target
 
     #Location comments
-    references = transunit.getreferences()
-    if references:
-      thepo.sourcecomments.append("#: %s\n" % " ".join(references))
+    locations = transunit.getlocations()
+    if locations:
+      thepo.sourcecomments.append("#: %s\n" % " ".join(locations))
 
     #Translator comments
     notes = transunit.getnotes()

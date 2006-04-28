@@ -206,7 +206,7 @@ class PoXliffUnit(xliff.xliffunit):
             for i in range(len(self.units)):
                 self.units[i].setid("%s[%d]" % (id, i))
 
-    def getreferences(self):
+    def getlocations(self):
         """Returns all the references (source locations)"""
         groups = self.getcontextgroups("po-reference")
         references = []
