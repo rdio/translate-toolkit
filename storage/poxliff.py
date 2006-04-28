@@ -214,7 +214,6 @@ class PoXliffUnit(xliff.xliffunit):
             sourcefile = ""
             linenumber = ""
             for (type,text) in group:
-                print "(%s,%s)" %(type, text)
                 if type == "sourcefile":
                     sourcefile = text
                 elif type == "linenumber":
