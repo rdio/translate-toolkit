@@ -30,12 +30,12 @@ def mergepofiles(p1, p2, mergeblanks, mergecomments):
     if po2.isheader():
       continue
     # there may be more than one entity due to msguniq merge
-    entities = po2.getids()
+    entities = po2.getlocations()
     if len(entities) == 0:
       source = po2.source
       po1 = None
-      if source in p1.msgidindex:
-        po1 = p1.msgidindex[source]
+      if source in p1.sourceindex:
+        po1 = p1.sourceindex[source]
       if po1 is None:
         sys.stderr.write(str(po2) + "\n")
       else:
@@ -43,18 +43,18 @@ def mergepofiles(p1, p2, mergeblanks, mergecomments):
         po1.merge(po2, overwrite=True)
     for entity in entities:
       po1 = None
-      if p1.sourceindex.has_key(entity):
+      if p1.locationindex.has_key(entity):
         # now we need to replace the definition of entity with msgstr
-        po1 = p1.sourceindex[entity] # find the other po
+        po1 = p1.locationindex[entity] # find the other po
       # check if this is a duplicate in p2...
-      if p2.sourceindex.has_key(entity):
-        if p2.sourceindex[entity] is None:
+      if p2.locationindex.has_key(entity):
+        if p2.locationindex[entity] is None:
           po1 = None
-      # if sourceindex was not unique, use the msgidindex
+      # if locationindex was not unique, use the sourceindex
       if po1 is None:
         source = po2.source
-        if source in p1.msgidindex:
-          po1 = p1.msgidindex[source]
+        if source in p1.sourceindex:
+          po1 = p1.sourceindex[source]
       # check if we found a matching po element
       if po1 is None:
         print >>sys.stderr, "# the following po element was not found"

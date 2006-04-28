@@ -535,12 +535,12 @@ class pounit(base.TranslationUnit):
     postr = "".join(lines)
     return postr
 
-  def getids(self):
-    """returns the list of sources from sourcecomments in the po element"""
-    sources = []
+  def getlocations(self):
+    """returns the list of locations from sourcecomments in the po element"""
+    locations = []
     for sourcecomment in self.sourcecomments:
-      sources += quote.rstripeol(sourcecomment)[3:].split()
-    return sources
+      locations += quote.rstripeol(sourcecomment)[3:].split()
+    return locations
 
 class pofile(base.TranslationStore):
   """this represents a .po file containing various units"""
@@ -824,7 +824,7 @@ class pofile(base.TranslationStore):
     # TODO: this is using a list as the pos aren't hashable, but this is slow...
     markedpos = []
     def addcomment(thepo):
-      thepo.msgidcomments.append('"_: %s\\n"' % " ".join(thepo.getids()))
+      thepo.msgidcomments.append('"_: %s\\n"' % " ".join(thepo.getlocations()))
       markedpos.append(thepo)
     for thepo in self.units:
       if duplicatestyle.startswith("msgid_comment"):
@@ -860,21 +860,21 @@ class pofile(base.TranslationStore):
     self.units = uniqueelements
 
   def makeindex(self):
-    """creates an index of po units based on source comments"""
+    """creates an index of po units based on source comments (locations)"""
+    self.locationindex = {}
     self.sourceindex = {}
-    self.msgidindex = {}
     for thepo in self.units:
       msgid = unquotefrompo(thepo.msgid)
-      self.msgidindex[msgid] = thepo
+      self.sourceindex[msgid] = thepo
       if thepo.hasplural():
         msgid_plural = unquotefrompo(thepo.msgid_plural)
-        self.msgidindex[msgid_plural] = thepo
-      for source in thepo.getids():
-        if source in self.sourceindex:
+        self.sourceindex[msgid_plural] = thepo
+      for location in thepo.getlocations():
+        if location in self.locationindex:
           # if sources aren't unique, don't use them
-          self.sourceindex[source] = None
+          self.locationindex[location] = None
         else:
-          self.sourceindex[source] = thepo
+          self.locationindex[location] = thepo
 
   def __str__(self):
     """convert to a string. double check that unicode is handled somehow here"""
