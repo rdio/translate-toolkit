@@ -38,7 +38,6 @@ def test_extractwithoutquotes():
     assert quote.extractwithoutquotes("<quoted\\", "<", ">", "\\", 0, False) == ("quoted", True)
     assert quote.extractwithoutquotes("<quoted><again\\\\", "<", ">", "\\", 0, False) == ("quotedagain\\", True)
     # escaping of quote char
-    # TODO: this currently fails with ('quoted', False)
     assert quote.extractwithoutquotes("<quoted\\>", "<", ">", "\\", 0, False) == ("quoted>", True)
 
 class TestQuote:
