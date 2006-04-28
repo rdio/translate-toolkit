@@ -102,6 +102,7 @@ def extractcomment(lines):
 def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,includeescapes=1):
   """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping
   includeescapes can also be a function that takes the whole escaped string and returns whether to escape it"""
+  # TODO: adjust to be like extract above
   # note that this doesn't returns the quote characters as well...
   instring = startinstring
   inescape = 0
@@ -306,9 +307,7 @@ def findend(string,substring):
   return s
 
 def rstripeol(string):
-  e = len(string)
-  while (e > 0) and (string[e-1] in ['\n','\r']): e -= 1
-  return string[:e]
+  return string.rstrip("\r\n")
 
 def stripcomment(comment,startstring="<!--",endstring="-->"):
   cstart = comment.find(startstring)
