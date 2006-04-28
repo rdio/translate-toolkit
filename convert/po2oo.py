@@ -89,13 +89,13 @@ class reoo:
 
   def handlepoelement(self, thepo):
     # TODO: make this work for multiple columns in oo...
-    sources = thepo.getids()
-    # technically our formats should just have one source for each entry...
+    locations = thepo.getlocations()
+    # technically our formats should just have one location for each entry...
     # but we handle multiple ones just to be safe...
-    for source in sources:
-      subkeypos = source.rfind('.')
-      subkey = source[subkeypos+1:]
-      key = source[:subkeypos]
+    for location in locations:
+      subkeypos = location.rfind('.')
+      subkey = location[subkeypos+1:]
+      key = location[:subkeypos]
       # this is just to handle our old system of using %s/%s:%s instead of %s/%s#%s
       key = key.replace(':', '#')
       # this is to handle using / instead of \ in the sourcefile...
@@ -176,10 +176,10 @@ class oopocheckfilter(pofilter.pocheckfilter):
       if filterresult != autocorrect:
         for filtername, filtermessage in filterresult:
           if filtername in self.options.error:
-            print >> sys.stderr, "Error at %s::%s: %s" % (filename, thepo.getids()[0], filtermessage)
+            print >> sys.stderr, "Error at %s::%s: %s" % (filename, thepo.getlocations()[0], filtermessage)
             return not filteraction in ["exclude", "exclude-serious"]
           if filtername in self.options.warning or self.options.alwayswarn:
-            print >> sys.stderr, "Warning at %s::%s: %s" % (filename, thepo.getids()[0], filtermessage)
+            print >> sys.stderr, "Warning at %s::%s: %s" % (filename, thepo.getlocations()[0], filtermessage)
             return not filteraction in ["exclude"]
     return True
 

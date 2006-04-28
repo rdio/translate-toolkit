@@ -114,8 +114,8 @@ garbage</context>
         assert pofile.translate("nonsense") == "matlhapolosa"
         assert pofile.translate("bla") is None
         unit = pofile.units[0]
-        ids = unit.getids()
-        assert len(ids) == 2
+        locations = unit.getlocations()
+        assert len(locations) == 2
         assert "example.c:123" in ids
         assert "place.py" in ids
 

@@ -45,7 +45,7 @@ class po2xliff:
         unit.marktranslated()
       
       #Handle #: location comments
-      for location in thepo.getids():
+      for location in thepo.getlocations():
         unit.createcontextgroup("po-reference", self.contextlist(location), purpose="location")
       
       #Handle #. automatic comments
