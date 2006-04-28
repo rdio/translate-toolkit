@@ -133,17 +133,22 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
   significant_places.sort()
   extracted = ""
   lastpos = 0
+  callable_includeescapes = callable(includeescapes)
+  checkescapes = callable_includeescapes or not includeescapes
   for pos in significant_places:
     if instring and pos in enddelim_places and lastpos != pos - lenstart:
       section_start, section_end = lastpos + len(startdelim), pos - len(enddelim)
       section = source[section_start:section_end]
-      if escape is not None and not includeescapes:
+      if escape is not None and checkescapes:
         escape_list = [epos - section_start for epos in true_escape_places if section_start <= epos <= section_end]
         new_section = ""
         last_epos = 0
         for epos in escape_list:
           new_section += section[last_epos:epos]
-          last_epos = epos + lenescape
+          if callable_includeescapes and includeescapes(section[epos:epos+lenescape+1]):
+              last_epos = epos
+          else:
+              last_epos = epos + lenescape
         section = new_section + section[last_epos:]
       extracted += section
       instring = False
@@ -160,7 +165,10 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
       last_epos = 0
       for epos in escape_list:
         new_section += section[last_epos:epos]
-        last_epos = epos + lenescape
+        if callable_includeescapes and includeescapes(section[epos:epos+lenescape+1]):
+            last_epos = epos
+        else:
+            last_epos = epos + lenescape
       section = new_section + section[last_epos:]
     extracted += section
   return (extracted,instring)
