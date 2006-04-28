@@ -168,6 +168,9 @@ A sentence""", "I'm correct.")
     assert checks.fails(stdchecker.escapes, r"An escape escape \\", r"Escape escape")
     assert checks.passes(stdchecker.escapes, r"A double quote \"", r"Double quote \"")
     assert checks.fails(stdchecker.escapes, r"A double quote \"", r"Double quote")
+    # Escaped escapes
+    assert checks.passes(stdchecker.escapes, r"An escaped newline \\n", r"Escaped newline \\n")
+    assert checks.fails(stdchecker.escapes, r"An escaped newline \\n", r"Escaped newline \n")
 
 def test_filepaths():
     """tests filepaths"""
