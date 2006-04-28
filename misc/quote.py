@@ -21,6 +21,17 @@
 
 """string processing utilities for extracting strings with various kinds of delimiters"""
 
+def find_all(searchin, substr):
+  """returns a list of locations where substr occurs in searchin"""
+  location = 0
+  locations = []
+  while location != -1:
+    location = searchin.find(substr, location)
+    if location != -1:
+      locations.append(location)
+      location += len(substr)
+  return locations
+
 def extract(source,startdelim,enddelim,escape,startinstring=0):
   """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping"""
   # note that this returns the quote characters as well... even internally
@@ -32,34 +43,42 @@ def extract(source,startdelim,enddelim,escape,startinstring=0):
   lastspecial = 0
   lenstart = len(startdelim)
   lenend = len(enddelim)
+  if escape is None: escape = "&&&&&&&&&&&&&&&NOESCAPE&&&&&&&&&&&&&&&&&&"
+  startdelim_places = find_all(source, startdelim)
+  enddelim_places = find_all(source, enddelim)
+  escape_places = find_all(source, escape)
+  after_escape_places = [n+1 for n in escape_places]
+  significant_places = dict.fromkeys([0] + startdelim_places + enddelim_places + escape_places + after_escape_places + [len(source)-1]).keys()
+  significant_places.sort()
   extracted = ""
-  if escape is None: escape = "&&&&&&&&&&&&&&&NOESCAPE&&&&&&&&&&&&&&&&&&" 
+  lastpos = 0
   for pos in range(len(source)):
     c = source[pos]
     if instring and inescape:
       # if in an escape, just add to the string
       extracted += c
       lastspecial = pos+1
-    elif instring and ((pos-lenend < lastspecial) or (source.find(enddelim,pos-lenend) <> pos-lenend)):
+    elif instring and ((pos-lenend < lastspecial) or ((pos-lenend) not in enddelim_places)):
       # if we're in the string and we're not at the end, add to the string
       extracted += c
     else:
-      if instring and (pos-lenend >= lastspecial) and (source.find(enddelim,pos-lenend) == pos-lenend) and (not inescape):
+      if instring and (pos-lenend >= lastspecial) and ((pos-lenend) in enddelim_places) and (not inescape):
         # if we're in the string and we find we've just passed the end, mark that we're out
         instring = not instring
-      if (not instring) and (source.find(startdelim,pos) == pos) and (not inescape):
+      if (not instring) and (pos in startdelim_places) and (not inescape):
         # if we're not in the string and we find the start, add to the string and mark that we're in
         instring = not instring
         laststart = pos + lenstart
         lastspecial = laststart
         extracted += c
-    if (source.find(escape,pos) == pos) and (not inescape):
+    if (pos in escape_places) and (not inescape):
       inescape = 1
     else:
       inescape = 0
+    lastpos = pos + 1
   # if we're right at the end, just check if we've just had an end...
   pos = len(source)
-  if instring and (pos-lenend >= laststart) and (source.find(enddelim,pos-lenend) == pos-lenend) and (not inescape):
+  if instring and (pos-lenend >= laststart) and ((pos-lenend) in enddelim_places) and (not inescape):
     instring = not instring
   return (extracted,instring)
 
