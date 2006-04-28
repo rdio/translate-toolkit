@@ -23,16 +23,6 @@
 
 import sys
 from translate.storage import po
-from translate.misc import quote
-
-def readpofile(infile):
-  posrc = infile.read()
-  pf = po.pofile()
-  pf.parse(posrc)
-  return pf
-
-def writepofile(outfile, pf):
-  outfile.write(str(pf))
 
 def mergepofiles(p1, p2, mergeblanks, mergecomments):
   """take any new translations in p2 and write them into p1"""
