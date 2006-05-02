@@ -42,6 +42,11 @@ class TranslationUnit(object):
 	#TODO: Reconsider
         return False
 
+    def merge(self, otherunit, overwrite=False, comments=True):
+        """do basic format agnostic merging"""
+        if self.target == "" or overwrite:
+            self.target = otherunit.target
+
 class TranslationStore(object):
     """Base class for stores for multiple translation units of type UnitClass"""
     UnitClass = TranslationUnit
