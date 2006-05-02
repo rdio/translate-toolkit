@@ -3,18 +3,44 @@
 
 from translate.tools import pomerge
 from translate.storage import po
+from translate.storage import xliff 
 from translate.misc import wStringIO
 
 class TestPOMerge:
+    xliffskeleton = '''<?xml version="1.0" ?>
+<xliff version="1.1" xmlns="urn:oasis:names:tc:xliff:document:1.1">
+  <file original="filename.po" source-language="en-US" datatype="po">
+    <body>
+        %s
+    </body>
+  </file>
+</xliff>'''
+
     def mergepo(self, templatesource, inputsource):
-        """merges the sources of the given po files and returns a new po file object"""
+        """merges the sources of the given files and returns a new pofile object"""
         templatefile = wStringIO.StringIO(templatesource)
         inputfile = wStringIO.StringIO(inputsource)
         outputfile = wStringIO.StringIO()
+        inputfile.name = "test_a.po"
+        outputfile.name = "test_b.po"
         assert pomerge.mergepo(inputfile, outputfile, templatefile)
         outputpostring = outputfile.getvalue()
         outputpofile = po.pofile(outputpostring)
         return outputpofile
+
+    def mergexliff(self, templatesource, inputsource):
+        """merges the sources of the given files and returns a new xlifffile object"""
+        templatefile = wStringIO.StringIO(templatesource)
+        inputfile = wStringIO.StringIO(inputsource)
+        outputfile = wStringIO.StringIO()
+        inputfile.name = "test_a.xliff"
+        outputfile.name = "test_b.xliff"
+        assert pomerge.mergexliff(inputfile, outputfile, templatefile)
+        outputxliffstring = outputfile.getvalue()
+        print "Generated XML:"
+        print outputxliffstring
+        outputxlifffile = xliff.xlifffile(outputxliffstring)
+        return outputxlifffile
 
     def countunits(self, pofile):
         """returns the number of non-header items"""
@@ -109,3 +135,17 @@ class TestPOMerge:
         pofile = self.mergepo(templatepo, mergepo)
         assert str(pofile) == expectedpo
 
+    def test_xliff_into_xliff(self):
+        templatexliff = self.xliffskeleton % '''<trans-unit>
+        <source>red</source>
+        <target></target>
+</trans-unit>'''
+        mergexliff = self.xliffskeleton % '''<trans-unit>
+        <source>red</source>
+        <target>rooi</target>
+</trans-unit>'''
+	xlifffile = self.mergexliff(templatexliff, mergexliff)
+        assert len(xlifffile.units) == 1
+        unit = xlifffile.units[0]
+        assert unit.source == "red"
+        assert unit.target== "rooi"
