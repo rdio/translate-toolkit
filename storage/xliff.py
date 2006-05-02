@@ -150,7 +150,7 @@ class xliffunit(lisa.LISAunit):
             return
         if self.isfuzzy():
             #TODO: consider
-            targetnode.removeAttribute("state-qualifier", "fuzzy-match")
+            targetnode.removeAttribute("state-qualifier")
         targetnode.setAttribute("state", "translated")
 
     def setid(self, id):
@@ -193,6 +193,14 @@ class xliffunit(lisa.LISAunit):
     def getrestype(self):
         """returns the restype attribute in the trans-unit tag"""
         return self.xmlelement.getAttribute("restype")
+
+    def merge(self, otherunit, overwrite=False, comments=True):
+        #TODO: consier other attributes like "approved"
+        super(xliffunit, self).merge(otherunit, overwrite, comments)
+        if self.target:
+            self.marktranslated()
+        if otherunit.isfuzzy():
+            self.markfuzzy()
 
 
 class xlifffile(lisa.LISAfile):
