@@ -28,7 +28,8 @@ from translate.storage import xliff
 def mergepofiles(p1, p2, mergeblanks, mergecomments):
   """take any new translations in p2 and write them into p1"""
   for po2 in p2.units:
-    if callable(getattr(po2, "isheader", None)) and po2.isheader():
+    if (callable(getattr(po2, "isheader", None)) and po2.isheader()) or \
+       (callable(getattr(po2, "getrestype", None)) and po2.getrestype() == "x-gettext-domain-header"):
       continue
     # there may be more than one entity due to msguniq merge
     entities = po2.getlocations()
@@ -80,7 +81,17 @@ def str2bool(option):
 def inputfilefactory(inputfile):
   """Factory function to return the correct inputfile based on filename"""
   #TODO: consider xliff vs poxliff
-  filename = inputfile.name
+  filename = getattr(inputfile, "name", None)
+  if filename is None:
+    #This is mostly for tests. Let's guess from first characters
+    start = inputfile.read(100).strip()
+    print start[0]
+    if start[0] == '#' or start.find('msgid') != -1:
+      filename = "dummy.po"
+    else:
+      filename = "dummy.xliff"
+    inputfile.seek(0)
+
   extension = filename[filename.rfind("."):]
   extension = extension[1:].lower()
   if extension in ["po", "pot"]:
