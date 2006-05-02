@@ -127,6 +127,22 @@ class TestPOMerge:
         pofile = self.mergepo(templatepo, mergepo)
         assert str(pofile) == expectedpo
 
+    def test_preserve_format_kde_comments(self):
+        """Test that layout related to KDE comments does not change unnecessarily"""
+        templatepo = '''msgid "_: KDE comment\\n"\n"Simple string"\nmsgstr ""\n'''
+        mergepo = '''msgid "_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n'''
+        expectedpo = '''msgid "_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
+
+        templatepo = '''msgid ""\n"_: KDE comment\\n"\n"Simple string"\nmsgstr ""\n'''
+        mergepo = '''msgid ""\n"_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n'''
+        expectedpo = '''msgid ""\n"_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
+
     def test_merge_dos2unix(self):
         """Test that merging a comment line with dos newlines doesn't add a new line"""
         templatepo = '''# User comment\n# (pofilter) Translate Toolkit comment\n#. Automatic comment\n#: location_comment.c:110\nmsgid "File"\nmsgstr "File"\n\n'''
