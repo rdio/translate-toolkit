@@ -23,11 +23,12 @@
 
 import sys
 from translate.storage import po
+from translate.storage import xliff 
 
 def mergepofiles(p1, p2, mergeblanks, mergecomments):
   """take any new translations in p2 and write them into p1"""
   for po2 in p2.units:
-    if po2.isheader():
+    if callable(getattr(po2, "isheader", None)) and po2.isheader():
       continue
     # there may be more than one entity due to msguniq merge
     entities = po2.getlocations()
@@ -76,6 +77,18 @@ def str2bool(option):
   else:
     raise ValueError("invalid boolean value: %r" % option)
 
+def inputfilefactory(inputfile):
+  """Factory function to return the correct inputfile based on filename"""
+  #TODO: consider xliff vs poxliff
+  filename = inputfile.name
+  extension = filename[filename.rfind("."):]
+  extension = extension[1:].lower()
+  if extension in ["po", "pot"]:
+    return po.pofile(inputfile)
+  elif extension in ["xlf", "xliff"]:
+    return xliff.xlifffile(inputfile)
+  raise ValueError("Don't know what to do with input format %s" % extension)
+
 def mergepo(inputfile, outputfile, templatefile, mergeblanks="no", mergecomments="yes"):
   try:
     mergecomments = str2bool(mergecomments)
@@ -85,7 +98,7 @@ def mergepo(inputfile, outputfile, templatefile, mergeblanks="no", mergecomments
     mergeblanks = str2bool(mergeblanks)
   except ValueError:
     raise ValueError("invalid mergeblanks value: %r" % mergeblanks)
-  inputpo = po.pofile(inputfile)
+  inputpo = inputfilefactory(inputfile)
   if templatefile is None:
     # just merge nothing
     templatepo = po.pofile()
@@ -99,12 +112,37 @@ def mergepo(inputfile, outputfile, templatefile, mergeblanks="no", mergecomments
   outputfile.write(str(outputpo))
   return 1
 
+def mergexliff(inputfile, outputfile, templatefile, mergeblanks="no", mergecomments="yes"):
+  try:
+    mergecomments = str2bool(mergecomments)
+  except ValueError:
+    raise ValueError("invalid mergecomments value: %r" % mergecomments)
+  try:
+    mergeblanks = str2bool(mergeblanks)
+  except ValueError:
+    raise ValueError("invalid mergeblanks value: %r" % mergeblanks)
+  inputpo = inputfilefactory(inputfile)
+  if templatefile is None:
+    # just merge nothing
+    templatexliff = xliff.xlifffile()
+  else:
+    templatexliff = xliff.xlifffile(templatefile)
+  templatexliff.makeindex()
+  inputpo.makeindex()
+  outputxliff = mergepofiles(templatexliff, inputpo, mergeblanks, mergecomments)
+  if len(outputxliff.units) == 0:
+    return 0
+  outputfile.write(str(outputxliff))
+  return 1
+
 def main():
   from translate.convert import convert
   pooutput = ("po", mergepo)
   potoutput = ("pot", mergepo)
+  xliffoutput = ("xliff", mergexliff)
   formats = {("po", "po"): pooutput, ("po", "pot"): pooutput, ("pot", "po"): pooutput, ("pot", "pot"): potoutput,
-             "po": pooutput, "pot": pooutput}
+             "po": pooutput, "pot": pooutput,
+	     ("xliff", "xliff"): xliffoutput, ("po", "xliff"):xliffoutput}
   mergeblanksoption = convert.optparse.Option("", "--mergeblanks", dest="mergeblanks",
     action="store", default="yes", help="whether to overwrite existing translations with blank translations (yes/no)")
   mergecommentsoption = convert.optparse.Option("", "--mergecomments", dest="mergecomments",
