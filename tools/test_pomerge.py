@@ -197,3 +197,25 @@ class TestPOMerge:
         unit = xlifffile.units[0]
         assert unit.source == "red"
         assert unit.target== "rooi"
+
+    def test_po_into_xliff(self):
+        templatexliff = self.xliffskeleton % '''<trans-unit>
+        <source>red</source>
+        <target></target>
+</trans-unit>'''
+        mergepo = 'msgid "red"\nmsgstr "rooi"'
+	xlifffile = self.mergexliff(templatexliff, mergepo)
+        assert len(xlifffile.units) == 1
+        unit = xlifffile.units[0]
+        assert unit.source == "red"
+        assert unit.target== "rooi"
+        
+    def test_xliff_into_po(self):
+        templatepo = '# my comment\nmsgid "red"\nmsgstr ""'
+        mergexliff = self.xliffskeleton % '''<trans-unit>
+        <source>red</source>
+        <target>rooi</target>
+</trans-unit>'''
+        expectedpo = '# my comment\nmsgid "red"\nmsgstr "rooi"\n\n'
+        pofile = self.mergepo(templatepo, mergexliff)
+        assert str(pofile) == expectedpo
