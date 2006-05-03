@@ -101,24 +101,18 @@ class pocheckfilter:
     if thepo.isheader(): return []
     if not self.options.includefuzzy and thepo.isfuzzy(): return []
     if not self.options.includereview and thepo.isreview(): return []
+    source = thepo.source
+    target = thepo.target
     if thepo.hasplural():
-      unquotedid = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False)
-      unquotedstr = po.unquotefrompo(thepo.msgstr[0], joinwithlinebreak=False)
-      failures = self.checker.run_filters(thepo, unquotedid, unquotedstr)
-      unquotedid = po.unquotefrompo(thepo.msgid_plural, joinwithlinebreak=False)
-      unquotedstr = po.unquotefrompo(thepo.msgstr[1], joinwithlinebreak=False)
-      failures += self.checker.run_filters(thepo, unquotedid, unquotedstr)
+      failures = self.checker.run_filters(thepo, source, target)
+      failures += self.checker.run_filters(thepo, source.strings[1], target.strings[1])
     else:
-      unquotedid = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False)
-      unquotedstr = po.unquotefrompo(thepo.msgstr, joinwithlinebreak=False)
-      failures = self.checker.run_filters(thepo, unquotedid, unquotedstr)
+      failures = self.checker.run_filters(thepo, source, target)
       if failures and self.options.autocorrect:
         # we can't get away with bad unquoting / requoting if we're going to change the result...
-        unquotedid = po.unquotefrompo(thepo.msgid)
-        unquotedstr = po.unquotefrompo(thepo.msgstr)
-        correction = autocorrect.correct(unquotedid, unquotedstr)
+        correction = autocorrect.correct(source, target)
         if correction:
-          thepo.msgstr = po.quoteforpo(correction)
+          thepo.target = correction
           return autocorrect
         else:
           # ignore failures we can't correct when in autocorrect mode
