@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """tests decoration handling functions that are used by checks"""
 
@@ -16,3 +17,7 @@ def test_filterwordswithpunctuation():
     string = "It's in it's own place."
     filtered = prefilters.filterwordswithpunctuation(string)
     assert filtered == "Its in its own place."
+    # test strings in unicode
+    string = u"Iṱ'š"
+    filtered = prefilters.filterwordswithpunctuation(string)
+    assert filtered == u"Iṱš"
