@@ -147,14 +147,14 @@ class TestPOMerge:
         """Test that we can merge messages correctly that end with a newline"""
         templatepo = '''msgid "Simple string\\n"\nmsgstr ""\n'''
         mergepo = '''msgid "Simple string\\n"\nmsgstr "Dimpled ring\\n"\n'''
-        expectedpo = '''msgid "Simple string\\n"\nmsgstr "Dimpled ring\\n"\n'''
+        expectedpo = '''msgid "Simple string\\n"\nmsgstr "Dimpled ring\\n"\n\n'''
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
 
         templatepo = '''msgid ""\n"Simple string\\n"\nmsgstr ""\n'''
         mergepo = '''msgid ""\n"Simple string\\n"\nmsgstr ""\n"Dimpled ring\\n"\n'''
-        expectedpo = '''msgid "Simple string\\n"\nmsgstr ""\n"Dimpled ring\\n"\n'''
+        expectedpo = '''msgid ""\n"Simple string\\n"\nmsgstr "Dimpled ring\\n"\n\n'''
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
