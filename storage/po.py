@@ -49,8 +49,8 @@ def quoteforpo(text, template=None):
   if len(lines) > 1:
     polines.extend(['""'])
     polines.extend(['"' + escapeforpo(line) + '\\n"' for line in lines[:-1]])
-    
-  polines.extend(['"' + escapeforpo(lines[-1]) + '"'])
+  if lines[-1]:
+    polines.extend(['"' + escapeforpo(lines[-1]) + '"'])
   return polines
 
 def quoteforpofromtemplate(text, template):
@@ -87,8 +87,12 @@ def quoteforpofromtemplate(text, template):
         polines.extend(quoteforpo(text[index:start]))
       polines.append(part)
       index = end
+
+  #Some fixups with empty ("") lines
   if len(template) > 1 and template[0] == '""':
     polines = ['""'] + polines
+  elif polines and polines[0] == '""':
+      polines = polines[1:]
     
   return polines 
 
