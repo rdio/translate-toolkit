@@ -85,7 +85,6 @@ def inputfilefactory(inputfile):
   if filename is None:
     #This is mostly for tests. Let's guess from first characters
     start = inputfile.read(100).strip()
-    print start[0]
     if start[0] == '#' or start.find('msgid') != -1:
       filename = "dummy.po"
     else:
