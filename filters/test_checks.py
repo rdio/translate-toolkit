@@ -321,7 +321,7 @@ Converting...""", "Kugucula...")
     assert checks.passes(stdchecker.singlequoting, "Blah 'format' blah?", "Blah blah 'sebopego'?")
     # Real examples
     assert checks.passes(stdchecker.singlequoting, "A nickname that identifies this publishing site (e.g.: 'MySite')", "Vito ro duvulela leri tirhisiwaka ku kuma sayiti leri ro kandziyisa (xik.: 'Sayiti ra Mina')")
-    #assert checks.passes(stdchecker.singlequoting, "isn't", "ayikho")
+    assert checks.passes(stdchecker.singlequoting, "isn't", "ayikho")
     # Afrikaans 'n
     assert checks.passes(stdchecker.singlequoting, "Please enter a different site name.", "Tik 'n ander werfnaam in.")
     assert checks.passes(stdchecker.singlequoting, "\"%name%\" already exists. Please enter a different site name.", "\"%name%\" bestaan reeds. Tik 'n ander werfnaam in.")
@@ -344,6 +344,8 @@ def test_simplecaps():
     #assert checks.passes(stdchecker.simplecaps, "COUPDAYS", "COUPMALANGA")
     # Just some that at times have failed but should always pass
     assert checks.passes(stdchecker.simplecaps, "Create a query  entering an SQL statement directly.", "Yakha sibuti singena SQL inkhomba yesitatimende.")
+    assert checks.passes(stdchecker.simplecaps, "SOLK (%PRODUCTNAME Link)", "SOLK (%PRODUCTNAME Thumanyo)")
+    assert checks.passes(stdchecker.simplecaps, "%STAROFFICE Image", "Tshifanyiso tsha %STAROFFICE")
 
 # def test_spellcheck():
 #     """tests simple caps"""
