@@ -269,8 +269,6 @@ class pounit(base.TranslationUnit):
           for candidate in ["\n", "\r", "\n\r"]:
             if list1[0].endswith(candidate):
               lineend = candidate
-      if not lineend:
-        lineend = "\n"
         
       #Split if directed to do so:    
       if split:
