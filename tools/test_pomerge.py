@@ -21,8 +21,6 @@ class TestPOMerge:
         templatefile = wStringIO.StringIO(templatesource)
         inputfile = wStringIO.StringIO(inputsource)
         outputfile = wStringIO.StringIO()
-        inputfile.name = "test_a.po"
-        outputfile.name = "test_b.po"
         assert pomerge.mergepo(inputfile, outputfile, templatefile)
         outputpostring = outputfile.getvalue()
         outputpofile = po.pofile(outputpostring)
@@ -33,8 +31,6 @@ class TestPOMerge:
         templatefile = wStringIO.StringIO(templatesource)
         inputfile = wStringIO.StringIO(inputsource)
         outputfile = wStringIO.StringIO()
-        inputfile.name = "test_a.xliff"
-        outputfile.name = "test_b.xliff"
         assert pomerge.mergexliff(inputfile, outputfile, templatefile)
         outputxliffstring = outputfile.getvalue()
         print "Generated XML:"
@@ -135,14 +131,14 @@ class TestPOMerge:
         """Test that layout related to KDE comments does not change unnecessarily"""
         templatepo = '''msgid "_: KDE comment\\n"\n"Simple string"\nmsgstr ""\n'''
         mergepo = '''msgid "_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n'''
-        expectedpo = '''msgid "_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n'''
+        expectedpo = '''msgid "_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n\n'''
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
 
         templatepo = '''msgid ""\n"_: KDE comment\\n"\n"Simple string"\nmsgstr ""\n'''
         mergepo = '''msgid ""\n"_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n'''
-        expectedpo = '''msgid ""\n"_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n'''
+        expectedpo = '''msgid ""\n"_: KDE comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n\n'''
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
