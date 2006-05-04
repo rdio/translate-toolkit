@@ -143,6 +143,13 @@ class TestPOMerge:
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
 
+        templatepo = '''msgid ""\n"_: KDE "\n"comment\\n"\n"Simple string"\nmsgstr ""\n'''
+        mergepo = '''msgid ""\n"_: KDE "\n"comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n'''
+        expectedpo = '''msgid ""\n"_: KDE "\n"comment\\n"\n"Simple string"\nmsgstr "Dimpled ring"\n\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
+
     def test_preserve_format_trailing_newlines(self):
         """Test that we can merge messages correctly that end with a newline"""
         templatepo = '''msgid "Simple string\\n"\nmsgstr ""\n'''
@@ -274,3 +281,10 @@ class TestPOMerge:
         pofile = self.mergepo(templatepo, mergepo)
         assert str(pofile) == expectedpo
         
+        # multiline KDE comment
+        templatepo = '''msgid "_: KDE "\n"comment\\n"\n"File"\nmsgstr "File"\n\n'''
+        mergepo = '''msgid "_: KDE "\n"comment\\n"\n"File"\nmsgstr "_: KDE "\n"comment\\n"\n"Ifayile"\n\n'''
+        expectedpo = '''msgid "_: KDE "\n"comment\\n"\n"File"\nmsgstr "Ifayile"\n\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
