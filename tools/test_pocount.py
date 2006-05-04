@@ -71,6 +71,10 @@ class TestPOCount:
         # msgstr[0] "e paletšwe go hwetša sešireletši sa seswantšho sa paete ya %u"
         # msgstr[1] "e paletšwe go hwetša sešireletši sa seswantšho sa dipaete tša %u"
 
+    def test_plurals_kde(self):
+        """test that we correcly count old style KDE plurals"""
+	self.count("_n: Singular\\n\nPlural", 2, "Een\\n\ntwee\\n\ndrie", 3)
+
     def test_msgid_blank(self):
         """counts a message id"""
         self.count("   ", 0)
