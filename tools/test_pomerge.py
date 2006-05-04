@@ -193,8 +193,8 @@ class TestPOMerge:
 
     def test_preserve_comments_layout(self):
         """Ensure that when we merge with new '# (poconflict)' or other comments that we don't mess formating"""
-        templatepo = '''#: filename\nmsgid "Desktop Background.bmp"\nmsgstr "Desktop Background.bmp"\n'''
-        mergepo = '''# (pofilter) unchanged: please translate\n#: filename\nmsgid "Desktop Background.bmp"\nmsgstr "Desktop Background.bmp"\n'''
+        templatepo = '''#: filename\nmsgid "Desktop Background.bmp"\nmsgstr "Desktop Background.bmp"\n\n'''
+        mergepo = '''# (pofilter) unchanged: please translate\n#: filename\nmsgid "Desktop Background.bmp"\nmsgstr "Desktop Background.bmp"\n\n'''
         expectedpo = mergepo
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
