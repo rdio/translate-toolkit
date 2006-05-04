@@ -20,14 +20,15 @@ def untranslatedwords(pair):
 def wordcount(postr):
   # TODO: po class should understand KDE style plurals
   unquotedstr = sre.sub("^_n: ", "", po.unquotefrompo(postr))
-  return len(unquotedstr.split())
+  return len(postr.split())
 
 def wordsinpoel(poel):
   """counts the words in the msgid, msgstr, taking plurals into account"""
-  msgidwords = wordcount(poel.msgid)
-  if poel.hasplural():
-    msgidwords += wordcount(poel.msgid_plural)
-  msgstrwords = wordcount(poel.msgstr)
+  (msgidwords, msgstrwords) = (0, 0)
+  for s in poel.source.strings:
+    msgidwords += wordcount(s)
+  for s in poel.target.strings:
+    msgstrwords += wordcount(s)
   return msgidwords, msgstrwords
 
 def summarize(title, units, CSVstyle=False):
