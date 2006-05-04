@@ -161,15 +161,15 @@ class TestPOMerge:
 
     def test_preserve_format_minor_start_and_end_of_sentence_changes(self):
         """Test that we are not too fussy about large diffs for simple changes at the start or end of a sentence"""
-        templatepo = '''msgid "Target type:"\nmsgstr "Doelsoort"\n'''
-        mergepo = '''msgid "Target type:"\nmsgstr "Doelsoort:"\n'''
+        templatepo = '''msgid "Target type:"\nmsgstr "Doelsoort"\n\n'''
+        mergepo = '''msgid "Target type:"\nmsgstr "Doelsoort:"\n\n'''
         expectedpo = mergepo
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
 
-	templatepo = '''msgid "&Select"\nmsgstr "Kies"\n'''
-        mergepo = '''msgid "&Select"\nmsgstr "&Kies"\n'''
+	templatepo = '''msgid "&Select"\nmsgstr "Kies"\n\n'''
+        mergepo = '''msgid "&Select"\nmsgstr "&Kies"\n\n'''
         expectedpo = mergepo
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
