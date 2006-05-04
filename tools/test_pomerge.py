@@ -159,6 +159,22 @@ class TestPOMerge:
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
 
+    def test_preserve_format_minor_start_and_end_of_sentence_changes(self):
+        """Test that we are not too fussy about large diffs for simple changes at the start or end of a sentence"""
+        templatepo = '''msgid "Target type:"\nmsgstr "Doelsoort"\n'''
+        mergepo = '''msgid "Target type:"\nmsgstr "Doelsoort:"\n'''
+        expectedpo = mergepo
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
+
+	templatepo = '''msgid "&Select"\nmsgstr "Kies"\n'''
+        mergepo = '''msgid "&Select"\nmsgstr "&Kies"\n'''
+        expectedpo = mergepo
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
+
     def test_preserve_format_last_entry_in_a_file(self):
         """The last entry in a PO file is usualy not followed by an empty line.  Test that we preserve this"""
         templatepo = '''msgid "First"\nmsgstr ""\n\nmsgid "Second"\nmsgstr ""\n'''
@@ -174,6 +190,16 @@ class TestPOMerge:
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
+
+    def test_preserve_comments_layout(self):
+        """Ensure that when we merge with new '# (poconflict)' or other comments that we don't mess formating"""
+        templatepo = '''#: filename\nmsgid "Desktop Background.bmp"\nmsgstr "Desktop Background.bmp"\n'''
+        mergepo = '''# (pofilter) unchanged: please translate\n#: filename\nmsgid "Desktop Background.bmp"\nmsgstr "Desktop Background.bmp"\n'''
+        expectedpo = mergepo
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
+
 
     def test_merge_dos2unix(self):
         """Test that merging a comment line with dos newlines doesn't add a new line"""
@@ -219,3 +245,5 @@ class TestPOMerge:
         expectedpo = '# my comment\nmsgid "red"\nmsgstr "rooi"\n\n'
         pofile = self.mergepo(templatepo, mergexliff)
         assert str(pofile) == expectedpo
+
+        
