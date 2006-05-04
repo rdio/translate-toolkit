@@ -715,6 +715,7 @@ class StandardChecker(TranslationChecker):
       raise FilterFailure(messages)
     return True
 
+  # If the precondition filter is run and fails then the other tests listed are ignored
   preconditions = {"untranslated": ("simplecaps", "variables", "startcaps",
                                     "accelerators", "brackets", "endpunc",
                                     "acronyms", "xmltags", "startpunc",
@@ -724,6 +725,7 @@ class StandardChecker(TranslationChecker):
                                     "sentencecount", "numbers", "isfuzzy",
                                     "isreview", "notranslatewords", "musttranslatewords",
                                     "emails", "simpleplurals", "urls"),
+                   "unchanged": ("doublewords",), 
                    "compendiumconflicts": ("accelerators", "brackets", "escapes", 
                                     "numbers", "startpunc", "long", "variables", 
                                     "startcaps", "sentencecount", "simplecaps",
