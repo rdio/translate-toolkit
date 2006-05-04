@@ -208,6 +208,13 @@ class TestPOMerge:
         pofile = self.mergepo(templatepo, mergepo)
         assert str(pofile) == expectedpo
 
+        # Unassociated comment
+        templatepo = '''# Lonely comment\n\n#: location_comment.c:110\nmsgid "Bob"\nmsgstr "Toolmaker"\n'''
+        mergepo = '''# Lonely comment\r\n\r\n#: location_comment.c:110\r\nmsgid "Bob"\r\nmsgstr "Builder"\r\n\r\n'''
+        expectedpo = '''# Lonely comment\n\n#: location_comment.c:110\nmsgid "Bob"\nmsgstr "Builder"\n\n'''
+        pofile = self.mergepo(templatepo, mergepo)
+        assert str(pofile) == expectedpo
+
         # New comment
         templatepo = '''#: location_comment.c:110\nmsgid "File"\nmsgstr "File"\n\n'''
         mergepo =  '''# User comment\r\n# (pofilter) Translate Toolkit comment\r\n#: location_comment.c:110\r\nmsgid "File"\r\nmsgstr "Ifayile"\r\n\r\n'''
