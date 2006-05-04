@@ -268,11 +268,10 @@ class pounit(base.TranslationUnit):
             
       #Determine the newline style of list1
       lineend = ""
-      if list1:
-        if list1[0]:
-          for candidate in ["\n", "\r", "\n\r"]:
-            if list1[0].endswith(candidate):
-              lineend = candidate
+      if list1 and list1[0]:
+        for candidate in ["\n", "\r", "\n\r"]:
+          if list1[0].endswith(candidate):
+            lineend = candidate
         
       #Split if directed to do so:    
       if split:
@@ -289,7 +288,8 @@ class pounit(base.TranslationUnit):
       else:
         #Normal merge, but conform to list1 newline style
         for item in list2:
-          item = item.rstrip() + lineend
+          if lineend:
+            item = item.rstrip() + lineend
           if item not in list1:
             list1.append(item)
     if not isinstance(otherpo, pounit):
