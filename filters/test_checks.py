@@ -325,6 +325,11 @@ Converting...""", "Kugucula...")
     # Afrikaans 'n
     assert checks.passes(stdchecker.singlequoting, "Please enter a different site name.", "Tik 'n ander werfnaam in.")
     assert checks.passes(stdchecker.singlequoting, "\"%name%\" already exists. Please enter a different site name.", "\"%name%\" bestaan reeds. Tik 'n ander werfnaam in.")
+    # Check that accelerators don't mess with removing singlequotes
+    mozillachecker = checks.MozillaChecker()
+    assert checks.passes(mozillachecker.singlequoting, "&Don't import anything", "&Moenie enigiets invoer nie")
+    ooochecker = checks.OpenOfficeChecker()
+    assert checks.passes(ooochecker.singlequoting, "~Don't import anything", "~Moenie enigiets invoer nie")
 
 def test_simplecaps():
     """tests simple caps"""
