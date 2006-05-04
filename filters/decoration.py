@@ -81,6 +81,7 @@ def isvalidaccelerator(accelerator, ignorelist=[]):
 def findaccelerators(str1, accelmarker, ignorelist=[]):
   """returns all the accelerators and locations in str1 marked with a given marker"""
   accelerators = []
+  badaccelerators = []
   currentpos = 0
   while currentpos >= 0:
     currentpos = str1.find(accelmarker, currentpos)
@@ -94,7 +95,9 @@ def findaccelerators(str1, accelmarker, ignorelist=[]):
       currentpos = accelend
       if isvalidaccelerator(accelerator, ignorelist):
         accelerators.append((accelstart, accelerator))
-  return accelerators
+      else:
+        badaccelerators.append((accelstart, accelerator))
+  return accelerators, badaccelerators
 
 def findmarkedvariables(str1, startmarker, endmarker, ignorelist=[]):
   """returns all the variables and locations in str1 marked with a given marker"""
@@ -144,9 +147,10 @@ def getaccelerators(accelmarker, ignorelist=[]):
   """returns a function that gets a list of accelerators marked using accelmarker"""
   def getmarkedaccelerators(str1):
     """returns all the accelerators in str1 marked with a given marker"""
-    acclocs = findaccelerators(str1, accelmarker, ignorelist)
+    acclocs, badlocs = findaccelerators(str1, accelmarker, ignorelist)
     accelerators = [accelerator for accelstart, accelerator in acclocs]
-    return accelerators
+    badaccelerators = [accelerator for accelstart, accelerator in badlocs]
+    return accelerators, badaccelerators
   return getmarkedaccelerators
 
 def getvariables(startmarker, endmarker):
@@ -217,8 +221,8 @@ def countaccelerators(accelmarker, ignorelist=[]):
   """returns a function that counts the number of accelerators marked with the given marker"""
   def countmarkedaccelerators(str1):
     """returns all the variables in str1 marked with a given marker"""
-    acclocs = findaccelerators(str1, accelmarker, ignorelist)
-    return len(acclocs)
+    acclocs, badlocs = findaccelerators(str1, accelmarker, ignorelist)
+    return len(acclocs), len(badlocs)
   return countmarkedaccelerators
 
 

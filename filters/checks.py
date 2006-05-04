@@ -399,12 +399,17 @@ class StandardChecker(TranslationChecker):
     messages = []
     for accelmarker in self.config.accelmarkers:
       counter = decoration.countaccelerators(accelmarker)
-      count1 = counter(str1)
-      count2 = counter(str2)
+      count1, countbad1 = counter(str1)
+      count2, countbad2 = counter(str2)
+      getaccel = decoration.getaccelerators(accelmarker)
+      accel2, bad2 = getaccel(str2)
       if count1 == count2:
         continue
       if count1 == 1 and count2 == 0:
-        messages.append("accelerator %s is missing from translation" % accelmarker)
+        if countbad2 == 1:
+          messages.append("accelerator %s appears before an invalid accelerator character '%s' (eg. space)" % (accelmarker, bad2[0]))
+        else:
+          messages.append("accelerator %s is missing from translation" % accelmarker)
       elif count1 == 0:
         messages.append("accelerator %s does not occur in original and should not be in translation" % accelmarker)
       elif count1 == 1 and count2 > count1:
