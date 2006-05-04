@@ -175,6 +175,13 @@ class TestPOMerge:
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
 
+	templatepo = '''msgid "en-us, en"\nmsgstr "en-us, en"\n'''
+        mergepo = '''msgid "en-us, en"\nmsgstr "af-za, af, en-za, en-gb, en-us, en"\n'''
+        expectedpo = mergepo
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
+
     def test_preserve_format_last_entry_in_a_file(self):
         """The last entry in a PO file is usualy not followed by an empty line.  Test that we preserve this"""
         templatepo = '''msgid "First"\nmsgstr ""\n\nmsgid "Second"\nmsgstr ""\n'''
