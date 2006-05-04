@@ -59,7 +59,11 @@ def quoteforpofromtemplate(text, template):
   for position, item in enumerate(template):
     if not isinstance(item, unicode):
       template[position] = item.decode('utf-8')
+
   templatetext = unquotefrompo(template)
+  if templatetext and len(template) == 1:
+    return quoteforpo(text)
+
   #unchanged is a list containing tuples indicating
   #    (start in text, end in text, quoted part)
   unchanged = []
