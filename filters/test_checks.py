@@ -148,6 +148,8 @@ def test_endpunc():
     assert checks.passes(stdchecker.endpunc, "A nickname that identifies this publishing site (e.g.: 'MySite')", "Vito ro duvulela leri tirhisiwaka ku kuma sayiti leri ro kandziyisa (xik.: 'Sayiti ra Mina')")
     # FIXME fix later
     assert checks.fails(stdchecker.endpunc, "Question", "Wrong\xe2\x80\xa6")
+    # Making sure singlequotes don't confuse things
+    assert checks.passes(stdchecker.endpunc, "Pseudo-elements can't be negated '%1$S'.", "Pseudo-elemente kan nie '%1$S' ontken word nie.")
 
 def test_endwhitespace():
     """tests endwhitespace"""
