@@ -33,20 +33,20 @@ def find_all(searchin, substr):
       location += len(substr)
   return locations
 
-def extract(source,startdelim,enddelim,escape,startinstring=0):
+def extract(source,startdelim,enddelim,escape=None,startinstring=0):
   """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping
   returns tuple of (quoted string with quotes, still in string at end)"""
   # note that this returns the quote characters as well... even internally
   instring = startinstring
   lenstart = len(startdelim)
   lenend = len(enddelim)
-  lenescape = len(escape)
   startdelim_places = find_all(source, startdelim)
   if startdelim == enddelim:
     enddelim_places = startdelim_places[:]
   else:
     enddelim_places = find_all(source, enddelim)
   if escape is not None:
+    lenescape = len(escape)
     escape_places = find_all(source, escape)
     last_escape_pos = -1
     # filter escaped escapes
