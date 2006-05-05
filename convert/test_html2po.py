@@ -26,10 +26,16 @@ class TestHTML2PO:
         """helper to validate a PO message"""
         if not pofile.units[0].isheader():
           unitnumber = unitnumber - 1
-        print pofile.units[unitnumber] 
+        print pofile.units[unitnumber]
         print expected
         assert str(pofile.units[unitnumber].source) == expected
-        
+
+    def check_single(self, markup, itemtext):
+        """checks that converting this markup produces a single element with value itemtext"""
+        pofile = self.html2po(markup)
+        self.countunits(pofile, 1)
+        self.compareunit(pofile, 1, itemtext)
+
     def test_htmllang(self):
         """test to ensure that we no longer use the lang attribure"""
         markup = '''<html lang="en"><head><title>My title</title></head><body></body></html>'''
@@ -40,38 +46,23 @@ class TestHTML2PO:
 
     def test_title(self):
         """test that we can extract the <title> tag"""
-        markup = "<html><head><title>My title</title></head><body></body></html>"
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        self.compareunit(pofile, 1, "My title")
+        self.check_single("<html><head><title>My title</title></head><body></body></html>", "My title")
 
     def test_tag_p(self):
         """test that we can extract the <p> tag"""
-        markup = "<html><head></head><body><p>A paragraph.</p></body></html>"
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        self.compareunit(pofile, 1, "A paragraph.")
+        self.check_single("<html><head></head><body><p>A paragraph.</p></body></html>", "A paragraph.")
 
     def test_tag_a(self):
         """test that we can extract the <a> tag"""
-        markup = "<html><head></head><body><p>A paragraph with <a>hyperlink</a>.</p></body></html>"
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        self.compareunit(pofile, 1, "A paragraph with <a>hyperlink</a>.")
+        self.check_single("<html><head></head><body><p>A paragraph with <a>hyperlink</a>.</p></body></html>", "A paragraph with <a>hyperlink</a>.")
 
     def test_tag_img(self):
         """test that we can extract the <a> tag"""
-        markup = '''<html><head></head><body><img src="picture.png" alt="A picture"></body></html>'''
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        self.compareunit(pofile, 1, "A picture")
+        self.check_single('''<html><head></head><body><img src="picture.png" alt="A picture"></body></html>''', "A picture")
 
     def test_tag_table_summary(self):
         """test that we can extract summary= """
-        markup = '''<html><head></head><body><table summary="Table summary"></table></body></html>'''
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        self.compareunit(pofile, 1, "Table summary")
+        self.check_single( '''<html><head></head><body><table summary="Table summary"></table></body></html>''', "Table summary")
 
     def test_table_simple(self):
         """test that we can fully extract a simple table"""
@@ -99,11 +90,7 @@ class TestHTML2PO:
         
     def test_address(self):
         """Test to see if the address element is extracted"""
-        markup = "<body><address>My address</address></body>"
-        goodpo = "My address"
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        self.compareunit(pofile, 1, "My address")
+        self.check_single("<body><address>My address</address></body>", "My address")
         
     def test_headings(self):
         """Test to see if the h* elements are extracted"""
@@ -119,27 +106,15 @@ class TestHTML2PO:
         
     def test_dt(self):
         """Test to see if the definition list title (dt) element is extracted"""
-        markup = "<html><head></head><body><dl><dt>Definition List Item Title</dt></dl></body></html>"
-        goodpo = "Definition List Item Title"
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        self.compareunit(pofile, 1, "Definition List Item Title")
+        self.check_single("<html><head></head><body><dl><dt>Definition List Item Title</dt></dl></body></html>", "Definition List Item Title")
         
     def test_dd(self):
         """Test to see if the definition list description (dd) element is extracted"""
-        markup = "<html><head></head><body><dl><dd>Definition List Item Description</dd></dl></body></html>"
-        goodpo = "Definition List Item Description"
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        self.compareunit(pofile, 1, "Definition List Item Description")
+        self.check_single("<html><head></head><body><dl><dd>Definition List Item Description</dd></dl></body></html>", "Definition List Item Description")
 
     def test_span(self):
         """test to check that we don't double extract a span item"""
-        markup = "<html><head></head><body><p>You are a <span>Spanish</span> sentence.</p></body></html>"
-        goodpo = "You are a <span>Spanish</span> sentence."
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        self.compareunit(pofile, 1, "You are a <span>Spanish</span> sentence.")
+        self.check_single("<html><head></head><body><p>You are a <span>Spanish</span> sentence.</p></body></html>", "You are a <span>Spanish</span> sentence.")
 
     def test_ul(self):
         """Test to see if the list item <li> is exracted"""
