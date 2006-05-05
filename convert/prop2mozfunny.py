@@ -21,6 +21,7 @@ def prop2inc(pf):
       else:
         for blank in pendingblanks:
           yield blank
+        # TODO: could convert commented # x=y back to # #define x y
         yield comment
     if pe.isblank():
       pendingblanks.append("\n")

@@ -13,6 +13,11 @@ def inc2prop(lines):
   yield "# converted from #defines file\n"
   for line in lines:
     line = line.decode("utf-8")
+    if line.startswith("# "):
+      commented = True
+      line = line.replace("# ", "", 1)
+    else:
+      commented = False
     if not line.strip():
       yield line
     elif line.startswith("#define"):
@@ -23,8 +28,15 @@ def inc2prop(lines):
         key, value = parts[0], ""
       else:
         key, value = parts
+      # special case: uncomment MOZ_LANGPACK_CONTRIBUTORS
+      if key == "MOZ_LANGPACK_CONTRIBUTORS":
+        commented = False
+      if commented:
+        yield "# "
       yield "%s = %s\n" % (key, value)
     else:
+      if commented:
+        yield "# "
       yield line
 
 def it2prop(lines, encoding="cp1252"):
