@@ -24,3 +24,16 @@ class TestPO2Prop:
         print incfile
         assert incfile == incexpected
 
+    def test_uncomment_contributors(self):
+        """check that we handle uncommenting contributors properly"""
+        posource = '''# converted from #defines file
+#: MOZ_LANGPACK_CONTRIBUTORS
+msgid "<em:contributor>Joe Solon</em:contributor>"
+msgstr "<em:contributor>Mr Fury</em:contributor>"
+'''
+        inctemplate = '''# #define MOZ_LANGPACK_CONTRIBUTORS <em:contributor>Joe Solon</em:contributor>\n'''
+        incexpected = '''#define MOZ_LANGPACK_CONTRIBUTORS <em:contributor>Mr Fury</em:contributor>\n'''
+        incfile = self.merge2inc(inctemplate, posource)
+        print incfile
+        assert incfile == incexpected
+
