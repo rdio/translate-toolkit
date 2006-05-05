@@ -12,18 +12,24 @@ from translate.misc.wStringIO import StringIO
 
 def prop2inc(pf):
   """convert a properties file back to a .inc file with #defines in it"""
+  # any leftover blanks will not be included at the end
+  pendingblanks = []
   for pe in pf.propelements:
     for comment in pe.comments:
       if comment.startswith("# converted from") and "#defines" in comment:
         pass
       else:
+        for blank in pendingblanks:
+          yield blank
         yield comment
     if pe.isblank():
-      yield "\n"
+      pendingblanks.append("\n")
     else:
       definition = "#define %s %s\n" % (pe.name, pe.msgid.replace("\n", "\\n"))
       if isinstance(definition, unicode):
         definition = definition.encode("UTF-8")
+      for blank in pendingblanks:
+        yield blank
       yield definition
 
 def prop2it(pf):
