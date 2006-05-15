@@ -175,14 +175,14 @@ class TestPOMerge:
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
 
-	templatepo = '''msgid "&Select"\nmsgstr "Kies"\n\n'''
+        templatepo = '''msgid "&Select"\nmsgstr "Kies"\n\n'''
         mergepo = '''msgid "&Select"\nmsgstr "&Kies"\n\n'''
         expectedpo = mergepo
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
 
-	templatepo = '''msgid "en-us, en"\nmsgstr "en-us, en"\n'''
+        templatepo = '''msgid "en-us, en"\nmsgstr "en-us, en"\n'''
         mergepo = '''msgid "en-us, en"\nmsgstr "af-za, af, en-za, en-gb, en-us, en"\n'''
         expectedpo = mergepo
         pofile = self.mergepo(templatepo, mergepo)
@@ -245,7 +245,7 @@ class TestPOMerge:
         <source>red</source>
         <target>rooi</target>
 </trans-unit>'''
-	xlifffile = self.mergexliff(templatexliff, mergexliff)
+        xlifffile = self.mergexliff(templatexliff, mergexliff)
         assert len(xlifffile.units) == 1
         unit = xlifffile.units[0]
         assert unit.source == "red"
@@ -257,7 +257,7 @@ class TestPOMerge:
         <target></target>
 </trans-unit>'''
         mergepo = 'msgid "red"\nmsgstr "rooi"'
-	xlifffile = self.mergexliff(templatexliff, mergepo)
+        xlifffile = self.mergexliff(templatexliff, mergepo)
         assert len(xlifffile.units) == 1
         unit = xlifffile.units[0]
         assert unit.source == "red"
