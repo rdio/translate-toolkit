@@ -36,21 +36,19 @@ class TestPOCount:
     def test_punctuation_divides_words(self):
         """test that we break words when there is punctuation"""
         self.count("One. Two", 2)
-        #FIXME: 
         self.count("One.Two", 2)
 
     def test_xml_tags(self):
         """test that we do not count XML tags as words"""
-        # FIXME (we're not treating <br> as a word break) 
+        # <br> is a word break
         self.count("A word<br>Another word", 4)
-        # FIXME (we're not trating \n as a word break) 
+        # \n is a word break
         self.count("<p>A word</p>\n<p>Another word</p>", 4)
 
     def test_newlines(self):
         """test to see that newlines divide words"""
-        #FIXME (newlines should break words) 
+        # newlines break words
         self.count("A word.\nAnother word", 4)
-        #FIXME (newlines should break words) 
         self.count(r"A word.\\n\nAnother word", 4)
 
     def test_variables_are_words(self):
@@ -59,7 +57,6 @@ class TestPOCount:
 
     def test_kde_comments_are_not_counted(self):
         """test that we do not add KDE comments to the wordcount"""
-        #FIXME (we don't seem to be eliminating KDE comment) 
         self.count("_: This is a seven word comment\\n\nOne two three", 3, "Een twee drie", 3)
 
     def test_plurals(self):
