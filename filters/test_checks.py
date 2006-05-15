@@ -222,7 +222,11 @@ def test_musttranslatewords():
     assert checks.fails(stdchecker.musttranslatewords, "Click Mozilla!", "Kliek Mozilla!")
     ## We need to define more word separators to allow us to find those hidden untranslated items
     #assert checks.fails(stdchecker.musttranslatewords, "Click OK", "Blah we-OK")
-
+    # Don't get confused when variables are the same as a musttranslate word
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(varmatches=[("%", None),], musttranslatewords=["OK"]))
+    assert checks.passes(stdchecker.musttranslatewords, "Click %OK to start", "Kliek %OK om te begin")
+    # Unicode
+    assert checks.passes(stdchecker.musttranslatewords, "Click OK", "Kiḽikani OK")
 
 def test_notranslatewords():
     """tests stopwords"""
