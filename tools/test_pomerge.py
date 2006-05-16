@@ -205,6 +205,14 @@ class TestPOMerge:
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
 
+    def test_preserve_format_tabs(self):
+        templatepo = '''msgid "First	Second"\nmsgstr ""\n\n'''
+        mergepo = '''msgid "First	Second"\nmsgstr "Eerste	Tweede"\n\n'''
+        expectedpo = mergepo
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
+
     def test_preserve_comments_layout(self):
         """Ensure that when we merge with new '# (poconflict)' or other comments that we don't mess formating"""
         templatepo = '''#: filename\nmsgid "Desktop Background.bmp"\nmsgstr "Desktop Background.bmp"\n\n'''
