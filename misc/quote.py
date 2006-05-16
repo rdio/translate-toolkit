@@ -69,7 +69,10 @@ def extract(source,startdelim,enddelim,escape=None,startinstring=0):
   extracted = ""
   lastpos = 0
   for pos in significant_places:
-    if instring and pos in enddelim_places and lastpos != pos - lenstart:
+    if instring and pos in enddelim_places:
+      # make sure that if startdelim == enddelim we don't get confused and count the same string as start and end
+      if lastpos == pos - lenstart and lastpos in startdelim_places:
+        continue
       extracted += source[lastpos:pos]
       instring = False
       lastpos = pos
