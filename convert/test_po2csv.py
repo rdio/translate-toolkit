@@ -75,6 +75,16 @@ msgstr "Gebruik \\\"."
         assert csvfile.findunit('Hello "Everyone"').target == 'Good day "All"'
         assert csvfile.findunit('Use \\".').target == 'Gebruik \\".'
 
+    def test_escapedescape(self):
+        """Test the escaping of pure escapes is unaffected"""
+        minipo = r'''msgid "Find\\Options"
+msgstr "Vind\\Opsies"
+'''
+        csvfile = self.po2csv(minipo)
+        print minipo
+        print csvfile
+        assert csvfile.findunit(r'Find\\Options').target == r'Vind\\Opsies'
+
     def test_singlequotes(self):
         """Tests that single quotes are preserved correctly"""
         minipo = '''msgid "source 'source'"\nmsgstr "target 'target'"\n'''
