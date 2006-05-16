@@ -116,8 +116,8 @@ garbage</context>
         unit = pofile.units[0]
         locations = unit.getlocations()
         assert len(locations) == 2
-        assert "example.c:123" in ids
-        assert "place.py" in ids
+        assert "example.c:123" in locations
+        assert "place.py" in locations
 
     def test_fuzzy(self):
         """Tests fuzzyness"""
