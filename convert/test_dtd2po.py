@@ -65,6 +65,14 @@ class TestDTD2PO:
         pounit = self.singleelement(pofile)
         assert po.unquotefrompo(pounit.msgid) == "bananas ' for sale"
 
+    def test_quotes(self):
+        """quotes should be handled in a single-quoted entity definition"""
+        dtdsource = """<!ENTITY test.metoo '"Bananas" for sale'>\n"""
+        pofile = self.dtd2po(dtdsource)
+        pounit = self.singleelement(pofile)
+        print str(pounit)
+        assert po.unquotefrompo(pounit.msgid) == '"Bananas" for sale'
+
     def test_emptyentity(self):
         """checks that empty entity definitions survive into po file, bug 15"""
         dtdsource = '<!ENTITY credit.translation "">\n'
