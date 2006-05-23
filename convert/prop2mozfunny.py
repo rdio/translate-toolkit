@@ -77,7 +77,7 @@ def po2inc(inputfile, outputfile, templatefile, encoding=None, includefuzzy=Fals
   outputpropfile = StringIO()
   if templatefile is not None:
     templatelines = templatefile.readlines()
-    templateproplines = [quote.mozillapropertiesencode(line) for line in mozfunny2prop.inc2prop(templatelines)]
+    templateproplines = [mozfunny2prop.encodepropline(line) for line in mozfunny2prop.inc2prop(templatelines)]
     templatepropfile = StringIO("".join(templateproplines))
   else:
     templatepropfile = None
@@ -94,7 +94,7 @@ def po2it(inputfile, outputfile, templatefile, encoding="cp1252", includefuzzy=F
   outputpropfile = StringIO()
   if templatefile is not None:
     templatelines = templatefile.readlines()
-    templateproplines = [quote.mozillapropertiesencode(line) for line in mozfunny2prop.it2prop(templatelines, encoding=encoding)]
+    templateproplines = [mozfunny2prop.encodepropline(line) for line in mozfunny2prop.it2prop(templatelines, encoding=encoding)]
     templatepropfile = StringIO("".join(templateproplines))
   else:
     templatepropfile = None

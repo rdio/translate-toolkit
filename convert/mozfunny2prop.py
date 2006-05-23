@@ -8,6 +8,15 @@ from translate.misc import quote
 from translate.convert import prop2po
 from translate.misc.wStringIO import StringIO
 
+def encodepropline(line):
+  """helper which strips off any end of line, encodes for properties file, and adds on the end of line"""
+  strippedline = line.rstrip("\n")
+  if line == strippedline:
+    ending = ""
+  else:
+    ending = line[len(strippedline)-len(line):]
+  return quote.mozillapropertiesencode(strippedline) + ending
+
 def inc2prop(lines):
   """convert a .inc file with #defines in it to a properties file"""
   yield "# converted from #defines file\n"
@@ -59,19 +68,19 @@ def funny2prop(lines, itencoding="cp1252"):
   hashstarts = len([line for line in lines if line.startswith("#")])
   if hashstarts:
     for line in inc2prop(lines):
-      yield quote.mozillapropertiesencode(line)
+      yield encodepropline(line)
   else:
     for line in it2prop(lines, encoding=itencoding):
-      yield quote.mozillapropertiesencode(line)
+      yield encodepropline(line)
 
 def inc2po(inputfile, outputfile, templatefile, encoding=None, pot=False, duplicatestyle="msgid_comment"):
   """wraps prop2po but converts input/template files to properties first"""
   inputlines = inputfile.readlines()
-  inputproplines = [quote.mozillapropertiesencode(line) for line in inc2prop(inputlines)]
+  inputproplines = [encodepropline(line) for line in inc2prop(inputlines)]
   inputpropfile = StringIO("".join(inputproplines))
   if templatefile is not None:
     templatelines = templatefile.readlines()
-    templateproplines = [quote.mozillapropertiesencode(line) for line in inc2prop(templatelines)]
+    templateproplines = [encodepropline(line) for line in inc2prop(templatelines)]
     templatepropfile = StringIO("".join(templateproplines))
   else:
     templatepropfile = None
@@ -80,11 +89,11 @@ def inc2po(inputfile, outputfile, templatefile, encoding=None, pot=False, duplic
 def it2po(inputfile, outputfile, templatefile, encoding="cp1252", pot=False, duplicatestyle="msgid_comment"):
   """wraps prop2po but converts input/template files to properties first"""
   inputlines = inputfile.readlines()
-  inputproplines = [quote.mozillapropertiesencode(line) for line in it2prop(inputlines, encoding=encoding)]
+  inputproplines = [encodepropline(line) for line in it2prop(inputlines, encoding=encoding)]
   inputpropfile = StringIO("".join(inputproplines))
   if templatefile is not None:
     templatelines = templatefile.readlines()
-    templateproplines = [quote.mozillapropertiesencode(line) for line in it2prop(templatelines, encoding=encoding)]
+    templateproplines = [encodepropline(line) for line in it2prop(templatelines, encoding=encoding)]
     templatepropfile = StringIO("".join(templateproplines))
   else:
     templatepropfile = None
