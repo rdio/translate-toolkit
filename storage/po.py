@@ -80,7 +80,7 @@ def quoteforpofromtemplate(text, template):
 
   #index indicates up to where in text we have processed:
   index = 0
-  polines = []    
+  polines = []
   while index < len(text):
     if len(unchanged) == 0:
       polines.extend(quoteforpo(text[index:]))
@@ -98,7 +98,7 @@ def quoteforpofromtemplate(text, template):
   elif polines and polines[0] == '""':
       polines = polines[1:]
     
-  return polines 
+  return polines
 
 def isnewlineescape(escape):
   return escape == "\\n"
