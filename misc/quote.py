@@ -192,7 +192,9 @@ def mozillapropertiesencode(source):
   output = ""
   for char in source:
     charnum = ord(char)
-    if 0 <= charnum < 128:
+    if char in controlchars:
+      output += controlchars[char]
+    elif 0 <= charnum < 128:
       output += str(char)
     else:
       output += "\\u%04X" % charnum
