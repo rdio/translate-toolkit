@@ -77,8 +77,10 @@ class dtd2po:
     thepo.target = ""
 
   def convertelement(self,thedtd):
-    """converts a dtd element to a po element, returns None if empty"""
+    """converts a dtd element to a po element, returns None if empty or not for translation"""
     if thedtd is None:
+      return None
+    if getattr(thedtd, "entityparameter", None) == "SYSTEM":
       return None
     thepo = po.pounit(encoding="UTF-8")
     # remove unwanted stuff
