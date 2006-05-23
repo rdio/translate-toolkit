@@ -77,6 +77,9 @@ class dtd2po:
     thepo.target = ""
 
   def convertelement(self,thedtd):
+    """converts a dtd element to a po element, returns None if empty"""
+    if thedtd is None:
+      return None
     thepo = po.pounit(encoding="UTF-8")
     # remove unwanted stuff
     for commentnum in range(len(thedtd.comments)):
@@ -207,6 +210,8 @@ class dtd2po:
         return None
       elif alreadymixed is None:
         # depending on what we come across first, work out the label and the accesskey
+        labeldtd, accesskeydtd = None, None
+        labelentity, accesskeyentity = None, None
         for labelsuffix in self.labelsuffixes:
           if thedtd.entity.endswith(labelsuffix):
             entitybase = thedtd.entity[:thedtd.entity.rfind(labelsuffix)]
@@ -227,13 +232,17 @@ class dtd2po:
                   break
         thepo = self.convertmixedelement(labeldtd, accesskeydtd)
         if thepo is not None:
-          self.mixedentities[accesskeyentity][mixbucket] = True
-          self.mixedentities[labelentity][mixbucket] = True
+          if accesskeyentity is not None:
+            self.mixedentities[accesskeyentity][mixbucket] = True
+          if labelentity is not None:
+            self.mixedentities[labelentity][mixbucket] = True
           return thepo
         else:
           # otherwise the mix failed. add each one separately and remember they weren't mixed
-          self.mixedentities[accesskeyentity][mixbucket] = False
-          self.mixedentities[labelentity][mixbucket] = False
+          if accesskeyentity is not None:
+            self.mixedentities[accesskeyentity][mixbucket] = False
+          if labelentity is not None:
+            self.mixedentities[labelentity][mixbucket] = False
     return self.convertelement(thedtd)
 
   def convertfile(self, thedtdfile):
@@ -267,8 +276,16 @@ class dtd2po:
       if origdtd.isnull():
         continue
       origpo = self.convertdtdelement(origdtdfile, origdtd, mixbucket="orig")
-      if origdtd.entity in self.mixedentities and not self.mixedentities[origdtd.entity]["orig"]:
-        mixbucket = "orig"
+      if origdtd.entity in self.mixedentities:
+        mixedentitydict = self.mixedentities[origdtd.entity]
+        if "orig" not in mixedentitydict:
+          # this means that the entity is mixed in the translation, but not the original - treat as unmixed
+          mixbucket = "orig"
+          del self.mixedentities[origdtd.entity]
+        elif mixedentitydict["orig"]:
+          mixbucket = "orig"
+        else:
+          mixbucket = "translate"
       else:
         mixbucket = "translate"
       if origpo is None:
