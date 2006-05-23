@@ -168,7 +168,7 @@ cmd_addEngine_accesskey = A'''
         propsource = '''prop=\\nvalue\\n\n'''
         pofile = self.prop2po(propsource)
         unit = self.singleelement(pofile)
-        assert unit.source == "\\nvalue\\n\n"
+        assert unit.source == "\nvalue\n"
 
 class TestProp2POCommand(test_convert.TestConvertCommand, TestProp2PO):
     """Tests running actual prop2po commands on files"""
