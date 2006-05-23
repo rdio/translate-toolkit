@@ -36,7 +36,7 @@ import codecs
 
 def escapeforpo(line):
   """escapes a line for po format. assumes no \n occurs in the line"""
-  return line.replace('\\', '\\\\').replace('\n', '\\n').replace('"', '\\"').replace('\t', '\\t').replace('\\\\r', '\\r')
+  return line.replace('\\', '\\\\').replace('\n', '\\n').replace('"', '\\"').replace('\t', '\\t').replace('\r', '\\r')
 
 def quoteforpo(text, template=None):
   """quotes the given text for a PO file, returning quoted and escaped lines"""
@@ -56,6 +56,7 @@ def quoteforpo(text, template=None):
 def quoteforpofromtemplate(text, template):
   """Same as quoteforpo, but try to to use same format as template as far as
   possible. template is a list of polines (such as pounit.msgstr)"""
+  # TODO: check whether this may alter the underlying po.msgid
   for position, item in enumerate(template):
     if not isinstance(item, unicode):
       template[position] = item.decode('utf-8')
