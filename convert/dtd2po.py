@@ -62,19 +62,19 @@ class dtd2po:
 
   def convertstrings(self,thedtd,thepo):
     # extract the string, get rid of quoting
-    unquoted = dtd.unquotefromdtd(thedtd.definition)
+    unquoted = dtd.unquotefromdtd(thedtd.definition).replace("\r", "")
     # escape backslashes... but not if they're for a newline
-    unquoted = unquoted.replace("\\", "\\\\").replace("\\\\n", "\\n")
+    # unquoted = unquoted.replace("\\", "\\\\").replace("\\\\n", "\\n")
     # now split the string into lines and quote them
-    lines = unquoted.split('\n')
+    lines = [po.escapeforpo(line) for line in unquoted.split('\n')]
     if len(lines) > 1:
       msgid = [quote.quotestr(lines[0].rstrip() + ' ')] + \
-              [quote.quotestr(line.lstrip().rstrip() + ' ') for line in lines[1:len(lines)-1]] + \
-              [quote.quotestr(lines[len(lines)-1].lstrip())]
+              [quote.quotestr(line.strip() + ' ') for line in lines[1:-1]] + \
+              [quote.quotestr(lines[-1].lstrip())]
     else:
       msgid = [quote.quotestr(lines[0])]
     thepo.msgid = msgid
-    thepo.msgstr = ['""']
+    thepo.target = ""
 
   def convertelement(self,thedtd):
     thepo = po.pounit(encoding="UTF-8")
