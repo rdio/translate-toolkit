@@ -100,10 +100,10 @@ class TestDTD:
         dtdsource = '<!ENTITY textZoomEnlargeCmd.commandkey2 "="> <!-- + is above this key on many keyboards -->'
         dtdregen = self.dtdregen(dtdsource)
         assert dtdsource == dtdregen
-   
+
     def test_comment_newline_space_closing(self):
         """check that comments that are closed by a newline then space then --> don't break the following entries"""
-        dtdsource = '<!-- Comment\n -->\n<!ENTITY searchFocus.commandkey "k">'
+        dtdsource = '<!-- Comment\n -->\n<!ENTITY searchFocus.commandkey "k">\n'
         dtdregen = self.dtdregen(dtdsource)
         assert dtdsource == dtdregen
    
