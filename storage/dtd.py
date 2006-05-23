@@ -129,7 +129,7 @@ class dtdelement:
         commentpair = (self.commenttype,comment)
         if self.commenttype == "locfile":
           self.locfilenotes.append(commentpair)
-        elif self.commenttype == "locgroupstart": 
+        elif self.commenttype == "locgroupstart":
           self.locgroupstarts.append(commentpair)
         elif self.commenttype == "locgroupend":
           self.locgroupends.append(commentpair)
@@ -238,7 +238,7 @@ class dtdelement:
     lines.extend([comment for commenttype,comment in self.comments])
     lines.extend(self.unparsedlines)
     if self.isnull():
-      return "\n"
+      return "".join(lines) + "\n"
     # for f in self.locfilenotes: yield f
     # for ge in self.locgroupends: yield ge
     # for gs in self.locgroupstarts: yield gs
