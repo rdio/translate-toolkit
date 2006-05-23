@@ -67,13 +67,18 @@ class dtd2po:
     # unquoted = unquoted.replace("\\", "\\\\").replace("\\\\n", "\\n")
     # now split the string into lines and quote them
     lines = [po.escapeforpo(line) for line in unquoted.split('\n')]
+    while lines and not lines[0].strip():
+      del lines[0]
+    while lines and not lines[-1].strip():
+      del lines[-1]
     if len(lines) > 1:
-      msgid = [quote.quotestr(lines[0].rstrip() + ' ')] + \
+      thepo.msgid = [quote.quotestr(lines[0].rstrip() + ' ')] + \
               [quote.quotestr(line.strip() + ' ') for line in lines[1:-1]] + \
               [quote.quotestr(lines[-1].lstrip())]
+    elif lines:
+      thepo.msgid = [quote.quotestr(lines[0])]
     else:
-      msgid = [quote.quotestr(lines[0])]
-    thepo.msgid = msgid
+      thepo.source = ""
     thepo.target = ""
 
   def convertelement(self,thedtd):
