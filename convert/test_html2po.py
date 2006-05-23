@@ -36,6 +36,11 @@ class TestHTML2PO:
         self.countunits(pofile, 1)
         self.compareunit(pofile, 1, itemtext)
 
+    def check_null(self, markup):
+        """checks that converting this markup produces no elements"""
+        pofile = self.html2po(markup)
+        self.countunits(pofile, 0)
+
     def test_htmllang(self):
         """test to ensure that we no longer use the lang attribure"""
         markup = '''<html lang="en"><head><title>My title</title></head><body></body></html>'''
@@ -48,9 +53,16 @@ class TestHTML2PO:
         """test that we can extract the <title> tag"""
         self.check_single("<html><head><title>My title</title></head><body></body></html>", "My title")
 
+    def test_meta(self):
+        """test that we can extract certian <meta> info from <head>"""
+        self.check_single('''<html><head><meta name="keywords" content="these are keywords"></head><body></body></html>''', "these are keywords")
+
     def test_tag_p(self):
         """test that we can extract the <p> tag"""
         self.check_single("<html><head></head><body><p>A paragraph.</p></body></html>", "A paragraph.")
+        markup = "<p>First line.<br>Second line.</p>"
+        pofile = self.html2po(markup)
+        self.compareunit(pofile, 1, "First line.<br>Second line.")
 
     def test_tag_a(self):
         """test that we can extract the <a> tag"""
@@ -87,6 +99,12 @@ class TestHTML2PO:
         self.compareunit(pofile, 7, "Foot Two")
         self.compareunit(pofile, 8, "One")
         self.compareunit(pofile, 9, "Two")
+
+    def test_table_empty(self):
+        """test that we ignore tables that are empty ie they have no translatanle content"""
+        self.check_null('''<html><head></head><body><table><tr><td><img src="bob.png"></td></tr></table></body></html>''')
+        self.check_null('''<html><head></head><body><table><tr><td>&nbsp;</td></tr></table></body></html>''')
+        self.check_null('''<html><head></head><body><table><tr><td><strong></strong></td></tr></table></body></html>''')
         
     def test_address(self):
         """Test to see if the address element is extracted"""
@@ -143,6 +161,11 @@ class TestHTML2PO:
         self.countunits(pofile, 1)
         print expected
         assert pofile.units[0].getmsgpartstr("msgid", pofile.units[0].msgid) == expected
+
+    def test_multiline_reflow(self):
+        """check that we reflow multiline content to make it more readable for translators"""
+        self.check_single('''<td valign="middle" width="96%"><font class="headingwhite">South
+                  Africa</font></td>''', '''<font class="headingwhite">South Africa</font>''')
 
 class TestHTML2POCommand(test_convert.TestConvertCommand, TestHTML2PO):
     """Tests running actual html2po commands on files"""
