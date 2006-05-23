@@ -238,7 +238,8 @@ class dtdelement:
     lines.extend([comment for commenttype,comment in self.comments])
     lines.extend(self.unparsedlines)
     if self.isnull():
-      return "".join(lines) + "\n"
+      result = "".join(lines)
+      return result.rstrip() + "\n"
     # for f in self.locfilenotes: yield f
     # for ge in self.locgroupends: yield ge
     # for gs in self.locgroupstarts: yield gs
