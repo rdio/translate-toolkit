@@ -67,7 +67,7 @@ def extract(source,startdelim,enddelim,escape=None,startinstring=0):
   significant_places = dict.fromkeys([0] + startdelim_places + enddelim_places + [len(source)-1]).keys()
   significant_places.sort()
   extracted = ""
-  lastpos = 0
+  lastpos = None
   for pos in significant_places:
     if instring and pos in enddelim_places:
       # make sure that if startdelim == enddelim we don't get confused and count the same string as start and end

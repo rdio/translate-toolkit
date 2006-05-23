@@ -23,6 +23,7 @@ def test_extract():
     assert quote.extract("<quoted>\\\\<again>", "<", ">", "\\", 0) == ("<quoted><again>", False)
     assert quote.extract("<quoted\\>", "<", ">", "\\", 0) == ("<quoted\\>", True)
     assert quote.extract(' -->\n<!ENTITY blah "Some">', "<!--", "-->", None, 1) == (" -->", False)
+    assert quote.extract('">\n', '"', '"', None, True) == ('"', False)
 
 def test_extractwithoutquotes():
     """tests the extractwithoutquotes function"""
