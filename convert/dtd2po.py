@@ -71,12 +71,14 @@ class dtd2po:
       del lines[0]
     while lines and not lines[-1].strip():
       del lines[-1]
+    # quotes have been escaped already by escapeforpo, so just add the start and end quotes
+    simplequotestr = lambda line: '"' + line + '"'
     if len(lines) > 1:
-      thepo.msgid = [quote.quotestr(lines[0].rstrip() + ' ')] + \
-              [quote.quotestr(line.strip() + ' ') for line in lines[1:-1]] + \
-              [quote.quotestr(lines[-1].lstrip())]
+      thepo.msgid = [simplequotestr(lines[0].rstrip() + ' ')] + \
+              [simplequotestr(line.strip() + ' ') for line in lines[1:-1]] + \
+              [simplequotestr(lines[-1].lstrip())]
     elif lines:
-      thepo.msgid = [quote.quotestr(lines[0])]
+      thepo.msgid = [simplequotestr(lines[0])]
     else:
       thepo.source = ""
     thepo.target = ""
