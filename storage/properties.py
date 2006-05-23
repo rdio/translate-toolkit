@@ -53,7 +53,7 @@ class propelement:
     if self.isblank():
       return "".join(self.comments + ["\n"])
     else:
-      return "".join(self.comments + ["%s=%s\n" % (self.name, self.msgid)])
+      return "".join(self.comments + ["%s=%s\n" % (self.name, quote.mozillapropertiesencode(self.msgid))])
 
 class propfile:
   """this class represents a .properties file, made up of propelements"""
@@ -73,10 +73,11 @@ class propfile:
     lines = propsrc.split("\n")
     for line in lines:
       # handle multiline msgid if we're in one
+      line = quote.rstripeol(line)
       if inmultilinemsgid:
         # handle unicode-escape encoding
         line = quote.mozillapropertiesdecode(line)
-        newpe.msgid += quote.rstripeol(line).lstrip()
+        newpe.msgid += line.lstrip()
         # see if there's more
         inmultilinemsgid = (newpe.msgid[-1:] == '\\')
         # if we're still waiting for more...
@@ -90,7 +91,7 @@ class propfile:
       # otherwise, this could be a comment
       elif line.strip()[:1] == '#':
         # add a comment
-        line = quote.escapecontrols(quote.rstripeol(line))
+        line = quote.escapecontrols(line)
         newpe.comments.append(line+"\n")
       elif not line.strip():
         # this is a blank line...
@@ -109,7 +110,7 @@ class propfile:
         # otherwise, this is a definition
         else:
           newpe.name = line[:equalspos].strip()
-          newpe.msgid = quote.rstripeol(line[equalspos+1:]).lstrip()
+          newpe.msgid = line[equalspos+1:].lstrip(' ')
           # backslash at end means carry string on to next line
           if newpe.msgid[-1:] == '\\':
             inmultilinemsgid = 1
@@ -126,7 +127,7 @@ class propfile:
     lines = []
     for pe in self.propelements:
       lines.append(str(pe))
-    return quote.mozillapropertiesencode("".join(lines))
+    return "".join(lines)
 
   def makeindex(self):
     """makes self.index dictionary keyed on the name"""
