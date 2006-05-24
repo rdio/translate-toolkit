@@ -44,8 +44,8 @@ class oo2po:
     thepo.sourcecomments.append("#: " + key + "." + subkey + "\n")
     if getattr(translators_comment, subkey).strip() != "":
       thepo.automaticcomments.append("#. %s\n" % getattr(translators_comment, subkey))
-    text1 = getattr(part1, subkey)
-    text2 = getattr(part2, subkey)
+    text1 = getattr(part1, subkey).replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t")
+    text2 = getattr(part2, subkey).replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t")
     thepo.msgid = po.quoteforpo(text1)
     thepo.msgstr = po.quoteforpo(text2)
     return thepo

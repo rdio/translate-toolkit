@@ -35,9 +35,10 @@ class TestOO2PO:
         pofile = self.oo2po(oosource)
         pounit = self.singleelement(pofile)
         poelementsrc = str(pounit)
-        assert r"Newline \n Newline" in poelementsrc
-        assert r"Tab \t Tab" in poelementsrc
-        assert r"CR \r CR" in poelementsrc
+        print poelementsrc
+        assert "Newline \n Newline" in pounit.source 
+        assert "Tab \t Tab" in pounit.source 
+        assert "CR \r CR" in pounit.source 
 
     def test_msgid_bug_error_address(self):
         """tests the we have the correct url for reporting msgid bugs"""
