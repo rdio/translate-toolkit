@@ -105,7 +105,7 @@ def isnewlineescape(escape):
   return escape == "\\n"
 
 def isnewlineortabescape(escape):
-  return escape == "\\n" or escape == "\\t"
+  return escape == "\\n" or escape == "\\t" or escape == "\\r"
 
 def extractpoline(line):
   backslash = '\\'
@@ -187,7 +187,7 @@ class pounit(base.TranslationUnit):
     multi = multistring(unquotefrompo(self.msgid), self.encoding)
     if self.hasplural():
       multi.strings.append(unquotefrompo(self.msgid_plural))
-    return multi.replace("\\n", "\n").replace("\\t", "\t")
+    return multi.replace("\\n", "\n").replace("\\t", "\t").replace("\\r", "\r")
 
   def setsource(self, source):
     """Sets the msgstr to the given (unescaped) value"""
@@ -207,7 +207,7 @@ class pounit(base.TranslationUnit):
       multi = multistring(map(unquotefrompo, self.msgstr.values()), self.encoding)
     else:
       multi = multistring(unquotefrompo(self.msgstr), self.encoding)
-    return multi.replace("\\n", "\n").replace("\\t", "\t")
+    return multi.replace("\\n", "\n").replace("\\t", "\t").replace("\\r", "\r")
 
   def settarget(self, target):
     """Sets the msgstr to the given (unescaped) value"""
