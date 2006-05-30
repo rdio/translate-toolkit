@@ -778,7 +778,7 @@ class pofile(base.TranslationStore):
     return 1
 
   def parsestring(cls, storestring):
-    """Parses the po file contents in the storestring"""
+    """Parses the po file contents in the storestring and returns a new pofile object (classmethod, constructor)"""
     parsedfile = pofile()
     parsedfile.parse(storestring)
     return parsedfile
@@ -786,7 +786,10 @@ class pofile(base.TranslationStore):
 
   def parse(self, input):
     """parses the given file or file source string"""
-    self.filename = getattr(input, 'name', '')
+    if hasattr(input, 'name'):
+      self.filename = input.name
+    elif not getattr(self, 'filename', ''):
+      self.filename = ''
     if hasattr(input, "read"):
       posrc = input.read()
       input.close()
