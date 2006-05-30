@@ -215,13 +215,16 @@ class pounit(base.TranslationUnit):
       return
     if isinstance(target, multistring) and len(target.strings) > 1:
       target = target.strings
+    templates = self.msgstr
+    if isinstance(templates, list):
+      templates = {0: templates}
     #TODO: use template for quoteforpo where possible
     if isinstance(target, list):
-      self.msgstr = dict(zip(range(len(target)), map(quoteforpo, target)))
+      self.msgstr = dict([(i, quoteforpo(target[i])) for i in range(len(target))])
     elif isinstance(target, dict):
-      self.msgstr = dict(zip(target.keys(), map(quoteforpo, target.values())))
+      self.msgstr = dict([(targetkey, quoteforpo(targetstring)) for targetkey, targetstring in target.iteritems()])
     else:
-      self.msgstr = quoteforpo(target, template=self.msgstr)
+      self.msgstr = quoteforpo(target, template=templates.get(0, []))
   target = property(gettarget, settarget)
 
   def copy(self):

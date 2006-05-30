@@ -33,6 +33,24 @@ class TestPOUnit(test_base.TestTranslationUnit):
         assert unit.target.strings == [u"Sk\u00ear", u"Sk\u00eare"]
         assert unit.target == u"Sk\u00ear"
 
+    def test_plural_reduction(self):
+        """checks that reducing the number of plurals supplied works"""
+        unit = self.UnitClass("Tree")
+        unit.msgid_plural = ['"Trees"']
+        assert isinstance(unit.source, multistring)
+        assert unit.source.strings == ["Tree", "Trees"]
+        unit.target = multistring(["Boom", "Bome", "Baie Bome"])
+        assert isinstance(unit.source, multistring)
+        assert unit.target.strings == ["Boom", "Bome", "Baie Bome"]
+        unit.target = multistring(["Boom", "Bome"])
+        assert unit.target.strings == ["Boom", "Bome"]
+        unit.target = "Boom"
+        # FIXME: currently assigning the target to the same as the first string won't change anything
+        # we need to verify that this is the desired behaviour...
+        assert unit.target.strings == ["Boom", "Bome"]
+        unit.target = "Een Boom"
+        assert unit.target.strings == ["Een Boom"]
+
 class TestPO(test_base.TestTranslationStore):
     StoreClass = po.pofile
     def poparse(self, posource):
