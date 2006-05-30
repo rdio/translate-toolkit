@@ -218,13 +218,12 @@ class pounit(base.TranslationUnit):
     templates = self.msgstr
     if isinstance(templates, list):
       templates = {0: templates}
-    #TODO: use template for quoteforpo where possible
     if isinstance(target, list):
-      self.msgstr = dict([(i, quoteforpo(target[i])) for i in range(len(target))])
+      self.msgstr = dict([(i, quoteforpo(target[i], templates.get(i, None))) for i in range(len(target))])
     elif isinstance(target, dict):
-      self.msgstr = dict([(targetkey, quoteforpo(targetstring)) for targetkey, targetstring in target.iteritems()])
+      self.msgstr = dict([(i, quoteforpo(targetstring, templates.get(i, None))) for i, targetstring in target.iteritems()])
     else:
-      self.msgstr = quoteforpo(target, template=templates.get(0, []))
+      self.msgstr = quoteforpo(target, template=templates.get(0, None))
   target = property(gettarget, settarget)
 
   def copy(self):
