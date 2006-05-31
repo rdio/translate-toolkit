@@ -74,3 +74,9 @@ class TestOO:
         assert oe.languages.keys() == ["en-US"]
         ol = oofile.oolines[0]
         assert int(ol.width) == 16
+
+    def test_escapes(self):
+        """checks that we escape properly"""
+        oosource = r'svx	source\dialog\numpages.src	0	string	RID_SVXPAGE_NUM_OPTIONS	STR_BULLET			0	en-US	size *2 \\langle x \\rangle				20050924 09:13:58'
+        oofile = self.ooregen(oosource)
+        assert r'size *2 \\langle x \\rangle' in oofile
