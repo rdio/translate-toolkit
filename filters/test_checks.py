@@ -356,10 +356,13 @@ def test_simplecaps():
     assert checks.passes(stdchecker.simplecaps, "Determine how &brandShortName; connects to the Internet.", "Kuma &brandShortName; hlanganisa eka Internete.")
     ## If source is ALL CAPS then we should just check that target is also ALL CAPS
     #assert checks.passes(stdchecker.simplecaps, "COUPDAYS", "COUPMALANGA")
+    # KDE commens should be removed
+    assert checks.fails(stdchecker.simplecaps, "_: KDE COMMENTS\\n\nA string", "Dimpled ring")
     # Just some that at times have failed but should always pass
     assert checks.passes(stdchecker.simplecaps, "Create a query  entering an SQL statement directly.", "Yakha sibuti singena SQL inkhomba yesitatimende.")
-    assert checks.passes(stdchecker.simplecaps, "SOLK (%PRODUCTNAME Link)", "SOLK (%PRODUCTNAME Thumanyo)")
-    assert checks.passes(stdchecker.simplecaps, "%STAROFFICE Image", "Tshifanyiso tsha %STAROFFICE")
+    ooochecker = checks.OpenOfficeChecker()
+    assert checks.passes(ooochecker.simplecaps, "SOLK (%PRODUCTNAME Link)", "SOLK (%PRODUCTNAME Thumanyo)")
+    assert checks.passes(ooochecker.simplecaps, "%STAROFFICE Image", "Tshifanyiso tsha %STAROFFICE")
 
 # def test_spellcheck():
 #     """tests simple caps"""
