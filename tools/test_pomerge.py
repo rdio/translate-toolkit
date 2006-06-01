@@ -296,3 +296,36 @@ class TestPOMerge:
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
         assert str(pofile) == expectedpo
+
+    def test_merging_untranslated_with_kde_disambiguation(self):
+        """test merging untranslated messages that are the same except for KDE disambiguation"""
+        templatepo = r'''#: sendMsgTitle
+#: sendMsgTitle.accesskey
+msgid "_: sendMsgTitle sendMsgTitle.accesskey\n"
+"Send Message"
+msgstr ""
+
+#: sendMessageCheckWindowTitle
+#: sendMessageCheckWindowTitle.accesskey
+msgid "_: sendMessageCheckWindowTitle sendMessageCheckWindowTitle.accesskey\n"
+"Send Message"
+msgstr ""
+'''
+        mergepo = r'''#: sendMsgTitle
+#: sendMsgTitle.accesskey
+msgid "_: sendMsgTitle sendMsgTitle.accesskey\n"
+"Send Message"
+msgstr "Stuur"
+
+#: sendMessageCheckWindowTitle
+#: sendMessageCheckWindowTitle.accesskey
+msgid "_: sendMessageCheckWindowTitle sendMessageCheckWindowTitle.accesskey\n"
+"Send Message"
+msgstr "Stuur"
+
+'''
+        expectedpo = mergepo
+        pofile = self.mergepo(templatepo, mergepo)
+        print "Expected:\n%s\n---\nMerged:\n%s\n---" % (expectedpo, str(pofile))
+        assert str(pofile) == expectedpo
+
