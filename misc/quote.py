@@ -21,6 +21,8 @@
 
 """string processing utilities for extracting strings with various kinds of delimiters"""
 
+import logging
+
 def find_all(searchin, substr):
   """returns a list of locations where substr occurs in searchin
   locations are not allowed to overlap"""
@@ -104,7 +106,7 @@ def extractcomment(lines):
 
 def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,includeescapes=1):
   """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping
-  includeescapes can also be a function that takes the whole escaped string and returns whether to escape it"""
+  includeescapes can also be a function that takes the whole escaped string and returns the replaced version"""
   instring = startinstring
   lenstart = len(startdelim)
   lenend = len(enddelim)
@@ -148,8 +150,16 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
         last_epos = 0
         for epos in escape_list:
           new_section += section[last_epos:epos]
-          if callable_includeescapes and includeescapes(section[epos:epos+lenescape+1]):
-              last_epos = epos
+          if callable_includeescapes:
+              replace_escape = includeescapes(section[epos:epos+lenescape+1])
+              # TODO: deprecate old method of returning boolean from includeescape, by removing this if block
+              if not isinstance(replace_escape, basestring):
+                  if replace_escape:
+                      replace_escape = section[epos:epos+lenescape+1]
+                  else:
+                      replace_escape = section[epos+lenescape:epos+lenescape+1]
+              new_section += replace_escape
+              last_epos = epos + lenescape + 1
           else:
               last_epos = epos + lenescape
         section = new_section + section[last_epos:]
@@ -275,11 +285,15 @@ def mozillapropertiesdecode(source):
       output += unichr2(x)
     elif c == "N":
       if source[s] != "{":
-        raise ValueError("Invalid named unicode escape")
+        logging.warn("Invalid named unicode escape: no { after \\N")
+        output += "\\" + c
+        continue
       s += 1
       e = source.find("}", s)
       if e == -1:
-        raise ValueError("Invalid named unicode escape")
+        logging.warn("Invalid named unicode escape: no } after \\N{")
+        output += "\\" + c
+        continue
       import unicodedata
       name = source[s:e]
       output += unicodedata.lookup(name)

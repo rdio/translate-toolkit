@@ -43,7 +43,9 @@ def test_extractwithoutquotes():
     assert quote.extractwithoutquotes("<quoted\\>", "<", ">", "\\", 0, False) == ("quoted>", True)
 
 def isnewlineortabescape(escape):
-  return escape == "\\n" or escape == "\\t"
+  if escape == "\\n" or escape == "\\t":
+    return escape
+  return escape[-1]
 
 def test_extractwithoutquotes_passfunc():
     """tests the extractwithoutquotes function with a function for includeescapes as a parameter"""
