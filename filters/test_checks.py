@@ -355,7 +355,7 @@ def test_simplecaps():
     assert checks.passes(stdchecker.simplecaps, "The element \"%S\" is not recognized.", "Elemente \"%S\" a yi tiveki.")
     assert checks.passes(stdchecker.simplecaps, "Determine how &brandShortName; connects to the Internet.", "Kuma &brandShortName; hlanganisa eka Internete.")
     ## If source is ALL CAPS then we should just check that target is also ALL CAPS
-    #assert checks.passes(stdchecker.simplecaps, "COUPDAYS", "COUPMALANGA")
+    assert checks.passes(stdchecker.simplecaps, "COUPDAYS", "COUPMALANGA")
     # KDE commens should be removed
     assert checks.fails(stdchecker.simplecaps, "_: KDE COMMENTS\\n\nA string", "Dimpled ring")
     # Just some that at times have failed but should always pass

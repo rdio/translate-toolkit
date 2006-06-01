@@ -564,6 +564,10 @@ class StandardChecker(TranslationChecker):
     """checks the capitalisation of two strings isn't wildly different"""
     str1 = prefilters.removekdecomments(str1)
     capitals1, capitals2 = helpers.filtercount(str1, type(str1).isupper), helpers.filtercount(str2, type(str2).isupper)
+    alpha1, alpha2 = helpers.filtercount(str1, type(str1).isalpha), helpers.filtercount(str2, type(str2).isalpha)
+    # Capture the all caps case
+    if capitals1 == alpha1:
+      return capitals2 == alpha2
     # some heuristic tests to try and see that the style of capitals is vaguely the same
     if capitals1 == 0 or capitals1 == 1:
       return capitals2 == capitals1
