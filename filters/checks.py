@@ -232,10 +232,16 @@ class TranslationChecker(object):
     self.accfilters = [prefilters.filteraccelerators(accelmarker) for accelmarker in self.config.accelmarkers]
     self.varfilters =  [prefilters.filtervariables(startmatch, endmatch, prefilters.varname)
                         for startmatch, endmatch in self.config.varmatches]
+    self.removevarfilter =  [prefilters.filtervariables(startmatch, endmatch, prefilters.varnone)
+                        for startmatch, endmatch in self.config.varmatches]
 
   def filtervariables(self, str1):
     """filter out variables from str1"""
     return helpers.multifilter(str1, self.varfilters)
+
+  def removevariables(self, str1):
+    """remove variables from str1"""
+    return helpers.multifilter(str1, self.removevarfilter)
 
   def filteraccelerators(self, str1):
     """filter out accelerators from str1"""
@@ -324,6 +330,10 @@ class StandardChecker(TranslationChecker):
     """checks whether a translation is basically identical to the original string"""
     str1 = self.filteraccelerators(prefilters.removekdecomments(str1))
     str2 = self.filteraccelerators(str2)
+    if self.config.notranslatewords:
+      words1 = str1.split()
+      if len(words1) == 1 and [word for word in words1 if word in self.config.notranslatewords]:
+        return True
     str1 = self.filtervariables(str1)
     str2 = self.filtervariables(str2)
     if not (str1.isdigit() or len(str1) < 2) and (str1.strip().lower() == str2.strip().lower()):
@@ -562,7 +572,8 @@ class StandardChecker(TranslationChecker):
 
   def simplecaps(self, str1, str2):
     """checks the capitalisation of two strings isn't wildly different"""
-    str1 = prefilters.removekdecomments(str1)
+    str1 = self.removevariables(prefilters.removekdecomments(str1))
+    str2 = self.removevariables(str2)
     capitals1, capitals2 = helpers.filtercount(str1, type(str1).isupper), helpers.filtercount(str2, type(str2).isupper)
     alpha1, alpha2 = helpers.filtercount(str1, type(str1).isalpha), helpers.filtercount(str2, type(str2).isalpha)
     # Capture the all caps case
@@ -635,8 +646,8 @@ class StandardChecker(TranslationChecker):
     """checks that words configured as definitely translatable don't appear in the translation"""
     if not self.config.musttranslatewords:
       return True
-    str1 = self.filtervariables(str1)
-    str2 = self.filtervariables(str2)
+    str1 = self.removevariables(str1)
+    str2 = self.removevariables(str2)
     #The above is full of strange quotes and things in utf-8 encoding.
     #single apostrophe perhaps problematic in words like "doesn't"
     for seperator in self.config.punctuation:

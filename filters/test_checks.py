@@ -351,8 +351,10 @@ def test_simplecaps():
     ## assert checks.passes(stdchecker.simplecaps, "if you say I want", "as jy se ek wil")
     # FIXME disabled for now
     ## We should remove variables before checking
-    #assert checks.passes(stdchecker.simplecaps, "Could not load %s", "A swi koteki ku panga %S")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(varmatches=[("%", 1)]))
+    assert checks.passes(stdchecker.simplecaps, "Could not load %s", "A swi koteki ku panga %S")
     assert checks.passes(stdchecker.simplecaps, "The element \"%S\" is not recognized.", "Elemente \"%S\" a yi tiveki.")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(varmatches=[("&", ";")]))
     assert checks.passes(stdchecker.simplecaps, "Determine how &brandShortName; connects to the Internet.", "Kuma &brandShortName; hlanganisa eka Internete.")
     ## If source is ALL CAPS then we should just check that target is also ALL CAPS
     assert checks.passes(stdchecker.simplecaps, "COUPDAYS", "COUPMALANGA")
@@ -375,8 +377,6 @@ def test_startcaps():
     assert checks.passes(stdchecker.startcaps, "find", "vind")
     assert checks.fails(stdchecker.startcaps, "Find", "vind")
     assert checks.fails(stdchecker.startcaps, "find", "Vind")
-    # Need to check for prefilters ie test that won't be run if translation is blank
-    #assert checks.passes(stdchecker.startcaps, "Find", "")
     assert checks.fails(stdchecker.startcaps, "Find", "'")
     assert checks.fails(stdchecker.startcaps, "'", "Find")
     assert checks.passes(stdchecker.startcaps, "'", "'")
@@ -432,8 +432,7 @@ Unchanged""", r"Unchanged")
     ## assert checks.passes(mozillachecker.unchanged, "$ProgramName$", "$ProgramName$") 
     # Don't translate words should be ignored
     stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["Mozilla"]))
-    ## disabled test until enhancement implemented
-    ## assert checks.passes(mozillachecker.unchanged, "Mozilla", "Mozilla") 
+    assert checks.passes(stdchecker.unchanged, "Mozilla", "Mozilla") 
 
 def test_untranslated():
     """tests untranslated entries"""
