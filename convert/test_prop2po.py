@@ -119,22 +119,22 @@ prefPanel-smime=Security'''
         # FIXME This should probably become "#. Comment" to be fully correct in PO format
         assert pounit.othercomments == ["# Comment\n"]
 
-    def xtest_folding_accesskeys(self):
-        """check that we can fold various accesskeys into their associated label"""
+    def test_folding_accesskeys(self):
+        """check that we can fold various accesskeys into their associated label (bug #115)"""
         propsource = r'''cmd_addEngine = Add Engines...
 cmd_addEngine_accesskey = A'''
         pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
 
-    def xtest_dont_translate(self):
-        """check that we know how to ignore don't translate instructions in properties files"""
+    def test_dont_translate(self):
+        """check that we know how to ignore don't translate instructions in properties files (bug #116)"""
         propsource = '''# LOCALIZATION NOTE (1029): DONT_TRANSLATE.
 1029=forward.msg
 '''
         pofile = self.prop2po(propsource)
         assert self.countelements(pofile) == 0
 
-    def xtest_localization_notes(self):
+    def test_localization_notes(self):
         """check that we fold localisation notes into KDE comments"""
         propsource = '''# Description of import module
 ## @name OUTLOOKIMPORT_DESCRIPTION
