@@ -26,6 +26,7 @@ You can merge translated strings back using po2html"""
 from translate.storage import po
 from translate.storage import html
 from translate.misc import quote
+import sre
 
 class html2po:
   def convertfile(self, inputfile, filename, includeheader, includeuntagged=False, duplicatestyle="msgid_comment"):
@@ -42,7 +43,7 @@ class html2po:
       if not block: continue
       thepo = po.pounit(encoding="UTF-8")
       thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum+1))
-      block = block.split("\n")
+      block = sre.sub("<br>\n?", "<br>\n", block).split("\n")
       thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in block]
       if len(thepo.msgid) > 1:
         thepo.msgid = [quote.quotestr("")] + thepo.msgid
