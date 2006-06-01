@@ -34,9 +34,27 @@ import codecs
 
 # general functions for quoting / unquoting po strings
 
+po_unescape_map = {"\\r": "\r", "\\t": "\t", '\\"': '"', '\\n': '\n', '\\\\': '\\'}
+po_escape_map = dict([(value, key) for (key, value) in po_unescape_map.items()])
+
 def escapeforpo(line):
   """escapes a line for po format. assumes no \n occurs in the line"""
-  return line.replace('\\', '\\\\').replace('\n', '\\n').replace('"', '\\"').replace('\t', '\\t').replace('\r', '\\r')
+  special_locations = []
+  for special_key in po_escape_map:
+    special_locations.extend(quote.find_all(line, special_key))
+  special_locations = dict.fromkeys(special_locations).keys()
+  special_locations.sort()
+  escaped_line = ""
+  last_location = 0
+  for location in special_locations:
+    escaped_line += line[last_location:location]
+    escaped_line += po_escape_map[line[location:location+1]]
+    last_location = location+1
+  escaped_line += line[last_location:]
+  return escaped_line
+
+def unescapehandler(escape):
+  return po_unescape_map.get(escape, escape)
 
 def quoteforpo(text, template=None):
   """quotes the given text for a PO file, returning quoted and escaped lines"""
@@ -101,16 +119,9 @@ def quoteforpofromtemplate(text, template):
     
   return polines
 
-def isnewlineescape(escape):
-  return escape == "\\n"
-
-def isnewlineortabescape(escape):
-  return escape == "\\n" or escape == "\\t" or escape == "\\r"
-
 def extractpoline(line):
-  backslash = '\\'
-  extracted = quote.extractwithoutquotes(line,'"','"',backslash,includeescapes=isnewlineortabescape)[0]
-  return extracted # .replace('\\"', '"')
+  extracted = quote.extractwithoutquotes(line,'"','"','\\',includeescapes=unescapehandler)[0]
+  return extracted
 
 def unquotefrompo(postr, joinwithlinebreak=False):
   if joinwithlinebreak:
@@ -187,7 +198,7 @@ class pounit(base.TranslationUnit):
     multi = multistring(unquotefrompo(self.msgid), self.encoding)
     if self.hasplural():
       multi.strings.append(unquotefrompo(self.msgid_plural))
-    return multi.replace("\\n", "\n").replace("\\t", "\t").replace("\\r", "\r")
+    return multi
 
   def setsource(self, source):
     """Sets the msgstr to the given (unescaped) value"""

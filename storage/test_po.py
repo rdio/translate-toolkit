@@ -148,8 +148,8 @@ msgstr ""
         assert len(pofile.units) == 2
 	print pofile.units[0].msgidcomments
 	print pofile.units[1].msgidcomments
-        assert po.unquotefrompo(pofile.units[0].msgidcomments) == "_: source1\\n"
-        assert po.unquotefrompo(pofile.units[1].msgidcomments) == "_: source2\\n"
+        assert po.unquotefrompo(pofile.units[0].msgidcomments) == "_: source1\n"
+        assert po.unquotefrompo(pofile.units[1].msgidcomments) == "_: source2\n"
 
     def test_keep_blanks(self):
         """checks that keeping keeps blanks and doesn't add msgid_comments"""
