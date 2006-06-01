@@ -317,7 +317,7 @@ class pounit(base.TranslationUnit):
       mergelists(self.obsoletemessages, otherpo.obsoletemessages)
       mergelists(self.msgidcomments, otherpo.msgidcomments)
     if self.isblankmsgstr() or overwrite:
-      self.target = otherpo.target
+      self.target = sre.sub("_: .*?\\n", "", otherpo.target)
     elif otherpo.isblankmsgstr():
       if self.msgid != otherpo.msgid:
         self.markfuzzy()
