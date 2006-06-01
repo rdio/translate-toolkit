@@ -3,6 +3,19 @@
 from translate.storage import dtd
 from translate.misc import wStringIO
 
+def test_roundtrip_quoting():
+    specials = ['Fish & chips', 'five < six', 'six > five',
+                'Use &nbsp;', 'Use &amp;nbsp;' 
+                'A "solution"', "skop 'n bal", '"""', "'''",
+                '\n', '\t', '\r',
+                'Escape at end \\',
+                '\\n', '\\t', '\\r', '\\"', '\r\n', '\\r\\n', '\\']
+    for special in specials:
+        quoted_special = dtd.quotefordtd(special)
+        unquoted_special = dtd.unquotefromdtd(quoted_special)
+        print "special: %r\nquoted: %r\nunquoted: %r\n" % (special, quoted_special, unquoted_special)
+        assert special == unquoted_special
+
 class TestDTD:
     def dtdparse(self, dtdsource):
         """helper that parses dtd source without requiring files"""
