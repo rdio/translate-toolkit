@@ -357,7 +357,7 @@ def test_simplecaps():
     ## If source is ALL CAPS then we should just check that target is also ALL CAPS
     assert checks.passes(stdchecker.simplecaps, "COUPDAYS", "COUPMALANGA")
     # KDE commens should be removed
-    assert checks.fails(stdchecker.simplecaps, "_: KDE COMMENTS\\n\nA string", "Dimpled ring")
+    assert checks.passes(stdchecker.simplecaps, "_: KDE COMMENTS\\n\nA string", "Dimpled ring")
     # Just some that at times have failed but should always pass
     assert checks.passes(stdchecker.simplecaps, "Create a query  entering an SQL statement directly.", "Yakha sibuti singena SQL inkhomba yesitatimende.")
     ooochecker = checks.OpenOfficeChecker()
