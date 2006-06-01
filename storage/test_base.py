@@ -65,6 +65,25 @@ class TestTranslationUnit:
         unit.settarget("")
         assert unit.target == ""
 
+    def test_escapes(self):
+        """Test all sorts of characters that might go wrong in a quoting and 
+        escaping roundtrip."""
+        unit = self.UnitClass('bla')
+        specials = ['Fish & chips', 'five < six', 'six > five', 
+                    'Use &nbsp;', 'Use &amp;nbsp;' 
+                    'A "solution"', "skop 'n bal", '"""', "'''", 
+                    '\n', '\t', '\r', 
+                    '\\n', '\\t', '\\r', '\\"', '\r\n', '\\r\\n', '\\']
+        for special in specials:
+            unit.source = special
+            print "unit.source:"
+            print repr(unit.source)
+            print unit.source
+            print "special:"
+            print repr(special)
+            print special
+            assert unit.source == special
+
 class TestTranslationStore:
     """Tests a TranslationStore.
     Derived classes can reuse these tests by pointing StoreClass to a derived Store"""
