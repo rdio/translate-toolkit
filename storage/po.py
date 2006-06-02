@@ -673,19 +673,11 @@ class pofile(base.TranslationStore):
     header = self.header()
     if not header:
       return headervalues
-    lineitem = ""
-    for line in header.msgstr:
-      line = unquotefrompo([line]).strip()
-      if line.endswith("\\n"):
-        lineitem += line[:-2]
-      else:
-        lineitem += line
+    for entry in header.target.split("\n"):
+      if not entry or ":" not in entry: 
         continue
-      if not ":" in lineitem:
-        continue
-      key, value = lineitem.split(":", 1)
+      key, value = entry.split(":", 1)
       headervalues[key.strip()] = value.strip()
-      lineitem = ""
     return headervalues
 
   def updateheader(self, add=False, **kwargs):
