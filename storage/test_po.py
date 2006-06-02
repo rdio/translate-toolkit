@@ -294,3 +294,36 @@ msgstr[1] "Koeie"
 	print "__str__", str(oldfile)
 	assert len(oldfile.units) == 2
 	assert str(oldfile).find("# old lonesome comment\n\n") >= 0
+
+    def test_header(self):
+        """test header functionality"""
+        posource = r'''# other comment\n
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2005-08-29 13:27-0500\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"Generated-By: pygettext.py 1.1\n"
+"Last-Translator: Rose Ta <charlvn@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2005-03-01 19:15\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"MIME-Version: 1.0\n"
+'''
+        pofile = self.poparse(posource)
+        print pofile
+        assert len(pofile.units) == 1
+        header = pofile.units[0]
+        assert header.isheader()
+        assert not header.isblank()
+
+        headeritems = pofile.parseheader()
+        assert headeritems["MIME-Version"] == "1.0"
+        assert headeritems["Report-Msgid-Bugs-To"] == ""
+        
+        nplural, plural = pofile.getheaderplural()
+        assert nplural == "2"
+        assert plural == "(n != 1)"
+
