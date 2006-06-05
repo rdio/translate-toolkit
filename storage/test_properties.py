@@ -19,8 +19,8 @@ class TestProperties:
         """checks that a simple properties definition is parsed correctly"""
         propsource = 'test_me=I can code!'
         propfile = self.propparse(propsource)
-        assert len(propfile.propelements) == 1
-        propelement = propfile.propelements[0]
+        assert len(propfile.units) == 1
+        propelement = propfile.units[0]
         assert propelement.name == "test_me"
         assert propelement.msgid == "I can code!"
 
@@ -34,8 +34,8 @@ class TestProperties:
         """check that escapes unicode is converted properly"""
         propsource = "unicode=\u0411\u0416\u0419\u0428"
         propfile = self.propparse(propsource)
-        assert len(propfile.propelements) == 1
-        propelement = propfile.propelements[0]
+        assert len(propfile.units) == 1
+        propelement = propfile.units[0]
         assert propelement.name == "unicode"
         assert propelement.msgid.encode("UTF-8") == "БЖЙШ"
 
@@ -49,7 +49,7 @@ class TestProperties:
         """check that we remove extra whitespace around property"""
         propsource = '''  whitespace  =  Start \n'''
         propfile = self.propparse(propsource)
-        propelement = propfile.propelements[0]
+        propelement = propfile.units[0]
         assert propelement.name == "whitespace"
         assert propelement.msgid == "Start "
      

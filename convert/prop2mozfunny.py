@@ -14,8 +14,8 @@ def prop2inc(pf):
   """convert a properties file back to a .inc file with #defines in it"""
   # any leftover blanks will not be included at the end
   pendingblanks = []
-  for pe in pf.propelements:
-    for comment in pe.comments:
+  for unit in pf.units:
+    for comment in unit.comments:
       if comment.startswith("# converted from") and "#defines" in comment:
         pass
       else:
@@ -23,10 +23,10 @@ def prop2inc(pf):
           yield blank
         # TODO: could convert commented # x=y back to # #define x y
         yield comment
-    if pe.isblank():
+    if unit.isblank():
       pendingblanks.append("\n")
     else:
-      definition = "#define %s %s\n" % (pe.name, pe.msgid.replace("\n", "\\n"))
+      definition = "#define %s %s\n" % (unit.name, unit.msgid.replace("\n", "\\n"))
       if isinstance(definition, unicode):
         definition = definition.encode("UTF-8")
       for blank in pendingblanks:
@@ -35,18 +35,18 @@ def prop2inc(pf):
 
 def prop2it(pf):
   """convert a properties file back to a pseudo-properties .it file"""
-  for pe in pf.propelements:
-    for comment in pe.comments:
+  for unit in pf.units:
+    for comment in unit.comments:
       if comment.startswith("# converted from") and "pseudo-properties" in comment:
         pass
       elif comment.startswith("# section: "):
         yield comment.replace("# section: ", "", 1)
       else:
         yield comment.replace("#", ";", 1)
-    if pe.isblank():
+    if unit.isblank():
       yield "\n"
     else:
-      definition = "%s=%s\n" % (pe.name, pe.msgid)
+      definition = "%s=%s\n" % (unit.name, unit.msgid)
       if isinstance(definition, unicode):
         definition = definition.encode("UTF-8")
       yield definition
