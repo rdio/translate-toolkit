@@ -83,6 +83,7 @@ class propunit(base.TranslationUnit):
 class propelement(propunit):
   """This is the old name of the propunit class and is left here for testing
   backwards compatibility"""
+  print "Warning: Class deprecated"
   pass
 
 class propfile(base.TranslationStore):
@@ -98,6 +99,7 @@ class propfile(base.TranslationStore):
       self.parse(propsrc)
 
   def getpropelements(self):
+    print "Warning: Method deprecated"
     """Just for easing porting to base class"""
     return self.units
   propelements = property(getpropelements)
@@ -131,8 +133,9 @@ class propfile(base.TranslationStore):
         newunit.comments.append(line+"\n")
       elif not line.strip():
         # this is a blank line...
-        self.units.append(newunit)
-        newunit = propunit()
+        if str(newunit).strip():
+          self.units.append(newunit)
+          newunit = propunit()
       else:
         # handle unicode-escape encoding
         try:
@@ -164,6 +167,13 @@ class propfile(base.TranslationStore):
     for unit in self.units:
       lines.append(str(unit))
     return "".join(lines)
+
+  def parsestring(cls, storestring):
+    """Parses the properties file contents in the storestring"""
+    parsedfile = propfile()
+    parsedfile.parse(storestring)
+    return parsedfile
+  parsestring = classmethod(parsestring)
 
 if __name__ == '__main__':
   import sys
