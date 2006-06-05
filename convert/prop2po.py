@@ -41,7 +41,7 @@ class prop2po:
     # we try and merge the header po with any comments at the start of the properties file
     appendedheader = 0
     waitingcomments = []
-    for theprop in thepropfile.propelements:
+    for theprop in thepropfile.units:
       thepo = self.convertelement(theprop)
       if thepo is None:
         waitingcomments.extend(theprop.comments)
@@ -68,7 +68,7 @@ class prop2po:
     appendedheader = 0
     waitingcomments = []
     # loop through the original file, looking at units one by one
-    for origprop in origpropfile.propelements:
+    for origprop in origpropfile.units:
       origpo = self.convertelement(origprop)
       if origpo is None:
         waitingcomments.extend(origprop.comments)
