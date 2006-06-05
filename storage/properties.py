@@ -33,7 +33,7 @@ eol = "\n"
 class propunit(base.TranslationUnit):
   """an element of a properties file i.e. a name and value, and any comments associated"""
   def __init__(self, source=""):
-  """construct a blank propelement"""
+    """construct a blank propelement"""
     self.name = ""
     self.comments = []
     self.source = source
