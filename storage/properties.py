@@ -22,6 +22,7 @@
 """classes that hold units of .properties files (propelement) or entire files (propfile)
 these files are used in translating Mozilla and other software"""
 
+from translate.storage import base
 from translate.misc import quote
 
 # the rstripeols convert dos <-> unix nicely as well
@@ -29,17 +30,31 @@ from translate.misc import quote
 
 eol = "\n"
 
-class propelement:
+class propunit(base.TranslationUnit):
   """an element of a properties file i.e. a name and value, and any comments associated"""
-  def __init__(self):
-    """construct a blank propelement"""
+  def __init__(self, source=""):
+  """construct a blank propelement"""
     self.name = ""
-    self.msgid = ""
     self.comments = []
+    self.source = source
 
-  def isblank(self):
-    """returns whether this is a blank element, containing only comments..."""
-    return not (self.name or self.msgid)
+  def setsource(self, source):
+    """Sets the source AND the target to be equal"""
+    self.msgid = source 
+
+  def getsource(self):
+    return self.msgid
+  source = property(getsource, setsource)
+  #TODO: no special funtionality in .source, so as we can drop support for
+  #.msigd easily and just use a plain variable. Confirm.
+
+  def settarget(self, target):
+    """Note: this also sets the .source attribute!"""
+    self.msgid = target
+
+  def gettarget(self):
+    return self.msgid
+  target = property(gettarget, settarget)
 
   def __str__(self):
     """convert to a string. double check that unicode is handled somehow here"""
@@ -55,20 +70,41 @@ class propelement:
     else:
       return "".join(self.comments + ["%s=%s\n" % (self.name, quote.mozillapropertiesencode(self.msgid))])
 
-class propfile:
-  """this class represents a .properties file, made up of propelements"""
+  def getlocations(self):
+    return self.name
+
+  def addnote(self, note):
+    self.comments.append(note + "\n")
+
+  def isblank(self):
+    """returns whether this is a blank element, containing only comments..."""
+    return not (self.name or self.msgid)
+
+class propelement(propunit):
+  """This is the old name of the propunit class and is left here for testing
+  backwards compatibility"""
+  pass
+
+class propfile(base.TranslationStore):
+  """this class represents a .properties file, made up of propunits"""
+  UnitClass = propunit
   def __init__(self, inputfile=None):
     """construct a propfile, optionally reading in from inputfile"""
-    self.propelements = []
+    self.units = []
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
       propsrc = inputfile.read()
       inputfile.close()
       self.parse(propsrc)
 
+  def getpropelements(self):
+    """Just for easing porting to base class"""
+    return self.units
+  propelements = property(getpropelements)
+
   def parse(self, propsrc):
-    """read the source of a properties file in and include them as propelements"""
-    newpe = propelement()
+    """read the source of a properties file in and include them as units"""
+    newunit = propunit()
     inmultilinemsgid = 0
     lines = propsrc.split("\n")
     for line in lines:
@@ -77,26 +113,26 @@ class propfile:
       if inmultilinemsgid:
         # handle unicode-escape encoding
         line = quote.mozillapropertiesdecode(line)
-        newpe.msgid += line.lstrip()
+        newunit.msgid += line.lstrip()
         # see if there's more
-        inmultilinemsgid = (newpe.msgid[-1:] == '\\')
+        inmultilinemsgid = (newunit.msgid[-1:] == '\\')
         # if we're still waiting for more...
         if inmultilinemsgid:
           # strip the backslash
-          newpe.msgid = newpe.msgid[:-1]
+          newunit.msgid = newunit.msgid[:-1]
         if not inmultilinemsgid:
           # we're finished, add it to the list...
-          self.propelements.append(newpe)
-          newpe = propelement()
+          self.units.append(newunit)
+          newunit = propunit()
       # otherwise, this could be a comment
       elif line.strip()[:1] == '#':
         # add a comment
         line = quote.escapecontrols(line)
-        newpe.comments.append(line+"\n")
+        newunit.comments.append(line+"\n")
       elif not line.strip():
         # this is a blank line...
-        self.propelements.append(newpe)
-        newpe = propelement()
+        self.units.append(newunit)
+        newunit = propunit()
       else:
         # handle unicode-escape encoding
         try:
@@ -109,31 +145,32 @@ class propfile:
           continue
         # otherwise, this is a definition
         else:
-          newpe.name = line[:equalspos].strip()
-          newpe.msgid = line[equalspos+1:].lstrip(' ')
+          newunit.name = line[:equalspos].strip()
+          newunit.msgid = line[equalspos+1:].lstrip(' ')
           # backslash at end means carry string on to next line
-          if newpe.msgid[-1:] == '\\':
+          if newunit.msgid[-1:] == '\\':
             inmultilinemsgid = 1
-            newpe.msgid = newpe.msgid[:-1]
+            newunit.msgid = newunit.msgid[:-1]
           else:
-            self.propelements.append(newpe)
-            newpe = propelement()
+            self.units.append(newunit)
+            newunit = propunit()
     # see if there is a leftover one...
-    if inmultilinemsgid or len(newpe.comments) > 0:
-      self.propelements.append(newpe)
+    if inmultilinemsgid or len(newunit.comments) > 0:
+      self.units.append(newunit)
 
   def __str__(self):
-    """convert the propelements back to lines"""
+    """convert the units back to lines"""
     lines = []
-    for pe in self.propelements:
-      lines.append(str(pe))
+    for unit in self.units:
+      lines.append(str(unit))
     return "".join(lines)
 
   def makeindex(self):
     """makes self.index dictionary keyed on the name"""
+    #TODO: Remove, we have the base class method
     self.index = {}
-    for pe in self.propelements:
-      self.index[pe.name] = pe
+    for unit in self.units:
+      self.index[unit.name] = unit
 
 if __name__ == '__main__':
   import sys
