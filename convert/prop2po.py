@@ -80,8 +80,8 @@ class prop2po:
           thepofile.units.append(headerpo)
         appendedheader = 1
       # try and find a translation of the same name...
-      if origprop.name in translatedpropfile.index:
-        translatedprop = translatedpropfile.index[origprop.name]
+      if origprop.name in translatedpropfile.locationindex:
+        translatedprop = translatedpropfile.locationindex[origprop.name]
         translatedpo = self.convertelement(translatedprop)
       else:
         translatedpo = None
