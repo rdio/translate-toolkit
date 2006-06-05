@@ -71,7 +71,7 @@ class propunit(base.TranslationUnit):
       return "".join(self.comments + ["%s=%s\n" % (self.name, quote.mozillapropertiesencode(self.msgid))])
 
   def getlocations(self):
-    return self.name
+    return [self.name]
 
   def addnote(self, note):
     self.comments.append(note + "\n")
@@ -164,13 +164,6 @@ class propfile(base.TranslationStore):
     for unit in self.units:
       lines.append(str(unit))
     return "".join(lines)
-
-  def makeindex(self):
-    """makes self.index dictionary keyed on the name"""
-    #TODO: Remove, we have the base class method
-    self.index = {}
-    for unit in self.units:
-      self.index[unit.name] = unit
 
 if __name__ == '__main__':
   import sys
