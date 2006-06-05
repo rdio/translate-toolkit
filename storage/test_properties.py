@@ -2,9 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from translate.storage import properties
+from translate.storage import test_monolingual
 from translate.misc import wStringIO
 
-class TestProperties:
+class TestPropUnit(test_monolingual.TestMonolingualUnit):
+    UnitClass = properties.propunit
+
+class TestProp(test_monolingual.TestMonolingualStore):
+    StoreClass = properties.propfile
+    
     def propparse(self, propsource):
         """helper that parses properties source without requiring files"""
         dummyfile = wStringIO.StringIO(propsource)
