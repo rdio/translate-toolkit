@@ -23,6 +23,18 @@ class TestPO2Html:
         htmlexpected = '''<p>'n Sin.</p>'''
         assert self.converthtml(posource, htmlsource) == htmlexpected
 
+    def test_entities(self):
+        """Tests that entities are handled correctly"""
+        htmlsource = '<p>5 less than 6</p>'
+        posource = '#:html:3\nmsgid "5 less than 6"\nmsgstr "5 < 6"\n'
+        htmlexpected = '<p>5 &lt; 4</p>'
+        assert self.converthtml(posource, htmlsource) == htmlexpected
+
+        htmlsource = '<p>Fish &amp; chips</p>'
+        posource = '#:html:3\nmsgid "Fish & chips"\nmsgstr "Vis & skyfies"\n'
+        htmlexpected = '<p>Vis &amp; skyfies</p>'
+        assert self.converthtml(posource, htmlsource) == htmlexpected
+
 
 class TestPO2HtmlCommand(test_convert.TestConvertCommand, TestPO2Html):
     """Tests running actual po2oo commands on files"""
