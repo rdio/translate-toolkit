@@ -39,13 +39,13 @@ class TestPO2Html:
     def test_escapes(self):
         """Tests that PO escapes are correctly handled"""
         htmlsource = '<div>Row 1<br />Row 2</div>'
-        posource = '#: html:3\nmsgid "Row 1\nRow 2"\nmsgstr "Ry 1\nRy 2"\n'
+        posource = '#: html:3\nmsgid "Row 1\\n"\n"Row 2"\nmsgstr "Ry 1\\n"\n"Ry 2"\n'
         htmlexpected = '<div>Ry 1<br />Ry 2</div>'
         assert self.converthtml(posource, htmlsource) == htmlexpected
 
         htmlsource = '<p>"leverage"</p>'
         posource = '#: html3\nmsgid "\\"leverage\\""\nmsgstr "\\"ek is dom\\""\n'
-        htmlexpected = '<p>"ek is doma"</p>'
+        htmlexpected = '<p>"ek is dom"</p>'
         assert self.converthtml(posource, htmlsource) == htmlexpected
 
 
