@@ -10,6 +10,7 @@ class TestPO2Html:
     def converthtml(self, posource, htmltemplate):
         """helper to exercise the command line function"""
         inputfile = wStringIO.StringIO(posource)
+        print inputfile.getvalue()
         outputfile = wStringIO.StringIO()
         templatefile = wStringIO.StringIO(htmltemplate)
         assert po2html.converthtml(inputfile, outputfile, templatefile)
@@ -31,8 +32,20 @@ class TestPO2Html:
         assert self.converthtml(posource, htmlsource) == htmlexpected
 
         htmlsource = '<p>Fish &amp; chips</p>'
-        posource = '#:html:3\nmsgid "Fish & chips"\nmsgstr "Vis & skyfies"\n'
+        posource = '#: html:3\nmsgid "Fish & chips"\nmsgstr "Vis & skyfies"\n'
         htmlexpected = '<p>Vis &amp; skyfies</p>'
+        assert self.converthtml(posource, htmlsource) == htmlexpected
+
+    def test_escapes(self):
+        """Tests that PO escapes are correctly handled"""
+        htmlsource = '<div>Row 1<br />Row 2</div>'
+        posource = '#: html:3\nmsgid "Row 1\nRow 2"\nmsgstr "Ry 1\nRy 2"\n'
+        htmlexpected = '<div>Ry 1<br />Ry 2</div>'
+        assert self.converthtml(posource, htmlsource) == htmlexpected
+
+        htmlsource = '<p>"leverage"</p>'
+        posource = '#: html3\nmsgid "\\"leverage\\""\nmsgstr "\\"ek is dom\\""\n'
+        htmlexpected = '<p>"ek is doma"</p>'
         assert self.converthtml(posource, htmlsource) == htmlexpected
 
 
