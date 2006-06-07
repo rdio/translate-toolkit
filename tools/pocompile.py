@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2005 Zuza Software Foundation
+# Copyright 2005, 2006 Zuza Software Foundation
 # 
 # This file is part of the translate-toolkit
 #
@@ -22,6 +22,10 @@
 # Martin v. Löwis <loewis@informatik.hu-berlin.de> which is release
 # as part of 4Suite (Python tools and libraries for XML processing and databases.)
 # which is itself released under the Apache License.
+#
+# 2006-06-07: Updated using:
+#  http://svn.python.org/projects/python/trunk/Tools/i18n/msgfmt.py
+#  versions 1.1
 
 import struct
 import array
@@ -63,8 +67,8 @@ class POCompile:
           koffsets = koffsets + [l1, o1+keystart]
           voffsets = voffsets + [l2, o2+valuestart]
       offsets = koffsets + voffsets
-      output = struct.pack("iiiiiii",
-                           0x950412de,        # Magic
+      output = struct.pack("Iiiiiii",
+                           0x950412deL,        # Magic
                            0,                 # Version
                            len(keys),         # # of entries
                            7*4,               # start of key index
