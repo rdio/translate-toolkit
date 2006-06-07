@@ -79,24 +79,25 @@ class POCompile:
       output = output + strs
       return output
 
-  def convertfile(self, thepofile):
+  def convertfile(self, thepofile, includefuzzy=False):
     MESSAGES = {}
     #themofile = self.make(thepofile)
     for thepo in thepofile.units:
       if not thepo.isblank():
-        msgid = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False).replace("\\n", "\n")
-        msgstr = po.unquotefrompo(thepo.msgstr, joinwithlinebreak=False).replace("\\n", "\n")
-        MESSAGES[msgid] = msgstr
+        if not thepo.isfuzzy() or includefuzzy:
+          msgid = po.unquotefrompo(thepo.msgid, joinwithlinebreak=False).replace("\\n", "\n")
+          msgstr = po.unquotefrompo(thepo.msgstr, joinwithlinebreak=False).replace("\\n", "\n")
+          MESSAGES[msgid] = msgstr
     return self.generate(MESSAGES)
 
-def convertmo(inputfile, outputfile, templatefile):
+def convertmo(inputfile, outputfile, templatefile, includefuzzy=False):
   """reads in inputfile using po, converts using pocompile, writes to outputfile"""
   # note that templatefile is not used, but it is required by the converter...
   inputpo = po.pofile(inputfile)
   if inputpo.isempty():
     return 0
   convertor = POCompile()
-  outputmo = convertor.convertfile(inputpo)
+  outputmo = convertor.convertfile(inputpo, includefuzzy)
   outputfile.write(outputmo)
   return 1
 
@@ -104,4 +105,5 @@ def main():
   from translate.convert import convert
   formats = {"po":("mo", convertmo)}
   parser = convert.ConvertOptionParser(formats, usepots=False, description=__doc__)
+  parser.add_fuzzy_option()
   parser.run()
