@@ -73,15 +73,16 @@ class TestTranslationUnit:
                     'Use &nbsp;', 'Use &amp;nbsp;' 
                     'A "solution"', "skop 'n bal", '"""', "'''", 
                     '\n', '\t', '\r', 
-                    '\\n', '\\t', '\\r', '\\"', '\r\n', '\\r\\n', '\\']
+                    '\\n', '\\t', '\\r', '\\"', '\r\n', '\\r\\n', 
+                    '\\', '\\ ', u'µ']
         for special in specials:
             unit.source = special
             print "unit.source:"
             print repr(unit.source)
-            print unit.source
+            print unit.source.encode('utf-8')
             print "special:"
             print repr(special)
-            print special
+            print special.encode('utf-8')
             assert unit.source == special
 
 class TestTranslationStore:
