@@ -28,7 +28,7 @@ class TestProp(test_monolingual.TestMonolingualStore):
         assert len(propfile.units) == 1
         propelement = propfile.units[0]
         assert propelement.name == "test_me"
-        assert propelement.msgid == "I can code!"
+        assert propelement.source == "I can code!"
 
     def test_simpledefinition_source(self):
         """checks that a simple properties definition can be regenerated as source"""
@@ -43,7 +43,7 @@ class TestProp(test_monolingual.TestMonolingualStore):
         assert len(propfile.units) == 1
         propelement = propfile.units[0]
         assert propelement.name == "unicode"
-        assert propelement.msgid.encode("UTF-8") == "БЖЙШ"
+        assert propelement.source.encode("UTF-8") == "БЖЙШ"
 
     def test_newlines_startend(self):
         """check that we preserver \n that appear at start and end of properties"""
@@ -57,5 +57,5 @@ class TestProp(test_monolingual.TestMonolingualStore):
         propfile = self.propparse(propsource)
         propelement = propfile.units[0]
         assert propelement.name == "whitespace"
-        assert propelement.msgid == "Start "
+        assert propelement.source == "Start "
      
