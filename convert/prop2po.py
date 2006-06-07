@@ -88,7 +88,7 @@ class prop2po:
       # if we have a valid po element, get the translation and add it...
       if origpo is not None:
         if translatedpo is not None and not blankmsgstr:
-          origpo.msgstr = translatedpo.msgid
+          origpo.target = translatedpo.source
         origpo.othercomments = waitingcomments + origpo.othercomments
         waitingcomments = []
         thepofile.units.append(origpo)
@@ -100,23 +100,14 @@ class prop2po:
   def convertelement(self, theprop):
     """converts a .properties element to a .po element..."""
     # escape unicode
-    msgid = theprop.msgid.strip(" ")
     thepo = po.pounit(encoding="UTF-8")
     thepo.othercomments.extend(theprop.comments)
     # TODO: handle multiline msgid
     if theprop.isblank():
       return None
     thepo.sourcecomments.append("#: "+theprop.name+eol)
-    thepo.msgid = []
-    # escape everything except \n, and make \n appear as appropriate for po files
-    lines = msgid.split("\n")
-    for linenum in range(len(lines)):
-      line = lines[linenum]
-      line = quote.escapequotes(line, escapeescapes=1)
-      if linenum != len(lines)-1:
-        line += "\\n"
-      thepo.msgid.append('"' + line + '"')
-    thepo.msgstr = ['""']
+    thepo.source = theprop.source
+    thepo.target = ""
     return thepo
 
 def convertprop(inputfile, outputfile, templatefile, pot=False, duplicatestyle="msgid_comment"):

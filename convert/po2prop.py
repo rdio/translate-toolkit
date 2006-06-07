@@ -27,6 +27,7 @@ leave out any unexpected stuff..."""
 
 from translate.misc import quote
 from translate.storage import po
+from translate.storage import properties
 from translate import __version__
 
 eol = "\n"
@@ -51,27 +52,13 @@ class reprop:
     for thepo in pofile.units:
       if includefuzzy or not thepo.isfuzzy():
         # there may be more than one entity due to msguniq merge
-        entities = []
-        for sourcecomment in thepo.sourcecomments:
-          entities += quote.rstripeol(sourcecomment)[3:].split()
-        for entity in entities:
-          # currently let's just get the msgstr back
-          # this converts the po-style string to a prop-style string
-          # i.e. no quotes but backslash at the end of the line continues to the next
-          propstring = self.convertstring(thepo.msgstr)
+        for entity in thepo.getlocations():
+          propstring = thepo.target
+	  
           # NOTE: triple-space as a string means leave it empty (special signal)
           if len(propstring.strip()) == 0 and propstring != "   ":
-            propstring = self.convertstring(thepo.msgid)
+	    propstring = thepo.source
           self.podict[entity] = propstring
-
-  def convertstring(self, postring):
-    """converts a po-style string to a properties-style string"""
-    propstring = ""
-    for line in postring:
-      line = quote.extractwithoutquotes(line,'"','"',"\\",includeescapes=1)[0]
-      line = line.replace("\\'", "'").replace('\\"', '"').replace("\\\\u", "\\u")
-      propstring += line
-    return propstring
 
   def convertline(self, line):
     # handle multiline msgid if we're in one
