@@ -47,7 +47,7 @@ class TestProp2PO:
         propsource = 'SAVEENTRY=Save file\n'
         pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
-        assert po.unquotefrompo(pounit.msgid) == "Save file"
+        assert pounit.source == "Save file"
         assert po.unquotefrompo(pounit.msgstr) == ""
 
     def test_convertprop(self):
@@ -56,7 +56,7 @@ class TestProp2PO:
         posource = self.convertprop(propsource)
         pofile = po.pofile(wStringIO.StringIO(posource))
         pounit = self.singleelement(pofile)
-        assert po.unquotefrompo(pounit.msgid) == "Save file"
+        assert pounit.source == "Save file"
         assert po.unquotefrompo(pounit.msgstr) == ""
 
     def test_emptyentry(self):
@@ -71,23 +71,22 @@ class TestProp2PO:
         propsource = r"TAB_AT_END=This setence has a tab at the end.\t"
         pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
-        assert po.unquotefrompo(pounit.msgid) == "This setence has a tab at the end.\t"
+        assert pounit.source == "This setence has a tab at the end.\t"
+        
         propsource = r"SPACE_THEN_TAB_AT_END=This setence has a space then tab at the end. \t"
         pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
-        assert po.unquotefrompo(pounit.msgid) == "This setence has a space then tab at the end. \t"
-        propsource = r"REAL_TAB_AT_END=This setence has a real tab at the end.	"
-        pofile = self.prop2po(propsource)
-        pounit = self.singleelement(pofile)
-        assert po.unquotefrompo(pounit.msgid) == "This setence has a real tab at the end.	"
-        propsource = r"REAL_TAB_THEN_SPACE_AT_END=This setence has a real tab then space at the end.	 "
-        pofile = self.prop2po(propsource)
-        pounit = self.singleelement(pofile)
-        assert po.unquotefrompo(pounit.msgid) == "This setence has a real tab then space at the end.	"
+        assert pounit.source == "This setence has a space then tab at the end. \t"
+        
         propsource = r"SPACE_AT_END=This setence will lose its 4 spaces at the end.    "
         pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
-        assert po.unquotefrompo(pounit.msgid) == "This setence will lose its 4 spaces at the end."
+        assert pounit.source == "This setence will lose its 4 spaces at the end."
+        
+        propsource = r"SPACE_AT_END_NO_TRIM=This setence will keep its 4 spaces at the end.\\    "
+        pofile = self.prop2po(propsource)
+        pounit = self.singleelement(pofile)
+        assert pounit.source == "This setence will keep its 4 spaces at the end.    "
 
 
     def test_unicode(self):
@@ -99,7 +98,7 @@ class TestProp2PO:
         print repr(pofile.units[0].msgstr)
         print repr(pounit.msgid)
         postr = str(pounit)
-        assert po.unquotefrompo(pounit.msgid) == u'Norsk bokm\u00E5l'
+        assert pounit.source == u'Norsk bokm\u00E5l'
 
     def test_multiline_escaping(self):
         """checks that multiline enties can be parsed"""
@@ -144,7 +143,7 @@ cmd_addEngine_accesskey = A'''
 '''
         pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
-        assert po.unquotefrompo(pounit.msgid) == '''_: In this item, don't translate "Outlook"\\n\nOutlook mail and address books'''
+        assert pounit.source == '''_: In this item, don't translate "Outlook"\\n\nOutlook mail and address books'''
 
     def test_emptyproperty(self):
         """checks that empty property definitions survive into po file"""
