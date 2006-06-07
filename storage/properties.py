@@ -24,6 +24,8 @@ these files are used in translating Mozilla and other software"""
 
 from translate.storage import base
 from translate.misc import quote
+import sys
+import sre
 
 # the rstripeols convert dos <-> unix nicely as well
 # output will be appropriate for the platform
@@ -40,13 +42,19 @@ class propunit(base.TranslationUnit):
 
   def setsource(self, source):
     """Sets the source AND the target to be equal"""
-    self.msgid = source 
+    self.msgid = quote.mozillapropertiesencode(source)
 
   def getsource(self):
-    return self.msgid
+    msgid = quote.mozillapropertiesdecode(self.msgid)
+    msgid = msgid.lstrip(" ")
+    rstriped = msgid.rstrip(" ")
+    if rstriped and rstriped[-1] != "\\":
+      msgid = rstriped
+
+    msgid = sre.sub("\\\\ ", " ", msgid)
+    return msgid
+
   source = property(getsource, setsource)
-  #TODO: no special funtionality in .source, so as we can drop support for
-  #.msigd easily and just use a plain variable. Confirm.
 
   def settarget(self, target):
     """Note: this also sets the .source attribute!"""
@@ -68,7 +76,7 @@ class propunit(base.TranslationUnit):
     if self.isblank():
       return "".join(self.comments + ["\n"])
     else:
-      return "".join(self.comments + ["%s=%s\n" % (self.name, quote.mozillapropertiesencode(self.msgid))])
+      return "".join(self.comments + ["%s=%s\n" % (self.name, self.msgid)])
 
   def getlocations(self):
     return [self.name]
@@ -83,7 +91,7 @@ class propunit(base.TranslationUnit):
 class propelement(propunit):
   """This is the old name of the propunit class and is left here for testing
   backwards compatibility"""
-  print "Warning: Class deprecated"
+  print >> sys.stderr, "Warning: Class deprecated"
   pass
 
 class propfile(base.TranslationStore):
@@ -99,7 +107,7 @@ class propfile(base.TranslationStore):
       self.parse(propsrc)
 
   def getpropelements(self):
-    print "Warning: Method deprecated"
+    print >> sys.stderr, "Warning: Method deprecated"
     """Just for easing porting to base class"""
     return self.units
   propelements = property(getpropelements)
@@ -113,8 +121,6 @@ class propfile(base.TranslationStore):
       # handle multiline msgid if we're in one
       line = quote.rstripeol(line)
       if inmultilinemsgid:
-        # handle unicode-escape encoding
-        line = quote.mozillapropertiesdecode(line)
         newunit.msgid += line.lstrip()
         # see if there's more
         inmultilinemsgid = (newunit.msgid[-1:] == '\\')
@@ -137,11 +143,6 @@ class propfile(base.TranslationStore):
           self.units.append(newunit)
           newunit = propunit()
       else:
-        # handle unicode-escape encoding
-        try:
-          line = quote.mozillapropertiesdecode(line)
-        except UnicodeError, e:
-          raise UnicodeError("Error with string %r: %s" % (line, e))
         equalspos = line.find('=')
         # if no equals, just ignore it
         if equalspos == -1:
