@@ -98,9 +98,13 @@ class prop2po:
     return thepofile
 
   def convertelement(self, theprop):
-    """converts a .properties element to a .po element..."""
+    """Converts a .properties element to a .po element. Returns None if empty
+    or not for translation."""
     # escape unicode
     thepo = po.pounit(encoding="UTF-8")
+    for comment in theprop.comments:
+      if "DONT_TRANSLATE" in comment:
+        return None
     thepo.othercomments.extend(theprop.comments)
     # TODO: handle multiline msgid
     if theprop.isblank():
