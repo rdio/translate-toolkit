@@ -430,19 +430,19 @@ class StandardChecker(TranslationChecker):
       raise FilterFailure(messages)
     return True
 
-  def acceleratedvariables(self, str1, str2):
-    """checks that no variables are accelerated"""
-    messages = []
-    for accelerator in self.config.accelmarkers:
-      for variablestart, variableend in self.config.varmatches:
-        error = accelerator + variablestart
-        if str1.find(error) >= 0:
-          messages.append("original has an accelerated variable")
-        if str2.find(error) >= 0:
-          messages.append("translation has an accelerated variable")
-    if messages:
-      raise FilterFailure(messages)
-    return True
+#  def acceleratedvariables(self, str1, str2):
+#    """checks that no variables are accelerated"""
+#    messages = []
+#    for accelerator in self.config.accelmarkers:
+#      for variablestart, variableend in self.config.varmatches:
+#        error = accelerator + variablestart
+#        if str1.find(error) >= 0:
+#          messages.append("original has an accelerated variable")
+#        if str2.find(error) >= 0:
+#          messages.append("translation has an accelerated variable")
+#    if messages:
+#      raise FilterFailure(messages)
+#    return True
 
   def variables(self, str1, str2):
     """checks whether variables of various forms are consistent between the two strings"""
