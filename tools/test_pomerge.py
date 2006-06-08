@@ -183,7 +183,7 @@ class TestPOMerge:
         assert str(pofile) == expectedpo
 
         templatepo = '''msgid "en-us, en"\nmsgstr "en-us, en"\n'''
-        mergepo = '''msgid "en-us, en"\nmsgstr "af-za, af, en-za, en-gb, en-us, en"\n'''
+        mergepo = '''msgid "en-us, en"\nmsgstr "af-za, af, en-za, en-gb, en-us, en"\n\n'''
         expectedpo = mergepo
         pofile = self.mergepo(templatepo, mergepo)
         print "Expected:\n%s\n\nMerged:\n%s" % (expectedpo, str(pofile))
