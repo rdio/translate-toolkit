@@ -32,14 +32,14 @@ class html2po:
   def convertfile(self, inputfile, filename, includeheader, includeuntagged=False, duplicatestyle="msgid_comment"):
     """converts a html file to .po format"""
     thepofile = po.pofile()
-    htmlparser = html.POHTMLParser(includeuntaggeddata=includeuntagged)
+    htmlparser = html.htmlfile(includeuntaggeddata=includeuntagged)
     if includeheader:
       headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
       thepofile.units.append(headerpo)
     contents = inputfile.read()
     htmlparser.feed(contents)
-    for blocknum in range(len(htmlparser.blocks)):
-      block = htmlparser.blocks[blocknum].strip()
+    for blocknum in range(len(htmlparser.units)):
+      block = htmlparser.units[blocknum].strip()
       if not block: continue
       thepo = po.pounit(encoding="UTF-8")
       thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum+1))
