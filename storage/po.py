@@ -514,7 +514,7 @@ class pounit(base.TranslationUnit):
             comment = comment[:-len("\\n")]
           #Before we used to strip. Necessary in some cases?
           combinedcomment.append(comment)
-        partcomments = quoteforpo("_:%s\\n" % "\n".join(combinedcomment))
+        partcomments = quoteforpo("_:%s" % "".join(combinedcomment), partcomments)
       # comments first, no blank leader line needed
       partstr += "\n".join(partcomments)
       partstr = quote.rstripeol(partstr)
