@@ -232,7 +232,7 @@ msgstr[0] "Sheep"
         pofile = self.poparse(posource)
         print pofile
         assert len(pofile.units) == 1
-        assert str(pofile) == posource + '\n'
+        assert str(pofile) == posource
         assert pofile.units[0].othercomments == ["# other comment\n"]
         assert pofile.units[0].automaticcomments == ["#. automatic comment\n"]
         assert pofile.units[0].sourcecomments == ["#: source comment\n"]

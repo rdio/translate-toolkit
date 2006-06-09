@@ -46,7 +46,7 @@ class TestPOFilter:
     def test_ignore_if_already_marked(self):
         """check that we don't add another failing marker is the message is already marked as failed"""
         posource = '# (pofilter) untranslated: checks whether a string has been translated at all\n#: test.c\nmsgid "Simple string"\nmsgstr ""'
-        poexpected = posource + '\n\n'
+        poexpected = posource + '\n'
         poresult = self.pofilter(posource, cmdlineoptions=["--test=untranslated"])
         print poresult
         assert poresult == poexpected
@@ -93,7 +93,7 @@ class TestPOFilter:
     def test_isfuzzy(self):
 	"""tests the extraction of items marked fuzzy"""
         posource = '#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n'
-        poexpected = '# (pofilter) isfuzzy: check if the po element has been marked fuzzy\n#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n\n'
+        poexpected = '# (pofilter) isfuzzy: check if the po element has been marked fuzzy\n#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n'
         poresult = self.pofilter(posource, cmdlineoptions=["--test=isfuzzy"])
 	assert poresult == poexpected
         posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
@@ -103,7 +103,7 @@ class TestPOFilter:
     def test_isreview(self):
 	"""tests the extraction of items marked review"""
         posource = '# (review)\n#: test.c\nmsgid "test"\nmsgstr "REST"'
-        poexpected = posource + '\n\n'
+        poexpected = posource + '\n'
         poresult = self.pofilter(posource, cmdlineoptions=["--test=isreview"])
 	assert poresult == poexpected
         posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'

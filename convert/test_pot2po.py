@@ -116,7 +116,7 @@ class TestPOT2PO:
         assert newpo.units[0].isheader()
         assert newpo.units[2].isobsolete()
         newpo.units = newpo.units[1:]
-        assert str(newpo) == potsource + "\n" + posource + "\n"
+        assert str(newpo) == potsource + "\n" + posource
 
 class TestPOT2POCommand(test_convert.TestConvertCommand, TestPOT2PO):
     """Tests running actual pot2po commands on files"""

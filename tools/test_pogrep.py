@@ -24,7 +24,7 @@ class TestPOGrep:
 
     def test_simplegrep_msgid(self):
         """grep for a string in the source"""
-        posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n\n'
+        posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         poresult = self.pogrep(posource, "test", ["--search=msgid"])
         assert poresult == posource
         poresult = self.pogrep(posource, "rest", ["--search=msgid"])
@@ -32,7 +32,7 @@ class TestPOGrep:
 
     def test_simplegrep_msgstr(self):
         """grep for a string in the target"""
-        posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n\n'
+        posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         poresult = self.pogrep(posource, "rest", ["--search=msgstr"])
         assert poresult == posource
         poresult = self.pogrep(posource, "test", ["--search=msgstr"])
@@ -40,7 +40,7 @@ class TestPOGrep:
 
     def test_simplegrep_source(self):
         """grep for a string in the source"""
-        posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n\n'
+        posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         poresult = self.pogrep(posource, "test.c", ["--search=source"])
         assert poresult == posource
         poresult = self.pogrep(posource, "rest.c", ["--search=source"])
@@ -48,7 +48,7 @@ class TestPOGrep:
 
     def test_simplegrep_comments(self):
         """grep for a string in the comments"""
-        posource = '# (review) comment\n#: test.c\nmsgid "test"\nmsgstr "rest"\n\n'
+        posource = '# (review) comment\n#: test.c\nmsgid "test"\nmsgstr "rest"\n'
         poresult = self.pogrep(posource, "review", ["--search=comment"])
         assert poresult == posource
         poresult = self.pogrep(posource, "test", ["--search=comment"])
@@ -56,8 +56,8 @@ class TestPOGrep:
 
     def test_unicode_message_searchstring(self):
         """check that we can grep unicode messages and use unicode search strings"""
-        poascii = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rest"\n\n'
-        pounicode = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rešṱ"\n\n'
+        poascii = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rest"\n'
+        pounicode = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rešṱ"\n'
         queryascii = 'rest'
         queryunicode = 'rešṱ'
         for source, search, expected in [(poascii, queryascii, poascii), 
@@ -70,8 +70,8 @@ class TestPOGrep:
 
     def test_unicode_message_regex_searchstring(self):
         """check that we can grep unicode messages and use unicode regex search strings"""
-        poascii = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rest"\n\n'
-        pounicode = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rešṱ"\n\n'
+        poascii = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rest"\n'
+        pounicode = '# comment\n#: test.c\nmsgid "test"\nmsgstr "rešṱ"\n'
         queryascii = 'rest'
         queryunicode = 'rešṱ'
         for source, search, expected in [(poascii, queryascii, poascii), 
