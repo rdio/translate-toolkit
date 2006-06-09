@@ -895,7 +895,10 @@ class pofile(base.TranslationStore):
     for pe in self.units:
       pesrc = str(pe) + "\n"
       lines.append(pesrc)
-    return "".join(self.encode(lines))
+    lines = "".join(self.encode(lines)).rstrip()
+    #After the last pounit we will have \n\n and we only want to end in \n:
+    if lines: lines += "\n"
+    return lines
 
   def encode(self, lines):
     """encode any unicode strings in lines in self.encoding"""
