@@ -23,6 +23,7 @@
 
 from translate.storage import po
 from translate.misc import optrecurse
+from translate.misc.multistring import multistring
 import sre
 import locale
 
@@ -69,31 +70,30 @@ class pogrepfilter:
   def filterelement(self, thepo):
     """runs filters on an element"""
     if thepo.isheader(): return []
-    if thepo.hasplural():
-      if self.searchmsgid:
-        unquotedid = po.unquotefrompo(thepo.msgid)
-        unquotedid_plural = po.unquotefrompo(thepo.msgid_plural)
-        if self.matches(unquotedid) or self.matches(unquotedid_plural):
+
+    if self.searchmsgid:
+      if isinstance(thepo.source, multistring):
+        strings = thepo.source.strings
+      else:
+        strings = [thepo.source]
+      for string in strings:
+        if self.matches(string):
           return True
-      if self.searchmsgstr:
-        if isinstance(thepo.msgstr, dict):
-          for msgstr in thepo.msgstr.values():
-            unquotedstr = po.unquotefrompo(msgstr)
-            if self.matches(unquotedstr): return True
-        else:
-          unquotedstr = po.unquotefrompo(thepo.msgstr)
-          if self.matches(unquotedstr): return True
-    else:
-      if self.searchmsgid:
-        unquotedid = po.unquotefrompo(thepo.msgid)
-        if self.matches(unquotedid): return True
-      if self.searchmsgstr:
-        unquotedstr = po.unquotefrompo(thepo.msgstr)
-        if self.matches(unquotedstr): return True
-      if self.searchcomment:
-        if self.matches(" ".join(thepo.othercomments)): return True
-      if self.searchsource:
-        if self.matches(" ".join(thepo.sourcecomments)): return True
+
+    if self.searchmsgstr:
+      if isinstance(thepo.target, multistring):
+        strings = thepo.target.strings
+      else:
+        strings = [thepo.target]
+      for string in strings:
+        if self.matches(string):
+          return True
+
+    if self.searchcomment:
+      if self.matches(" ".join(thepo.othercomments)): return True
+    if self.searchsource:
+      if self.matches(" ".join(thepo.sourcecomments)): return True
+          
     return False
 
   def filterfile(self, thepofile):
