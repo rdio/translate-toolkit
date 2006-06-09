@@ -23,8 +23,12 @@
 """module for parsing Qt .ts files for translation"""
 
 from xml.dom import minidom
+from xml.dom import expatbuilder
 
-def writexml(self, writer, indent="", addindent="", newl=""):
+# helper functions we use to do xml the way we want, used by modified classes below
+
+# TODO: work out how to use writexml_helper if desired, otherwise remove it
+def writexml_helper(self, writer, indent="", addindent="", newl=""):
     """a replacement to writexml that formats it more like typical .ts files"""
     # indent = current indentation
     # addindent = indentation to add to higher levels
@@ -53,21 +57,7 @@ def writexml(self, writer, indent="", addindent="", newl=""):
     else:
         writer.write("/>%s"%(newl))
 
-# commented out modifications to minidom classes
-'''
-Element_writexml = minidom.Element.writexml
-for elementclassname in dir(minidom):
-  elementclass = getattr(minidom, elementclassname)
-  if not isinstance(elementclass, type(minidom.Element)):
-    continue
-  if not issubclass(elementclass, minidom.Element):
-    continue
-  if elementclass.writexml != Element_writexml:
-    continue
-  elementclass.writexml = writexml
-'''
-
-def getElementsByTagName(parent, name, dummy=None):
+def getElementsByTagName_helper(parent, name, dummy=None):
     for node in parent.childNodes:
         if node.nodeType == minidom.Node.ELEMENT_NODE and \
             (name == "*" or node.tagName == name):
@@ -75,7 +65,7 @@ def getElementsByTagName(parent, name, dummy=None):
         for othernode in node.getElementsByTagName(name):
             yield othernode
 
-def searchElementsByTagName(parent, name, onlysearch):
+def searchElementsByTagName_helper(parent, name, onlysearch):
     """limits the search to within tags occuring in onlysearch"""
     for node in parent.childNodes:
         if node.nodeType == minidom.Node.ELEMENT_NODE and \
@@ -100,14 +90,145 @@ def getnodetext(node):
   if node is None: return ""
   return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
 
-# commented out modifications to minidom classes
-'''
-minidom._get_elements_by_tagName_helper = getElementsByTagName
-minidom.Document.getElementsByTagName = getElementsByTagName
-minidom.Node.getElementsByTagName = getElementsByTagName
-minidom.Document.searchElementsByTagName = searchElementsByTagName
-minidom.Element.searchElementsByTagName = searchElementsByTagName
-'''
+# various modifications to minidom classes to add functionality we like
+
+class DOMImplementation(minidom.DOMImplementation):
+  def _create_document(self):
+    return Document()
+
+class Element(minidom.Element):
+  def getElementsByTagName(self, name):
+    return getElementsByTagName_helper(self, name)
+  def searchElementsByTagName(self, name, onlysearch):
+    return searchElementsByTagName_helper(self, name, onlysearch)
+class Document(minidom.Document):
+  implementation = DOMImplementation()
+  def getElementsByTagName(self, name):
+    return getElementsByTagName_helper(self, name)
+  def searchElementsByTagName(self, name, onlysearch):
+    return searchElementsByTagName_helper(self, name, onlysearch)
+  def createElement(self, tagName):
+    e = Element(tagName)
+    e.ownerDocument = self
+    return e
+  def createElementNS(self, namespaceURI, qualifiedName):
+    prefix, localName = _nssplit(qualifiedName)
+    e = Element(qualifiedName, namespaceURI, prefix)
+    e.ownerDocument = self
+    return e
+
+theDOMImplementation = DOMImplementation()
+
+# an ExpatBuilder that allows us to use the above modifications
+
+class ExpatBuilderNS(expatbuilder.ExpatBuilderNS):
+  def reset(self):
+    """Free all data structures used during DOM construction."""
+    self.document = theDOMImplementation.createDocument(
+      expatbuilder.EMPTY_NAMESPACE, None, None)
+    self.curNode = self.document
+    self._elem_info = self.document._elem_info
+    self._cdata = False
+    self._initNamespaces()
+
+  def start_element_handler(self, name, attributes):
+    # all we want to do is construct our own Element instead of minidom.Element
+    # unfortunately the only way to do this is to copy this whole function from expatbuilder.py
+    if ' ' in name:
+      uri, localname, prefix, qname = _parse_ns_name(self, name)
+    else:
+      uri = expatbuilder.EMPTY_NAMESPACE
+      qname = name
+      localname = None
+      prefix = expatbuilder.EMPTY_PREFIX
+    node = Element(qname, uri, prefix, localname)
+    node.ownerDocument = self.document
+    expatbuilder._append_child(self.curNode, node)
+    self.curNode = node
+
+    if self._ns_ordered_prefixes:
+      for prefix, uri in self._ns_ordered_prefixes:
+        if prefix:
+          a = minidom.Attr(_intern(self, 'xmlns:' + prefix),
+                   expatbuilder.XMLNS_NAMESPACE, prefix, "xmlns")
+        else:
+          a = minidom.Attr("xmlns", expatbuilder.XMLNS_NAMESPACE,
+                   "xmlns", expatbuilder.EMPTY_PREFIX)
+        d = a.childNodes[0].__dict__
+        d['data'] = d['nodeValue'] = uri
+        d = a.__dict__
+        d['value'] = d['nodeValue'] = uri
+        d['ownerDocument'] = self.document
+        _set_attribute_node(node, a)
+      del self._ns_ordered_prefixes[:]
+
+    if attributes:
+      _attrs = node._attrs
+      _attrsNS = node._attrsNS
+      for i in range(0, len(attributes), 2):
+        aname = attributes[i]
+        value = attributes[i+1]
+        if ' ' in aname:
+          uri, localname, prefix, qname = _parse_ns_name(self, aname)
+          a = minidom.Attr(qname, uri, localname, prefix)
+          _attrs[qname] = a
+          _attrsNS[(uri, localname)] = a
+        else:
+          a = minidom.Attr(aname, expatbuilder.EMPTY_NAMESPACE,
+                   aname, expatbuilder.EMPTY_PREFIX)
+          _attrs[aname] = a
+          _attrsNS[(expatbuilder.EMPTY_NAMESPACE, aname)] = a
+        d = a.childNodes[0].__dict__
+        d['data'] = d['nodeValue'] = value
+        d = a.__dict__
+        d['ownerDocument'] = self.document
+        d['value'] = d['nodeValue'] = value
+        d['ownerElement'] = node
+
+  if __debug__:
+    # This only adds some asserts to the original
+    # end_element_handler(), so we only define this when -O is not
+    # used.  If changing one, be sure to check the other to see if
+    # it needs to be changed as well.
+    #
+    def end_element_handler(self, name):
+      curNode = self.curNode
+      if ' ' in name:
+        uri, localname, prefix, qname = _parse_ns_name(self, name)
+        assert (curNode.namespaceURI == uri
+            and curNode.localName == localname
+            and curNode.prefix == prefix), \
+            "element stack messed up! (namespace)"
+      else:
+        assert curNode.nodeName == name, \
+             "element stack messed up - bad nodeName"
+        assert curNode.namespaceURI == expatbuilder.EMPTY_NAMESPACE, \
+             "element stack messed up - bad namespaceURI"
+      self.curNode = curNode.parentNode
+      self._finish_end_element(curNode)
+
+# parser methods that use our modified xml classes
+
+def parse(file, parser=None, bufsize=None):
+  """Parse a file into a DOM by filename or file object."""
+  builder = ExpatBuilderNS()
+  if isinstance(file, StringTypes):
+    fp = open(file, 'rb')
+    try:
+      result = builder.parseFile(fp)
+    finally:
+      fp.close()
+  else:
+    result = builder.parseFile(file)
+  return result
+
+def parseString(string, parser=None):
+  """Parse a file into a DOM from a string."""
+  builder = ExpatBuilderNS()
+  return builder.parseString(string)
+
+# The actual QtTsParser - the meat of this file
+
 class QtTsParser:
   contextancestors = dict.fromkeys(["TS"])
   messageancestors = dict.fromkeys(["TS", "context"])
@@ -117,9 +238,9 @@ class QtTsParser:
     self.knowncontextnodes = {}
     self.indexcontextnodes = {}
     if inputfile is None:
-      self.document = minidom.parseString("<!DOCTYPE TS><TS></TS>")
+      self.document = parseString("<!DOCTYPE TS><TS></TS>")
     else:
-      self.document = minidom.parse(inputfile)
+      self.document = parse(inputfile)
       assert self.document.documentElement.tagName == "TS"
 
   def addtranslation(self, contextname, source, translation, comment=None, transtype=None, createifmissing=False):
