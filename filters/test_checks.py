@@ -226,7 +226,7 @@ def test_musttranslatewords():
     stdchecker = checks.StandardChecker(checks.CheckerConfig(varmatches=[("%", None),], musttranslatewords=["OK"]))
     assert checks.passes(stdchecker.musttranslatewords, "Click %OK to start", "Kliek %OK om te begin")
     # Unicode
-    assert checks.passes(stdchecker.musttranslatewords, "Click OK", "Kiḽikani OK")
+    assert checks.fails(stdchecker.musttranslatewords, "Click OK", u"Kiḽikani OK")
 
 def test_notranslatewords():
     """tests stopwords"""
