@@ -47,7 +47,7 @@ class TestOO2PO:
         pounit = self.singleelement(pofile)
         poelementsrc = str(pounit)
         print poelementsrc
-        assert pounit.source == 'size *2 \\\\langle x \\\\rangle'
+        assert pounit.source == 'size *2 \\langle x \\rangle'
 
     def test_msgid_bug_error_address(self):
         """tests the we have the correct url for reporting msgid bugs"""
