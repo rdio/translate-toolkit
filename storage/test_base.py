@@ -69,12 +69,15 @@ class TestTranslationUnit:
         """Test all sorts of characters that might go wrong in a quoting and 
         escaping roundtrip."""
         unit = self.UnitClass('bla')
-        specials = ['Fish & chips', 'five < six', 'six > five', 
-                    'Use &nbsp;', 'Use &amp;nbsp;' 
+        specials = ['Fish & chips', 'five < six', 'six > five', 'five &lt; six',
+                    'Use &nbsp;', 'Use &amp;nbsp;', 'Use &amp;amp;nbsp;'
                     'A "solution"', "skop 'n bal", '"""', "'''", 
                     '\n', '\t', '\r', 
-                    '\\n', '\\t', '\\r', '\\"', '\r\n', '\\r\\n', 
-                    '\\', '\\ ', u'µ']
+                    '\\n', '\\t', '\\r', '\\"', '\\', '\\ ',
+		    '\\\n', '\\\t', '\\\r', 
+		    '\\\\n', '\\\\t', '\\\\r', '\\\\"',
+		    '\r\n', '\\r\\n', '\\\\r\\n', '\\r\\\\n', '\\\\n\\\\r'
+		    u'µ']
         for special in specials:
             unit.source = special
             print "unit.source:"
