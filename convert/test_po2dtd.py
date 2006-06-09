@@ -81,7 +81,7 @@ class TestPO2DTD:
         multilinepo = '''#: pref.menuPath\nmsgid "Hello\\nEveryone"\nmsgstr "Good day\\nAll"\n'''
         dtdfile = self.po2dtd(multilinepo)
         dtdsource = str(dtdfile)
-        assert "Good day\\nAll" in dtdsource
+        assert "Good day\nAll" in dtdsource
 
     def test_ampersandwarning(self):
         """tests that proper warnings are given if invalid ampersands occur"""
@@ -138,8 +138,8 @@ class TestPO2DTD:
     def test_newlines_escapes(self):
         """check that we can handle a \n in the PO file"""
         posource = '''#: simple.label\n#: simple.accesskey\nmsgid "A hard coded newline.\\n"\nmsgstr "Hart gekoeerde nuwe lyne\\n"\n'''
-        dtdtemplate = '<!ENTITY  simple.label "A hard coded newline.\\n">\n'
-        dtdexpected = '''<!ENTITY simple.label "Hart gekoeerde nuwe lyne\\n">\n'''
+        dtdtemplate = '<!ENTITY  simple.label "A hard coded newline.\n">\n'
+        dtdexpected = '''<!ENTITY simple.label "Hart gekoeerde nuwe lyne\n">\n'''
         dtdfile = self.merge2dtd(dtdtemplate, posource)
         print dtdfile
         assert str(dtdfile) == dtdexpected
