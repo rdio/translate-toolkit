@@ -31,12 +31,12 @@ def simplecorrect(msgid, msgstr):
     return msgstr.replace(u"…", "...")
   if decoration.spacestart(msgid) != decoration.spacestart(msgstr) or decoration.spaceend(msgid) != decoration.spaceend(msgstr):
     return decoration.spacestart(msgid) + msgstr.strip() + decoration.spaceend(msgid)
-  puncendid = decoration.puncend(msgid)
-  puncendstr = decoration.puncend(msgstr)
+  punctuation = (".", ":", ". ", ": ", "?")
+  puncendid = decoration.puncend(msgid, punctuation)
+  puncendstr = decoration.puncend(msgstr, punctuation)
   if puncendid != puncendstr:
-    if puncendid in (".", ":", ". ", ": ", "?"):
-      if not puncendstr:
-        return msgstr + puncendid
+    if not puncendstr:
+      return msgstr + puncendid
   if msgid[:1].isalpha() and msgstr[:1].isalpha():
     if msgid[:1].isupper() and msgstr[:1].islower():
       return msgstr[:1].upper() + msgstr[1:]
