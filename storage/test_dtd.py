@@ -119,4 +119,15 @@ class TestDTD:
         dtdsource = '<!-- Comment\n -->\n<!ENTITY searchFocus.commandkey "k">\n'
         dtdregen = self.dtdregen(dtdsource)
         assert dtdsource == dtdregen
-   
+
+    def test_invalid_quoting(self):
+        """checks that invalid quoting doesn't work - quotes can't be reopened"""
+        # TODO: we should rather raise an error
+        dtdsource = '<!ENTITY test.me "bananas for sale""room">\n'
+        assert dtd.unquotefromdtd(dtdsource[dtdsource.find('"'):]) == 'bananas for sale'
+        dtdfile = self.dtdparse(dtdsource)
+        assert len(dtdfile.dtdelements) == 1
+        dtdelement = dtdfile.dtdelements[0]
+        assert dtdelement.definition == '"bananas for sale"'
+        assert str(dtdfile) == '<!ENTITY test.me "bananas for sale">\n'
+

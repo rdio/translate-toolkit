@@ -40,12 +40,12 @@ def unquotefromdtd(source):
   # extract the string, get rid of quoting
   if len(source) == 0: source = '""'
   quotechar = source[0]
-  extracted,quotefinished = quote.extract(source,quotechar,quotechar,None)
+  extracted,quotefinished = quote.extractwithoutquotes(source,quotechar,quotechar,allowreentry=False)
   if quotechar == "'" and "&apos;" in extracted:
     extracted = extracted.replace("&apos;", "'")
   # the quote characters should be the first and last characters in the string
   # of course there could also be quote characters within the string; not handled here
-  return extracted[1:-1]
+  return extracted
 
 class dtdelement:
   """this class represents an entity definition from a dtd file (and possibly associated comments)"""
@@ -205,9 +205,9 @@ class dtdelement:
           # actually the lines below should remember instring, rather than using it as dummy
           e = self.entityhelp[0]
           if (self.entityhelp[1] == "'"):
-            (defpart,self.instring) = quote.extract(line[e:],"'","'",None,startinstring=self.instring)
+            (defpart,self.instring) = quote.extract(line[e:],"'","'",startinstring=self.instring,allowreentry=False)
           elif (self.entityhelp[1] == '"'):
-            (defpart,self.instring) = quote.extract(line[e:],'"','"',None,startinstring=self.instring)
+            (defpart,self.instring) = quote.extract(line[e:],'"','"',startinstring=self.instring,allowreentry=False)
           else:
             raise ValueError("Unexpected quote character... %r" % (self.entityhelp[1]))
           # for any following lines, start at the beginning of the line. remember the quote character
