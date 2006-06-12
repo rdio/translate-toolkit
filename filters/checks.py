@@ -611,7 +611,7 @@ class StandardChecker(TranslationChecker):
     """checks for repeated words in the translation"""
     lastword = ""
     without_newlines = "\n".join(str2.split("\n"))
-    words = self.filteraccelerators(self.filtervariables(without_newlines)).replace(".", "").lower().split()
+    words = self.filteraccelerators(self.removevariables(without_newlines)).replace(".", "").lower().split()
     for word in words:
       if word == lastword:
         return False

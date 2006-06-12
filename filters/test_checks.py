@@ -61,8 +61,9 @@ def test_accelerators():
     # Problems:
     # Accelerator before variable - see test_acceleratedvariables
 
-def test_acceleratedvariables():
+def xtest_acceleratedvariables():
     """test for accelerated variables"""
+    # FIXME: disabled since acceleratedvariables has been removed, but these checks are still needed
     mozillachecker = checks.MozillaChecker()
     assert checks.fails(mozillachecker.acceleratedvariables, "%S &Options", "&%S Ikhetho")
     assert checks.passes(mozillachecker.acceleratedvariables, "%S &Options", "%S &Ikhetho")
@@ -133,8 +134,8 @@ def test_doublewords():
     assert checks.passes(stdchecker.doublewords, "Save the rhino", "Save the rhino")
     assert checks.fails(stdchecker.doublewords, "Save the rhino", "Save the the rhino")
     # Double variables are not an error
-    #stdchecker = checks.StandardChecker(checks.CheckerConfig(varmatches=[("%", 1)]))
-    #assert checks.passes(stdchecker.doublewords, "%s %s installation", "tsenyo ya %s %s")
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(varmatches=[("%", 1)]))
+    assert checks.passes(stdchecker.doublewords, "%s %s installation", "tsenyo ya %s %s")
 
 def test_endpunc():
     """tests endpunc"""
