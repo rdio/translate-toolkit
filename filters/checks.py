@@ -334,8 +334,8 @@ class StandardChecker(TranslationChecker):
       words1 = str1.split()
       if len(words1) == 1 and [word for word in words1 if word in self.config.notranslatewords]:
         return True
-    str1 = self.filtervariables(str1)
-    str2 = self.filtervariables(str2)
+    str1 = self.removevariables(str1)
+    str2 = self.removevariables(str2)
     if not (str1.isdigit() or len(str1) < 2) and (str1.strip().lower() == str2.strip().lower()):
       raise FilterFailure("please translate")
     return True

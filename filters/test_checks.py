@@ -428,8 +428,7 @@ def test_unchanged():
 Unchanged""", r"Unchanged") 
     # Variable only messages should be ignored
     mozillachecker = checks.MozillaChecker()
-    ## disabled test until enhancement implemented
-    ## assert checks.passes(mozillachecker.unchanged, "$ProgramName$", "$ProgramName$") 
+    assert checks.passes(mozillachecker.unchanged, "$ProgramName$", "$ProgramName$") 
     # Don't translate words should be ignored
     stdchecker = checks.StandardChecker(checks.CheckerConfig(notranslatewords=["Mozilla"]))
     assert checks.passes(stdchecker.unchanged, "Mozilla", "Mozilla") 
