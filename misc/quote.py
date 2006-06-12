@@ -35,11 +35,12 @@ def find_all(searchin, substr):
       location += len(substr)
   return locations
 
-def extract(source,startdelim,enddelim,escape=None,startinstring=0):
+def extract(source,startdelim,enddelim,escape=None,startinstring=False,allowreentry=True):
   """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping
   returns tuple of (quoted string with quotes, still in string at end)"""
   # note that this returns the quote characters as well... even internally
   instring = startinstring
+  enteredonce = False
   lenstart = len(startdelim)
   lenend = len(enddelim)
   startdelim_places = find_all(source, startdelim)
@@ -78,8 +79,9 @@ def extract(source,startdelim,enddelim,escape=None,startinstring=0):
       extracted += source[lastpos:pos]
       instring = False
       lastpos = pos
-    if (not instring) and pos in startdelim_places:
+    if (not instring) and pos in startdelim_places and not (enteredonce and not allowreentry):
       instring = True
+      enteredonce = True
       lastpos = pos
   if instring:
     extracted += source[lastpos:]
@@ -104,19 +106,20 @@ def extractcomment(lines):
   "Extracts <!-- > XML comments from lines"
   return extractfromlines(lines,"<!--","-->",None)
 
-def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,includeescapes=1):
+def extractwithoutquotes(source,startdelim,enddelim,escape=None,startinstring=False,includeescapes=True,allowreentry=True):
   """Extracts a doublequote-delimited string from a string, allowing for backslash-escaping
   includeescapes can also be a function that takes the whole escaped string and returns the replaced version"""
   instring = startinstring
+  enteredonce = False
   lenstart = len(startdelim)
   lenend = len(enddelim)
-  lenescape = len(escape)
   startdelim_places = find_all(source, startdelim)
   if startdelim == enddelim:
     enddelim_places = startdelim_places[:]
   else:
     enddelim_places = find_all(source, enddelim)
   if escape is not None:
+    lenescape = len(escape)
     escape_places = find_all(source, escape)
     last_escape_pos = -1
     # filter escaped escapes
@@ -166,8 +169,9 @@ def extractwithoutquotes(source,startdelim,enddelim,escape,startinstring=0,inclu
       extracted += section
       instring = False
       lastpos = pos
-    if (not instring) and pos in startdelim_places:
+    if (not instring) and pos in startdelim_places and not (enteredonce and not allowreentry):
       instring = True
+      enteredonce = True
       lastpos = pos
   if instring:
     section_start = lastpos + len(startdelim)
@@ -369,7 +373,7 @@ def testcase():
   print extract(x,'"','"','!')
   print extractwithoutquotes(x,'"','"',None)
   print extractwithoutquotes(x,'"','"','!')
-  print extractwithoutquotes(x,'"','"','!',includeescapes=0)
+  print extractwithoutquotes(x,'"','"','!',includeescapes=False)
 
 if __name__ == '__main__':
   testcase()
