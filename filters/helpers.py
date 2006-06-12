@@ -31,9 +31,9 @@ def countmatch(str1, str2, countstr):
   """checks whether countstr occurs the same number of times in str1 and str2"""
   return str1.count(countstr) == str2.count(countstr)
 
-def funcmatch(str1, str2, func):
+def funcmatch(str1, str2, func, *args):
   """returns whether the result of func is the same for str1 and str2"""
-  return func(str1) == func(str2)
+  return func(str1, *args) == func(str2, *args)
 
 def countsmatch(str1, str2, countlist):
   """checks whether each element in countlist occurs the same number of times in str1 and str2"""

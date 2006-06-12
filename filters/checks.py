@@ -516,13 +516,13 @@ class StandardChecker(TranslationChecker):
     """checks whether punctuation at the beginning of the strings match"""
     str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
     str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
-    return helpers.funcmatch(str1, str2, decoration.puncstart)
+    return helpers.funcmatch(str1, str2, decoration.puncstart, self.config.punctuation)
 
   def endpunc(self, str1, str2):
     """checks whether punctuation at the end of the strings match"""
     str1 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str1)))
     str2 = self.filteraccelerators(self.filtervariables(self.filterwordswithpunctuation(str2)))
-    return helpers.funcmatch(str1, str2, decoration.puncend)
+    return helpers.funcmatch(str1, str2, decoration.puncend, self.config.punctuation)
 
   def purepunc(self, str1, str2):
     """checks that strings that are purely punctuation are not changed"""

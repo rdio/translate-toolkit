@@ -40,28 +40,20 @@ def spaceend(str1):
     else: newstring = c + newstring
   return newstring
 
-def puncstart(str1):
+def puncstart(str1, punctuation):
   """returns all the punctuation from the start of the string"""
   newstring = ""
-  if isinstance(str1, unicode):
-    limitchar = u'\x80'
-  else:
-    limitchar = '\x80'
   for c in str1:
-    if c.isalnum() or c >= limitchar: return newstring
+    if c not in punctuation and not c.isspace(): return newstring
     else: newstring += c
   return newstring
 
-def puncend(str1):
+def puncend(str1, punctuation):
   """returns all the punctuation from the end of the string"""
   newstring = ""
-  if isinstance(str1, unicode):
-    limitchar = u'\x80'
-  else:
-    limitchar = '\x80'
   for n in range(len(str1)):
     c = str1[-1-n]
-    if c.isalnum() or c >= limitchar: return newstring
+    if c not in punctuation and not c.isspace(): return newstring
     else: newstring = c + newstring
   return newstring
 
