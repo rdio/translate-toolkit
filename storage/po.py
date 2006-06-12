@@ -678,7 +678,9 @@ class pofile(base.TranslationStore):
       if not entry or ":" not in entry: 
         continue
       key, value = entry.split(":", 1)
-      headervalues[key.strip()] = value.strip()
+      #We don't want unicode keys
+      key = str(key.strip())
+      headervalues[key] = value.strip()
     return headervalues
 
   def updateheader(self, add=False, **kwargs):
