@@ -19,7 +19,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""classes that hold units of .properties files (propelement) or entire files (propfile)
+"""classes that hold units of .properties files (propunit) or entire files (propfile)
 these files are used in translating Mozilla and other software"""
 
 from translate.storage import base
@@ -35,7 +35,7 @@ eol = "\n"
 class propunit(base.TranslationUnit):
   """an element of a properties file i.e. a name and value, and any comments associated"""
   def __init__(self, source=""):
-    """construct a blank propelement"""
+    """construct a blank propunit"""
     self.name = ""
     self.comments = []
     self.source = source
@@ -58,6 +58,7 @@ class propunit(base.TranslationUnit):
 
   def settarget(self, target):
     """Note: this also sets the .source attribute!"""
+    # TODO: shouldn't this just call the .source property? no quoting done here...
     self.msgid = target
 
   def gettarget(self):
@@ -88,12 +89,6 @@ class propunit(base.TranslationUnit):
     """returns whether this is a blank element, containing only comments..."""
     return not (self.name or self.msgid)
 
-class propelement(propunit):
-  """This is the old name of the propunit class and is left here for testing
-  backwards compatibility"""
-  print >> sys.stderr, "Warning: Class deprecated"
-  pass
-
 class propfile(base.TranslationStore):
   """this class represents a .properties file, made up of propunits"""
   UnitClass = propunit
@@ -105,12 +100,6 @@ class propfile(base.TranslationStore):
       propsrc = inputfile.read()
       inputfile.close()
       self.parse(propsrc)
-
-  def getpropelements(self):
-    print >> sys.stderr, "Warning: Method deprecated"
-    """Just for easing porting to base class"""
-    return self.units
-  propelements = property(getpropelements)
 
   def parse(self, propsrc):
     """read the source of a properties file in and include them as units"""

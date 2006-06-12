@@ -26,9 +26,9 @@ class TestProp(test_monolingual.TestMonolingualStore):
         propsource = 'test_me=I can code!'
         propfile = self.propparse(propsource)
         assert len(propfile.units) == 1
-        propelement = propfile.units[0]
-        assert propelement.name == "test_me"
-        assert propelement.source == "I can code!"
+        propunit = propfile.units[0]
+        assert propunit.name == "test_me"
+        assert propunit.source == "I can code!"
 
     def test_simpledefinition_source(self):
         """checks that a simple properties definition can be regenerated as source"""
@@ -41,9 +41,9 @@ class TestProp(test_monolingual.TestMonolingualStore):
         propsource = "unicode=\u0411\u0416\u0419\u0428"
         propfile = self.propparse(propsource)
         assert len(propfile.units) == 1
-        propelement = propfile.units[0]
-        assert propelement.name == "unicode"
-        assert propelement.source.encode("UTF-8") == "БЖЙШ"
+        propunit = propfile.units[0]
+        assert propunit.name == "unicode"
+        assert propunit.source.encode("UTF-8") == "БЖЙШ"
 
     def test_newlines_startend(self):
         """check that we preserver \n that appear at start and end of properties"""
@@ -55,7 +55,7 @@ class TestProp(test_monolingual.TestMonolingualStore):
         """check that we remove extra whitespace around property"""
         propsource = '''  whitespace  =  Start \n'''
         propfile = self.propparse(propsource)
-        propelement = propfile.units[0]
-        assert propelement.name == "whitespace"
-        assert propelement.source == "Start "
+        propunit = propfile.units[0]
+        assert propunit.name == "whitespace"
+        assert propunit.source == "Start "
      
