@@ -348,9 +348,8 @@ def test_simplecaps():
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.simplecaps, "MB of disk space for the cache.", "MB yendzawo yediski etsala.")
     # We should squash 'I' in the source text as it messes with capital detection
-    ## disabled test until enhancement implemented
-    ## assert checks.passes(stdchecker.simplecaps, "if you say I want", "as jy se ek wil")
-    # FIXME disabled for now
+    assert checks.passes(stdchecker.simplecaps, "if you say I want", "as jy se ek wil")
+    assert checks.passes(stdchecker.simplecaps, "sentence. I want more.", "sin. Ek wil meer he.")
     ## We should remove variables before checking
     stdchecker = checks.StandardChecker(checks.CheckerConfig(varmatches=[("%", 1)]))
     assert checks.passes(stdchecker.simplecaps, "Could not load %s", "A swi koteki ku panga %S")

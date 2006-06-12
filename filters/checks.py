@@ -574,6 +574,7 @@ class StandardChecker(TranslationChecker):
     """checks the capitalisation of two strings isn't wildly different"""
     str1 = self.removevariables(prefilters.removekdecomments(str1))
     str2 = self.removevariables(str2)
+    str1 = sre.sub("[^.]( I )", " i ", str1)
     capitals1, capitals2 = helpers.filtercount(str1, type(str1).isupper), helpers.filtercount(str2, type(str2).isupper)
     alpha1, alpha2 = helpers.filtercount(str1, type(str1).isalpha), helpers.filtercount(str2, type(str2).isalpha)
     # Capture the all caps case
