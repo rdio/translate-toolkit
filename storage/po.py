@@ -587,10 +587,10 @@ class pofile(base.TranslationStore):
     "Plural-Forms",
     "X-Generator",
     ]
-  def __init__(self, inputfile=None, encoding=None, elementclass=pounit):
+  def __init__(self, inputfile=None, encoding=None, unitclass=pounit):
     """construct a pofile, optionally reading in from inputfile.
     encoding can be specified but otherwise will be read from the PO header"""
-    self.elementclass = elementclass
+    self.UnitClass = unitclass
     self.units = []
     self.filename = ''
     self.encoding = encodingToUse(encoding)
@@ -619,7 +619,7 @@ class pofile(base.TranslationStore):
       if key.islower():
         key = key.title()
       headerargs[key] = value
-    headerpo = self.elementclass(encoding=self.encoding)
+    headerpo = self.UnitClass(encoding=self.encoding)
     headerpo.markfuzzy()
     headerpo.msgid = ['""']
     headeritems = [""]
@@ -808,7 +808,7 @@ class pofile(base.TranslationStore):
       if (end == len(lines)) or (not lines[end].strip()):   # end of lines or blank line
         finished = 0
         while not finished:
-          newpe = self.elementclass(encoding=self.encoding)
+          newpe = self.UnitClass(encoding=self.encoding)
           linesprocessed = newpe.parse("\n".join(lines[start:end]))
           start += linesprocessed
           # TODO: find a better way of working out if we actually read anything
@@ -837,7 +837,7 @@ class pofile(base.TranslationStore):
 
   def removeblanks(self):
     """remove any units which say they are blank"""
-    self.units = filter(self.elementclass.isnotblank, self.units)
+    self.units = filter(self.UnitClass.isnotblank, self.units)
 
   def removeduplicates(self, duplicatestyle="merge"):
     """make sure each msgid is unique ; merge comments etc from duplicates into original"""

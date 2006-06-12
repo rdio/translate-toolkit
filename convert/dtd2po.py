@@ -207,7 +207,7 @@ class dtd2po:
               self.mixedentities[entitybase+akeytype] = {}
           # check if this could be a mixed entity (labelsuffix and ".accesskey")
 
-  def convertdtdelement(self, thedtdfile, thedtd, mixbucket="dtd"):
+  def convertdtdunit(self, thedtdfile, thedtd, mixbucket="dtd"):
     """converts a dtd element from thedtdfile to a po element, handling mixed entities along the way..."""
     # keep track of whether acceskey and label were combined
     if thedtd.entity in self.mixedentities:
@@ -262,10 +262,10 @@ class dtd2po:
     thedtdfile.makeindex()
     self.findmixedentities(thedtdfile)
     # go through the dtd and convert each element
-    for thedtd in thedtdfile.dtdelements:
+    for thedtd in thedtdfile.units:
       if thedtd.isnull():
         continue
-      thepo = self.convertdtdelement(thedtdfile, thedtd)
+      thepo = self.convertdtdunit(thedtdfile, thedtd)
       if thepo is not None:
         thepofile.units.append(thepo)
     thepofile.removeduplicates(self.duplicatestyle)
@@ -281,10 +281,10 @@ class dtd2po:
     translateddtdfile.makeindex()
     self.findmixedentities(translateddtdfile)
     # go through the dtd files and convert each element
-    for origdtd in origdtdfile.dtdelements:
+    for origdtd in origdtdfile.units:
       if origdtd.isnull():
         continue
-      origpo = self.convertdtdelement(origdtdfile, origdtd, mixbucket="orig")
+      origpo = self.convertdtdunit(origdtdfile, origdtd, mixbucket="orig")
       if origdtd.entity in self.mixedentities:
         mixedentitydict = self.mixedentities[origdtd.entity]
         if "orig" not in mixedentitydict:
@@ -302,7 +302,7 @@ class dtd2po:
         continue
       if origdtd.entity in translateddtdfile.index:
         translateddtd = translateddtdfile.index[origdtd.entity]
-        translatedpo = self.convertdtdelement(translateddtdfile, translateddtd, mixbucket=mixbucket)
+        translatedpo = self.convertdtdunit(translateddtdfile, translateddtd, mixbucket=mixbucket)
       else:
         translatedpo = None
       if origpo is not None:

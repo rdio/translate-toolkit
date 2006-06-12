@@ -199,7 +199,7 @@ class TestDTD2PO:
         """test that we handle all kinds of newline permutations"""
         dtdsource = '<!ENTITY  noupdatesfound.intro "A hard coded newline.\\nAnd tab\\t and a \\r carriage return.">\n'
         converter = dtd2po.dtd2po()
-        thedtd = dtd.dtdelement()
+        thedtd = dtd.dtdunit()
         thedtd.parse(dtdsource)
         thepo = po.pounit()
         converter.convertstrings(thedtd, thepo)

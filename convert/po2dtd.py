@@ -242,7 +242,7 @@ class po2dtd:
     thedtd.definition = dtd.quotefordtd(unquoted)
 
   def convertelement(self,thepo):
-    thedtd = dtd.dtdelement()
+    thedtd = dtd.dtdunit()
     self.convertcomments(thepo,thedtd)
     self.convertstrings(thepo,thedtd)
     return thedtd
@@ -254,7 +254,7 @@ class po2dtd:
       if includefuzzy or not thepo.isfuzzy():
         thedtd = self.convertelement(thepo)
         if thedtd is not None:
-          thedtdfile.dtdelements.append(thedtd)
+          thedtdfile.units.append(thedtd)
     return thedtdfile
 
 def convertdtd(inputfile, outputfile, templatefile, includefuzzy=False):
