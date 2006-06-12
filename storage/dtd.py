@@ -19,11 +19,10 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""classes that hold units of .dtd files (dtdelement) or entire files (dtdfile)
-these are specific .dtd files for localisation used by mozilla
-FIXME: add simple test which reads in a file and writes it out again"""
+"""classes that hold units of .dtd files (dtdunit) or entire files (dtdfile)
+these are specific .dtd files for localisation used by mozilla"""
 
-from __future__ import generators
+from translate.storage import base
 from translate.misc import quote
 
 def quotefordtd(source):
@@ -47,17 +46,40 @@ def unquotefromdtd(source):
   # of course there could also be quote characters within the string; not handled here
   return extracted
 
-class dtdelement:
+class dtdunit(base.TranslationUnit):
   """this class represents an entity definition from a dtd file (and possibly associated comments)"""
-  def __init__(self):
-    """construct the dtdelement, prepare it for parsing"""
+  def __init__(self, source=""):
+    """construct the dtdunit, prepare it for parsing"""
     self.comments = []
     self.unparsedlines = []
     self.incomment = 0
     self.inentity = 0
+    self.entity = None
+    self.source = source
+
+  # Note that source and target are equivalent for monolingual units
+  def setsource(self, source):
+    """Sets the definition to the quoted value of source"""
+    self.definition = quotefordtd(source)
+
+  def getsource(self):
+    """gets the unquoted source string"""
+    return unquotefromdtd(self.definition)
+  source = property(getsource, setsource)
+
+  def settarget(self, target):
+    """Sets the definition to the quoted value of target"""
+    self.definition = quotefordtd(target)
+
+  def gettarget(self):
+    """gets the unquoted target string"""
+    return unquotefromdtd(self.definition)
+  target = property(gettarget, settarget)
 
   def isnull(self):
-    """returns whether this dtdelement doesn't actually have an entity definition"""
+    """returns whether this dtdunit doesn't actually have an entity definition"""
+    # for dtds, we currently return a blank string if there is no .entity (==location in other files)
+    # TODO: this needs to work better with base class expectations
     return self.entity is None
 
   def parse(self, dtdsrc):
@@ -256,11 +278,12 @@ class dtdelement:
       lines.append(entityline+'\n')
     return "".join(lines)
 
-class dtdfile:
-  """this class represents a .dtd file, made up of dtdelements"""
+class dtdfile(base.TranslationStore):
+  """this class represents a .dtd file, made up of dtdunits"""
+  UnitClass = dtdunit
   def __init__(self, inputfile=None):
     """construct a dtdfile, optionally reading in from inputfile"""
-    self.dtdelements = []
+    self.units = []
     self.filename = getattr(inputfile, 'name', '')
     if inputfile is not None:
       dtdsrc = inputfile.read()
@@ -268,7 +291,8 @@ class dtdfile:
       self.makeindex()
 
   def parse(self, dtdsrc):
-    """read the source code of a dtd file in and include them as dtdelements"""
+    """read the source code of a dtd file in and include them as dtdunits in self.units (any existing units are lost)"""
+    self.units = []
     start = 0
     end = 0
     lines = dtdsrc.split("\n")
@@ -287,11 +311,18 @@ class dtdfile:
 
       linesprocessed = 1 # to initialise loop
       while linesprocessed >= 1:
-        newdtd = dtdelement()
+        newdtd = dtdunit()
         linesprocessed = newdtd.parse("\n".join(lines[start:end]))
         start += linesprocessed
         if linesprocessed >= 1 and (not newdtd.isnull() or newdtd.unparsedlines):
-          self.dtdelements.append(newdtd)
+          self.units.append(newdtd)
+
+  def parsestring(cls, dtdsrc):
+    """read the source code of a dtd file in and include them as dtdunits in a new dtdfile object"""
+    newdtdfile = dtdfile()
+    newdtdfile.parse(dtdsrc)
+    return newdtdfile
+  parsestring = classmethod(parsestring)
 
   def __str__(self):
     """convert to a string. double check that unicode is handled somehow here"""
@@ -301,19 +332,19 @@ class dtdfile:
     return source
 
   def getoutput(self):
-    """convert the dtdelements back to source"""
-    sources = [str(dtd) for dtd in self.dtdelements]
+    """convert the units back to source"""
+    sources = [str(dtd) for dtd in self.units]
     return "".join(sources)
 
   def makeindex(self):
     """makes self.index dictionary keyed on entities"""
     self.index = {}
-    for dtd in self.dtdelements:
+    for dtd in self.units:
       if not dtd.isnull():
         self.index[dtd.entity] = dtd
 
   def rewrap(self):
-    for dtd in self.dtdelements:
+    for dtd in self.units:
       lines = dtd.definition.split("\n")
       if len(lines) > 1:
         definition = lines[0]

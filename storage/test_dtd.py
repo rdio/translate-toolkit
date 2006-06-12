@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from translate.storage import dtd
+from translate.storage import test_monolingual
 from translate.misc import wStringIO
 
 def test_roundtrip_quoting():
@@ -16,7 +17,11 @@ def test_roundtrip_quoting():
         print "special: %r\nquoted: %r\nunquoted: %r\n" % (special, quoted_special, unquoted_special)
         assert special == unquoted_special
 
-class TestDTD:
+class TestDTDUnit(test_monolingual.TestMonolingualUnit):
+    UnitClass = dtd.dtdunit
+
+class TestDTD(test_monolingual.TestMonolingualStore):
+    StoreClass = dtd.dtdfile
     def dtdparse(self, dtdsource):
         """helper that parses dtd source without requiring files"""
         dummyfile = wStringIO.StringIO(dtdsource)
@@ -31,10 +36,10 @@ class TestDTD:
         """checks that a simple dtd entity definition is parsed correctly"""
         dtdsource = '<!ENTITY test.me "bananas for sale">\n'
         dtdfile = self.dtdparse(dtdsource)
-        assert len(dtdfile.dtdelements) == 1
-        dtdelement = dtdfile.dtdelements[0]
-        assert dtdelement.entity == "test.me"
-        assert dtdelement.definition == '"bananas for sale"'
+        assert len(dtdfile.units) == 1
+        dtdunit = dtdfile.units[0]
+        assert dtdunit.entity == "test.me"
+        assert dtdunit.definition == '"bananas for sale"'
 
     def test_blanklines(self):
         """checks that blank lines don't break the parsing or regeneration"""
@@ -65,10 +70,10 @@ class TestDTD:
         dtdsource = '''<!-- commenting out until bug 38906 is fixed
 <!ENTITY messagesHeader.label         "Messages"> -->'''
         dtdfile = self.dtdparse(dtdsource)
-        assert len(dtdfile.dtdelements) == 1
-        dtdelement = dtdfile.dtdelements[0]
-        print dtdelement
-        assert dtdelement.isnull()
+        assert len(dtdfile.units) == 1
+        dtdunit = dtdfile.units[0]
+        print dtdunit
+        assert dtdunit.isnull()
 
     def test_newlines_in_entity(self):
         """tests that we can handle newlines in the entity itself"""
@@ -126,8 +131,8 @@ class TestDTD:
         dtdsource = '<!ENTITY test.me "bananas for sale""room">\n'
         assert dtd.unquotefromdtd(dtdsource[dtdsource.find('"'):]) == 'bananas for sale'
         dtdfile = self.dtdparse(dtdsource)
-        assert len(dtdfile.dtdelements) == 1
-        dtdelement = dtdfile.dtdelements[0]
-        assert dtdelement.definition == '"bananas for sale"'
+        assert len(dtdfile.units) == 1
+        dtdunit = dtdfile.units[0]
+        assert dtdunit.definition == '"bananas for sale"'
         assert str(dtdfile) == '<!ENTITY test.me "bananas for sale">\n'
 
