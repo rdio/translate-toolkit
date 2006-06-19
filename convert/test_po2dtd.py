@@ -111,6 +111,18 @@ class TestPO2DTD:
                     accel = dtd.unquotefromdtd(dtdfile.index["simple.accesskey"].definition)
                     assert accel == destaccel
 
+    def test_accesskey_types(self):
+        """tests that we can detect the various styles of accesskey"""
+        simplepo_template = '''#: simple.%s\n#: simple.%s\nmsgid "&File"\nmsgstr "F&aele"\n'''
+        simpledtd_template = '''<!ENTITY simple.%s "File">\n<!ENTITY simple.%s "a">'''
+        for label in ("label", "title"):
+          for accesskey in ("accesskey", "accessKey", "akey"):
+            simplepo = simplepo_template % (label, accesskey)
+            simpledtd = simpledtd_template % (label, accesskey)
+            dtdfile = self.merge2dtd(simpledtd, simplepo)
+            dtdfile.makeindex()
+            assert dtd.unquotefromdtd(dtdfile.index["simple.%s" % accesskey].definition) == "a"
+
     def test_ampersandfix(self):
         """tests that invalid ampersands are fixed in the dtd"""
         simplestring = '''#: simple.string\nmsgid "Simple String"\nmsgstr "Dimpled &Ring"\n'''
