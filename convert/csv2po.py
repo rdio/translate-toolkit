@@ -42,10 +42,11 @@ def simplify(string):
 
 class csv2po:
   """a class that takes translations from a .csv file and puts them in a .po file"""
-  def __init__(self, templatepo=None, charset=None):
+  def __init__(self, templatepo=None, charset=None, duplicatestyle="keep"):
     """construct the converter..."""
     self.pofile = templatepo
     self.charset = charset
+    self.duplicatestyle = duplicatestyle
     if self.pofile is not None:
       self.unmatched = 0
       self.makeindex()
@@ -163,6 +164,7 @@ class csv2po:
       else:
         thepo = self.convertelement(thecsv)
         self.pofile.units.append(thepo)
+    self.pofile.removeduplicates(self.duplicatestyle)
     return self.pofile
 
   def getmissing(self):
@@ -173,14 +175,14 @@ class csv2po:
       if thepo.isblankmsgstr():
         missing += 1
 
-def convertcsv(inputfile, outputfile, templatefile, charset=None, columnorder=None):
+def convertcsv(inputfile, outputfile, templatefile, charset=None, columnorder=None, duplicatestyle="keep"):
   """reads in inputfile using csvl10n, converts using csv2po, writes to outputfile"""
   inputcsv = csvl10n.csvfile(inputfile, fieldnames=columnorder)
   if templatefile is None:
-    convertor = csv2po(charset=charset)
+    convertor = csv2po(charset=charset, duplicatestyle=duplicatestyle)
   else:
     templatepo = po.pofile(templatefile)
-    convertor = csv2po(templatepo, charset=charset)
+    convertor = csv2po(templatepo, charset=charset, duplicatestyle=duplicatestyle)
   outputpo = convertor.convertfile(inputcsv)
   if outputpo.isempty():
     return 0
@@ -197,6 +199,7 @@ def main(argv=None):
     help="set charset to decode from csv files", metavar="CHARSET")
   parser.add_option("", "--columnorder", dest="columnorder", default=None,
     help="specify the order and position of columns (source,source,target)")
+  parser.add_duplicates_option()
   parser.passthrough.append("charset")
   parser.passthrough.append("columnorder")
   parser.run(argv)
