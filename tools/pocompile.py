@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#
 # Copyright 2005, 2006 Zuza Software Foundation
 # 
 # This file is part of the translate-toolkit
@@ -21,7 +23,9 @@
 # This is a class created from the original msgfmt.py written by 
 # Martin v. Löwis <loewis@informatik.hu-berlin.de> which is release
 # as part of 4Suite (Python tools and libraries for XML processing and databases.)
-# which is itself released under the Apache License.
+# which is itself released under the Apache License.  If there is any conflict
+# between the Apache license and the GPL then the Apache license is the one that
+# applies to the changes made to this file.
 #
 # 2006-06-07: Updated using:
 #  http://svn.python.org/projects/python/trunk/Tools/i18n/msgfmt.py
