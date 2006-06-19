@@ -1,3 +1,1555 @@
+2006-02-20 13:03  davidfraser
+
+	* README: updated for 0.8 release
+
+2006-02-20 12:15  davidfraser
+
+	* __version__.py: version 0.8! TADA!
+
+2006-02-20 12:13  davidfraser
+
+	* convert/oo2po.py: fixed docstring to correspond to functionality
+
+2006-02-20 11:47  friedelwolff
+
+	* convert/: po2html.py, po2ts.py, po2txt.py: Convert last few users
+	  of getunquotedstr() to use .source and .target
+
+2006-02-20 09:38  friedelwolff
+
+	* filters/checks.py: Allow variables _and_ musttranslate words in
+	  acronym test
+
+2006-02-17 21:05  dwaynebailey
+
+	* storage/csvl10n.py: Convert last remnants of msgid and msgstr to
+	  source and target
+
+2006-02-17 19:42  dwaynebailey
+
+	* tools/test_pocount.py: Test that we count correctly.	Quite a few
+	  word break errors that need fixing.  The failing tests have been
+	  disabled.
+
+2006-02-17 14:10  charlvn
+
+	* convert/test_html2po.py: If the 'lang' attribute is placed on the
+	  'html' element, '<head>' incorrectly becomes one of the
+	  translatable strings in the output.
+
+2006-02-17 10:39  friedelwolff
+
+	* filters/: checks.py, test_checks.py: Allow missing acronyms in
+	  musttranslate file
+
+2006-02-16 13:52  dwaynebailey
+
+	* filters/checks.py: Add a number of new OpenOffice.org variables
+	  styles.  Including: % #1 # We're now sitting at 14 variable
+	  styles!
+
+2006-02-16 11:10  friedelwolff
+
+	* filters/pofilter.py: fix for test_ignore_if_already_marked: test
+	  if pofilter message already present before appending
+
+2006-02-16 11:08  friedelwolff
+
+	* filters/test_pofilter.py: fix comment ordering in posource
+
+2006-02-16 08:27  charlvn
+
+	* convert/test_html2po.py: First basic test
+
+2006-02-15 11:20  dwaynebailey
+
+	* convert/test_po2csv.py: Fix test.  We shouldn't be escaping the
+	  internal CVS representation, we should escape when we use __str__
+	  and friends.
+
+2006-02-15 10:08  dwaynebailey
+
+	* filters/test_pofilter.py: Correct silly typo in
+	  test_ignore_if_already_marked: test now fails properly.  Added
+	  some poexpected strings to that we are testing to see that we
+	  exactly match the expected output not doing X != Y but noe
+	  poresult == poexpected
+
+2006-02-15 09:57  dwaynebailey
+
+	* storage/test_properties.py: Enable some tests that were disabled
+	  from 0.8 merging.  Make them pass.  Some are working but require
+	  playing with newlines.  Probably needs a better look within the
+	  properties class to distinguish between real translatables and
+	  others.
+
+2006-02-15 09:43  dwaynebailey
+
+	* convert/csv2po.py: Make the error message more logical.  Not sure
+	  how to create a test to validate this though.
+
+2006-02-15 09:38  dwaynebailey
+
+	* convert/test_po2csv.py: Reenable test for start single quotes.
+	  Break up checking for middle and end from checking for start.  We
+	  do some weird mangling on single quotes to get around
+	  spreadsheets (specifically Excel).
+
+2006-02-15 09:27  dwaynebailey
+
+	* convert/test_po2oo.py, filters/test_autocorrect.py,
+	  storage/test_oo.py, tools/test_pomerge.py: SOme tests that didn't
+	  make it across in the merging of 0.8 into head
+
+2006-02-14 17:46  davidfraser
+
+	* storage/: po.py, test_po.py: zap getunquotedstr, as its no longer
+	  used anywhere (unquotefrompo or better .source or .target
+	  properties replace it)
+
+2006-02-14 17:43  davidfraser
+
+	* storage/test_po.py: woops! there were two test_getunquotedstr
+	  functions. The first one actually fails leaving this for
+	  posterity, next I'll remove the other one :-)
+
+2006-02-14 17:42  davidfraser
+
+	* storage/test_po.py: this test actually passes, remove it before
+	  removing the function
+
+2006-02-14 17:39  davidfraser
+
+	* convert/test_dtd2po.py: explicitly request line breaks where
+	  desired for checking layout in po file
+
+2006-02-14 17:38  davidfraser
+
+	* storage/po.py: switch default to not include line break between
+	  lines (since its not part of the semantics)
+
+2006-02-14 17:33  davidfraser
+
+	* convert/po2tmx.py: use source and target properties rather than
+	  manually unquoting the strings
+
+2006-02-14 17:29  davidfraser
+
+	* convert/: csv2po.py, pot2po.py: replace getunquotedstr with
+	  unquotefrompo
+
+2006-02-14 17:23  davidfraser
+
+	* filters/pofilter.py, tools/pocount.py, tools/podebug.py,
+	  tools/pogrep.py, tools/pomerge.py: replace getunquotedstr with
+	  unquotefrompo
+
+2006-02-14 17:22  davidfraser
+
+	* storage/: po.py, test_po.py: replace getunquotedstr with
+	  unquotefrompo which is much more regular
+
+2006-02-14 15:50  dwaynebailey
+
+	* misc/quote.py: Do not treat \a (Ctrl-G or BELL) as a special
+	  escape as otherwise we end up with a literal ^G in the
+	  translation when we actually want \u0007.
+
+2006-02-14 15:42  dwaynebailey
+
+	* misc/test_quote.py: Add test for quote.py
+
+2006-02-14 14:52  dwaynebailey
+
+	* filters/test_checks.py: Add tests for variables of style: %1, %,
+	  #1, #
+
+2006-02-14 13:26  friedelwolff
+
+	* convert/test_po2tmx.py, storage/base.py, storage/test_base.py,
+	  storage/test_tbx.py, storage/test_tmx.py: Make
+	  base.TranslationStore.findunit() return None instead of raising
+	  exception. Adapt users.
+
+2006-02-14 13:17  friedelwolff
+
+	* storage/tmx.py: Fix tmx.translate() with unfound unit.
+	  tab->spaces
+
+2006-02-14 12:26  dwaynebailey
+
+	* filters/test_checks.py: Test to ensure that newlines do not mask
+	  end punctuation errors
+
+2006-02-14 12:20  davidfraser
+
+	* convert/: html2po.py, nb2po.py, po2csv.py, po2tmx.py, pot2po.py,
+	  sxw2po.py, ts2po.py, txt2po.py: Forward port from
+	  translate-toolkit-0-8-branch:   modified convert methods to make
+	  the actual commandline operation more testable   all main
+	  functions now take an optional argv parameter used for testing
+	  also refactored main functions for modules that didn't have
+	  them...
+
+	    added encoding argument when constructing poelements (its the
+	  default, but it doesn't hurt...)
+
+	    unwrapped docstrings, and shortened them where appropriate
+
+2006-02-14 12:15  davidfraser
+
+	* convert/csv2po.py: Forward port from
+	  translate-toolkit-0-8-branch:   modified convert methods to make
+	  the actual commandline operation more testable   all main
+	  functions now take an optional argv parameter used for testing
+	  also refactored main functions for modules that didn't have
+	  them...
+
+	    unwrapped docstrings, and shortened them where appropriate
+	  adjusted test to handle them being wrapped in the help
+
+	    added encoding argument when constructing poelements (its the
+	  default, but it doesn't hurt...)
+
+2006-02-14 12:09  davidfraser
+
+	* convert/: prop2po.py, test_prop2po.py: Forward port from
+	  translate-toolkit-0-8-branch:   modified convert methods to make
+	  the actual commandline operation more testable   all main
+	  functions now take an optional argv parameter used for testing
+	  also refactored main functions for modules that didn't have
+	  them...
+
+	    added encoding argument when constructing pounits (its the
+	  default, but it doesn't hurt...)
+
+	    Added test to detect problem with multiline entries.  Ie those
+	  with \ escapes newlines.
+
+	    added test for unicode conversions
+
+	    added test that actually checks the convertprop method that the
+	  converter calls
+
+2006-02-14 12:03  davidfraser
+
+	* convert/: moz2po.py, mozfunny2prop.py, po2html.py, po2moz.py,
+	  po2nb.py, po2oo.py, po2prop.py, po2ts.py, po2txt.py, po2xliff.py,
+	  poreplace.py, prop2mozfunny.py, xliff2po.py: Forward port from
+	  translate-toolkit-0-8-branch:   modified convert methods to make
+	  the actual commandline operation more testable   all main
+	  functions now take an optional argv parameter used for testing
+	  also refactored main functions for modules that didn't have
+	  them...
+
+2006-02-14 12:00  davidfraser
+
+	* convert/: oo2po.py, test_oo2po.py: Forward port from
+	  translate-toolkit-0-8-branch:   modified convert methods to make
+	  the actual commandline operation more testable   all main
+	  functions now take an optional argv parameter used for testing
+	  also refactored main functions for modules that didn't have
+	  them...
+
+	    added encoding argument when constructing poelements (its the
+	  default, but it doesn't hurt...)
+
+	    Now also test for \t (Tab) anr \r (Carriage Return) escaping
+
+	    added oo2po test that actually runs the command
+
+	    added a simple test to ensure --multifile=onefile generates a
+	  file, not a directory currently fails...
+
+	    Check for the unique oo2po command line options.
+
+2006-02-14 11:52  davidfraser
+
+	* convert/: po2dtd.py, test_po2dtd.py: Forward port from
+	  translate-toolkit-0-8-branch:   modified convert methods to make
+	  the actual commandline operation more testable   all main
+	  functions now take an optional argv parameter used for testing
+	  also refactored main functions for modules that didn't have
+	  them...
+
+	    make case of accelerators match that in the original string
+
+	    Add a test for convertdtd.	This was to make the output to file
+	  fail.  po2dtd misnamed str with scr.	Fix was simple test was
+	  harder.
+
+	    split roundtripstring out so we can easily do roundtrips on
+	  whole dtds as well
+	    use two input files to make sure we actually convert the string
+	  back in roundtrip
+	    print out intermediate roundtrip values to aid debugging errors
+	    added lots of escaping and quote tests
+
+	    added string roundtrip helper
+
+	    added test for preserving access key case where possible...
+
+	    Test to check that we don't mess with the encoding of an
+	  escaped \n from a PO file.
+
+	    Added test for merging flattened PO entries back into their
+	  parent pretty printed entity.
+
+	    added setup_ and teardown_ methods to TestPO2DTDCommand for
+	  calling the things in both base classes...
+
+2006-02-14 11:44  davidfraser
+
+	* convert/: dtd2po.py, test_dtd2po.py: Forward port from
+	  translate-toolkit-0-8-branch:   modified convert methods to make
+	  the actual commandline operation more testable   all main
+	  functions now take an optional argv parameter used for testing
+	  also refactored main functions for modules that didn't have
+	  them...
+
+	    added encoding argument when constructing pounits (its the
+	  default, but it doesn't hurt...)
+
+	    if thepo is blank and has no sources, it is probably a
+	  DONT_TRANSLATE and so we ignore it
+
+	    Add convertdtd test for dtd2po similar to prop2po
+
+	    If the template has a blank translation eg translators.credits
+	  and we merge it with a language that has a transaltion.  Then we
+	  end up with the translation in msgid and KDE comment in the
+	  msgid.
+
+	    Add a test that picks up DONT_TRANSLATE elements that are only
+	  themselves entities.
+
+	    Add a test for #102.  Entities that appear inside SGML comments
+	    Identified #101 correctly
+
+	    changed test for newline escaping to test the string converter
+	  function directly
+
+	    Add a test to see that we convert \r\n to \n in a PO file and
+	  don't end up with \r in our PO messages.
+
+	    Make sure \r appears correctly in the PO file.
+
+	    Ensure that we can handle \n or \t correctly when converting
+	  dtd to PO
+
+	    Fix for #79 multiline pretty printed DTD entities. Tests
+	  included.
+	    We do the following:
+	      * Single line elements are left untrated
+	      * Multiline
+	      * Space at the start of the first line are preserved
+	      * Whitespace at the start of all subsequent lines is removed
+	      * All lines except the last have one whitespace character
+		(ensures that when join lines we don't join words
+	  inadvertantly.)
+
+	    our merge test was coded the wrong way round ...
+
+	    We are escaping hard coded newlines found in DTDs when creating
+	  PO files.  We should just carry them through and not escape them.
+	   Not these are not real newlines found in the file but a \n in
+	  the text.
+
+	    moved extractdtdstring from dtd2po to dtd storage module as
+	  unquotefromdtd
+
+2006-02-14 11:25  friedelwolff
+
+	* search/Levenshtein.py: Use segmenting for similarity calculations
+
+2006-02-14 11:24  davidfraser
+
+	* convert/: convert.py, test_convert.py: Forward port from
+	  translate-toolkit-0-8-branch:   modified convert methods to make
+	  the actual commandline operation more testable   all main
+	  functions now take an optional argv parameter used for testing
+	  also refactored main functions for modules that didn't have
+	  them...    included a base test_convert.TestConvertCommand class
+	  handle onefile non-recursion for input output and templates in
+	  the convert module
+
+2006-02-14 11:19  davidfraser
+
+	* tools/: poconflicts.py, pydiff.py: space cleanup
+
+2006-02-14 11:17  davidfraser
+
+	* filters/test_checks.py: Forward port from
+	  translate-toolkit-0-8-branch:   unicode escapes are easier to
+	  read in any editor...    Add the $blah$ variables style
+
+2006-02-14 11:16  davidfraser
+
+	* filters/checks.py: replace tabs with spaces
+
+2006-02-14 11:11  davidfraser
+
+	* misc/quote.py: Forward port from translate-toolkit-0-8-branch:
+	  handle multiline escapes properly by returning the escape so the
+	  parser can use it   removed spurious check that just gave errors
+	  for unknown escapes at the end of a string...
+
+2006-02-14 11:08  davidfraser
+
+	* storage/test_zipfile.py: replace tabs with spaces
+
+2006-02-14 11:04  davidfraser
+
+	* storage/: dtd.py, test_dtd.py, oo.py, properties.py: Forward
+	  ported from translate-toolkit-0-8-branch
+
+2006-02-14 11:02  davidfraser
+
+	* storage/csvl10n.py: Forward ported from
+	  translate-toolkit-0-8-branch:   Handling csv escapes	 Conversion
+	  to str must return str
+
+2006-02-14 10:58  dwaynebailey
+
+	* filters/test_checks.py: Add a number of real world examples for
+	  tests that failed on 0.8 branch. Including: - endpunc - variables
+	  at end of line - endpunc - apostophe at end of line.	-
+	  notranslatewords - various punctuation surrounding these words -
+	  singlequote - at end of line - simplecaps - various that should
+	  pass Some disabled until we get HEAD tests stable.  These
+	  include: - endpunc - elipsis ... at end of line (UTF-8
+	  \xe2\x80\xa6) - simplecaps - variable removal give false capitals
+	  - simplecaps - ALLCAPS should be ALLCAPS in translation
+
+2006-02-14 10:57  davidfraser
+
+	* storage/test_po.py: Forward ported tests from
+	  translate-toolkit-0-8-branch
+
+2006-02-14 10:51  davidfraser
+
+	* storage/po.py: Forward port from translate-toolkit-0-8-branch:
+	  Converts \t and \r back into proper unescaped form.	 remember
+	  encodings on pounits (set by default to be the same as the pofile
+	  that creates them)	encode line by line so we don't have
+	  problems joining the string together (or dealing with mixed
+	  unicode / str)    plastered unicode conversion onto all the
+	  __str__ functions to make sure we don't get inane errors
+	  renamed the underlying function to getsource, which could be used
+	  alternatively if unicode is desired in certain cases.  note that
+	  this will end up using UTF-8 encoding as a desparate measure
+	  rather than giving errors...
+
+2006-02-14 10:48  friedelwolff
+
+	* search/segment.py: Provide preliminary means of simple segmenting
+
+2006-02-14 10:34  davidfraser
+
+	* filters/checks.py: moved default punctuation into a variable, and
+	  encoded non-ascii chars with escapes handle replacing punctuation
+	  in notranslatewords for non-unicode strings
+
+2006-02-14 10:22  davidfraser
+
+	* filters/: checks.py, test_checks.py: disabled tests that are for
+	  enhancements, can be renabled once we've finished stabilising
+	  adjusted heuristic for simple_caps so its less strict on small
+	  numbers of capitals
+
+2006-02-14 10:14  dwaynebailey
+
+	* search/.cvsignore: Ignore compiled Python files
+
+2006-02-14 10:12  davidfraser
+
+	* filters/: checks.py, test_checks.py: count repetitions of
+	  variables so if one is missing it is an error this pointed out
+	  that the test for filtering KDE comments when checking variables
+	  was only passing because the same variable name was used twice,
+	  so added more tests, and fixed the lack of kde comment filtering
+	  in the variables check
+
+2006-02-14 10:09  dwaynebailey
+
+	* storage/test_po.py: Test for the correct handling of Unicode
+	  characters
+
+2006-02-14 09:13  friedelwolff
+
+	* storage/: test_po.py, test_properties.py: Comment out failing
+	  unit tests, fix a tab
+
+2006-02-14 08:57  friedelwolff
+
+	* convert/: test_po2csv.py, test_po2tmx.py: Disable failing unit
+	  tests
+
+2006-02-14 07:31  friedelwolff
+
+	* storage/lisa.py: Make parse also accept a file, fix tabs
+
+2006-02-13 12:17  davidfraser
+
+	* __version__.py: since its version 0.8, we need at least 8 release
+	  candidates :-)
+
+2006-02-13 12:10  davidfraser
+
+	* storage/dtd.py: leave ENTITY comments in, and add TODO to convert
+	  them to obsolete messages
+
+2006-02-13 12:08  davidfraser
+
+	* convert/test_po2dtd.py: split roundtripstring out so we can
+	  easily do roundtrips on whole dtds as well
+
+2006-02-13 11:41  davidfraser
+
+	* storage/: dtd.py, test_dtd.py: added test and fix for bug 77 on
+	  comments getting run together
+
+2006-02-13 10:47  davidfraser
+
+	* convert/: convert.py, oo2po.py: rather handle onefile
+	  non-recursion for input output and templates in the convert
+	  module
+
+2006-02-13 07:38  friedelwolff
+
+	* storage/lisa.py: tab -> spaces
+
+2006-02-10 23:32  friedelwolff
+
+	* storage/lisa.py: Improve performance in lisa parsing
+
+2006-02-10 23:10  friedelwolff
+
+	* convert/: po2tmx.py, test_po2tmx.py: Adapt po2tmx and test_po2tmx
+	  to new TMX storage. 2 new tests failing
+
+2006-02-10 22:21  friedelwolff
+
+	* storage/lisa.py: Handle sourcelanguage neater, readlines->read,
+	  improve comment
+
+2006-02-10 22:18  friedelwolff
+
+	* search/match.py: Expect TranslationUnits as candidates, fix tabs,
+	  speedups
+
+2006-02-10 22:17  friedelwolff
+
+	* search/test_match.py: Rather pass list of TranslationUnits for
+	  matching (use CSV storage)
+
+2006-02-10 21:54  friedelwolff
+
+	* storage/tbx.py: More uniformity in source language use
+
+2006-02-10 21:45  friedelwolff
+
+	* storage/tmx.py: fix broken language tags, less duplication of
+	  base class
+
+2006-02-10 20:11  friedelwolff
+
+	* search/Levenshtein.py: Always return floats
+
+2006-02-10 17:32  friedelwolff
+
+	* services/: lookupclient.py, lookupservice.py: Add support for TMX
+	  and TM-lookup
+
+2006-02-10 14:22  friedelwolff
+
+	* storage/: test_tmx.py, tmx.py: Move TMX to new LISA base class.
+	  Port unit tests as necessary.
+
+2006-02-10 14:14  friedelwolff
+
+	* storage/tbx.py: Move TBX to new LISA base class
+
+2006-02-10 14:05  friedelwolff
+
+	* storage/lisa.py: LISA base class for the XML based classes
+
+2006-02-10 12:05  dwaynebailey
+
+	* filters/test_pofilter.py: Added test to make sure we don't pull
+	  an item if its already marked as failing.  Test doesn't work as
+	  their is something wrong with the way we're doing the command
+	  line stuff.
+
+2006-02-10 09:53  dwaynebailey
+
+	* convert/csv2po.py, convert/test_csv2po.py, storage/csvl10n.py:
+	  Test to see that we handle CSV first character escapes Refactor
+	  how we strip first character escapes in CSV files, added ' as a
+	  possible Test for missing entries when merging csv 2 PO.  Should
+	  check stderr but didn't know how.  We should probably have a
+	  generic test method that can give us the results of stdout for
+	  querying.  Fixed the error to be the same as head ie displayes
+	  the source CSV filename as that is where you want to look for the
+	  error mostly.
+
+2006-02-09 22:50  dwaynebailey
+
+	* filters/: test_checks.py, checks.py: Add teh $blah$ variables
+	  style
+
+2006-02-09 17:50  davidfraser
+
+	* convert/: csv2po.py, po2csv.py, po2oo.py, pot2po.py,
+	  test_convert.py: unwrapped docstrings, and shortened them where
+	  appropriate adjusted test to handle them being wrapped in the
+	  help added more detail to po2oo error if key not found
+
+2006-02-09 17:22  davidfraser
+
+	* convert/test_po2dtd.py: added setup_ and teardown_ methods for
+	  calling the things in both base classes...
+
+2006-02-09 17:13  davidfraser
+
+	* storage/oo.py: flush the file (otherwise it fails in testing)
+
+2006-02-09 16:16  dwaynebailey
+
+	* convert/: csv2po.py, po2csv.py, pot2po.py, test_csv2po.py,
+	  test_dtd2po.py, test_po2csv.py, test_po2dtd.py, test_po2oo.py,
+	  test_pot2po.py, test_prop2po.py: Add help test to all the
+	  convertors.  Fix some of the __doc__ string for various
+	  convertors to make the tests pass.
+
+2006-02-09 16:10  davidfraser
+
+	* convert/test_po2oo.py: added commandline-style test class made
+	  test_convertoo multilingual made a version of convertoo that
+	  works on the commandline system (so tests happen through that
+	  too, by inheritance) removed unused helpers po2oo and merge2oo
+
+2006-02-09 16:07  davidfraser
+
+	* convert/test_convert.py: create directories recursively if
+	  required for opening new files
+
+2006-02-09 15:16  davidfraser
+
+	* convert/test_oo2po.py: defaultoptions now in base class made test
+	  for pot and test for po too use kwargs where possible
+
+2006-02-09 15:08  davidfraser
+
+	* convert/test_convert.py: added default options to not output
+	  progress as its not helpful actually only the first line of the
+	  docstring is included in the help
+
+2006-02-09 15:00  dwaynebailey
+
+	* convert/: test_convert.py, test_oo2po.py: Check for the unique
+	  oo2po command line options.
+
+2006-02-09 14:15  davidfraser
+
+	* convert/: test_convert.py, test_oo2po.py: added helpers for
+	  creating and reading file contents
+
+2006-02-09 14:10  friedelwolff
+
+	* storage/: csvl10n.py, po.py, test_po.py, test_tmx.py, tmx.py:
+	  Back out accidental commit of unintended files
+
+2006-02-09 14:06  davidfraser
+
+	* convert/oo2po.py: if multifile is onefile, then don't
+	  allowrecursiveinput (bug 88)
+
+2006-02-09 14:05  davidfraser
+
+	* convert/test_oo2po.py: got the wrong argument - single means each
+	  subfile is a singlefile, onefile means all in one big file.
+	  Intuitive, I think...
+
+2006-02-09 13:59  davidfraser
+
+	* convert/test_oo2po.py: added a simple test to ensure
+	  --multifile=singlefile generates a file, not a directory
+	  currently fails...
+
+2006-02-09 13:58  davidfraser
+
+	* convert/test_convert.py: added more helpful things to
+	  run_command:	- support for keyword arguments    so help=True
+	  gives --help, language="yi" gives --language=yi  - support for
+	  default options defined on self.defaultoptions    so
+	  self.defaultoptions = {"progress": "none"} gives --progress=None
+	  defaultoptions are overridden by keyword arguments added
+	  get_testfilename helper so people don't have to do
+	  os.path.join...
+
+2006-02-09 13:54  dwaynebailey
+
+	* convert/test_pot2po.py: Rename the merging tests.  Add two tests
+	  (currently disabled): - check for merges when the source remains
+	  unchanged but msgid changes - check for merges where msgid
+	  remains unchanged but source changes
+
+2006-02-09 13:46  davidfraser
+
+	* convert/: test_convert.py, test_oo2po.py: added helper for
+	  opening test files added simple oo2po test that actually runs the
+	  command
+
+2006-02-09 13:46  dwaynebailey
+
+	* convert/: pot2po.py, test_pot2po.py: Porting fix for message cut
+	  differently. Porting from 0.8 branch.
+
+2006-02-09 13:39  davidfraser
+
+	* convert/test_convert.py: replaced tempdir with testdir
+
+2006-02-09 13:37  davidfraser
+
+	* convert/test_convert.py: helper run_command that runs in the
+	  target directory
+
+2006-02-09 13:30  friedelwolff
+
+	* storage/: csvl10n.py, po.py, tbx.py, test_po.py, test_tbx.py,
+	  test_tmx.py, tmx.py: Fix failing unit tests, use properties in
+	  tests
+
+2006-02-09 13:28  davidfraser
+
+	* convert/: convert.py, csv2po.py, dtd2po.py, html2po.py,
+	  moz2po.py, mozfunny2prop.py, nb2po.py, oo2po.py, po2csv.py,
+	  po2dtd.py, po2html.py, po2moz.py, po2nb.py, po2oo.py, po2prop.py,
+	  po2tmx.py, po2ts.py, po2txt.py, po2xliff.py, poreplace.py,
+	  pot2po.py, prop2mozfunny.py, prop2po.py, sxw2po.py,
+	  test_convert.py, test_oo2po.py, ts2po.py, txt2po.py, xliff2po.py:
+	  modified convert methods to make the actual commandline operation
+	  more testable all main functions now take an optional argv
+	  parameter used for testing also refactored main functions for
+	  modules that didn't have them...  included a base
+	  test_convert.TestConvertCommand class and an initial oo2po test
+
+2006-02-09 13:19  friedelwolff
+
+	* storage/base.py: Use newstyle class for TranslationUnit
+
+2006-02-09 13:10  friedelwolff
+
+	* storage/tbx.py: Inherit __init__, fix settarget(None)
+
+2006-02-09 12:24  dwaynebailey
+
+	* convert/test_pot2po.py: Test to see that "fuzzy" markers in PO
+	  files are carried across when merging with POT files.
+
+2006-02-09 11:41  dwaynebailey
+
+	* convert/test_dtd2po.py: Add a test to see that we convert \r\n to
+	  \n in a PO file and don't end up with \r in our PO messages.
+
+2006-02-08 17:37  friedelwolff
+
+	* search/: Levenshtein.py, __init__.py, match.py,
+	  test_Levenshtein.py, test_match.py: Search module to perform
+	  translation memory matchin. Levenshtein distances are used to
+	  measure similarity.
+
+2006-02-08 17:34  friedelwolff
+
+	* services/: lookupclient.py, lookupservice.py: Add method
+	  "matches" to return likely matches from the storage
+
+2006-02-08 16:34  dwaynebailey
+
+	* convert/pot2po.py: Fixes the bug that prevented us merging
+	  messages that had the msgid cut differently.
+
+2006-02-08 16:26  dwaynebailey
+
+	* convert/test_pot2po.py: Test when we are merging strings and the
+	  msgid is cut/split differently but us actually exactly the same
+	  string.  We should merge correctly.  Currently we drop those
+	  strings.  Fix comments for some tests
+
+2006-02-08 15:42  dwaynebailey
+
+	* convert/test_pot2po.py: Add some tests for pot2po.  Searching for
+	  the bugs that people found with this so I can make some tests.
+
+2006-02-08 14:18  friedelwolff
+
+	* storage/test_tbx.py: Move to base test class
+
+2006-02-08 13:56  dwaynebailey
+
+	* storage/po.py: Converts \t and \r back into proper unescaped
+	  form.
+
+2006-02-08 13:38  dwaynebailey
+
+	* convert/test_oo2po.py: Now also test for \t (Tab) anr \r
+	  (Carriage Return) escaping
+
+2006-02-08 13:31  dwaynebailey
+
+	* convert/test_dtd2po.py: Make sure \r appears correctly in the PO
+	  file.
+
+2006-02-08 13:23  dwaynebailey
+
+	* convert/test_po2oo.py: Add \r roundtrip testing for our Windows
+	  friends
+
+2006-02-08 13:21  dwaynebailey
+
+	* convert/test_po2dtd.py: Lets not forget to check for \r for our
+	  Windows needs
+
+2006-02-08 13:09  dwaynebailey
+
+	* convert/test_po2oo.py: Add a test for po2oo firstly to get
+	  roundtrip checking on escapes, etc
+
+2006-02-08 12:48  dwaynebailey
+
+	* storage/test_oo.py: Test the validity of the width entry in an
+	  SDF file
+
+2006-02-08 12:17  dwaynebailey
+
+	* storage/test_oo.py: Add test to see that we can get the Quick
+	  Help and Title text
+
+2006-02-07 22:20  dwaynebailey
+
+	* convert/test_dtd2po.py: Ensure that we can handle \n or \t
+	  correctly when converting dtd to PO
+
+2006-02-07 18:53  davidfraser
+
+	* convert/dtd2po.py, convert/test_csv2po.py,
+	  convert/test_dtd2po.py, convert/test_oo2po.py,
+	  convert/test_po2dtd.py, filters/checks.py, storage/test_dtd.py,
+	  storage/test_zipfile.py, tools/poconflicts.py, tools/pydiff.py:
+	  Remove tab indents
+
+2006-02-07 18:42  davidfraser
+
+	* convert/test_dtd2po.py: changed test for newline escaping to test
+	  the string converter function directly
+
+2006-02-07 18:27  davidfraser
+
+	* storage/dtd.py: make sure we remove entities within comments from
+	  the line that will be parsed (were doing it later and leaving
+	  them in...) added comments that eplain better what we're doing
+	  here...
+
+2006-02-07 18:19  davidfraser
+
+	* storage/test_dtd.py: added test for comments that wrap
+	  entities...
+
+2006-02-07 17:56  friedelwolff
+
+	* filters/prefilters.py: Add extra Afrikaans word with punctuation:
+	  't
+
+2006-02-07 16:49  dwaynebailey
+
+	* convert/test_po2dtd.py: Don't forget to test for tabs \t
+
+2006-02-07 16:21  dwaynebailey
+
+	* filters/test_checks.py: A few more notranslatewords checks
+
+2006-02-07 16:06  davidfraser
+
+	* convert/test_dtd2po.py: our merge test was coded the wrong way
+	  round ...
+
+2006-02-07 15:55  davidfraser
+
+	* convert/po2dtd.py: make case of accelerators match that in the
+	  original string
+
+2006-02-07 15:53  davidfraser
+
+	* convert/test_po2dtd.py: added test for preserving access key case
+	  where possible...
+
+2006-02-07 15:50  davidfraser
+
+	* storage/dtd.py: this old StopIteration was a means of returning
+	  nothing when this function was an iterator rather return a blank
+	  line which is what is actually required
+
+2006-02-07 15:46  davidfraser
+
+	* storage/test_dtd.py: make sure blank lines at the end of the
+	  string don't break parsing / regenerating the dtd
+
+2006-02-07 15:32  davidfraser
+
+	* convert/dtd2po.py, storage/dtd.py: moved extractdtdstring from
+	  dtd2po to dtd storage module as unquotefromdtd added rewrap
+	  method and currently use it if dtd module is used to regenerate a
+	  dtd file
+
+2006-02-07 12:29  davidfraser
+
+	* convert/test_po2dtd.py: use two input files to make sure we
+	  actually convert the string back in roundtrip print out
+	  intermediate roundtrip values to aid debugging errors added lots
+	  of escaping and quote tests
+
+2006-02-07 11:58  davidfraser
+
+	* convert/test_po2dtd.py: added string roundtrip helper
+
+2006-02-07 11:47  dwaynebailey
+
+	* convert/test_po2dtd.py: Added test for merging flattened PO
+	  entries back into their parent pretty printed entity.
+
+2006-02-06 22:22  dwaynebailey
+
+	* filters/test_checks.py: More examples tests for notranslate
+	  Checks for simpleplurals near non-whitespace
+
+2006-02-06 17:09  friedelwolff
+
+	* filters/: checks.py, prefilters.py, test_checks.py: Fix some
+	  filter tests
+
+2006-02-06 16:17  dwaynebailey
+
+	* convert/test_dtd2po.py: Add a test for #102.	Entities that
+	  appear inside SGML comments Identified #101 correctly
+
+2006-02-06 16:00  dwaynebailey
+
+	* convert/test_dtd2po.py: If the template has a blank translation
+	  eg translators.credits and we merge it with a language that has a
+	  transaltion.	Then we end up with the translation in msgid and
+	  KDE comment in the msgid.
+
+2006-02-06 09:35  friedelwolff
+
+	* convert/po2tmx.py: enable easy integration with pootle
+
+2006-02-06 09:32  friedelwolff
+
+	* convert/csv2tbx.py: more renaming
+
+2006-02-06 09:30  friedelwolff
+
+	* services/lookupservice: commandfile for lookupserverice.py
+
+2006-02-03 14:59  friedelwolff
+
+	* services/: __init__.py, lookupclient.py, lookupservice.py:
+	  Initial XML-RPC lookup service with example client.
+
+2006-02-03 14:35  friedelwolff
+
+	* storage/tbx.py: some bugfixes
+
+2006-02-03 11:40  dwaynebailey
+
+	* convert/dtd2po.py: Remove debug output
+
+2006-02-03 11:24  dwaynebailey
+
+	* storage/test_dtd.py: Simple test for newlines in entities.
+
+2006-02-03 11:18  dwaynebailey
+
+	* convert/: dtd2po.py, test_dtd2po.py: Fix for #79 multiline pretty
+	  printed DTD entities. Tests included.
+
+	  We do the following: * Single line elements are left untrated *
+	  Multiline	  * Space at the start of the first line are
+	  preserved    * Whitespace at the start of all subsequent lines is
+	  removed    * All lines except the last have one whitespace
+	  character	      (ensures that when join lines we don't join
+	  words inadvertantly.)
+
+2006-02-03 08:58  friedelwolff
+
+	* storage/tmx.py: Remove old code from ts storage
+
+2006-02-03 08:26  friedelwolff
+
+	* convert/nb2po.py: more consistent renaming to base terminology
+
+2006-02-02 17:09  davidfraser
+
+	* __version__.py: version 0.8rc7
+
+2006-02-02 15:11  dwaynebailey
+
+	* convert/test_po2dtd.py: Test to check that we don't mess with the
+	  encoding of an escaped \n from a PO file.
+
+2006-02-02 14:52  dwaynebailey
+
+	* convert/test_dtd2po.py: We are escaping hard coded newlines found
+	  in DTDs when creating PO files.  We should just carry them
+	  through and not escape them.	Not these are not real newlines
+	  found in the file but a \n in the text.
+
+2006-02-02 14:37  friedelwolff
+
+	* convert/test_csv2po.py: Extra test - quotes do indeed work
+
+2006-02-02 14:10  dwaynebailey
+
+	* convert/: po2dtd.py, test_po2dtd.py: Add a test for convertdtd.
+	  This was to make the output to file fail.  po2dtd misnamed str
+	  with scr.  Fix was simple test was harder.
+
+2006-02-02 12:34  davidfraser
+
+	* filters/test_checks.py: unicode escapes are easier to read in any
+	  editor...
+
+2006-02-02 12:12  friedelwolff
+
+	* convert/test_po2csv.py: The promised unit test
+
+2006-02-02 11:48  friedelwolff
+
+	* convert/po2csv.py: unit tests for csv2po. fix for po2csv problem
+
+2006-02-02 11:37  davidfraser
+
+	* convert/: csv2po.py, dtd2po.py, html2po.py, nb2po.py, oo2po.py,
+	  prop2po.py, sxw2po.py, ts2po.py, txt2po.py: added encoding
+	  argument when constructing poelements (its the default, but it
+	  doesn't hurt...)
+
+2006-02-02 11:29  davidfraser
+
+	* storage/po.py: remember encodings on poelements (set by default
+	  to be the same as the pofile that creates them) encode line by
+	  line so we don't have problems joining the string together (or
+	  dealing with mixed unicode / str)
+
+2006-02-02 11:25  davidfraser
+
+	* storage/test_po.py: introduced a regularised set of tests that
+	  tests both in unicode and in encoded form
+
+2006-02-02 11:18  dwaynebailey
+
+	* convert/test_csv2po.py: I backported this from HEAD a while back.
+	  All the tests pass so am checking it into this branch.
+
+2006-02-02 11:02  davidfraser
+
+	* storage/test_po.py: include an escaped version of the character
+	  as the test_po.py file doesn't formally declare an encoding
+
+2006-02-02 10:49  dwaynebailey
+
+	* storage/test_po.py: Test that exercises __str__ when we have
+	  unicode in the msgstr.
+
+2006-02-02 10:44  davidfraser
+
+	* storage/po.py: getsource should always return a string, not None
+
+2006-02-02 10:43  davidfraser
+
+	* convert/dtd2po.py: if thepo is blank and has no sources, it is
+	  probably a DONT_TRANSLATE and so we ignore it
+
+2006-02-02 10:42  davidfraser
+
+	* convert/test_dtd2po.py: added simpler check for donttranslate,
+	  and removed printout that would cause error in entity test if it
+	  passed
+
+2006-02-02 10:29  davidfraser
+
+	* storage/test_properties.py: added a check for escaped colons
+	  midstring to make sure we don't just handle the end of the string
+	  changed quoting
+
+2006-02-02 10:26  davidfraser
+
+	* misc/quote.py: this check was spurious as it just gave errors for
+	  unknown escapes at the end of a string...
+
+2006-02-02 10:24  davidfraser
+
+	* storage/test_properties.py: added test for bug 97 (\: at end of
+	  string causes failure)
+
+2006-02-02 10:16  davidfraser
+
+	* misc/quote.py: handle multiline escapes properly by returning the
+	  escape so the parser can use it
+
+2006-02-02 10:10  davidfraser
+
+	* storage/test_properties.py: made singleentry helper, added test
+	  for multiline entries (currently fails)
+
+2006-02-02 10:06  davidfraser
+
+	* storage/test_properties.py: added simple tests for properties
+	  files
+
+2006-02-02 09:54  davidfraser
+
+	* tools/test_pomerge.py: added simple tests for pomerge
+
+2006-02-01 10:36  dwaynebailey
+
+	* filters/test_checks.py: Add some more 'should pass' tests for
+	  simplecaps
+
+2006-02-01 09:14  dwaynebailey
+
+	* filters/test_checks.py: More numbers checks to make sure we cover
+	  all variants of numbers with a degree sign.
+
+2006-01-31 21:16  dwaynebailey
+
+	* convert/csv2po.py: It makes more sense to report the name of the
+	  CSV with a problem entry then to report the PO file.
+
+2006-01-31 14:39  friedelwolff
+
+	* convert/test_po2csv.py: Unit test for single quoting problem
+
+2006-01-31 14:39  friedelwolff
+
+	* convert/test_po2csv.py: file test_po2csv.py was added on branch
+	  translate-toolkit-0-8-branch on 2006-02-02 10:12:09 +0000
+
+2006-01-31 13:38  friedelwolff
+
+	* convert/csv2po.py, convert/po2csv.py, convert/test_csv2po.py,
+	  convert/test_po2csv.py, storage/csvl10n.py: Complete CSV
+	  transition to base classes
+
+2006-01-31 13:38  dwaynebailey
+
+	* convert/test_csv2po.py: file test_csv2po.py was added on branch
+	  translate-toolkit-0-8-branch on 2006-02-02 09:18:50 +0000
+
+2006-01-31 13:28  dwaynebailey
+
+	* filters/test_checks.py: More single quote issues mostly around
+	  quotes near other puctuation Enable a simplecaps test - we should
+	  remove 'I' from text to compare as this give a number of false
+	  positives.
+
+2006-01-31 10:32  friedelwolff
+
+	* convert/csv2po.py, convert/csv2tbx.py, convert/po2csv.py,
+	  convert/test_csv2po.py, convert/test_po2csv.py,
+	  storage/csvl10n.py: CSV: closer to base classes\npo2csv:fix
+	  newlines
+
+2006-01-30 22:54  dwaynebailey
+
+	* filters/test_checks.py: Disabeled/commented out tests - Should
+	  eliminate must translate words from acronyms check.  - Ability to
+	  find musttranslate words when prefixed
+
+	  New tests - Lots of musttranslate words surrounded by various
+	  punctuation
+
+2006-01-30 18:19  dwaynebailey
+
+	* filters/test_checks.py: We shouldn't mark items that must remain
+	  unchanged as unchanged.  ie variables and notranslate words.
+
+2006-01-30 16:28  dwaynebailey
+
+	* filters/test_checks.py: Test for double variable problem.
+
+2006-01-30 16:09  dwaynebailey
+
+	* filters/test_checks.py: We should be detecting must and dont
+	  translate words even when surrounded by punctuation.
+
+2006-01-30 12:58  friedelwolff
+
+	* convert/test_csv2po.py: correct template usage
+
+2006-01-30 11:37  davidfraser
+
+	* __version__.py: 0.8 is going to need fixing, setting to rc6 in
+	  preparation for bug day
+
+2006-01-30 11:23  davidfraser
+
+	* storage/: csvl10n.py, dtd.py, oo.py, po.py, properties.py:
+	  plastered unicode conversion onto all the __str__ functions to
+	  make sure we don't get inane errors renamed the underlying
+	  function to getsource, which could be used alternatively if
+	  unicode is desired in certain cases.	note that this will end up
+	  using UTF-8 encoding as a desparate measure rather than giving
+	  errors...
+
+2006-01-30 09:36  friedelwolff
+
+	* storage/test_csvl10n.py: unit tests for csv storage
+
+2006-01-29 00:49  friedelwolff
+
+	* storage/csvl10n.py, convert/csv2po.py, convert/po2csv.py: Move
+	  csv to base classes
+
+2006-01-29 00:44  friedelwolff
+
+	* convert/csv2tbx, convert/csv2tbx.py, storage/tbx.py,
+	  storage/test_tbx.py: Initial, buggy tbx and csv2tbx
+	  implementation
+
+2006-01-28 20:14  dwaynebailey
+
+	* filters/: checks.py, test_checks.py: A new Mozilla variable
+	  style: $ProgramName$
+
+2006-01-28 19:25  dwaynebailey
+
+	* filters/: checks.py, test_checks.py: Add a simpleplurals test.
+	  Its really just an extractor in that it will highlight all source
+	  texts that contain "(s)" ie an English style plural.
+
+2006-01-28 17:00  dwaynebailey
+
+	* filters/test_checks.py: Check variables at the end of sentences
+
+2006-01-28 15:42  dwaynebailey
+
+	* convert/test_csv2po.py: Test the csv2po convertor.  Simple
+	  conversion with template fails.
+
+2006-01-28 00:32  dwaynebailey
+
+	* filters/test_checks.py: Added a few tests some of which will
+	  fail: F check for singlequotes at end of sentence F double HTML
+	  style variables with errors go undetected - variables in KDE
+	  comments should be ignored
+
+2006-01-28 00:30  dwaynebailey
+
+	* filters/test_pofilter.py: Add a number of pofilter tests: *
+	  Whether to include review/fuzzies in tests * Extracting with
+	  isfuzzy and isreview
+
+	  Ideas for non-existant test and listing all tests but need to be
+	  able to get what would go to stderror to properly validate.
+
+2006-01-27 21:54  dwaynebailey
+
+	* convert/test_prop2po.py: Add a test for DONT TRANSLATE comments.
+	  Not implemented yet, but its the same functionality that is found
+	  in dtd2po.  This test is currently disabled.
+
+2006-01-27 20:31  dwaynebailey
+
+	* storage/test_properties.py: Add test to check that escaped
+	  unicode is converted to proper unicode strings.  Added a newline
+	  to test_simpledefinition - this breaks it but I think that's an
+	  issue with our parser anyway.
+
+2006-01-27 20:31  davidfraser
+
+	* storage/test_properties.py: file test_properties.py was added on
+	  branch translate-toolkit-0-8-branch on 2006-02-02 08:06:42 +0000
+
+2006-01-27 19:55  dwaynebailey
+
+	* storage/: properties.py, test_properties.py: That's __str__ not
+	  _str__ Add some tests for properties files
+
+2006-01-27 19:54  dwaynebailey
+
+	* storage/properties.py: Thats __str__ not _str__
+
+2006-01-27 15:49  dwaynebailey
+
+	* convert/: test_dtd2po.py, test_prop2po.py: Tests to check for
+	  folding of accelerator keys into other messages.  The test for
+	  properties files is marked as xtest_ ie it won't run by default.
+	  This feature needs to be fixed then the test enabled.
+
+2006-01-27 12:06  friedelwolff
+
+	* storage/test_po.py: extra test for getuquotedstr
+
+2006-01-27 10:44  friedelwolff
+
+	* convert/po2tmx.py: small fixup for easy integration with pootle
+
+2006-01-27 09:53  dwaynebailey
+
+	* filters/test_checks.py: Accelerators placed before variables
+	  should fail the accelerator test.
+
+2006-01-26 17:20  davidfraser
+
+	* convert/csv2po.py, convert/dtd2po.py, convert/html2po.py,
+	  convert/nb2po.py, convert/oo2po.py, convert/po2csv.py,
+	  convert/po2dtd.py, convert/po2html.py, convert/po2nb.py,
+	  convert/po2oo.py, convert/po2prop.py, convert/po2tmx.py,
+	  convert/po2ts.py, convert/po2txt.py, convert/po2xliff.py,
+	  convert/poreplace.py, convert/pot2po.py, convert/prop2po.py,
+	  convert/sxw2po.py, convert/test_dtd2po.py, convert/test_oo2po.py,
+	  convert/test_prop2po.py, convert/ts2po.py, convert/txt2po.py,
+	  convert/xliff2po.py, filters/pofilter.py, storage/csvl10n.py,
+	  storage/dtd.py, storage/oo.py, storage/po.py,
+	  storage/properties.py, storage/test_po.py, storage/xliff.py,
+	  tools/pocompile.py, tools/poconflicts.py, tools/pocount.py,
+	  tools/podebug.py, tools/pogrep.py, tools/pomerge.py,
+	  tools/porestructure.py: refactor translate.storage.po to use
+	  translate.storage.base this involves wanton renaming of elements
+	  to units etc
+
+2006-01-26 16:53  davidfraser
+
+	* storage/: base.py, test_base.py: added ability to force override
+	  of methods in base classes this is useful because otherwise the
+	  pickling we use for testing the base classes gets transposed to
+	  derived classes also allow an empty string for unit.target if it
+	  has not been set...
+
+2006-01-26 11:10  davidfraser
+
+	* storage/base.py: replace python 2.4 decorators with less
+	  beautiful function syntax that works in 2.3 etc
+
+2006-01-26 11:00  dwaynebailey
+
+	* filters/: checks.py, decoration.py, test_checks.py: Add two new
+	  tests: urls - checks to see that basic URLs are not translated
+	  emails - check to see that email addresses are not translated
+
+2006-01-25 21:58  dwaynebailey
+
+	* filters/: decoration.py, checks.py, test_checks.py: New pofilter
+	  test to ensure that functions() are not translated.
+
+2006-01-25 12:20  dwaynebailey
+
+	* convert/test_prop2po.py: Added test to detect problem with
+	  multiline entries.  Ie those with \ escapes newlines.
+
+2006-01-24 21:06  dwaynebailey
+
+	* convert/test_dtd2po.py: Add a test that picks up DONT_TRANSLATE
+	  elements that are only themselves entities.  These seems to come
+	  through as blank translations ie:
+
+	  msgid "_: \n" "" msgstr ""
+
+	  When they should simply be dropped.
+
+	  I have not created a fix.
+
+2006-01-24 19:18  dwaynebailey
+
+	* storage/: po.py, test_po.py: Backport fixes: po class crashing
+	  when trying to parse a string.
+
+	  Backport tests: string and file tests and corrected error.
+	  Friedel's test for getunquotedstr (basic sanity check)
+
+2006-01-24 17:19  davidfraser
+
+	* convert/test_prop2po.py: added test for unicode conversions
+
+2006-01-24 17:19  davidfraser
+
+	* storage/: po.py, test_po.py: fix up unicode test, and add testing
+	  for when the msgid value is actually a unicode object, not a
+	  string this test is currently made to pass by manually converting
+	  to UTF-8 in poelement.__str__, but this is not the ultimate
+	  solution - we should know which encoding to convert to...
+
+2006-01-24 16:51  dwaynebailey
+
+	* convert/test_dtd2po.py: Add convertdtd test for dtd2po similar to
+	  prop2po
+
+2006-01-24 16:42  davidfraser
+
+	* storage/oo.py: rather than printing to sys.stderr, raise warnings
+	  this means repeated errors aren't output it also makes it much
+	  easier to test and catch the problems case in point: ignore empty
+	  lines...
+
+2006-01-24 16:41  davidfraser
+
+	* storage/test_oo.py: test handling of a blank line, make sure it
+	  doesn't produce even a warning added support for warning testing
+	  converted tab indents to spaces
+
+2006-01-24 16:41  dwaynebailey
+
+	* storage/test_po.py: First attempt at a test to highlight
+	  __str__() problems with Unicode items at the PO element level.
+	  Test currently passes, it should fail.
+
+2006-01-24 16:35  davidfraser
+
+	* storage/test_oo.py: added basic test for oo class
+
+2006-01-24 16:18  davidfraser
+
+	* convert/test_prop2po.py: added test that ctually checks the
+	  convertprop method that the converter calls
+
+2006-01-24 15:59  dwaynebailey
+
+	* convert/prop2po.py: Forward port a fix from 0.8 branch. src(blah)
+	  should have been str(blah)
+
+2006-01-24 15:57  dwaynebailey
+
+	* convert/prop2po.py: We should be outputing _str_ not
+	  src(outputpo) - src function does not exist.	Did not create a
+	  test for this.  We probably should but I guess that will go into
+	  HEAD base class to exercise the _str_ functionality.
+
+2006-01-24 15:29  dwaynebailey
+
+	* tools/.cvsignore: Ignore compiled Python files.
+
+2006-01-24 14:16  dwaynebailey
+
+	* tools/.cvsignore: Ignore precompiled Python files.
+
+2006-01-24 14:16  dwaynebailey
+
+	* tools/.cvsignore: file .cvsignore was added on branch
+	  translate-toolkit-0-8-branch on 2006-01-24 13:29:51 +0000
+
+2006-01-24 13:20  davidfraser
+
+	* storage/test_base.py: refactored so reparsing and checking
+	  equality are separate functions
+
+2006-01-24 13:13  davidfraser
+
+	* storage/: base.py, test_base.py: added ability to set target in
+	  TranslationUnit
+
+2006-01-24 13:06  davidfraser
+
+	* storage/: base.py, test_base.py: added doc strings added new test
+	  class for testing the individual Unit classes renamed TestClass
+	  attributes of classes to UnitClass / StoreClass (otherwise
+	  py.test tries to test them)
+
+2006-01-24 12:51  davidfraser
+
+	* storage/: base.py, test_base.py: rename parse to parsestring and
+	  add parsefile and savefile methods
+
+2006-01-24 12:43  davidfraser
+
+	* storage/: base.py, test_base.py: committed initial base class for
+	  TranslationStore, and tests. these will form the basis for the
+	  new API to po, xliff, etc
+
+2006-01-24 11:33  davidfraser
+
+	* convert/csv2po.py, convert/dtd2po.py, convert/html2po.py,
+	  convert/nb2po.py, convert/oo2po.py, convert/po2csv.py,
+	  convert/po2dtd.py, convert/po2html.py, convert/po2nb.py,
+	  convert/po2oo.py, convert/po2prop.py, convert/po2tmx.py,
+	  convert/po2ts.py, convert/po2txt.py, convert/po2xliff.py,
+	  convert/poreplace.py, convert/pot2po.py, convert/prop2po.py,
+	  convert/sxw2po.py, convert/test_dtd2po.py, convert/test_oo2po.py,
+	  convert/test_prop2po.py, convert/ts2po.py, convert/txt2po.py,
+	  convert/xliff2po.py, filters/pofilter.py, storage/po.py,
+	  storage/test_po.py, storage/xliff.py, tools/pocompile.py,
+	  tools/poconflicts.py, tools/pocount.py, tools/podebug.py,
+	  tools/pogrep.py, tools/pomerge.py, tools/porestructure.py:
+	  renamed poelements to elements started trying to convert xliff
+	  transunits into elements
+
+2006-01-24 11:10  davidfraser
+
+	* __version__.py: version 0.9 alpha 1 on HEAD
+
+2006-01-20 12:14  dwaynebailey
+
+	* storage/: po.py, test_po.py: po class crashing when trying to
+	  parse a string.
+
+	  Fixed string and file tests and corrected error.
+
+2006-01-20 12:05  dwaynebailey
+
+	* storage/test_po.py: Add test for parsing a string or parsing a
+	  file.  Thought I had a bug but it slipped through :/.  The tests
+	  don't seem to find it.
+
+	  One problem the test writes to a file.  We should remove and
+	  destroy it, I didn't (know how to).
+
+2006-01-20 08:35  friedelwolff
+
+	* convert/test_po2tmx.py: Unit tests for po2tmx
+
+2006-01-19 18:08  friedelwolff
+
+	* convert/po2tmx.py: Make source language work
+
+2006-01-19 16:23  friedelwolff
+
+	* storage/test_tmx.py: Test entries with newlines and XML entities
+
+2006-01-19 15:36  friedelwolff
+
+	* convert/po2tmx.py: Handle multiple files. Handle source and
+	  target languages.
+
+2006-01-19 15:19  davidfraser
+
+	* storage/test_po.py: added Friedel's test for getunquotedstr
+	  (basic sanity check)
+
+2006-01-19 13:12  friedelwolff
+
+	* storage/tmx.py: Handle sourcelanguage better
+
+2006-01-18 16:10  friedelwolff
+
+	* storage/test_tmx.py: Unit tests for tmx storage
+
+2006-01-18 15:42  friedelwolff
+
+	* storage/tmx.py: Up to tmx1.4, +accessors, fix getxml(), optimise
+	  addtranslation()
+
+2006-01-18 13:46  dwaynebailey
+
+	* tools/pogrep.py: Fixes current instance of Pootle barfing on
+	  searching.  However we still have problems with Unicode in search
+	  strings.  Bug http://bugs.wordforge.org/show_bug.cgi?id=89 refers
+	  to the problem.
+
+2006-01-17 17:07  davidfraser
+
+	* ChangeLog: updated ChangeLog at 0.8 stage
+
 2006-01-17 15:41  davidfraser
 
 	* storage/test_zipfile.py: added tests for zipfile module to make
