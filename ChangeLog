@@ -1,20 +1,70 @@
+2006-06-20 09:29  dwaynebailey
+
+	* convert/test_csv2po.py: Test that we don't lose KDE comments when
+	  merging from CSV Test for --duplicates option
+
+2006-06-20 08:53  dwaynebailey
+
+	* convert/test_po2csv.py: Test to ensure that we drop KDE comments
+	  when converting to CSV
+
+2006-06-20 08:42  dwaynebailey
+
+	* convert/: __init__.py, convert.py, csv2po, csv2po.py, csv2tbx,
+	  dtd2po.py, html2po, html2po.py, moz2po, moz2po.py,
+	  mozfunny2prop.py, nb2po, nb2po.py, oo2po.py, po2csv, po2csv.py,
+	  po2dtd.py, po2html, po2html.py, po2moz, po2moz.py, po2nb,
+	  po2nb.py, po2oo.py, po2prop.py, po2tmx, po2tmx.py, po2ts,
+	  po2ts.py, po2txt, po2txt.py, po2xliff, po2xliff.py, poreplace.py,
+	  pot2po, pot2po.py, prop2mozfunny.py, prop2po.py, sxw2po,
+	  sxw2po.py, ts2po, ts2po.py, txt2po, txt2po.py, xliff2po: Update,
+	  add all copyright headers.
+
+2006-06-19 17:57  dwaynebailey
+
+	* convert/test_dtd2po.py: Test merging of the different variants of
+	  accelerator key labels
+
+2006-06-19 15:34  dwaynebailey
+
+	* convert/test_po2dtd.py: Test for accelerator unmerging of the
+	  various types.
+
+2006-06-19 15:04  dwaynebailey
+
+	* convert/Makefile: Remove Makefile that ran test.  Now we're using
+	  test_* style tests.
+
+2006-06-19 14:52  dwaynebailey
+
+	* convert/csv2po.py: Add --duplicatestyle options so that we can
+	  create valid PO files from CSV file that contain duplicates.
+
+2006-06-19 14:35  dwaynebailey
+
+	* tools/: __init__.py, detectencoding, oosetupmerge, pocompile,
+	  pocompile.py, poconflicts.py, pocount, pocount.py, podebug,
+	  podebug.py, pogrep, pogrep.py, pomerge, pomerge.py,
+	  porestructure.py, pydiff, pydiff.py: [Forwardport] Copyright
+	  correction, updates, etc
+
+2006-06-19 13:18  friedelwolff
+
+	* ChangeLog: Update ChangeLog for everything since 0.8
+
+2006-06-19 12:49  friedelwolff
+
+	* ChangeLog.pre-0.9: Update pre-0.9 ChangeLog up until 0.8 release
+	  2006-02-20
+
 2006-06-19 11:01  friedelwolff
 
 	* ChangeLog.pre-0.9: Move ChangeLog to isolate all changes before
 	  0.9
 
-2006-06-19 10:54  friedelwolff
-
-	* ChangeLog.pre-0.9: Move ChangeLog to have separate log for
-	  separate versions from now on
-
 2006-06-15 16:58  dwaynebailey
 
 	* services/lookupservice: [Forwardport] Fix copyright dates.
-
-2006-06-15 16:57  dwaynebailey
-
-	* services/lookupservice: Fix copyright dates.
 
 2006-06-15 16:54  dwaynebailey
 
@@ -23,19 +73,9 @@
 	  xmlwrapper.py, zipfileext.py: [Forwardport] Update/add copyright
 	  headers.
 
-2006-06-15 16:53  dwaynebailey
-
-	* misc/: autoencode.py, multistring.py, optrecurse.py,
-	  progressbar.py, quote.py, stdiotell.py, wStringIO.py,
-	  xmlwrapper.py, zipfileext.py: Update/add copyright headers.
-
 2006-06-15 16:42  dwaynebailey
 
 	* __init__.py: [Forwardport] Update copyright dates.
-
-2006-06-15 16:41  dwaynebailey
-
-	* __init__.py: Update copyright dates.
 
 2006-06-15 16:39  dwaynebailey
 
@@ -43,22 +83,11 @@
 	  pofilter, pofilter.py, prefilters.py: [Forwardport] Update
 	  copyright headers to correctly reflect changes in CVS
 
-2006-06-15 16:38  dwaynebailey
-
-	* filters/: autocorrect.py, checks.py, decoration.py, helpers.py,
-	  pofilter, pofilter.py, prefilters.py: Update copyright headers to
-	  correctly reflect changes in CVS
-
 2006-06-15 16:11  dwaynebailey
 
 	* __version__.py: Makre sure that you have the correct version of
 	  Translate Toolkit before you can run PootleServer.  Bump the
 	  toolkit build number up.
-
-2006-06-15 16:01  dwaynebailey
-
-	* __version__.py: Only run PootleServer if the correct version of
-	  jToolkit is installed.
 
 2006-06-15 15:14  dwaynebailey
 
@@ -67,38 +96,10 @@
 	  [Forwardport] Fix up copyright header date and missing headers.
 	  Match them to CVS checkin dates and old mozpotools.
 
-2006-06-15 15:12  dwaynebailey
-
-	* storage/: __init__.py, base.py, csvl10n.py, dtd.py, html.py,
-	  oo.py, po.py, properties.py, tmx.py, ts.py, xliff.py, xpi.py: Fix
-	  up copyright header date and missing headers.  Match them to CVS
-	  checkin dates and old mozpotools.
-
-2006-06-15 09:50  friedelwolff
-
-	* __version__.py: Version 0.9
-
-2006-06-14 23:46  dwaynebailey
-
-	* convert/: mozfunny2prop.py, prop2mozfunny.py,
-	  test_mozfunny2prop.py, test_prop2mozfunny.py: [Backport] Fixes
-	  from HEAD that eliminate sputious blank lines in .inc files.	The
-	  allow uncommenting of items in .inc file, etc.
-
-2006-06-13 00:00  dwaynebailey
-
-	* filters/test_checks.py: Remove a FIXME.  Disable printf style
-	  checking.
-
 2006-06-12 23:52  dwaynebailey
 
 	* filters/autocorrect.py: [Forward port] Make autocorrect work with
 	  new puncend method.
-
-2006-06-12 23:51  dwaynebailey
-
-	* filters/autocorrect.py: Make autocorrect work with new puncend
-	  method.
 
 2006-06-12 23:46  dwaynebailey
 
@@ -110,33 +111,9 @@
 	  using supplied punctuation instead - Fix tests for endpunc.  Add
 	  similar test for startpunc
 
-2006-06-12 23:43  dwaynebailey
-
-	* filters/: checks.py, decoration.py, helpers.py, test_checks.py:
-	  Enable testing of more exotic start and end punc: - Allow
-	  funcmatch to accept *args - Send config.punctuation to start and
-	  end punc functions - Simplify decorations/punc{start,end} by
-	  eliminating the limitchar and using supplied punctuation instead
-	  - Fix tests for endpunc.  Add similar test for startpunc
-
-	  Diable endpunc test related to singlequotes around variables.
-
-2006-06-12 14:11  davidfraser
-
-	* convert/po2prop.py, convert/test_po2prop.py, misc/quote.py,
-	  storage/test_properties.py: Output properties files using UTF-8
-	  not \u escaped ascii, as per bug 114 and discussion on irc Note
-	  that \u escaped ascii is still parsed properly This will be
-	  handled differently on HEAD - see the bug for details Added tests
-	  too, on both the properties level and po conversion
-
 2006-06-12 13:10  friedelwolff
 
-	* storage/: po.py: We don't want unicode keys in dictionary
-
-2006-06-12 10:33  dwaynebailey
-
-	* convert/test_po2csv.py: Fix the .target assertion
+	* storage/po.py: We don't want unicode keys in dictionary
 
 2006-06-12 10:15  davidfraser
 
@@ -150,24 +127,12 @@
 	* filters/: checks.py, test_checks.py: [Forwardport] Variable only
 	  messages do not raise unchanged error.
 
-2006-06-12 09:45  dwaynebailey
-
-	* filters/: checks.py, test_checks.py: Variables only messages do
-	  not raise untranslted error.
-
 2006-06-12 09:41  dwaynebailey
 
 	* filters/: checks.py, test_checks.py: [Forwardport] Drop case of
 	  'I' to 'i' so that English sentences don't mess with simplecaps
 	  test.  Uses simplistic regular expression which copes with 'I' at
 	  the start of a sentence.
-
-2006-06-12 09:39  dwaynebailey
-
-	* filters/: checks.py, test_checks.py: Drop case of 'I' to 'i' so
-	  that English sentences don't mess with simplecaps test.  Uses
-	  simplistic regular expression which copes with 'I' at the start
-	  of a sentence.
 
 2006-06-12 09:10  dwaynebailey
 
@@ -176,12 +141,6 @@
 	  in test funtion and enabled disabled test.  [Forwardport]
 	  disbaled acceleratedvariables tests.	Checks still in palce as
 	  they should be moved to the accelerator test.
-
-2006-06-12 09:08  dwaynebailey
-
-	* filters/: checks.py, test_checks.py: Double variables no longer
-	  trip doublewords test.  Used removevariables in test funtion and
-	  enabled disabled test.
 
 2006-06-12 06:53  davidfraser
 
@@ -211,23 +170,6 @@
 	  (allows better DTD parsing) add default argument to escape in
 	  extractwithoutquotes
 
-2006-06-12 06:14  davidfraser
-
-	* misc/quote.py: replace 0 and 1 arguments to extract and
-	  extractwithoutquotes with False and True added allowreentry
-	  parameter to extract and extractwithoutquotes (allows better DTD
-	  parsing)
-
-2006-06-10 16:00  friedelwolff
-
-	* __version__.py: versions -> 0.9rc1 (no dash) for the sake of
-	  building rpms
-
-2006-06-10 14:48  friedelwolff
-
-	* __version__.py: Take version down to 0.9-rc1 to avoid confusion
-	  later
-
 2006-06-09 21:57  friedelwolff
 
 	* convert/test_pot2po.py, filters/test_pofilter.py,
@@ -240,77 +182,23 @@
 	* storage/po.py: Don't output an unnecessary newline at end of PO
 	  file
 
-2006-06-09 21:36  friedelwolff
-
-	* convert/test_pot2po.py, filters/test_pofilter.py,
-	  storage/test_po.py, tools/test_pogrep.py, tools/test_pomerge.py:
-	  Adapt tests to new pofile output
-
-2006-06-09 21:25  friedelwolff
-
-	* storage/po.py: Don't output an unnecessary newline at end of PO
-	  file
-
-2006-06-09 19:44  friedelwolff
-
-	* storage/po.py: [backport] Line end sensitive comments merging
-
 2006-06-09 19:38  friedelwolff
 
-	* tools/: pogrep.py: Rewrite filterelement to use base class
-	  (solves unit tests)
+	* tools/pogrep.py: Rewrite filterelement to use base class (solves
+	  unit tests)
 
 2006-06-09 19:17  friedelwolff
 
 	* convert/: test_oo2po.py, test_po2oo.py: [forwardport] Correct and
 	  expand tests for OpenOffice.org converters
 
-2006-06-09 18:34  friedelwolff
-
-	* convert/oo2po.py: Non-ideal fix for escaping problems
-
-2006-06-09 18:33  friedelwolff
-
-	* convert/test_oo2po.py: Fix test to not test for escaped backslash
-
-2006-06-09 18:32  friedelwolff
-
-	* convert/test_po2oo.py: Do more thorough roundtrip testing
-
-2006-06-09 18:31  friedelwolff
-
-	* tools/test_pomerge.py: Disable wontfix test
-
 2006-06-09 17:35  friedelwolff
 
-	* filters/: test_checks.py: Fix wrong musttranslate test
-
-2006-06-09 16:20  friedelwolff
-
-	* storage/po.py: Fix code that removes KDE comments from .target
+	* filters/test_checks.py: Fix wrong musttranslate test
 
 2006-06-09 16:15  friedelwolff
 
 	* storage/test_base.py: More roundtrip tests
-
-2006-06-09 16:11  friedelwolff
-
-	* storage/po.py: [Backport] Rewrite parseheader using base class.
-	  Fix pootle nlocalize() bug
-
-2006-06-09 15:09  friedelwolff
-
-	* storage/po.py: [Backport] Join kde comments correctly, and use a
-	  template if merging
-
-2006-06-09 14:32  davidfraser
-
-	* storage/ts.py: worked out how to override xml classes properly
-	  (create our own expatbuilder etc etc) this means we don't any
-	  longer modify the underlying classes note that writexml is not
-	  overridden any more, but thats just a formatting issue
-	  (originally developed and tested here, forward ported to HEAD,
-	  then copied back...)
 
 2006-06-09 14:31  davidfraser
 
@@ -319,77 +207,9 @@
 	  longer modify the underlying classes note that writexml is not
 	  overridden any more, but thats just a formatting issue
 
-2006-06-09 14:27  davidfraser
-
-	* storage/test_ts.py: added basic test for constructing ts file
-	  this shows if the xml class modifications we do work
-
 2006-06-09 14:26  davidfraser
 
 	* storage/test_ts.py: added basic test for constructing ts file
-
-2006-06-09 14:26  davidfraser
-
-	* storage/test_ts.py: file test_ts.py was added on branch
-	  wordforge-0-9-branch on 2006-06-09 12:27:11 +0000
-
-2006-06-09 13:22  davidfraser
-
-	* storage/test_dtd.py: disabled test_comment_following - not going
-	  to support this for 0.9
-
-2006-06-09 13:21  davidfraser
-
-	* filters/test_checks.py: disabled test for acceleratedvariables
-	  that has been commented out
-
-2006-06-09 13:15  davidfraser
-
-	* convert/prop2po.py: 5B convert properties to po files using base
-	  class attributes
-
-2006-06-09 13:14  davidfraser
-
-	* convert/test_oo2po.py: remove extra space at end of lines
-
-2006-06-09 13:06  davidfraser
-
-	* convert/test_po2csv.py: escaping and unescaping is now
-	  consistent, so unit.source contains the real value not an escaped
-	  one
-
-2006-06-09 13:04  davidfraser
-
-	* convert/test_html2po.py: multiline po strings now get an empty
-	  first line (as they should)
-
-2006-06-09 13:02  davidfraser
-
-	* convert/: test_html2po.py, test_po2dtd.py: change expectations of
-	  newlines in dtds now that it is done consistently
-
-2006-06-09 12:59  davidfraser
-
-	* storage/: po.py, test_po.py: handle escaping and unescaping po
-	  strings properly handle quoting based on templates add test for
-	  plural reduction msgidcomments now contain a real newline when
-	  unquoted (backport from HEAD)
-
-2006-06-09 12:53  davidfraser
-
-	* storage/test_po.py: added test for roundtripping on po quoting
-	  functions
-
-2006-06-09 12:49  davidfraser
-
-	* convert/test_po2dtd.py, misc/quote.py, storage/dtd.py,
-	  storage/test_dtd.py: added default argument for escape to
-	  extractwithoutquotes support includeescapes function returning
-	  the replaced version of an escaped character use
-	  extractwithoutquotes in dtd extraction added test for
-	  roundtripping directly on dtd quoting functions test_po2dtd test
-	  for single-quotes included within single-quoted string is wrong,
-	  quote chars cannot be included within string explain tests more
 
 2006-06-09 12:05  friedelwolff
 
@@ -412,15 +232,9 @@
 
 2006-06-08 10:36  friedelwolff
 
-	* storage/: po.py: Don't strip comments (fix some tests), typo)
+	* storage/po.py: Don't strip comments (fix some tests), typo)
 
 2006-06-08 10:33  friedelwolff
-
-	* tools/test_pomerge.py: Fix
-	  test_preserve_format_minor_start_and_end_of_sentence_changes
-	  (needed extra newline)
-
-2006-06-08 10:06  friedelwolff
 
 	* tools/test_pomerge.py: Fix
 	  test_preserve_format_minor_start_and_end_of_sentence_changes
@@ -432,29 +246,15 @@
 	  check - it never really worked and should actually be part of the
 	  accelerators test.
 
-2006-06-08 00:29  dwaynebailey
-
-	* filters/checks.py: Disable acceleratedvariables - it never quite
-	  worked and should really be part of the accelerators test.
-
 2006-06-07 23:32  dwaynebailey
 
 	* tools/pocompile.py: [Forwardport] Add the ability to include or
 	  exclude fuzzy translations
 
-2006-06-07 23:31  dwaynebailey
-
-	* tools/pocompile.py: Add the ability to exclude or include fuzzy
-	  translations.
-
 2006-06-07 23:08  dwaynebailey
 
 	* tools/pocompile.py: [Forwardport] Fix of pocompile by updating to
 	  msgfmt v1.1
-
-2006-06-07 23:05  dwaynebailey
-
-	* tools/pocompile.py: Update to v1.1 of msgfmt.py - fixes bug #10
 
 2006-06-07 19:32  friedelwolff
 
@@ -486,10 +286,6 @@
 2006-06-07 15:29  dwaynebailey
 
 	* convert/oo2po.py: [Forwardport] Make help string clearer
-
-2006-06-07 15:28  dwaynebailey
-
-	* convert/oo2po.py: Make help string clearer
 
 2006-06-06 16:15  dwaynebailey
 
@@ -567,32 +363,10 @@
 	  word is in a notranslate list - Enabled test for this Remove a
 	  bad stratcaps test
 
-2006-06-01 20:56  dwaynebailey
-
-	* filters/checks.py: Remove debugging output
-
-2006-06-01 20:51  dwaynebailey
-
-	* filters/: checks.py, prefilters.py, test_checks.py: Allow
-	  variables to be deleted.  This is probably a suboptimal approach
-	  but works - This fixes some simplecaps tests that are now enabled
-	  We now ignore 'unchanged' items of len == 1 if the word is in a
-	  notranslate list - Enabled test for this Remove a bad stratcaps
-	  test
-
 2006-06-01 19:16  davidfraser
 
 	* storage/test_dtd.py: added test for roundtrip of quoting /
 	  escaping problems
-
-2006-06-01 18:17  friedelwolff
-
-	* convert/test_oo2po.py: [backport] test_escapes_helpcontent2, test
-	  escapes using base class (so we ignore layout of the po source
-
-2006-06-01 16:42  dwaynebailey
-
-	* filters/test_checks.py: [Backport] correct tests
 
 2006-06-01 16:41  dwaynebailey
 
@@ -602,19 +376,6 @@
 
 	* convert/html2po.py: Make sure that we split lines on <br> for a
 	  better PO editing experience.
-
-2006-06-01 14:57  dwaynebailey
-
-	* filters/: checks.py, test_checks.py: [Backport] Can now handle
-	  the allcaps case of simplecaps errors
-
-2006-06-01 14:55  dwaynebailey
-
-	* filters/: checks.py, test_checks.py: [Backport] Remove KDE
-	  comments before checking for capitals Changed failing simplecaps
-	  tests to use the OOo checker as their failing most probably
-	  relates to the fact that we do not remove variables when checking
-	  for capitals (Removing vars is still TODO).
 
 2006-06-01 14:53  dwaynebailey
 
@@ -658,123 +419,20 @@
 
 	* storage/test_base.py: Test string roundtripping
 
-2006-06-01 13:07  dwaynebailey
-
-	* filters/: decoration.py, test_decoration.py: [Backport] Allow
-	  fullstops inside a variables eg &pluginWizard.label;
-
 2006-06-01 13:06  dwaynebailey
 
 	* filters/: decoration.py, test_decoration.py: Allow fullstops
 	  inside a variables eg $pluginWizard.label;
-
-2006-06-01 12:49  dwaynebailey
-
-	* filters/: checks.py, decoration.py, pofilter.py, prefilters.py:
-	  [Backport] all filter related changes from HEAD.
-
-2006-06-01 12:38  friedelwolff
-
-	* convert/test_prop2po.py: Fix test to test for real newlines
-
-2006-06-01 12:29  davidfraser
-
-	* convert/dtd2po.py, convert/po2dtd.py, convert/po2nb.py,
-	  convert/po2oo.py, convert/po2ts.py, convert/po2xliff.py,
-	  convert/pot2po.py, storage/po.py, storage/test_po.py: renamed
-	  getids to getlocations to align with HEAD (not a full backport as
-	  not renaming internal objects or putting this on base class yet)
 
 2006-06-01 12:23  dwaynebailey
 
 	* filters/prefilters.py: Make the regular expression consider
 	  Unicode, so that \w identifies non-ascii letter characters.
 
-2006-06-01 11:53  dwaynebailey
-
-	* filters/test_pofilter.py: Mark a string as unicode
-
-2006-06-01 11:48  davidfraser
-
-	* storage/properties.py: [Backported from HEAD] - fixes required
-	  given quote.py backport, and fixes other bugs do stripping of end
-	  lines before handling the line (this means we don't have to
-	  distinguish between real endlines and escaped ones in the
-	  strings) only do mozillapropertiesencode on the actual property
-	  values (this may break keys that use it but I don't think I've
-	  seen that) only strip spaces of properties so as not to strip of
-	  end lines
-
-2006-06-01 11:45  davidfraser
-
-	* misc/: quote.py, test_quote.py: Backported quote improvements
-	  from HEAD. Changes below:   - performance improvements to extract
-	  and extractwithoutquotes in quote.py	   * use find_all to
-	  precache important locations in string rather than running find
-	  over and over     * use the significant locations we find to hop
-	  and skip through the string ...      * simplify rstripeol	 *
-	  improved docstrings	 - fixes to quote.py	  * added fix for
-	  startdelim directly following enddelim (needs to handle in same
-	  loop)      * fixed lastpos being initialized to 0 as this matches
-	  erroneously	 - changes to behaviour in quote.py	 * changed
-	  expected behaviour of hanging escape in
-	  extractwithoutquotes(includeescapes=False)	  * make
-	  mozillapropertiesencode convert control characters back to their
-	  escaped form	      (this is safe now that the whole line isn't
-	  passed through)      * handle no escape (and make default
-	  argument) in extract	  - improved test_quote.py	* added
-	  tests for find_all and extract      * added extra quote to
-	  test_extract, and added test_extractwithoutquotes	 * added
-	  test for quotes starting just after closing, more escape handling
-	  tests      * took out TODO for failing test	   * add test for
-	  extractwithoutquotes being given a function that determines
-	  whether or not to include a given escape	* added tests for
-	  multiline comments in a dtd with a (newline, space) before the
-	  end comment marker	  * tested extracting starting in a string
-	  with a start/end quote as the first character
-
-	  these tests now all pass, and don't seem to cause any other
-	  failures on the branch (have fixed one in storage/properties.py)
-
-2006-06-01 11:30  dwaynebailey
-
-	* tools/test_pomerge.py: [Backport] pomerge tests.  Disables all
-	  xliff merging tests.	There were major changes to pomerge related
-	  to getting xliff merging working, and so we've ignored them.
-	  Also most changes seems to also relate to fundamental string
-	  management and internal naming convention changes, thus again
-	  pomerge merging has been ignored.
-
-2006-06-01 11:17  friedelwolff
-
-	* storage/dtd.py: [backport] fix for
-	  test_reference_entity_in_source
-
-2006-06-01 11:13  davidfraser
-
-	* convert/html2po.py: use .source and .target properties (was
-	  passing list to rstripeol which only worked by fluke)
-
-2006-06-01 11:12  dwaynebailey
-
-	* storage/po.py: [Backport] automatic removal of KDE comments from
-	  target string.  Had to change regex slightly, most probably
-	  related to internal string handling changes in HEAD
-
 2006-06-01 10:59  dwaynebailey
 
 	* storage/po.py: Make sure we don't merge KDE comments if we find
 	  them in the translation.
-
-2006-06-01 10:49  davidfraser
-
-	* misc/: multistring.py, test_multistring.py: add support (and
-	  tests) for .replace() [Friedel Wolff, backported from HEAD]
-
-2006-06-01 10:49  friedelwolff
-
-	* convert/dtd2po.py, convert/test_dtd2po.py, storage/po.py:
-	  [backport] All dtd2po tests and fixes
 
 2006-06-01 10:46  dwaynebailey
 
@@ -784,29 +442,6 @@
 2006-06-01 10:45  dwaynebailey
 
 	* tools/test_pocount.py: Add UTF-8 header marker
-
-2006-06-01 10:19  friedelwolff
-
-	* filters/test_checks.py: backport extra checks
-
-2006-06-01 10:10  dwaynebailey
-
-	* tools/: pocount.py, test_pocount.py: [Backport] tests and fixes
-	  for pocount from HEAD.  Slight changes to how HEAD does the
-	  fixing of strings so that the all HEAD tests pass.
-
-2006-06-01 10:06  friedelwolff
-
-	* filters/test_prefilters.py: [backport] test unicode operation
-
-2006-06-01 09:38  friedelwolff
-
-	* filters/test_checks.py: [backport] Test escaped escapes
-
-2006-05-31 18:10  friedelwolff
-
-	* storage/test_dtd.py: [Backport]
-	  test_comment_newline_space_closing()
 
 2006-05-31 13:56  dwaynebailey
 
@@ -1003,10 +638,6 @@
 	  ENTITY includes for translation - Check that we handle pretty
 	  printed entities that have start and end blank newlines.
 
-2006-05-15 08:41  friedelwolff
-
-	* storage/ts.py: Comment out modifications to minidom classes
-
 2006-05-15 08:28  friedelwolff
 
 	* storage/ts.py: Comment out modifications to minidom classes
@@ -1047,21 +678,11 @@
 	* convert/test_html2po.py: added helper for checking single
 	  elements, to make this file a lot shorter
 
-2006-05-05 16:09  dwaynebailey
-
-	* convert/test_prop2mozfunny.py: file test_prop2mozfunny.py was
-	  added on branch wordforge-0-9-branch on 2006-06-14 21:46:29 +0000
-
 2006-05-05 16:09  davidfraser
 
 	* convert/test_prop2mozfunny.py: check that uncommenting of
 	  MOZ_LANGPACK_CONTRIBUTORS works OK when converting back too...
 	  (bug 118)
-
-2006-05-05 16:02  dwaynebailey
-
-	* convert/test_mozfunny2prop.py: file test_mozfunny2prop.py was
-	  added on branch wordforge-0-9-branch on 2006-06-14 21:46:29 +0000
 
 2006-05-05 16:02  davidfraser
 
@@ -1402,10 +1023,6 @@
 	  string rather than running find over and over there's some more
 	  code that could be used to not iterate over every character (next
 	  task)
-
-2006-04-28 12:26  friedelwolff
-
-	* __version__.py: Version 0.9
 
 2006-04-28 11:11  friedelwolff
 
