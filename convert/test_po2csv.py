@@ -106,6 +106,14 @@ msgstr "Vind\\Opsies"
         assert csvfile.findunit("Source").target == ""
         assert len(csvfile.units) == 1
 
+    def test_kdecomments(self):
+        """test that we don't carry KDE comments to CSV"""
+        minipo = '#: simple.c\nmsgid "_: KDE comment\\n"\n"Same"\nmsgstr "Same"\n'
+        csvfile = self.po2csv(minipo)
+        unit = self.singleelement(csvfile)
+        assert unit.source == "Same"
+        assert unit.target == "Same"
+
 class TestPO2CSVCommand(test_convert.TestConvertCommand, TestPO2CSV):
     """Tests running actual po2csv commands on files"""
     convertmodule = po2csv
