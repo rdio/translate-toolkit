@@ -102,6 +102,21 @@ wat lank aanhou"
         assert pofile.findunit("Source").target == ""
         assert len(pofile.units) == 1
 
+    def test_kdecomment(self):
+        """checks that we can merge into KDE comment entries"""
+        csvsource = '''comment,original,translation
+simple.c,Source,Target'''
+        potsource = r'''#: simple.c
+msgid "_: KDE comment\n"
+"Source"
+msgstr ""
+''' 
+        pofile = self.csv2po(csvsource, potsource)
+        pounit = self.singleelement(pofile)
+        assert pounit.msgidcomments[0] == r'"_: KDE comment\n"'
+        assert pounit.source == "Source"
+        assert pounit.target == "Target"
+
 class TestCSV2POCommand(test_convert.TestConvertCommand, TestCSV2PO):
     """Tests running actual csv2po commands on files"""
     convertmodule = csv2po
@@ -111,4 +126,5 @@ class TestCSV2POCommand(test_convert.TestConvertCommand, TestCSV2PO):
         options = test_convert.TestConvertCommand.test_help(self)
         options = self.help_check(options, "-tTEMPLATE, --template=TEMPLATE")
         options = self.help_check(options, "--charset=CHARSET")
-        options = self.help_check(options, "--columnorder=COLUMNORDER", last=True)
+        options = self.help_check(options, "--columnorder=COLUMNORDER")
+        options = self.help_check(options, "--duplicates=DUPLICATESTYLE", last=True)
