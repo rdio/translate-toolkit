@@ -63,6 +63,18 @@ class TestPOUnit(test_base.TestTranslationUnit):
         unit.target = "Een Boom"
         assert unit.target.strings == ["Een Boom"]
 
+    def test_notes(self):
+        """tests that the generic notes API works"""
+        unit = self.UnitClass("File")
+        unit.addnote("Which meaning of file?")
+        assert str(unit) == '# Which meaning of file?\nmsgid "File"\nmsgstr ""\n'
+        unit.addnote("Verb", origin="programmer")
+        assert str(unit) == '# Which meaning of file?\n#. Verb\nmsgid "File"\nmsgstr ""\n'
+        unit.addnote("Thank you", origin="translator")
+        assert str(unit) == '# Which meaning of file?\n# Thank you\n#. Verb\nmsgid "File"\nmsgstr ""\n'
+
+        assert unit.getnotes() == "Which meaning of file?\nThank you\nVerb"
+        
 class TestPO(test_base.TestTranslationStore):
     StoreClass = po.pofile
     def poparse(self, posource):
@@ -146,8 +158,8 @@ msgstr ""
         assert len(pofile.units) == 2
         pofile.removeduplicates("merge")
         assert len(pofile.units) == 2
-	print pofile.units[0].msgidcomments
-	print pofile.units[1].msgidcomments
+        print pofile.units[0].msgidcomments
+        print pofile.units[1].msgidcomments
         assert po.unquotefrompo(pofile.units[0].msgidcomments) == "_: source1\n"
         assert po.unquotefrompo(pofile.units[1].msgidcomments) == "_: source2\n"
 
@@ -288,12 +300,12 @@ msgstr[1] "Koeie"
         assert self.pomerge(newsource, oldsource) == expected
 
     def test_unassociated_comments(self):
-	"""tests behaviour of unassociated comments."""
-	oldsource = '# old lonesome comment\n\nmsgid "one"\nmsgstr "een"\n'
+        """tests behaviour of unassociated comments."""
+        oldsource = '# old lonesome comment\n\nmsgid "one"\nmsgstr "een"\n'
         oldfile = self.poparse(oldsource)
-	print "__str__", str(oldfile)
-	assert len(oldfile.units) == 2
-	assert str(oldfile).find("# old lonesome comment\n\n") >= 0
+        print "__str__", str(oldfile)
+        assert len(oldfile.units) == 2
+        assert str(oldfile).find("# old lonesome comment\n\n") >= 0
 
     def test_header(self):
         """test header functionality"""

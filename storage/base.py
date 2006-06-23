@@ -52,8 +52,15 @@ class TranslationUnit(object):
         format doesn't support it."""
         return []
 
-    def addnote(self, text):
-        """Adds a note (comment)"""
+    def getnotes(self):
+        """Returns all notes about this unit. It will probably be freeform text
+        or something reasonable that can be synthesised by the format. It should
+        not include location comments (see getlocations)"""
+        return ""
+
+    def addnote(self, text, origin=None):
+        """Adds a note (comment). 
+        Origin specifies who/where the comment comes from"""
         pass
 
     def hasplural(self):

@@ -195,7 +195,7 @@ class xliffunit(lisa.LISAunit):
         return self.xmlelement.getAttribute("restype")
 
     def merge(self, otherunit, overwrite=False, comments=True):
-        #TODO: consier other attributes like "approved"
+        #TODO: consider other attributes like "approved"
         super(xliffunit, self).merge(otherunit, overwrite, comments)
         if self.target:
             self.marktranslated()

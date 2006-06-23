@@ -237,6 +237,22 @@ class pounit(base.TranslationUnit):
       self.msgstr = quoteforpo(target, template=templates.get(0, None))
   target = property(gettarget, settarget)
 
+  def getnotes(self):
+    comments = "".join([comment[2:] for comment in self.othercomments])
+    comments += "".join([comment[3:] for comment in self.automaticcomments])
+    # Let's drop the last newline
+    return comments[:-1]
+
+  def addnote(self, text, origin=None):
+    """This is modeled on the XLIFF method. See xliff.py::xliffunit.addnote"""
+    commentlist = self.othercomments
+    linestart = "# "
+    if origin in ["programmer", "developer", "source code"]:
+      commentlist = self.automaticcomments
+      linestart = "#. "
+    text = text.split("\n")
+    commentlist += [linestart + line + "\n" for line in text]
+    
   def copy(self):
     newpo = self.__class__()
     newpo.othercomments = self.othercomments[:]
