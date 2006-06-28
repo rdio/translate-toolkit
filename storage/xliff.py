@@ -264,6 +264,7 @@ class xlifffile(lisa.LISAfile):
 
     def getheadernode(self, filenode, createifmissing=False):
         """finds the header node for the given filenode"""
+        #Deprecated?
         headernodes = list(filenode.getElementsByTagName("header"))
         if headernodes:
             return headernodes[0]
@@ -330,3 +331,20 @@ class xlifffile(lisa.LISAfile):
     def __str__(self):
         self.removedefaultfile()
         return super(xlifffile, self).__str__()
+
+    def parsefile(cls, storefile):
+        """Normal parsing, but if it smells like a PO-XLIFF, rather hand over to poxliff."""
+        if isinstance(storefile, basestring):
+            storefile = open(storefile, "r")
+        storestring = storefile.read()
+        xliff = cls.parsestring(storestring)
+
+        if xliff.units:
+            header = xliff.units[0]
+            if "gettext-domain-header" in header.getrestype() and cls.__name__.lower() != "poxlifffile":
+                import poxliff
+                storefile.seek(0)
+                xliff = poxliff.PoXliffFile.parsefile(storefile)
+        return xliff
+    parsefile = classmethod(parsefile)
+
