@@ -586,6 +586,10 @@ class pounit(base.TranslationUnit):
       locations += quote.rstripeol(sourcecomment)[3:].split()
     return locations
 
+  def addlocation(self, location):
+    """add to sourcecomments"""
+    self.sourcecomments.append("#: %s\n" % location)
+
 class pofile(base.TranslationStore):
   """this represents a .po file containing various units"""
   UnitClass = pounit
