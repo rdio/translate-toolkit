@@ -37,12 +37,18 @@ classes = {"po": po.pofile, "pot": po.pofile, "csv": csvl10n.csvfile,
             "xliff": xliff.xlifffile, "xlf": xliff.xlifffile, 
             "tmx": tmx.tmxfile, "tbx": tbx.tbxfile}
 
+def getname(storefile):
+    """returns the filename"""
+    if not isinstance(storefile, str):
+        if not isinstance(storefile, file):
+            raise Exception("Factory can only guess filetype from filename")
+        else:
+            storefile = storefile.name
+    return storefile
+
 def getclass(storefile):
     """Factory that returns a the applicable class for the type of file presented."""
-    if not isinstance(storefile, str):
-        #TODO: guess from content
-        raise Exception("Factory can only guess filetype from filename")
-    
+    storefile = getname(storefile)
     root, ext = os.path.splitext(storefile)
     ext = ext[len(os.path.extsep):].lower()
     try:
@@ -53,7 +59,11 @@ def getclass(storefile):
 
 def getobject(storefile):
     """Factory that returns a usable object for the type of file presented."""
+    storefile = getname(storefile)
     storeclass = getclass(storefile)
-    store = storeclass.parsefile(storefile)
+    if os.path.exists(storefile):
+        store = storeclass.parsefile(storefile)
+    else:
+        store = storeclass()
     return store
 
