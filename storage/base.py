@@ -51,6 +51,20 @@ class TranslationUnit(object):
         """A list of source code locations. Shouldn't be implemented if the
         format doesn't support it."""
         return []
+    
+    def addlocation(self, locatin):
+        """Add one location to the list of locations. Shouldn't be implemented
+        if the format doesn't support it."""
+        pass
+
+    def addlocations(self, location):
+        """Add a location or a list of locations. Most classes shouldn't need
+        to implement this, but should rather implement addlocation()."""
+        if isinstance(location, list):
+            for item in location:
+                self.addlocation(item)
+        else:
+            addlocation(location)
 
     def getnotes(self):
         """Returns all notes about this unit. It will probably be freeform text
