@@ -40,7 +40,7 @@ classes = {"po": po.pofile, "pot": po.pofile, "csv": csvl10n.csvfile,
 def getname(storefile):
     """returns the filename"""
     if not isinstance(storefile, str):
-        if not isinstance(storefile, file):
+        if not hasattr(storefile, "name"):
             raise Exception("Factory can only guess filetype from filename")
         else:
             storefile = storefile.name
@@ -48,8 +48,8 @@ def getname(storefile):
 
 def getclass(storefile):
     """Factory that returns a the applicable class for the type of file presented."""
-    storefile = getname(storefile)
-    root, ext = os.path.splitext(storefile)
+    storefilename = getname(storefile)
+    root, ext = os.path.splitext(storefilename)
     ext = ext[len(os.path.extsep):].lower()
     try:
         storeclass = classes[ext]
@@ -59,9 +59,9 @@ def getclass(storefile):
 
 def getobject(storefile):
     """Factory that returns a usable object for the type of file presented."""
-    storefile = getname(storefile)
-    storeclass = getclass(storefile)
-    if os.path.exists(storefile):
+    storefilename = getname(storefile)
+    storeclass = getclass(storefilename)
+    if os.path.exists(storefilename) or not storefile.closed:
         store = storeclass.parsefile(storefile)
     else:
         store = storeclass()
