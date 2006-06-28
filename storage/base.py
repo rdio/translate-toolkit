@@ -89,6 +89,8 @@ class TranslationStore(object):
 
     def findunit(self, source):
         """Finds the unit with the given source string"""
+	if len(getattr(self, "sourceindex", [])):
+            return self.sourceindex[source]
         for unit in self.units:
             if unit.source == source:
                 return unit
