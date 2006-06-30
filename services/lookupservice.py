@@ -68,7 +68,7 @@ class lookupServer(SimpleXMLRPCServer):
             return None
         try:
             unit = self.storage.findunit(message)
-        except KeyError:
+        except Exception:
             return None
         return unit
     
@@ -84,7 +84,7 @@ class lookupServer(SimpleXMLRPCServer):
         """Translates the message from the storage and returns a plain string"""
         unit = self.internal_lookup(message)
         if unit and unit.target:
-            return unit.target
+            return string(unit.target)
         else:
             return ""
 
@@ -92,6 +92,8 @@ class lookupServer(SimpleXMLRPCServer):
         """Returns matches from the storage with the associated similarity"""
         self.matcher.setparameters(max_candidates=max_candidates, min_similarity=min_similarity)
         candidates = self.matcher.matches(message)
+        # We might have gotten multistrings, so just convert them for now
+        candidates = [(score, str(original), str(translation)) for (score, original, translation) in candidates]
         return candidates
 
 class lookupOptionParser(convert.ConvertOptionParser):
