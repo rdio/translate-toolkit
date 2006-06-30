@@ -48,6 +48,7 @@ class lookupServer(SimpleXMLRPCServer):
         """Loads the initial tbx file from the given filename"""
         SimpleXMLRPCServer.__init__(self, addr, requestHandler=lookupRequestHandler, logRequests=1)
         self.storage = storage
+        self.storage.makeindex()
         self.matcher = match.matcher(storage)
         print "Performing lookup from %d units" % len(storage.units)
         print "Translation memory using %d units" % len(self.matcher.candidates)
@@ -85,7 +86,7 @@ class lookupServer(SimpleXMLRPCServer):
         """Translates the message from the storage and returns a plain string"""
         unit = self.internal_lookup(message)
         if unit and unit.target:
-            return str(unit.target)
+            return unit.target
         else:
             return ""
 
