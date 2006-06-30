@@ -77,6 +77,10 @@ class TranslationUnit(object):
         Origin specifies who/where the comment comes from"""
         pass
 
+    def isfuzzy(self):
+        """Indicates whether this unit is fuzzy"""
+	return False
+
     def hasplural(self):
         """Tells whether or not this specific unit has plural strings."""
 	#TODO: Reconsider
