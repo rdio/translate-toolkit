@@ -33,11 +33,11 @@ UnitClass = tbx.tbxunit
 
 text = sys.stdin.readline()
 while text: 
-	text = text.strip()
+	text = text.strip().decode("utf-8")
 	if text != "":
 		source = server.lookup(text)
 		if source:
-			print source.decode('utf-8')
+			print source
 			#Lets assume life is simple:
 			if "<termEntry>" in source:
 				#TBX
