@@ -59,7 +59,7 @@ while text:
 			print "Likely matches:"
 			columnwidth = min(int(len(text)*1.3)+5, 35)
 			for score, original, translation in candidates:
-				print "%6.2f%% %-*s | %s".decode('utf-8') % (score, columnwidth, original, translation)
+				print "%6.2f%% %-*s | %s".encode('utf-8') % (score, columnwidth, original, translation)
 		else:
 			print "No likely matches found"
 	text = sys.stdin.readline()
