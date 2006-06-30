@@ -61,7 +61,7 @@ def getobject(storefile):
     """Factory that returns a usable object for the type of file presented."""
     storefilename = getname(storefile)
     storeclass = getclass(storefilename)
-    if os.path.exists(storefilename) or not storefile.closed:
+    if os.path.exists(storefilename) or not getattr(storefile, "closed", True):
         store = storeclass.parsefile(storefile)
     else:
         store = storeclass()
