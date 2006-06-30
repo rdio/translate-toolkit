@@ -47,8 +47,9 @@ class lookupServer(SimpleXMLRPCServer):
         """Loads the initial tbx file from the given filename"""
         SimpleXMLRPCServer.__init__(self, addr, requestHandler=lookupRequestHandler, logRequests=1)
         self.storage = storage
-        #self.keys = [unit.source for unit in storage.units]
-        print "Serving from %d units" % len(storage.units)
+        self.matcher = match.matcher(storage)
+        print "Performing lookup from %d units" % len(storage.units)
+        print "Translation memory using %d units" % len(self.matcher.candidates)
 
     def _dispatch(self, method, params):
         try:
@@ -89,8 +90,8 @@ class lookupServer(SimpleXMLRPCServer):
 
     def public_matches(self, message, max_candidates=15, min_similarity=50):
         """Returns matches from the storage with the associated similarity"""
-        matcher = match.matcher(max_candidates, min_similarity)
-        candidates = matcher.matches(message, self.storage.units)
+        self.matcher.setparameters(max_candidates=max_candidates, min_similarity=min_similarity)
+        candidates = self.matcher.matches(message)
         return candidates
 
 class lookupOptionParser(convert.ConvertOptionParser):
