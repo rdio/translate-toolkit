@@ -118,9 +118,9 @@ class csvunit(base.TranslationUnit):
     return source, target
 
   def fromdict(self, cedict):
-    self.comment = cedict.get('comment', '')
-    self.source = cedict.get('source', '')
-    self.target = cedict.get('target', '')
+    self.comment = cedict.get('comment', '').decode('utf-8')
+    self.source = cedict.get('source', '').decode('utf-8')
+    self.target = cedict.get('target', '').decode('utf-8')
     if self.comment is None: self.comment = ''
     if self.source is None: self.source = ''
     if self.target is None: self.target = ''
