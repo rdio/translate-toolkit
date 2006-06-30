@@ -33,6 +33,7 @@ from translate.storage import tmx
 from translate.storage import po
 from translate.storage import csvl10n
 from translate.search import match
+from translate.misc.multistring import multistring
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
@@ -84,7 +85,7 @@ class lookupServer(SimpleXMLRPCServer):
         """Translates the message from the storage and returns a plain string"""
         unit = self.internal_lookup(message)
         if unit and unit.target:
-            return string(unit.target)
+            return str(unit.target)
         else:
             return ""
 
@@ -92,9 +93,15 @@ class lookupServer(SimpleXMLRPCServer):
         """Returns matches from the storage with the associated similarity"""
         self.matcher.setparameters(max_candidates=max_candidates, min_similarity=min_similarity)
         candidates = self.matcher.matches(message)
+        clean_candidates = []
         # We might have gotten multistrings, so just convert them for now
-        candidates = [(score, str(original), str(translation)) for (score, original, translation) in candidates]
-        return candidates
+	for (score, original, translation) in candidates:
+            if isinstance(original, multistring):
+                original = unicode(original)
+            if isinstance(translation, multistring):
+                translation = unicode(translation)
+            clean_candidates += [(score, original, translation)]
+        return clean_candidates
 
 class lookupOptionParser(convert.ConvertOptionParser):
     """Parser that calls instantiates the lookupServer"""
