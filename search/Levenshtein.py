@@ -24,8 +24,6 @@ distance. See http://en.wikipedia.org/wiki/Levenshtein_distance."""
 from translate.search import segment
 import math
 
-DEBUG = 0
-
 class LevenshteinComparer:
     def __init__(self, max_len=200):
         self.MAX_LEN = max_len
@@ -33,24 +31,21 @@ class LevenshteinComparer:
     def similarity(self, a, b, stoppercentage=40):
         similarity = self.similarity_real(a, b, stoppercentage)
         measurements = 1
-        if DEBUG:print similarity
 
-        chr_a = segment.characters(a)
-        chr_b = segment.characters(b)
-        if abs(len(chr_a) - len(a)) + abs(len(chr_b) - len(b)):
-            similarity += self.similarity_real(chr_a, chr_b, stoppercentage)
-            measurements += 1
-            if DEBUG:print self.similarity_real(chr_a, chr_b, stoppercentage)
-        else:
-            similarity *= 2
-            measurements += 1
-            
-        wrd_a = segment.words(a)
-        wrd_b = segment.words(b)
-        if len(wrd_a) + len(wrd_b) > 2:
-            similarity += self.similarity_real(wrd_a, wrd_b, 0)
-            measurements += 1
-            if DEBUG:print self.similarity_real(wrd_a, wrd_b, 0)
+#        chr_a = segment.characters(a)
+#        chr_b = segment.characters(b)
+#        if abs(len(chr_a) - len(a)) + abs(len(chr_b) - len(b)):
+#            similarity += self.similarity_real(chr_a, chr_b, stoppercentage)
+#            measurements += 1
+#        else:
+#            similarity *= 2
+#            measurements += 1
+#            
+#        wrd_a = segment.words(a)
+#        wrd_b = segment.words(b)
+#        if len(wrd_a) + len(wrd_b) > 2:
+#            similarity += self.similarity_real(wrd_a, wrd_b, 0)
+#            measurements += 1
         return similarity / measurements
 
     def similarity_real(self, a, b, stoppercentage=40):
@@ -91,11 +86,11 @@ class LevenshteinComparer:
         penalty = 0
         if l2 > self.MAX_LEN:
             b = b[:self.MAX_LEN]
-            l2 = len(b)
+            l2 = self.MAX_LEN
             penalty += 7
             if l1 > self.MAX_LEN:
                 a = a[:self.MAX_LEN]
-                l1 = len(a)
+                l1 = self.MAX_LEN
                 penalty += 7
         
         #The actual value in the array that would represent a giveup situation:
@@ -114,7 +109,6 @@ class LevenshteinComparer:
         """Calculates the distance for use in similarity calculation."""
         l1 = len(a)
         l2 = len(b)
-        assert stopvalue <= l2
         if stopvalue == 0:
             stopvalue = l2
         current = range(l1+1)
