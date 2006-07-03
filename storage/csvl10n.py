@@ -54,15 +54,16 @@ class SimpleDictReader:
       return value
 
   def next(self):
-    while self.tokenpos < len(self.tokens) and self.tokens[self.tokenpos] == "\n":
+    lentokens = len(self.tokens)
+    while self.tokenpos < lentokens and self.tokens[self.tokenpos] == "\n":
       self.tokenpos += 1
-    if self.tokenpos >= len(self.tokens):
+    if self.tokenpos >= lentokens:
       raise StopIteration()
     thistokens = []
-    while self.tokenpos < len(self.tokens) and self.tokens[self.tokenpos] != "\n":
+    while self.tokenpos < lentokens and self.tokens[self.tokenpos] != "\n":
       thistokens.append(self.tokens[self.tokenpos])
       self.tokenpos += 1
-    while self.tokenpos < len(self.tokens) and self.tokens[self.tokenpos] == "\n":
+    while self.tokenpos < lentokens and self.tokens[self.tokenpos] == "\n":
       self.tokenpos += 1
     fields = []
     # patch together fields since we can have quotes inside a field
