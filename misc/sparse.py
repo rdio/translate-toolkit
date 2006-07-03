@@ -109,17 +109,19 @@ class SimpleParser:
     tokens = []
     pos = 0
     laststart = 0
-    while pos < len(text):
+    lentext = len(text)
+    while pos < lentext:
       foundtoken = 0
       for token in tokenlist:
-        if text[pos:pos+len(token)] == token:
+        lentoken = len(token)
+        if text[pos:pos+lentoken] == token:
           if laststart < pos: tokens.append(text[laststart:pos])
           tokens.append(token)
-          pos += len(token)
+          pos += lentoken
           foundtoken, laststart = 1, pos
           break
       if not foundtoken: pos += 1
-    if laststart < len(text): tokens.append(text[laststart:])
+    if laststart < lentext: tokens.append(text[laststart:])
     return tokens
 
   def removewhitespace(self, text):
