@@ -48,6 +48,13 @@ class TestDTD2PO:
         pounit = self.singleelement(pofile)
         assert po.unquotefrompo(pounit.msgid) == "bananas for sale"
         assert po.unquotefrompo(pounit.msgstr) == ""
+        # Now with a template language
+        dtdtemplate = '<!ENTITY test.me "bananas for sale">\n'
+        dtdtranslated = '<!ENTITY test.me "piesangs te koop">\n'
+        pofile = self.dtd2po(dtdtranslated, dtdtemplate)
+        pounit = self.singleelement(pofile)
+        assert po.unquotefrompo(pounit.msgid) == "bananas for sale"
+        assert po.unquotefrompo(pounit.msgstr) == "piesangs te koop"
 
     def test_convertdtd(self):
         """checks that the convertdtd function is working"""
@@ -161,11 +168,17 @@ class TestDTD2PO:
     def test_accesskeys_folding(self):
 	"""test that we fold accesskeys into message strings"""
 	dtdsource_template = '<!ENTITY  fileSaveAs.%s "Save As...">\n<!ENTITY  fileSaveAs.%s "S">\n'
+        lang_template = '<!ENTITY  fileSaveAs.%s "Gcina ka...">\n<!ENTITY  fileSaveAs.%s "G">\n'
         for label in ("label", "title"):
           for accesskey in ("accesskey", "accessKey", "akey"):
             pofile = self.dtd2po(dtdsource_template % (label, accesskey))
             pounit = self.singleelement(pofile)
             assert pounit.source == "&Save As..."
+            # Test with template
+            pofile = self.dtd2po(lang_template % (label, accesskey), dtdsource_template % (label, accesskey))
+            pounit = self.singleelement(pofile)
+            assert pounit.source == "&Save As..."
+            assert pounit.target == "&Gcina ka..."
 
     def test_accesskeys_mismatch(self):
         """check that we can handle accesskeys that don't match and thus can't be folded into the .label entry"""
