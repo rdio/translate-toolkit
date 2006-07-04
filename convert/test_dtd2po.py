@@ -174,7 +174,7 @@ class TestDTD2PO:
             pofile = self.dtd2po(dtdsource_template % (label, accesskey))
             pounit = self.singleelement(pofile)
             assert pounit.source == "&Save As..."
-            # Test with template
+            # Test with template (bug 155)
             pofile = self.dtd2po(lang_template % (label, accesskey), dtdsource_template % (label, accesskey))
             pounit = self.singleelement(pofile)
             assert pounit.source == "&Save As..."
