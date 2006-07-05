@@ -113,7 +113,7 @@ def filterwordswithpunctuation(str1):
   occurrences = []
   for word, replacement in wordswithpunctuation.iteritems():
     occurrences.extend([(pos, word, replacement) for pos in quote.find_all(str1, word)])
-  for match in sre.finditer("\w+'\w+", str1, sre.UNICODE):
+  for match in sre.finditer("(?u)\w+'\w+", str1):
     word = match.group()
     if isinstance(word, unicode):
       replacement = filter(unicode.isalnum, word)
