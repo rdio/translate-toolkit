@@ -79,11 +79,11 @@ class TranslationUnit(object):
 
     def isfuzzy(self):
         """Indicates whether this unit is fuzzy"""
-	return False
+        return False
 
     def hasplural(self):
         """Tells whether or not this specific unit has plural strings."""
-	#TODO: Reconsider
+        #TODO: Reconsider
         return False
 
     def merge(self, otherunit, overwrite=False, comments=True):
@@ -107,7 +107,7 @@ class TranslationStore(object):
 
     def findunit(self, source):
         """Finds the unit with the given source string"""
-	if len(getattr(self, "sourceindex", [])):
+        if len(getattr(self, "sourceindex", [])):
             return self.sourceindex[source]
         for unit in self.units:
             if unit.source == source:
@@ -116,7 +116,7 @@ class TranslationStore(object):
 
     def translate(self, source):
         unit = self.findunit(source)
-	if unit and unit.target:
+        if unit and unit.target:
             return unit.target
         else:
             return None
@@ -160,7 +160,10 @@ class TranslationStore(object):
         """Reads the given file (or opens the given filename) and parses back to an object"""
         if isinstance(storefile, basestring):
             storefile = open(storefile, "r")
-        storestring = storefile.read()
+        if "r" in storefile.mode:
+          storestring = storefile.read()
+        else:
+          storestring = ""
         return cls.parsestring(storestring)
     parsefile = classmethod(parsefile)
 
