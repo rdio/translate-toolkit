@@ -266,8 +266,13 @@ class TestDTD2PO:
         pofile = self.dtd2po(dtdlanguage, dtdtemplate)
         print pofile
         assert pofile.units[1].target == "使用自動捲動(&Autoscrolling)"
-        # TODO - what must we do if there is no associated latin char?  Do we split the accesskey from the label ie unfold?
-        # Probably "XXXX (&A)"
+        # We assume that accesskeys with no associated key should be done as follows "XXXX (&A)"
+        # TODO - check that we can unfold this from PO -> DTD
+        dtdlanguage = '''<!ENTITY useAutoScroll.label             "使用自動捲動">
+<!ENTITY useAutoScroll.accesskey         "a">'''
+        pofile = self.dtd2po(dtdlanguage, dtdtemplate)
+        print pofile
+        assert pofile.units[1].target == "使用自動捲動 (&A)"
 
     def test_exclude_entity_includes(self):
         """test that we don't turn an include into a translatable string"""
