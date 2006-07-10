@@ -43,24 +43,30 @@ def getname(storefile):
         if not hasattr(storefile, "name"):
             raise Exception("Factory can only guess filetype from filename")
         else:
-            storefile = storefile.name
-    return storefile
+            storefilename = storefile.name
+    else:
+        storefilename = storefile
+    return storefilename
 
-def getclass(storefile):
-    """Factory that returns a the applicable class for the type of file presented."""
+def getclass(storefile, ignore=None):
+    """Factory that returns the applicable class for the type of file presented.
+    Specify ignore to ignore some part at the back of the name (like .gz). """
     storefilename = getname(storefile)
+    if ignore and storefilename.endswith(ignore):
+        storefilename = storefile[:-len(ignore)]
     root, ext = os.path.splitext(storefilename)
     ext = ext[len(os.path.extsep):].lower()
     try:
         storeclass = classes[ext]
     except KeyError:
-        raise Exception("Unknown filetype")
+        raise Exception("Unknown filetype (%s)" % storefilename)
     return storeclass
 
-def getobject(storefile):
-    """Factory that returns a usable object for the type of file presented."""
+def getobject(storefile, ignore=None):
+    """Factory that returns a usable object for the type of file presented.
+    Specify ignore to ignore some part at the back of the name (like .gz). """
     storefilename = getname(storefile)
-    storeclass = getclass(storefilename)
+    storeclass = getclass(storefilename, ignore)
     if os.path.exists(storefilename) or not getattr(storefile, "closed", True):
         store = storeclass.parsefile(storefile)
     else:
