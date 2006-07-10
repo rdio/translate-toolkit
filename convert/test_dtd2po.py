@@ -257,6 +257,18 @@ class TestDTD2PO:
         assert pofile.units[4].source == "M"
         assert pofile.units[4].target == "ﺩ"
 
+    def test_accelerator_keys_not_in_sentence(self):
+        """tests to ensure that we can manage accelerator keys that are not part of the transated sentence eg in Chinese"""
+        dtdtemplate = '''<!ENTITY useAutoScroll.label             "Use autoscrolling">
+<!ENTITY useAutoScroll.accesskey         "a">'''
+        dtdlanguage = '''<!ENTITY useAutoScroll.label             "使用自動捲動(Autoscrolling)">
+<!ENTITY useAutoScroll.accesskey         "a">'''
+        pofile = self.dtd2po(dtdlanguage, dtdtemplate)
+        print pofile
+        assert pofile.units[1].target == "使用自動捲動(&Autoscrolling)"
+        # TODO - what must we do if there is no associated latin char?  Do we split the accesskey from the label ie unfold?
+        # Probably "XXXX (&A)"
+
     def test_exclude_entity_includes(self):
         """test that we don't turn an include into a translatable string"""
         dtdsource = '<!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd">'
