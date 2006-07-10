@@ -66,6 +66,8 @@ class matcher:
             simpleunit.target = candidate.target
             self.candidates.append(simpleunit)
         self.candidates.sort(key=sourcelen)
+	if not self.candidates:
+            raise Exception("No usable translation memory")
         print "TM initialised with %d candidates (%d to %d characters long)" % \
                 (len(self.candidates), len(self.candidates[0].source), len(self.candidates[-1].source))
 
