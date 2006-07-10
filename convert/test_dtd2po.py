@@ -230,6 +230,33 @@ class TestDTD2PO:
         assert po.unquotefrompo(unit.msgid) == "Test"
         assert po.unquotefrompo(unit.msgstr) == "Toets"
 
+    def test_unassociable_accelerator(self):
+        """test to see that we can handle accelerator keys that cannot be associated correctly"""
+        dtdsource ='<!ENTITY  managecerts.button "Manage Certificates...">\n<!ENTITY  managecerts.accesskey "M">'
+        pofile = self.dtd2po(dtdsource)
+        assert pofile.units[1].source == "Manage Certificates..."
+        assert pofile.units[2].source == "M"
+        pofile = self.dtd2po(dtdsource, dtdsource)
+        assert pofile.units[1].target == "Manage Certificates..."
+        assert pofile.units[2].target == "M"
+
+    def test_changed_labels_and_accelerators(self):
+        """test to ensure that when the template changes an entity name we can still manage the accelerators""" 
+        dtdtemplate = '''<!ENTITY  managecerts.caption      "Manage Certificates">
+<!ENTITY  managecerts.text         "Use the Certificate Manager to manage your personal certificates, as well as those of other people and certificate authorities.">
+<!ENTITY  managecerts.button       "Manage Certificates...">
+<!ENTITY  managecerts.accesskey    "M">'''
+        dtdlanguage = '''<!ENTITY managecerts.label "ﺇﺩﺍﺭﺓ ﺎﻠﺸﻫﺍﺩﺎﺗ">
+<!ENTITY managecerts.text "ﺎﺴﺘﺧﺪﻣ ﻡﺪﻳﺭ ﺎﻠﺸﻫﺍﺩﺎﺗ ﻹﺩﺍﺭﺓ ﺶﻫﺍﺩﺎﺘﻛ ﺎﻠﺸﺨﺼﻳﺓ، ﺏﺍﻺﺿﺎﻓﺓ ﻞﺘﻠﻛ ﺎﻠﺧﺎﺻﺓ ﺏﺍﻶﺧﺮﻴﻧ ﻭ ﺲﻠﻃﺎﺗ ﺎﻠﺸﻫﺍﺩﺎﺗ.">
+<!ENTITY managecerts.button "ﺇﺩﺍﺭﺓ ﺎﻠﺸﻫﺍﺩﺎﺗ...">
+<!ENTITY managecerts.accesskey "ﺩ">'''
+        pofile = self.dtd2po(dtdlanguage, dtdtemplate)
+        print pofile
+        assert pofile.units[3].source == "Manage Certificates..."
+        assert pofile.units[3].target == "ﺇﺩﺍﺭﺓ ﺎﻠﺸﻫﺍﺩﺎﺗ..."
+        assert pofile.units[4].source == "M"
+        assert pofile.units[4].target == "ﺩ"
+
     def test_exclude_entity_includes(self):
         """test that we don't turn an include into a translatable string"""
         dtdsource = '<!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd">'
