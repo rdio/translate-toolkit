@@ -100,12 +100,15 @@ class prop2po:
   def convertelement(self, theprop):
     """Converts a .properties element to a .po element. Returns None if empty
     or not for translation."""
+    if theprop is None:
+      return None
     # escape unicode
     thepo = po.pounit(encoding="UTF-8")
-    for comment in theprop.comments:
-      if "DONT_TRANSLATE" in comment:
-        return None
-    thepo.othercomments.extend(theprop.comments)
+    if hasattr(theprop, "comments"):
+      for comment in theprop.comments:
+        if "DONT_TRANSLATE" in comment:
+          return None
+      thepo.othercomments.extend(theprop.comments)
     # TODO: handle multiline msgid
     if theprop.isblank():
       return None
