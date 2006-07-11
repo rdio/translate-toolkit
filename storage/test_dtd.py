@@ -136,3 +136,10 @@ class TestDTD(test_monolingual.TestMonolingualStore):
         assert dtdunit.definition == '"bananas for sale"'
         assert str(dtdfile) == '<!ENTITY test.me "bananas for sale">\n'
 
+    def test_missing_quotes(self):
+        """test that we fail graacefully when a message without quotes is found (bug #161)"""
+        dtdsource = '<!ENTITY bad no quotes">\n<!ENTITY good "correct quotes">\n'
+        dtdfile = self.dtdparse(dtdsource)
+        # Check that we raise a correct warning
+        assert len(dtdfile.units) == 1
+
