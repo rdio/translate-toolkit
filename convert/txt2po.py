@@ -73,7 +73,10 @@ def converttxt(inputfile, outputfile, templates):
   return 1
 
 def main(argv=None):
+  from translate.misc import stdiotell
   from translate.convert import convert
+  import sys
+  sys.stdout = stdiotell.StdIOWrapper(sys.stdout)
   formats = {"txt":("po",converttxt), "*":("po",converttxt)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
   parser.run(argv)
