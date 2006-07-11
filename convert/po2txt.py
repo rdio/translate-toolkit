@@ -47,7 +47,10 @@ class po2txt:
     for thepo in inputpo.units:
       if thepo.isheader():
         continue
-      txtresult += self.wrapmessage(self.convertmessage(thepo.msgstr)) + "\n" + "\n"
+      if thepo.isfuzzy() or thepo.isblank():
+        txtresult += self.wrapmessage(thepo.source) + "\n" + "\n"
+      else:
+        txtresult += self.wrapmessage(thepo.target) + "\n" + "\n"
     return txtresult
  
   def mergefile(self, inputpo, templatetext):
@@ -78,6 +81,9 @@ def converttxt(inputfile, outputfile, templatefile, wrap=None):
 
 def main(argv=None):
   from translate.convert import convert
+  from translate.misc import stdiotell
+  import sys
+  sys.stdout = stdiotell.StdIOWrapper(sys.stdout)
   formats = {("po", "txt"):("txt",converttxt), ("po"):("txt",converttxt)}
   parser = convert.ConvertOptionParser(formats, usetemplates=True, description=__doc__)
   if textwrap is not None:
