@@ -292,9 +292,11 @@ class dtd2po:
           mixbucket = "orig"
           del self.mixedentities[origdtd.entity]
         elif mixedentitydict["orig"]:
-          mixbucket = "orig"
-        else:
+          # the original entity is already mixed successfully
           mixbucket = "translate"
+        else:
+          # ??
+          mixbucket = "orig"
       else:
         mixbucket = "translate"
       if origpo is None:
