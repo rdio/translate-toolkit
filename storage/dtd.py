@@ -54,7 +54,7 @@ class dtdunit(base.TranslationUnit):
     self.unparsedlines = []
     self.incomment = 0
     self.inentity = 0
-    self.entity = None
+    self.entity = "FakeEntityOnlyForInitialisationAndTesting" 
     self.source = source
 
   # Note that source and target are equivalent for monolingual units
