@@ -239,6 +239,9 @@ class dtd2po:
                 if thedtdfile.index.has_key(labelentity):
                   labeldtd = thedtdfile.index[labelentity]
                   break
+              else:
+                labelentity = None
+                accesskeyentity = None
         thepo = self.convertmixedelement(labeldtd, accesskeydtd)
         if thepo is not None:
           if accesskeyentity is not None:
