@@ -123,6 +123,9 @@ def fails(filterfunction, str1, str2):
   return not filterresult
 
 punctuation_chars = u'.,;:!?-@#$%^*_()[]{}/\\\'"<>\u2018\u2019\u201a\u201b\u201c\u201d\u201e\u201f\u2032\u2033\u2034\u2035\u2036\u2037\u2039\u203a\xab\xbb\xb1\xb3\xb9\xb2\xb0\xbf\xa9\xae\xd7\xa3\xa5\u2026'
+# printf syntax based on http://en.wikipedia.org/wiki/Printf which doens't cover everything we leave \w instead of specifying the exact letters as
+# this should capture printf types defined in other platforms.
+printf_pat = sre.compile('%([+#-]*(?:\d+)*(?:\.\d+)*(hh\|h\|l\|ll)*[\w%])')
 
 #(tag, attribute, value) specifies a certain attribute which can be changed/
 #ignored if it exists inside tag. In the case where there is a third element
@@ -319,6 +322,7 @@ class TeeChecker:
       failures.extend(checker.run_filters(str1, str2))
     return failures
 
+
 class StandardChecker(TranslationChecker):
   """simply defines a bunch of tests..."""
   def untranslated(self, str1, str2):
@@ -401,6 +405,10 @@ class StandardChecker(TranslationChecker):
           continue
         return 0
     return 1
+
+  def printf(self, str1, str2):
+    """checks whether printf format strings match"""
+    return printf_pat.findall(str1) == printf_pat.findall(str2)
 
   def accelerators(self, str1, str2):
     """checks whether accelerators are consistent between the two strings"""

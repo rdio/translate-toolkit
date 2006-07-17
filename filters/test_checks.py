@@ -282,6 +282,17 @@ def test_numbers():
     # You should be able to reorder numbers
     assert checks.passes(stdchecker.numbers, "40-bit RC2 encryption with RSA and an MD5", "Umbhalo ocashile i-RC2 onamabhithi angu-40 one-RSA ne-MD5")
 
+def test_printf():
+    """tests printf style variables"""
+    # This should really be a subset of the variable checks
+    # Ideally we should be able to adapt based on #, directives also
+    stdchecker = checks.StandardChecker()
+    assert checks.passes(stdchecker.printf, "I am %s", "Ek is %s")
+    assert checks.fails(stdchecker.printf, "I am %s", "Ek is %d")
+    assert checks.passes(stdchecker.printf, "I am %#100.50hhf", "Ek is %#100.50hhf")
+    assert checks.fails(stdchecker.printf, "I am %#100s", "Ek is %10s")
+    assert checks.fails(stdchecker.printf, "... for user %.100s on %.100s:", "... lomuntu osebenzisa i-%. I-100s e-100s:")
+
 def test_puncspacing():
     """tests spacing after punctuation"""
     stdchecker = checks.StandardChecker()
@@ -494,8 +505,6 @@ def test_variables_mozilla():
     assert checks.fails(mozillachecker.variables, "Welcome to the &pluginWizard.title;", "Wamkelekile kwi&Sihloko Soncedo lwe-plugin;")
     # Variables that are missing in quotes should be detected
     assert checks.fails(mozillachecker.variables, "\"%S\" is an executable file.... Are you sure you want to launch \"%S\"?", ".... Uyaqiniseka ukuthi ufuna ukuqalisa I\"%S\"?")
-    # printf style variables
-    assert checks.fails(mozillachecker.variables, "... for user %.100s on %.100s:", "... lomuntu osebenzisa i-%. I-100s e-100s:")
     # False positive $ style variables
     assert checks.passes(mozillachecker.variables, "for reporting $ProductShortName$ crash information", "okokubika ukwaziswa kokumosheka kwe-$ProductShortName$")
     # We shouldn't mask variables within variables.  This should highlight &brandShortName as missing and &amp as extra
