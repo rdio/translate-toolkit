@@ -22,6 +22,7 @@
 """Class to perform translation memory matching from a store of translation units"""
 
 import Levenshtein
+import terminology
 import heapq
 from translate.storage import base
 
@@ -66,7 +67,7 @@ class matcher:
             simpleunit.target = candidate.target
             self.candidates.append(simpleunit)
         self.candidates.sort(key=sourcelen)
-	if not self.candidates:
+        if not self.candidates:
             raise Exception("No usable translation memory")
         print "TM initialised with %d candidates (%d to %d characters long)" % \
                 (len(self.candidates), len(self.candidates[0].source), len(self.candidates[-1].source))
@@ -115,7 +116,7 @@ class matcher:
             cmpstring = candidate.source
             if len(cmpstring) > stoplength:
                 break
-            similarity = self.comparer.similarity_real(text, cmpstring, min_similarity)
+            similarity = self.comparer.similarity(text, cmpstring, min_similarity)
             if similarity < min_similarity:
                 continue
             lowestscore = bestcandidates[0][0]
@@ -135,4 +136,20 @@ class matcher:
         bestcandidates.sort(reverse=True)
         return bestcandidates
 
+class terminologymatcher(matcher):
+    """A matcher with settings specifically for terminology matching"""
+    def __init__(self, store, max_candidates=10, min_similarity=75, max_length=250, comparer=None):
+        if comparer is None:
+            comparer = terminology.TerminologyComparer(max_length)
+            matcher.__init__(self, store, max_candidates, min_similarity=10, max_length=max_length, comparer=comparer)
 
+    def inittm(self, store):
+        """Normal initialisation, but convert all source strings to lower case"""
+        matcher.inittm(self, store)
+        for unit in self.candidates:
+            unit.source = unit.source.lower()
+            
+    def matches(self, text):
+        """Normal matching after converting text to lower case"""
+        text = text.lower()
+        return matcher.matches(self, text)
