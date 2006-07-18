@@ -10,7 +10,7 @@ class TestMatch:
     def buildcsv(self, sources, targets=None):
         """Build a csvfile store with the given source and target strings"""
         if targets is None:
-            targets = [""]*len(sources)
+            targets = sources
         else:
             assert len(sources) == len(targets)
         csvfile = csvl10n.csvfile()
@@ -21,9 +21,9 @@ class TestMatch:
             
     def test_matching(self):
         """Test basic matching"""
-        matcher = match.matcher()
         csvfile = self.buildcsv(["hand", "asdf", "fdas", "haas", "pond"])
-        candidates = self.candidatestrings(matcher.matches("hond", csvfile.units))
+        matcher = match.matcher(csvfile)
+        candidates = self.candidatestrings(matcher.matches("hond"))
         candidates.sort()
         assert candidates == ["hand", "pond"]
         message = "Ek skop die bal"
@@ -33,10 +33,18 @@ class TestMatch:
             "Jannie skop die bal", 
             "Ek skop die balle", 
             "Niemand skop die bal nie"])
-        candidates = self.candidatestrings(matcher.matches(message, csvfile.units))
+        matcher = match.matcher(csvfile)
+        candidates = self.candidatestrings(matcher.matches(message))
         assert len(candidates) == 3
         #test that the 100% match is indeed first:
         assert candidates[0] == message
         candidates.sort()
         assert candidates[1:] == ["Ek skop die balle", "Hy skop die bal"]
+
+    def test_terminology(self):
+        csvfile = self.buildcsv(["file", "computer", "directory"])
+        matcher = match.terminologymatcher(csvfile)
+        candidates = self.candidatestrings(matcher.matches("Copy the files from your computer"))
+        candidates.sort()
+        assert candidates == ["computer", "file"]
 
