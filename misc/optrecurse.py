@@ -341,7 +341,7 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     """sets up a progress bar appropriate to the options and files"""
     if options.progress in ('bar', 'verbose'):
       self.progressbar = self.progresstypes[options.progress](0, len(allfiles))
-      print "processing %d files..." % len(allfiles)
+      print >>sys.stderr, "processing %d files..." % len(allfiles)
     else:
       self.progressbar = self.progresstypes[options.progress]()
 

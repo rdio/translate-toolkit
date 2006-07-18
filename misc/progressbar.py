@@ -25,17 +25,17 @@ class DotsProgressBar:
   """an ultra-simple progress indicator that just writes a dot for each action"""
   def __init__(self):
     import sys
-    self.stdout = sys.stdout
+    self.stderr = sys.stderr
     self.amount = 0
 
   def show(self, verbosemessage):
     """show a dot for progress :-)"""
-    self.stdout.write('.')
-    self.stdout.flush()
+    self.stderr.write('.')
+    self.stderr.flush()
 
   def close(self):
-    self.stdout.write('\n')
-    self.stdout.flush()
+    self.stderr.write('\n')
+    self.stderr.flush()
 
   def __del__(self):
     self.close()
@@ -94,8 +94,8 @@ class MessageProgressBar(ProgressBar):
     ProgressBar.__init__(self, *args, **kwargs)
 
   def show(self, verbosemessage):
-    self.sys.stdout.write(verbosemessage + '\n')
-    self.sys.stdout.flush()
+    self.sys.stderr.write(verbosemessage + '\n')
+    self.sys.stderr.flush()
 
 class HashProgressBar(ProgressBar):
   """a ProgressBar which knows how to go back to the beginning of the line..."""
@@ -105,12 +105,12 @@ class HashProgressBar(ProgressBar):
     ProgressBar.__init__(self, *args, **kwargs)
 
   def show(self, verbosemessage):
-    self.sys.stdout.write(str(self) + '\r')
-    self.sys.stdout.flush()
+    self.sys.stderr.write(str(self) + '\r')
+    self.sys.stderr.flush()
 
   def close(self):
-    self.sys.stdout.write('\n')
-    self.sys.stdout.flush()
+    self.sys.stderr.write('\n')
+    self.sys.stderr.flush()
 
   def __del__(self):
     self.close()
@@ -122,11 +122,11 @@ class VerboseProgressBar(HashProgressBar):
 
   def show(self, verbosemessage):
     output = str(self)
-    self.sys.stdout.write('\r' + ' '*self.lastwidth)
-    self.sys.stdout.write('\r' + verbosemessage + '\n')
+    self.sys.stderr.write('\r' + ' '*self.lastwidth)
+    self.sys.stderr.write('\r' + verbosemessage + '\n')
     self.lastwidth = len(output)
-    self.sys.stdout.write('\r' + output)
-    self.sys.stdout.flush()
+    self.sys.stderr.write('\r' + output)
+    self.sys.stderr.flush()
 
 def test(progressbar):
   import time
