@@ -3,9 +3,9 @@ from translate.storage import csvl10n
 
 class TestMatch:
     """Test the matching class"""
-    def candidatestrings(self, list):
+    def candidatestrings(self, units):
         """returns only the candidate strings out of the list with (score, string) tuples"""
-        return [original for score, original, translation in list]
+        return [unit.source for unit in units]
 
     def buildcsv(self, sources, targets=None):
         """Build a csvfile store with the given source and target strings"""

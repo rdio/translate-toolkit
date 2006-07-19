@@ -25,6 +25,7 @@ import Levenshtein
 import terminology
 import heapq
 from translate.storage import base
+from translate.storage import po
 
 def sourcelen(unit):
     """Returns the length of the source string"""
@@ -134,7 +135,17 @@ class matcher:
         bestcandidates = filter(notzero, bestcandidates)
         #Sort for use as a general list, and reverse so the best one is at index 0
         bestcandidates.sort(reverse=True)
-        return bestcandidates
+        return self.buildunits(bestcandidates)
+
+    def buildunits(self, candidates):
+        """Builds a list of units conforming to base API, with the score in the comment"""
+        units = []
+        for score, source, target in candidates:
+            newunit = po.pounit(source)
+            newunit.target = target
+            newunit.addnote(str(score))
+            units.append(newunit)
+        return units
 
 class terminologymatcher(matcher):
     """A matcher with settings specifically for terminology matching"""

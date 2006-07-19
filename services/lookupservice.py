@@ -95,8 +95,12 @@ class lookupServer(SimpleXMLRPCServer):
         self.matcher.setparameters(max_candidates=max_candidates, min_similarity=min_similarity)
         candidates = self.matcher.matches(message)
         clean_candidates = []
-        # We might have gotten multistrings, so just convert them for now
-	for (score, original, translation) in candidates:
+        for unit in candidates:
+            score = float(unit.getnotes())
+            original = unit.source
+            translation = unit.target
+            
+            # We might have gotten multistrings, so just convert them for now
             if isinstance(original, multistring):
                 original = unicode(original)
             if isinstance(translation, multistring):
