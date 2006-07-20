@@ -143,7 +143,7 @@ class matcher:
         for score, source, target in candidates:
             newunit = po.pounit(source)
             newunit.target = target
-            newunit.addnote(str(score))
+            newunit.addnote("%d%%" % score)
             units.append(newunit)
         return units
 
@@ -157,10 +157,37 @@ class terminologymatcher(matcher):
     def inittm(self, store):
         """Normal initialisation, but convert all source strings to lower case"""
         matcher.inittm(self, store)
+        self.store = store
+        self.store.makeindex()
         for unit in self.candidates:
             unit.source = unit.source.lower()
             
     def matches(self, text):
-        """Normal matching after converting text to lower case"""
+        """Normal matching after converting text to lower case. Then replace
+        with the original unit to retain comments, etc."""
         text = text.lower()
-        return matcher.matches(self, text)
+        matches = matcher.matches(self, text)
+        newmatches = []
+        for match in matches:
+            # lowercasing means we might not get it again, then we just use
+            # the candidate
+            # TODO: 
+            if match.source in self.store.sourceindex:
+                oldunit = self.store.sourceindex[match.source]
+                if oldunit.target == match.target:
+                    newunit = oldunit
+                    # Should we add the score?
+                    oldunit.addnote(match.getnotes())
+                else:
+                    for unit in self.store.units:
+                        if unit == match:
+                            newunit = unit
+                            break
+                    else:
+                        # Actually a big problem
+                        newunit = match
+            else:
+                newunit = match
+            newmatches.append(newunit)
+        return newmatches
+
