@@ -83,7 +83,7 @@ msgstr "Vind\\Opsies"
         csvfile = self.po2csv(minipo)
         print minipo
         print csvfile
-        assert csvfile.findunit(r'Find\\Options').target == r'Vind\\Opsies'
+        assert csvfile.findunit(r'Find\Options').target == r'Vind\Opsies'
 
     def test_singlequotes(self):
         """Tests that single quotes are preserved correctly"""
