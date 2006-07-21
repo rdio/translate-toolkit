@@ -19,7 +19,7 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""classes that hold units of .oo files (ooelement) or entire files (oofile)
+"""classes that hold units of .oo files (oounit) or entire files (oofile)
 these are specific .oo files for localisation exported by OpenOffice - SDF format
 See http://l10n.openoffice.org/L10N_Framework/Intermediate_file_format.html
 FIXME: add simple test which reads in a file and writes it out again"""
@@ -101,15 +101,15 @@ class ooline:
     """get the key that identifies the resource"""
     return (self.project, self.sourcefile, self.resourcetype, self.groupid, self.localid, self.platform)
 
-class ooelement:
+class oounit:
   """this represents a number of translations of a resource"""
   def __init__(self):
-    """construct the ooelement"""
+    """construct the oounit"""
     self.languages = {}
     self.lines = []
 
   def addline(self, line):
-    """add a line to the ooelement"""
+    """add a line to the oounit"""
     self.languages[line.languageid] = line
     self.lines.append(line)
 
@@ -126,10 +126,11 @@ class ooelement:
 
 class oofile:
   """this represents an entire .oo file"""
+  UnitClass = oounit
   def __init__(self, input=None):
     """constructs the oofile"""
     self.oolines = []
-    self.ooelements = []
+    self.units = []
     self.ookeys = {}
     self.filename = "(unknown file)"
     self.languages = []
@@ -141,8 +142,8 @@ class oofile:
     key = thisline.getkey()
     element = self.ookeys.get(key, None)
     if element is None:
-      element = ooelement()
-      self.ooelements.append(element)
+      element = self.UnitClass()
+      self.units.append(element)
       self.ookeys[key] = element
     element.addline(thisline)
     self.oolines.append(thisline)
@@ -175,7 +176,7 @@ class oofile:
   def getoutput(self):
     """converts all the lines back to tab-delimited form"""
     lines = []
-    for oe in self.ooelements:
+    for oe in self.units:
       if len(oe.lines) > 2:
         warnings.warn("contains %d lines (should be 2 at most): languages %r" % (len(oe.lines), oe.languages))
         oekeys = [line.getkey() for line in oe.lines]

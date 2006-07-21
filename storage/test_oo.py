@@ -25,8 +25,8 @@ class TestOO:
         """checks that a simple oo entry is parsed correctly"""
         oosource = r'svx	source\dialog\numpages.src	0	string	RID_SVXPAGE_NUM_OPTIONS	STR_BULLET			0	en-US	Character				20050924 09:13:58'
         oofile = self.ooparse(oosource)
-        assert len(oofile.ooelements) == 1
-        oe = oofile.ooelements[0]
+        assert len(oofile.units) == 1
+        oe = oofile.units[0]
         assert oe.languages.keys() == ["en-US"]
         ol = oofile.oolines[0]
         assert ol.getkey() == ('svx', r'source\dialog\numpages.src', 'string', 'RID_SVXPAGE_NUM_OPTIONS', 'STR_BULLET', '')
@@ -37,8 +37,8 @@ class TestOO:
         """checks that a simple entry with quickhelptext is parsed correctly"""
         oosource = r'sd	source\ui\dlg\sdobjpal.src	0	imagebutton	FLTWIN_SDOBJPALETTE	BTN_SYMSIZE			16	en-US	-		Toggle Symbol Size		20051017 21:40:56'
         oofile = self.ooparse(oosource)
-        assert len(oofile.ooelements) == 1
-        oe = oofile.ooelements[0]
+        assert len(oofile.units) == 1
+        oe = oofile.units[0]
         assert oe.languages.keys() == ["en-US"]
         ol = oofile.oolines[0]
         assert ol.getkey() == ('sd', r'source\ui\dlg\sdobjpal.src', 'imagebutton', 'FLTWIN_SDOBJPALETTE', 'BTN_SYMSIZE', '')
@@ -49,8 +49,8 @@ class TestOO:
         """checks that a simple entry with title text is parsed correctly"""
         oosource = r'dbaccess	source\ui\dlg\indexdialog.src	0	querybox	QUERY_SAVE_CURRENT_INDEX				0	en-US	Do you want to save the changes made to the current index?			Exit Index Design	20051017 21:40:56'
         oofile = self.ooparse(oosource)
-        assert len(oofile.ooelements) == 1
-        oe = oofile.ooelements[0]
+        assert len(oofile.units) == 1
+        oe = oofile.units[0]
         assert oe.languages.keys() == ["en-US"]
         ol = oofile.oolines[0]
         assert ol.getkey() == ('dbaccess', r'source\ui\dlg\indexdialog.src', 'querybox', 'QUERY_SAVE_CURRENT_INDEX', '', '')
@@ -62,15 +62,15 @@ class TestOO:
         oosource = '\n'
         warnings.simplefilter("error")
         oofile = self.ooparse(oosource)
-        assert len(oofile.ooelements) == 0
+        assert len(oofile.units) == 0
 
     def test_fieldlength(self):
         """checks that we process the length field correctly"""
         # Since the actual field is 18 characters long and the field width in this example is 16 we're not sure if they even use this!
         oosource = r'sd	source\ui\dlg\sdobjpal.src	0	imagebutton	FLTWIN_SDOBJPALETTE	BTN_SYMSIZE			16	en-US	-		Toggle Symbol Size		20051017 21:40:56'
         oofile = self.ooparse(oosource)
-        assert len(oofile.ooelements) == 1
-        oe = oofile.ooelements[0]
+        assert len(oofile.units) == 1
+        oe = oofile.units[0]
         assert oe.languages.keys() == ["en-US"]
         ol = oofile.oolines[0]
         assert int(ol.width) == 16

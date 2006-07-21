@@ -104,7 +104,7 @@ class oo2po:
     headerpo.othercomments.append("# extracted from %s\n" % theoofile.filename)
     thepofile.units.append(headerpo)
     # go through the oo and convert each element
-    for theoo in theoofile.ooelements:
+    for theoo in theoofile.units:
       polist = self.convertelement(theoo)
       for thepo in polist:
         thepofile.units.append(thepo)
