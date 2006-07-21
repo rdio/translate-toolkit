@@ -44,10 +44,11 @@ class oo2po:
     thepo.sourcecomments.append("#: " + key + "." + subkey + "\n")
     if getattr(translators_comment, subkey).strip() != "":
       thepo.automaticcomments.append("#. %s\n" % getattr(translators_comment, subkey))
-    text1 = getattr(part1, subkey).replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t")
-    text2 = getattr(part2, subkey).replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t")
-    thepo.msgid = po.quoteforpo(text1)
-    thepo.msgstr = po.quoteforpo(text2)
+    #TODO: Do better
+    text1 = getattr(part1, subkey).replace("\\\\", "\a").replace("\\n", "\n").replace("\\t", "\t").replace("\\r", "\r").replace("\a", "\\")
+    text2 = getattr(part2, subkey).replace("\\\\", "\a").replace("\\n", "\n").replace("\\t", "\t").replace("\\r", "\r").replace("\a", "\\")
+    thepo.source = text1
+    thepo.target = text2
     return thepo
 
   def makekey(self, ookey):
