@@ -836,7 +836,7 @@ class pofile(base.TranslationStore):
           # TODO: find a better way of working out if we actually read anything
           if linesprocessed >= 1 and newpe.getoutput():
             self.units.append(newpe)
-            if self.encoding is None and newpe.isheader():
+            if newpe.isheader():
               headervalues = self.parseheader()
               contenttype = headervalues.get("Content-Type", None)
               if contenttype is not None:
@@ -847,6 +847,7 @@ class pofile(base.TranslationStore):
                 if self.encoding is not None and self.encoding.lower() != 'charset':
                   lines = self.decode(lines)
             if self.encoding is None: #still have not found an encoding, let's assume UTF-8
+              #TODO: This might be dead code
               self.encoding = 'utf-8'
               lines = self.decode(lines)
               self.units = []
