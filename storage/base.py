@@ -64,7 +64,7 @@ class TranslationUnit(object):
             for item in location:
                 self.addlocation(item)
         else:
-            addlocation(location)
+            self.addlocation(location)
 
     def getnotes(self):
         """Returns all notes about this unit. It will probably be freeform text
