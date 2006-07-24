@@ -5,13 +5,12 @@ from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import poxliff
 from translate.storage import lisa
-import os, tempfile
 from xml.parsers.xmlproc import xmlval, xmlproc
 from py import test
 
 class TestPO2XLIFF:
 
-    def po2xliff(self, posource, sourcelanguage='en', targetlanguage='af'):
+    def po2xliff(self, posource, sourcelanguage='en', targetlanguage=None):
         """helper that converts po source to xliff source without requiring files"""
 	pofile = po.pofile(posource)
 	convertor = po2xliff.po2xliff()
@@ -22,6 +21,7 @@ class TestPO2XLIFF:
         """Retrieves the trans-unit node from the dom"""
         assert len(xliff.units) == 1
         unit = xliff.units[0]
+        return unit
  
     def test_minimal(self):
         minipo = '''msgid "red"\nmsgstr "rooi"\n'''
@@ -257,4 +257,13 @@ msgstr[2] "iiinkomo"
         print xmltext
 	assert len(xliff.units) == 1
         assert xliff.translate("cow") == "inkomo"
+
+    def test_language_tags(self):
+        minipo = r'''msgid "Een"
+msgstr "Uno"
+'''
+        xliff = self.po2xliff(minipo, "af", "es")
+        print dir(xliff)
+        assert xliff.sourcelanguage == "af"
+        assert xliff.targetlanguage == "es"
         
