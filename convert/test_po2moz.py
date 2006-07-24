@@ -4,7 +4,6 @@ from translate.convert import po2moz
 from translate.convert import test_convert
 from translate.misc import wStringIO
 from translate.storage import po
-import sys
 
 class TestPO2Moz:
   pass

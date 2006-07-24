@@ -6,7 +6,7 @@ from translate.convert import test_convert
 from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import tmx
-import os, tempfile
+import os
 from xml.parsers.xmlproc import xmlval, xmlproc
 from py import test
 
@@ -67,7 +67,6 @@ msgstr "Toepassings"
         tmx = self.po2tmx(minipo, targetlanguage="xh")
         print "The generated xml:"
         print str(tmx)
-        xmltext = str(tmx)
         tuv = tmx.document.getElementsByTagName("tuv")[1]
         #tag[0] will be the source, we want the target tuv
         assert tuv.getAttribute("xml:lang") == "xh"

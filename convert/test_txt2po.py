@@ -4,7 +4,6 @@ from translate.convert import txt2po
 from translate.convert import test_convert
 from translate.misc import wStringIO
 from translate.storage import po
-import sys
 
 class TestTxt2PO:
   pass

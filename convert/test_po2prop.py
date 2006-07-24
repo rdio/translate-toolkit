@@ -7,7 +7,6 @@ from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import properties
 from py import test
-import warnings
 
 class TestPO2Prop:
     def po2prop(self, posource):
