@@ -381,9 +381,11 @@ def test_simplecaps():
     assert checks.passes(ooochecker.simplecaps, "SOLK (%PRODUCTNAME Link)", "SOLK (%PRODUCTNAME Thumanyo)")
     assert checks.passes(ooochecker.simplecaps, "%STAROFFICE Image", "Tshifanyiso tsha %STAROFFICE")
 
-# def test_spellcheck():
-#     """tests simple caps"""
-#     stdchecker = checks.StandardChecker()
+def test_spellcheck():
+    """tests spell checking"""
+    stdchecker = checks.StandardChecker(checks.CheckerConfig(targetlanguage="af"))
+    assert checks.passes(stdchecker.spellcheck, "Great trek", "Groot trek")
+    assert checks.fails(stdchecker.spellcheck, "Final deadline", "End of the road")
 
 def test_startcaps():
     """tests starting capitals"""
