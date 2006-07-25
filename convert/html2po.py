@@ -38,17 +38,9 @@ class html2po:
       thepofile.units.append(headerpo)
     contents = inputfile.read()
     htmlparser.feed(contents)
-    for blocknum in range(len(htmlparser.units)):
-      block = htmlparser.units[blocknum].strip()
-      if not block: continue
-      thepo = po.pounit(encoding="UTF-8")
-      thepo.sourcecomments.append("#: %s:%d\n" % (filename,blocknum+1))
-      block = sre.sub("<br>\n?", "<br>\n", block).split("\n")
-      thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in block]
-      if len(thepo.msgid) > 1:
-        thepo.msgid = [quote.quotestr("")] + thepo.msgid
-      thepo.msgstr = []
-      thepofile.units.append(thepo)
+    for htmlunit in htmlparser.units:
+      thepo = thepofile.addsourceunit(htmlunit.source)
+      thepo.addlocations(htmlunit.getlocations())
     thepofile.removeduplicates(duplicatestyle)
     return thepofile
 
