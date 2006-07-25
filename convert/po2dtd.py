@@ -22,7 +22,6 @@
 """script that converts a .po file to a UTF-8 encoded .dtd file as used by mozilla
 either done using a template or just using the .po file"""
 
-import sys
 from translate.storage import dtd
 from translate.storage import po
 from translate.misc import quote
@@ -230,7 +229,6 @@ class po2dtd:
 
   def convertstrings(self,thepo,thedtd):
     # currently let's just get the msgid back
-    backslash = '\\'
     unquotedid = po.unquotefrompo(thepo.msgid, False)
     unquotedstr = po.unquotefrompo(thepo.msgstr, False)
     # choose the msgstr unless it's empty, in which case choose the msgid

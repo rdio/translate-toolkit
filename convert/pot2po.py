@@ -35,7 +35,7 @@ def convertpot(inputfile, outputfile, templatefile):
   po_revision_date = True
   last_translator = None
   language_team = None
-  mimeversion = None
+  mime_version = None
   kwargs = {}
   if templatefile is not None:
     templatepo = po.pofile(templatefile)
@@ -67,12 +67,12 @@ def convertpot(inputfile, outputfile, templatefile):
     elif key == "POT-Creation-Date":
       pot_creation_date = value
     elif key == "MIME-Version":
-      mimeversion = value
+      mime_version = value
     else:
       kwargs[key] = value
   outputheaderpo = outputpo.makeheader(charset=charset, encoding=encoding, project_id_version=project_id_version,
     pot_creation_date=pot_creation_date, po_revision_date=po_revision_date, last_translator=last_translator,
-    language_team=language_team, **kwargs)
+    language_team=language_team, mime_version=mime_version, **kwargs)
   outputpo.units.append(outputheaderpo)
   for thepo in inputpo.units:
     if not thepo.isheader():

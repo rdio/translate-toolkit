@@ -21,7 +21,6 @@
 
 """Converts Mozilla .dtd and .properties files to Gettext .po files"""
 
-import os.path
 from translate.convert import dtd2po
 from translate.convert import prop2po
 from translate.convert import html2po
