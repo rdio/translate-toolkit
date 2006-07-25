@@ -153,15 +153,6 @@ class TestHTML2PO:
         self.compareunit(pofile, 1, "Duplicate")
         self.compareunit(pofile, 2, "Duplicate")
 
-    def test_multiline(self):
-        """check that we correctly place double quotes around strings from multiline tag content"""
-        markup = '<p>First line.\nSecond line.\nThird line.</p>'
-        expected = 'msgid ""\n"First line."\n"Second line."\n"Third line."\n'
-        pofile = self.html2po(markup)
-        self.countunits(pofile, 1)
-        print expected
-        assert pofile.units[0].getmsgpartstr("msgid", pofile.units[0].msgid) == expected
-
     def test_multiline_reflow(self):
         """check that we reflow multiline content to make it more readable for translators"""
         self.check_single('''<td valign="middle" width="96%"><font class="headingwhite">South
