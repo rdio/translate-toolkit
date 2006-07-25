@@ -292,6 +292,8 @@ def test_printf():
     assert checks.passes(stdchecker.printf, "I am %#100.50hhf", "Ek is %#100.50hhf")
     assert checks.fails(stdchecker.printf, "I am %#100s", "Ek is %10s")
     assert checks.fails(stdchecker.printf, "... for user %.100s on %.100s:", "... lomuntu osebenzisa i-%. I-100s e-100s:")
+    # Reordering
+    assert checks.passes(stdchecker.printf, "String %s and number %d", "Nommer %2$d and string %1$s")
 
 def test_puncspacing():
     """tests spacing after punctuation"""
