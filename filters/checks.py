@@ -125,7 +125,7 @@ def fails(filterfunction, str1, str2):
 punctuation_chars = u'.,;:!?-@#$%^*_()[]{}/\\\'"<>\u2018\u2019\u201a\u201b\u201c\u201d\u201e\u201f\u2032\u2033\u2034\u2035\u2036\u2037\u2039\u203a\xab\xbb\xb1\xb3\xb9\xb2\xb0\xbf\xa9\xae\xd7\xa3\xa5\u2026'
 # printf syntax based on http://en.wikipedia.org/wiki/Printf which doens't cover everything we leave \w instead of specifying the exact letters as
 # this should capture printf types defined in other platforms.
-printf_pat = sre.compile('%([+#-]*(?:\d+)*(?:\.\d+)*(hh\|h\|l\|ll)*[\w%])')
+printf_pat = sre.compile('%((?:(?P<ord>\d+)\$)*(?P<fullvar>[+#-]*(?:\d+)*(?:\.\d+)*(hh\|h\|l\|ll)*(?P<type>[\w%])+))')
 
 #(tag, attribute, value) specifies a certain attribute which can be changed/
 #ignored if it exists inside tag. In the case where there is a third element
@@ -408,7 +408,23 @@ class StandardChecker(TranslationChecker):
 
   def printf(self, str1, str2):
     """checks whether printf format strings match"""
-    return printf_pat.findall(str1) == printf_pat.findall(str2)
+    count1 = count2 = None
+    for var_num2, match2 in enumerate(printf_pat.finditer(str2)):
+      count2 = var_num2 + 1
+      if match2.group('ord'):
+        for var_num1, match1 in enumerate(printf_pat.finditer(str1)):
+          count1 = var_num1 + 1
+          if int(match2.group('ord')) == var_num1 + 1:
+            if match2.group('fullvar') != match1.group('fullvar'):
+              return 0
+      else:
+        for var_num1, match1 in enumerate(printf_pat.finditer(str1)):
+          count1 = var_num1 + 1
+          if (var_num1 == var_num2) and (match1.group('fullvar') != match2.group('fullvar')):
+            return 0
+    if count1 != count2 or count1 is None or count2 is None:
+      return 0
+    return 1
 
   def accelerators(self, str1, str2):
     """checks whether accelerators are consistent between the two strings"""

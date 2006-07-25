@@ -293,7 +293,10 @@ def test_printf():
     assert checks.fails(stdchecker.printf, "I am %#100s", "Ek is %10s")
     assert checks.fails(stdchecker.printf, "... for user %.100s on %.100s:", "... lomuntu osebenzisa i-%. I-100s e-100s:")
     # Reordering
+    assert checks.passes(stdchecker.printf, "String %s and number %d", "String %1$s en nommer %2$d")
+    assert checks.passes(stdchecker.printf, "String %1$s and number %2$d", "String %1$s en nommer %2$d")
     assert checks.passes(stdchecker.printf, "String %s and number %d", "Nommer %2$d and string %1$s")
+    assert checks.fails(stdchecker.printf, "String %s and number %d", "Nommer %1$d and string %2$s")
 
 def test_puncspacing():
     """tests spacing after punctuation"""
