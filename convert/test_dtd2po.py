@@ -289,6 +289,25 @@ class TestDTD2PO:
         pounit = self.singleelement(pofile)
         assert po.unquotefrompo(pounit.msgid, True) == "<p>Test me.</p>"
 
+    def test_merging_with_new_untranslated(self):
+        """test that when we merge in new untranslated strings with existing translations we manage the encodings properly"""
+        # This should probably be in test_po.py but was easier to do here
+        dtdtemplate = '''<!ENTITY unreadFolders.label "Unread">\n<!ENTITY viewPickerUnread.label "Unread">\n<!ENTITY unreadColumn.label "Unread">'''
+        dtdlanguage = '''<!ENTITY viewPickerUnread.label "Непрочетени">\n<!ENTITY unreadFolders.label "Непрочетени">'''
+        pofile = self.dtd2po(dtdlanguage, dtdtemplate)
+        print pofile
+        assert pofile.units[1].source == "Unread"
+
+    def test_merge_without_template(self):
+        """test that we we manage the case where we merge and their is no template file"""
+        # If we supply a template file we should fail if the template file does not exist or is blank.  We should
+        # not put the translation in as the source.
+        dtdtemplate = ''
+        dtdsource = '<!ENTITY no.template "Target">'
+        pofile = self.dtd2po(dtdsource, dtdtemplate)
+        print pofile
+        assert self.countelements(pofile) == 0
+
 class TestDTD2POCommand(test_convert.TestConvertCommand, TestDTD2PO):
     """Tests running actual dtd2po commands on files"""
     convertmodule = dtd2po
