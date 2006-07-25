@@ -26,17 +26,28 @@ from translate.storage import base
 from HTMLParser import HTMLParser
 
 class htmlunit(base.TranslationUnit):
+  """A unit of translatable/localisable HTML content"""
+  def __init__(self, source=None):
+    self.locations = []
+    self.setsource(source)
 
   def getsource(self):
     #TODO:do as much as possible
-    return self.text("&amp;", "&").replace("&lt;", "<")
+    return self.text.replace("&amp;", "&").replace("&lt;", "<").replace("\n", "")
   
   def setsource(self, source):
     self.text = source.replace("&", "&amp;").replace("<", "&lt;")
   source = property(getsource, setsource)
 
+  def addlocation(self, location):
+    self.locations.append(location)
+
+  def getlocations(self):
+    return self.locations
+
 
 class htmlfile(HTMLParser, base.TranslationStore):
+  UnitClass = htmlunit
   markingtags = ["p", "title", "h1", "h2", "h3", "h4", "h5", "h6", "th", "td", "div", "li", "dt", "dd", "address", "caption"]
   markingattrs = []
   includeattrs = ["alt", "summary", "standby", "abbr", "content"]
@@ -50,6 +61,7 @@ class htmlfile(HTMLParser, base.TranslationStore):
       self.parse(htmlsrc)
     
     self.currentblock = ""
+    self.currentblocknum = 0
     self.currenttag = None
     self.includeuntaggeddata = includeuntaggeddata
     HTMLParser.__init__(self)
@@ -61,18 +73,22 @@ class htmlfile(HTMLParser, base.TranslationStore):
     return parsedfile
   parsestring = classmethod(parsestring)
 
+  def addcurrentblock(self):
+    if self.currentblock:
+      self.currentblocknum += 1
+      unit = self.addsourceunit(self.currentblock.strip())
+      unit.addlocation("%s:%d" % (self.filename, self.currentblocknum))
+
 
 #From here on below, follows the methods of the HTMLParser
 
   def startblock(self, tag):
-    if self.currentblock:
-      self.units.append(self.currentblock)
+    self.addcurrentblock()
     self.currentblock = ""
     self.currenttag = tag
 
   def endblock(self):
-    if self.currentblock:
-      self.units.append(self.currentblock)
+    self.addcurrentblock()
     self.currentblock = ""
     self.currenttag = None
 
@@ -84,7 +100,10 @@ class htmlfile(HTMLParser, base.TranslationStore):
       if attrname in self.markingattrs:
         newblock = 1
       if attrname in self.includeattrs:
-        self.units.append(attrvalue)
+        self.currentblocknum += 1
+        unit = self.addsourceunit(attrvalue)
+        unit.addlocation("%s:%d" % (self.filename, self.currentblocknum))
+
     if newblock:
       self.startblock(tag)
     elif self.currenttag is not None:
@@ -93,7 +112,9 @@ class htmlfile(HTMLParser, base.TranslationStore):
   def handle_startendtag(self, tag, attrs):
     for attrname, attrvalue in attrs:
       if attrname in self.includeattrs:
-        self.units.append(attrvalue)
+        self.currentblocknum += 1
+        unit = self.addsourceunit(attrvalue)
+        unit.addlocation("%s:%d" % (self.filename, self.currentblocknum))
     if self.currenttag is not None:
       self.currentblock += self.get_starttag_text()
 
