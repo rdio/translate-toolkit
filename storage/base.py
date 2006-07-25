@@ -52,7 +52,7 @@ class TranslationUnit(object):
         format doesn't support it."""
         return []
     
-    def addlocation(self, locatin):
+    def addlocation(self, location):
         """Add one location to the list of locations. Shouldn't be implemented
         if the format doesn't support it."""
         pass
