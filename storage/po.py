@@ -349,7 +349,7 @@ class pounit(base.TranslationUnit):
       if self.msgid != otherpo.msgid:
         self.markfuzzy()
     else:
-      if self.msgstr != otherpo.msgstr:
+      if self.target != otherpo.target:
         self.markfuzzy()
 
   def isheader(self):
