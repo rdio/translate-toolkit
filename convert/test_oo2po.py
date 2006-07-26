@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from translate.convert import oo2po
 from translate.convert import test_convert
@@ -131,4 +132,19 @@ class TestOO2POCommand(test_convert.TestConvertCommand, TestOO2PO):
         self.run_command("simple.oo", "simple.pot", pot=True, multifile="onefile")
         assert os.path.isfile(self.get_testfilename("simple.pot"))
 
-        
+    def test_remove_duplicates(self):
+        """test that removing of duplicates works correctly (bug 171)"""
+        oosource = r'''
+sd	source\ui\animations\SlideTransitionPane.src	0	checkbox	DLG_SLIDE_TRANSITION_PANE	CB_AUTO_PREVIEW	HID_SD_SLIDETRANSITIONPANE_CB_AUTO_PREVIEW		1	en-US	Automatic preview				20060725 03:26:42
+sd	source\ui\animations\AnimationSchemesPane.src	0	checkbox	DLG_ANIMATION_SCHEMES_PANE	CB_AUTO_PREVIEW	HID_SD_ANIMATIONSCHEMESPANE_CB_AUTO_PREVIEW		1	en-US	Automatic preview				20060725 03:26:42
+sd	source\ui\animations\CustomAnimationCreateDialog.src	0	checkbox	RID_TP_CUSTOMANIMATION_ENTRANCE	CBX_PREVIEW			143	en-US	Automatic preview				20060725 03:26:42
+sd	source\ui\animations\CustomAnimationCreateDialog.src	0	checkbox	RID_TP_CUSTOMANIMATION_ENTRANCE	CBX_PREVIEW			143	fr	Aperçu automatique				20060725 03:26:42
+sd	source\ui\animations\CustomAnimationSchemesPane.src	0	checkbox	DLG_CUSTOMANIMATION_SCHEMES_PANE	4			0	en-US	Automatic preview				20060725 03:26:42
+sd	source\ui\animations\CustomAnimationSchemesPane.src	0	checkbox	DLG_CUSTOMANIMATION_SCHEMES_PANE	4			0	fr	Aperçu automatique				20060725 03:26:42
+'''
+        self.create_testfile("simple.oo", oosource)
+        self.run_command("simple.oo", "simple.po", language="fr", multifile="onefile", error="traceback")
+        pofile = po.pofile(self.open_testfile("simple.po"))
+        assert len(pofile.units) == 2
+        assert pofile.units[1].target == "Aperçu automatique"
+
