@@ -81,6 +81,9 @@ class TranslationUnit(object):
         """Indicates whether this unit is fuzzy"""
         return False
 
+    def isheader(self):
+        return False
+
     def hasplural(self):
         """Tells whether or not this specific unit has plural strings."""
         #TODO: Reconsider
