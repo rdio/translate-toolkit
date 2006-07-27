@@ -94,6 +94,21 @@ class TranslationUnit(object):
         if self.target == "" or overwrite:
             self.target = otherunit.target
 
+    def buildfromunit(cls, unit):
+        """build a native unit from a foreign unit, preserving as much as 
+        possible information"""
+        if type(unit) == cls and hasattr(unit, "copy") and iscallable(unit.copy):
+            return unit.copy()
+        newunit = cls(unit.source)
+        newunit.target = unit.target
+        newunit.markfuzzy(unit.isfuzzy())
+        locations = unit.getlocations()
+        if locations: newunit.addlocations(locations)
+        notes = unit.getnotes()
+        if notes: newunit.addnote(notes)
+        return newunit
+    buildfromunit = classmethod(buildfromunit)
+
 class TranslationStore(object):
     """Base class for stores for multiple translation units of type UnitClass"""
     UnitClass = TranslationUnit
