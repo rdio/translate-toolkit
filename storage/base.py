@@ -160,7 +160,7 @@ class TranslationStore(object):
         """Reads the given file (or opens the given filename) and parses back to an object"""
         if isinstance(storefile, basestring):
             storefile = open(storefile, "r")
-        if "r" in storefile.mode:
+        if "r" in getattr(storefile, "mode", "r"):
           storestring = storefile.read()
         else:
           storestring = ""
