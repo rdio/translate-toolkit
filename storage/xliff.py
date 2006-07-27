@@ -243,6 +243,11 @@ class xlifffile(lisa.LISAfile):
         """returns the name of the given file"""
         return filenode.getAttribute("original")
 
+    def getfilenames(self):
+        """returns all filenames in this XLIFF file"""
+        filenodes = self.document.getElementsByTagName("file")
+        return [self.getfilename(filenode) for filenode in filenodes]
+
     def getfilenode(self, filename):
         """finds the filenode with the given name"""
         filenodes = self.document.getElementsByTagName("file")
@@ -250,6 +255,19 @@ class xlifffile(lisa.LISAfile):
             if self.getfilename(filenode) == filename:
                 return filenode
         return None
+
+    def getdatatype(self, filename=None):
+        """Returns the datatype of the stored file. If no filename is given,
+        the datatype of the first file is given."""
+        if filename:
+            node = self.getfilenode(filename)
+            if node:
+                return node.getAttribute("datatype")
+        else:
+            filenames = self.getfilenames()
+            if len(filenames) > 0 and filenames[0] != "NoName":
+                return self.getdatatype(filenames[0])
+        return ""
 
     def removedefaultfile(self):
         """We want to remove the default file-tag as soon as possible if we 
@@ -341,7 +359,8 @@ class xlifffile(lisa.LISAfile):
 
         if xliff.units:
             header = xliff.units[0]
-            if "gettext-domain-header" in header.getrestype() and cls.__name__.lower() != "poxlifffile":
+            if ("gettext-domain-header" in header.getrestype() or xliff.getdatatype() == "po") \
+                    and cls.__name__.lower() != "poxlifffile":
                 import poxliff
                 storefile.seek(0)
                 xliff = poxliff.PoXliffFile.parsefile(storefile)
