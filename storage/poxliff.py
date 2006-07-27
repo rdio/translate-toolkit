@@ -249,7 +249,10 @@ class PoXliffUnit(xliff.xliffunit):
             for (type,text) in commentpairs:
                 comments.append(text)
         return "\n".join(comments)
-    
+
+    def isheader(self):
+        return "gettext-domain-header" in self.getrestype()
+
     def createfromxmlElement(cls, element, document):
         if element.tagName == "trans-unit":
             object = cls(None, document=document, empty=True)
@@ -282,6 +285,15 @@ class PoXliffFile(xliff.xlifffile):
         unit.xmlelement.setAttribute("xml:space", "preserve")
         return unit
 
+    def header(self):
+        """Attempt to return the unit that corresponds to the PO header unit"""
+        if len(self.units) > 0:
+            candidate = self.units[0]
+            if candidate.isheader():
+                return candidate
+        else:
+            return None
+    
     def addplural(self, source, target, filename, createifmissing=False):
         """This method should now be unnecessary, but is left for reference"""
         assert isinstance(source, multistring)
