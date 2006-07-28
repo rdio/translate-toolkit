@@ -39,11 +39,15 @@ class TestProp(test_monolingual.TestMonolingualStore):
     def test_unicode_escaping(self):
         """check that escapes unicode is converted properly"""
         propsource = "unicode=\u0411\u0416\u0419\u0428"
+        messagevalue = u'\u0411\u0416\u0419\u0428'.encode("UTF-8")
         propfile = self.propparse(propsource)
         assert len(propfile.units) == 1
         propunit = propfile.units[0]
         assert propunit.name == "unicode"
         assert propunit.source.encode("UTF-8") == "БЖЙШ"
+        regensource = str(propfile)
+        assert messagevalue in regensource
+        assert "\\u" not in regensource
 
     def test_newlines_startend(self):
         """check that we preserver \n that appear at start and end of properties"""
