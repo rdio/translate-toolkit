@@ -141,7 +141,7 @@ class propfile(base.TranslationStore):
         # otherwise, this is a definition
         else:
           newunit.name = line[:equalspos].strip()
-          newunit.msgid = line[equalspos+1:].lstrip(' ')
+          newunit.msgid = line[equalspos+1:].lstrip()
           # backslash at end means carry string on to next line
           if newunit.msgid[-1:] == '\\':
             inmultilinemsgid = 1
