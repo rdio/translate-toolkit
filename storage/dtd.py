@@ -25,6 +25,8 @@ these are specific .dtd files for localisation used by mozilla"""
 from translate.storage import base
 from translate.misc import quote
 
+import sys
+
 def quotefordtd(source):
   if '"' in source:
     if "'" in source:
@@ -312,10 +314,14 @@ class dtdfile(base.TranslationStore):
       linesprocessed = 1 # to initialise loop
       while linesprocessed >= 1:
         newdtd = dtdunit()
-        linesprocessed = newdtd.parse("\n".join(lines[start:end]))
+        try:
+          linesprocessed = newdtd.parse("\n".join(lines[start:end]))
+          if linesprocessed >= 1 and (not newdtd.isnull() or newdtd.unparsedlines):
+            self.units.append(newdtd)
+        except Exception, e:
+          print >> sys.stderr, e
+          print >> sys.stderr, "Error occured between lines %d and %d:\n%s" % (start+1, end, "\n".join(lines[start:end]))
         start += linesprocessed
-        if linesprocessed >= 1 and (not newdtd.isnull() or newdtd.unparsedlines):
-          self.units.append(newdtd)
 
   def parsestring(cls, dtdsrc):
     """read the source code of a dtd file in and include them as dtdunits in a new dtdfile object"""
