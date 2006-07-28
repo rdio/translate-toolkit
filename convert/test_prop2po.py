@@ -88,6 +88,13 @@ class TestProp2PO:
         pounit = self.singleelement(pofile)
         assert pounit.source == "This setence will keep its 4 spaces at the end.    "
 
+    def test_tab_at_start_of_value(self):
+        """check that tabs in a property are ignored where appropriate"""
+        propsource = r"property	=	value"
+        pofile = self.prop2po(propsource)
+        pounit = self.singleelement(pofile)
+        assert pounit.getlocations()[0] == "property"
+        assert pounit.source == "value"
 
     def test_unicode(self):
         """checks that unicode entries convert properly"""
@@ -97,7 +104,6 @@ class TestProp2PO:
         pounit = self.singleelement(pofile)
         print repr(pofile.units[0].msgstr)
         print repr(pounit.msgid)
-        postr = str(pounit)
         assert pounit.source == u'Norsk bokm\u00E5l'
 
     def test_multiline_escaping(self):
@@ -124,6 +130,7 @@ prefPanel-smime=Security'''
 cmd_addEngine_accesskey = A'''
         pofile = self.prop2po(propsource)
         pounit = self.singleelement(pofile)
+        assert pounit.target == "&Add Engines..."
 
     def test_dont_translate(self):
         """check that we know how to ignore don't translate instructions in properties files (bug #116)"""
@@ -168,6 +175,13 @@ cmd_addEngine_accesskey = A'''
         pofile = self.prop2po(propsource)
         unit = self.singleelement(pofile)
         assert unit.source == "\nvalue\n"
+
+    def test_unassociated_comments(self):
+        """check that we can handle comments not directly associated with a property"""
+        propsource = '''#### Commnet\n\nprop=value\n'''
+        pofile = self.prop2po(propsource)
+        unit = self.singleelement(pofile)
+        assert unit.source == "value"
 
 class TestProp2POCommand(test_convert.TestConvertCommand, TestProp2PO):
     """Tests running actual prop2po commands on files"""
