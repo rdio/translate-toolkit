@@ -77,6 +77,8 @@ class propunit(base.TranslationUnit):
     if self.isblank():
       return "".join(self.comments + ["\n"])
     else:
+      if "\\u" in self.msgid:
+        self.msgid = quote.mozillapropertiesencode(quote.mozillapropertiesdecode(self.msgid))
       return "".join(self.comments + ["%s=%s\n" % (self.name, self.msgid)])
 
   def getlocations(self):
