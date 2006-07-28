@@ -201,7 +201,7 @@ def escapesinglequotes(source):
   "Returns the same string, with single quotes doubled"
   return source.replace("'","''")
 
-def mozillapropertiesencode(source):
+def javapropertiesencode(source):
   """encodes source in the escaped-unicode encoding used by mozilla .properties files"""
   output = ""
   for char in source:
@@ -212,6 +212,17 @@ def mozillapropertiesencode(source):
       output += str(char)
     else:
       output += "\\u%04X" % charnum
+  return output
+
+def mozillapropertiesencode(source):
+  """encodes source in the escaped-unicode encoding used by mozilla .properties files"""
+  output = ""
+  for char in source:
+    charnum = ord(char)
+    if char in controlchars:
+      output += controlchars[char]
+    else:
+      output += char
   return output
 
 propertyescapes = {
