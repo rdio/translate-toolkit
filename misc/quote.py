@@ -202,7 +202,7 @@ def escapesinglequotes(source):
   return source.replace("'","''")
 
 def javapropertiesencode(source):
-  """encodes source in the escaped-unicode encoding used by mozilla .properties files"""
+  """encodes source in the escaped-unicode encoding used by Java .properties files"""
   output = ""
   for char in source:
     charnum = ord(char)
@@ -215,7 +215,7 @@ def javapropertiesencode(source):
   return output
 
 def mozillapropertiesencode(source):
-  """encodes source in the escaped-unicode encoding used by mozilla .properties files"""
+  """encodes source in the escaped-unicode encoding used by Mozilla .properties files"""
   output = ""
   for char in source:
     charnum = ord(char)
