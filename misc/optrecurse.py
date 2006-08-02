@@ -404,6 +404,10 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     for inputpath in inputfiles:
       try:
         templatepath = self.gettemplatename(options, inputpath)
+        # If we have a recursive template, but the template doesn't have this
+        # input file, let's drop it.
+        if options.recursivetemplate and templatepath is None:
+          continue
         outputformat, fileprocessor = self.getoutputoptions(options, inputpath, templatepath)
         fullinputpath = self.getfullinputpath(options, inputpath)
         fulltemplatepath = self.getfulltemplatepath(options, templatepath)
