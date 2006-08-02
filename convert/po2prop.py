@@ -61,6 +61,7 @@ class reprop:
           self.podict[entity] = propstring
 
   def convertline(self, line):
+    returnline = ""
     # handle multiline msgid if we're in one
     if self.inmultilinemsgid:
       msgid = quote.rstripeol(line).strip()
@@ -68,15 +69,15 @@ class reprop:
       self.inmultilinemsgid = (msgid[-1:] == '\\')
       # if we're echoing...
       if self.inecho:
-        return line
+        returnline = line
     # otherwise, this could be a comment
     elif line.strip()[:1] == '#':
-      return quote.rstripeol(line)+eol
+      returnline = quote.rstripeol(line)+eol
     else:
       equalspos = line.find('=')
       # if no equals, just repeat it
       if equalspos == -1:
-        return quote.rstripeol(line)+eol
+        returnline = quote.rstripeol(line)+eol
       # otherwise, this is a definition
       else:
         # backslash at end means carry string on to next line
@@ -89,11 +90,13 @@ class reprop:
           postr = self.podict[name]
           if isinstance(postr, str):
             postr = postr.decode('utf8')
-          return name+"="+quote.mozillapropertiesencode(postr)+eol
+          returnline = name+"="+quote.mozillapropertiesencode(postr)+eol
         else:
           self.inecho = 1
-          return line+eol
-    return ""
+          returnline = line+eol
+    if isinstance(returnline, unicode):
+      returnline = returnline.encode('utf-8')
+    return returnline
 
 def convertprop(inputfile, outputfile, templatefile, includefuzzy=False):
   inputpo = po.pofile(inputfile)
