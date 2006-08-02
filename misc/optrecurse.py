@@ -327,6 +327,8 @@ class RecursiveOptionParser(optparse.OptionParser, object):
         outputformat = inputext
       elif templateext:
         outputformat = templateext
+      elif ("*", "*") in options.outputoptions:
+        outputformat = None
       else:
         if self.usetemplates:
           if templateext is None:
@@ -600,7 +602,10 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     """gets an output filename based on the input filename"""
     if not inputname or not options.recursiveoutput: return options.output
     inputbase, inputext = self.splitinputext(inputname)
-    return inputbase + os.extsep + outputformat
+    outputname = inputbase
+    if outputformat:
+      outputname += os.extsep + outputformat
+    return outputname
 
   def isvalidinputname(self, options, inputname):
     """checks if this is a valid input filename"""
