@@ -422,7 +422,12 @@ class StandardChecker(TranslationChecker):
           count1 = var_num1 + 1
           if (var_num1 == var_num2) and (match1.group('fullvar') != match2.group('fullvar')):
             return 0
-    if count1 != count2 or count1 is None or count2 is None:
+
+    if count2 is None:
+      if list(printf_pat.finditer(str1)):
+        return 0
+
+    if (count1 or count2) and (count1 != count2):
       return 0
     return 1
 
