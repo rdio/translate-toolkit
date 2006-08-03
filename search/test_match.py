@@ -41,6 +41,30 @@ class TestMatch:
         candidates.sort()
         assert candidates[1:] == ["Ek skop die balle", "Hy skop die bal"]
 
+    def test_multiple_store(self):
+        """Test using multiple datastores"""
+        csvfile1 = self.buildcsv(["hand", "asdf", "fdas"])
+        csvfile2 = self.buildcsv(["haas", "pond"])
+        matcher = match.matcher([csvfile1, csvfile2])
+        candidates = self.candidatestrings(matcher.matches("hond"))
+        candidates.sort()
+        assert candidates == ["hand", "pond"]
+        message = "Ek skop die bal"
+        csvfile1 = self.buildcsv(
+            ["Hy skop die bal", 
+            message, 
+            "Jannie skop die bal"])
+        csvfile2 = self.buildcsv(
+            ["Ek skop die balle", 
+            "Niemand skop die bal nie"])
+        matcher = match.matcher([csvfile1, csvfile2])
+        candidates = self.candidatestrings(matcher.matches(message))
+        assert len(candidates) == 3
+        #test that the 100% match is indeed first:
+        assert candidates[0] == message
+        candidates.sort()
+        assert candidates[1:] == ["Ek skop die balle", "Hy skop die bal"]
+
     def test_terminology(self):
         csvfile = self.buildcsv(["file", "computer", "directory"])
         matcher = match.terminologymatcher(csvfile)
