@@ -407,6 +407,7 @@ class RecursiveOptionParser(optparse.OptionParser, object):
         # If we have a recursive template, but the template doesn't have this
         # input file, let's drop it.
         if options.recursivetemplate and templatepath is None:
+          self.warning("No template at %s. Skipping %s." % (templatepath, inputpath))
           continue
         outputformat, fileprocessor = self.getoutputoptions(options, inputpath, templatepath)
         fullinputpath = self.getfullinputpath(options, inputpath)
