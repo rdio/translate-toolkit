@@ -42,6 +42,7 @@ class matcher:
         self.comparer = comparer
         self.setparameters(max_candidates, min_similarity, max_length)
         self.inittm(store)
+        self.addpercentage = True
         
     def usable(self, unit):
         """Returns whether this translation unit is usable for TM"""
@@ -60,18 +61,22 @@ class matcher:
         """Initialises the memory for later use. We use simple base units for 
         speedup."""
         self.existingunits = {}
-        self.candidates = []
+        self.candidates = base.TranslationStore()
         
-        candidates = filter(self.usable, store.units)
-        for candidate in candidates:
-            simpleunit = base.TranslationUnit(candidate.source)
-            simpleunit.target = candidate.target
-            self.candidates.append(simpleunit)
-        self.candidates.sort(key=sourcelen)
-        if not self.candidates:
+        if not isinstance(store, list):
+            store = [store]
+        for file in store:
+            candidates = filter(self.usable, file.units)
+            for candidate in candidates:
+                simpleunit = base.TranslationUnit(candidate.source)
+                simpleunit.target = candidate.target
+                simpleunit.addnote(candidate.getnotes())
+                self.candidates.units.append(simpleunit)
+        self.candidates.units.sort(key=sourcelen)
+        if not self.candidates.units:
             raise Exception("No usable translation memory")
         print "TM initialised with %d candidates (%d to %d characters long)" % \
-                (len(self.candidates), len(self.candidates[0].source), len(self.candidates[-1].source))
+                (len(self.candidates.units), len(self.candidates.units[0].source), len(self.candidates.units[-1].source))
 
     def setparameters(self, max_candidates=10, min_similarity=75, max_length=70):
         """Sets the parameters without reinitialising the tm. If a parameter 
@@ -93,7 +98,7 @@ class matcher:
     def matches(self, text):
         """Returns a list of possible matches for text in candidates with the associated similarity.
         Return value is a list containing tuples (score, original, translation)."""
-        bestcandidates = [(0.0,"","")]*self.MAX_CANDIDATES
+        bestcandidates = [(0.0,None)]*self.MAX_CANDIDATES
         heapq.heapify(bestcandidates)
         #We use self.MIN_SIMILARITY, but if we already know we have max_candidates
         #that are better, we can adjust min_similarity upwards for speedup
@@ -105,7 +110,7 @@ class matcher:
         # minimum source string length to be considered
         startlength = self.getstartlength(min_similarity, text)
         startindex = 0
-        for index, candidate in enumerate(self.candidates):
+        for index, candidate in enumerate(self.candidates.units):
             if len(candidate.source) >= startlength:
                 startindex = index
                 break
@@ -113,7 +118,7 @@ class matcher:
         # maximum source string length to be considered
         stoplength = self.getstoplength(min_similarity, text) 
 
-        for candidate in self.candidates[startindex:]:
+        for candidate in self.candidates.units[startindex:]:
             cmpstring = candidate.source
             if len(cmpstring) > stoplength:
                 break
@@ -123,7 +128,7 @@ class matcher:
             lowestscore = bestcandidates[0][0]
             if similarity > lowestscore:
                 targetstring = candidate.target
-                heapq.heapreplace(bestcandidates, (similarity, cmpstring, targetstring))
+                heapq.heapreplace(bestcandidates, (similarity, candidate))
                 if min_similarity < bestcandidates[0][0]:
                     min_similarity = bestcandidates[0][0]
                     stoplength = self.getstoplength(min_similarity, text) 
@@ -140,10 +145,12 @@ class matcher:
     def buildunits(self, candidates):
         """Builds a list of units conforming to base API, with the score in the comment"""
         units = []
-        for score, source, target in candidates:
-            newunit = po.pounit(source)
-            newunit.target = target
-            newunit.addnote("%d%%" % score)
+        for score, candidate in candidates:
+            newunit = po.pounit(candidate.source)
+            newunit.target = candidate.target
+            newunit.addnote(candidate.getnotes())
+            if self.addpercentage:
+                newunit.addnote("%d%%" % score)
             units.append(newunit)
         return units
 
@@ -152,14 +159,13 @@ class terminologymatcher(matcher):
     def __init__(self, store, max_candidates=10, min_similarity=75, max_length=250, comparer=None):
         if comparer is None:
             comparer = terminology.TerminologyComparer(max_length)
-            matcher.__init__(self, store, max_candidates, min_similarity=10, max_length=max_length, comparer=comparer)
+        matcher.__init__(self, store, max_candidates, min_similarity=10, max_length=max_length, comparer=comparer)
+        self.addpercentage = False
 
     def inittm(self, store):
         """Normal initialisation, but convert all source strings to lower case"""
         matcher.inittm(self, store)
-        self.store = store
-        self.store.makeindex()
-        for unit in self.candidates:
+        for unit in self.candidates.units:
             unit.source = unit.source.lower()
             
     def matches(self, text):
@@ -167,27 +173,5 @@ class terminologymatcher(matcher):
         with the original unit to retain comments, etc."""
         text = text.lower()
         matches = matcher.matches(self, text)
-        newmatches = []
-        for match in matches:
-            # lowercasing means we might not get it again, then we just use
-            # the candidate
-            # TODO: 
-            if match.source in self.store.sourceindex:
-                oldunit = self.store.sourceindex[match.source]
-                if oldunit.target == match.target:
-                    newunit = oldunit
-                    # Should we add the score?
-                    oldunit.addnote(match.getnotes())
-                else:
-                    for unit in self.store.units:
-                        if unit == match:
-                            newunit = unit
-                            break
-                    else:
-                        # Actually a big problem
-                        newunit = match
-            else:
-                newunit = match
-            newmatches.append(newunit)
-        return newmatches
+        return matches
 
