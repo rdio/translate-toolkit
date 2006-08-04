@@ -358,3 +358,22 @@ msgstr ""
         assert nplural == "2"
         assert plural == "(n != 1)"
 
+    def test_plural_equation_across_lines(self):
+        """test that we work if the plural equation spans more than one line"""
+        posource = r'''msgid ""
+msgstr ""
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+'''
+        pofile = self.poparse(posource)
+        print pofile
+        assert len(pofile.units) == 1
+        header = pofile.units[0]
+        assert header.isheader()
+        assert not header.isblank()
+
+        headeritems = pofile.parseheader()
+        nplural, plural = pofile.getheaderplural()
+        assert nplural == "3"
+        assert plural == "(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)"
+
