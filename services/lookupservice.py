@@ -51,7 +51,7 @@ class lookupServer(SimpleXMLRPCServer):
         self.storage.makeindex()
         self.matcher = match.matcher(storage)
         print "Performing lookup from %d units" % len(storage.units)
-        print "Translation memory using %d units" % len(self.matcher.candidates)
+        print "Translation memory using %d units" % len(self.matcher.candidates.units)
 
     def _dispatch(self, method, params):
         try:
