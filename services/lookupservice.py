@@ -96,7 +96,7 @@ class lookupServer(SimpleXMLRPCServer):
         candidates = self.matcher.matches(message)
         clean_candidates = []
         for unit in candidates:
-            score = float(unit.getnotes())
+            score = unit.getnotes()
             original = unit.source
             translation = unit.target
             
