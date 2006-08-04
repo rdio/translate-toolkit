@@ -38,6 +38,7 @@ class TranslationUnit(object):
         """Constructs a TranslationUnit containing the given source string"""
         self.source = source
         self.target = None
+        self.notes = ""
 
     def __eq__(self, other):
         """Compares two TranslationUnits"""
@@ -70,12 +71,12 @@ class TranslationUnit(object):
         """Returns all notes about this unit. It will probably be freeform text
         or something reasonable that can be synthesised by the format. It should
         not include location comments (see getlocations)"""
-        return ""
+        return getattr(self, "notes", "")
 
     def addnote(self, text, origin=None):
         """Adds a note (comment). 
         Origin specifies who/where the comment comes from"""
-        pass
+        self.notes += text
 
     def isfuzzy(self):
         """Indicates whether this unit is fuzzy"""
