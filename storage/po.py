@@ -748,12 +748,12 @@ class pofile(base.TranslationStore):
     if pluralformvalue is None:
       return None, None
     nplural = sre.findall("nplurals=(.+?);", pluralformvalue)
-    plural = sre.findall("plural=(.+?);", pluralformvalue)
-    if nplural[0] == "INTEGER":
+    plural = sre.findall("plural=(.+?);?$", pluralformvalue)
+    if not nplural or nplural[0] == "INTEGER":
       nplural = None
     else:
       nplural = nplural[0]
-    if plural[0] == "EXPRESSION":
+    if not plural or plural[0] == "EXPRESSION":
       plural = None
     else:
       plural = plural[0]
