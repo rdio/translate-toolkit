@@ -29,14 +29,19 @@ class TerminologyComparer:
 
     def similarity(self, a, b, stoppercentage=40):
         """returns the match quality of term b in the text a"""
-        print a, b
-#        wrd_a = segment.words(a)
-#        wrd_b = segment.words(b)
-#        if len(wrd_a) + len(wrd_b) > 2:
-#            similarity += self.similarity_real(wrd_a, wrd_b, 0)
-#            measurements += 1
-	if b in a:
-            print "%s in %s" % (b, a)
+        # We could segment the words, but mostly it will give less ideal 
+        # results, since we'll miss plurals, etc.  We also can't search for
+        # multiword terms, such as "Free Software"
+        
+        #words = segment.words(a)
+        #if b in words:
+
+        # So we just see if the word occurs anywhere. This is not perfect since
+        # we might get more than we bargained for. The term "form" will be found
+        # in the word "format", for example. A word like "at" will trigger too
+        # many false positives. We could still miss plurals, for example the 
+        # term "category" will not be found in "categories".
+        if b in a:
             return 100
         else:
             return 0
