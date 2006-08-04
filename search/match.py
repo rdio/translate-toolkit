@@ -148,7 +148,9 @@ class matcher:
         for score, candidate in candidates:
             newunit = po.pounit(candidate.source)
             newunit.target = candidate.target
-            newunit.addnote(candidate.getnotes())
+            candidatenotes = candidate.getnotes().strip()
+            if candidatenotes:
+                newunit.addnote(candidatenotes)
             if self.addpercentage:
                 newunit.addnote("%d%%" % score)
             units.append(newunit)
