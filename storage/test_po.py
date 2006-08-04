@@ -339,3 +339,22 @@ msgstr ""
         assert nplural == "2"
         assert plural == "(n != 1)"
 
+    def test_plural_equation_without_semicolon(self):
+        """test that we work if the last semicolon is left out, since gettext
+        tools don't mind them"""
+        posource = r'''msgid ""
+msgstr ""
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+'''
+        pofile = self.poparse(posource)
+        print pofile
+        assert len(pofile.units) == 1
+        header = pofile.units[0]
+        assert header.isheader()
+        assert not header.isblank()
+
+        headeritems = pofile.parseheader()
+        nplural, plural = pofile.getheaderplural()
+        assert nplural == "2"
+        assert plural == "(n != 1)"
+
