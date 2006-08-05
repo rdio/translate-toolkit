@@ -307,22 +307,21 @@ msgstr[1] "Koeie"
         assert len(oldfile.units) == 2
         assert str(oldfile).find("# old lonesome comment\n\n") >= 0
 
-    def test_header(self):
+    def test_header_blank(self):
         """test header functionality"""
         posource = r'''# other comment\n
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2005-08-29 13:27-0500\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"Generated-By: pygettext.py 1.1\n"
-"Last-Translator: Rose Ta <charlvn@gmail.com>\n"
+"POT-Creation-Date: 2006-03-08 17:30+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"POT-Creation-Date: 2005-03-01 19:15\n"
-"Content-Type: text/plain; charset=UTF-8\n"
 "MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 '''
         pofile = self.poparse(posource)
         print pofile
@@ -332,31 +331,36 @@ msgstr ""
         assert not header.isblank()
 
         headeritems = pofile.parseheader()
-        assert headeritems["MIME-Version"] == "1.0"
+        assert headeritems["Project-Id-Version"] == "PACKAGE VERSION"
         assert headeritems["Report-Msgid-Bugs-To"] == ""
+        #assert headeritems["POT-Creation-Date"] == ""
+        assert headeritems["PO-Revision-Date"] == "YEAR-MO-DA HO:MI+ZONE"
+        assert headeritems["Last-Translator"] == "FULL NAME <EMAIL@ADDRESS>"
+        assert headeritems["Language-Team"] == "LANGUAGE <LL@li.org>"
+        assert headeritems["MIME-Version"] == "1.0"
+        assert headeritems["Content-Type"] == "text/plain; charset=UTF-8"
+        assert headeritems["Content-Transfer-Encoding"] == "8bit"
+        assert headeritems["Plural-Forms"] == "nplurals=INTEGER; plural=EXPRESSION;"
         
-        nplural, plural = pofile.getheaderplural()
-        assert nplural == "2"
-        assert plural == "(n != 1)"
-
-    def test_plural_equation_without_semicolon(self):
-        """test that we work if the last semicolon is left out, since gettext
-        tools don't mind them"""
+    def test_plural_equation(self):
+        """test that we work with the equation even is the last semicolon is left out, since gettext
+        tools don't seem to mind"""
         posource = r'''msgid ""
 msgstr ""
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)%s\n"
 '''
-        pofile = self.poparse(posource)
-        print pofile
-        assert len(pofile.units) == 1
-        header = pofile.units[0]
-        assert header.isheader()
-        assert not header.isblank()
+        for colon in ("", ";"):
+          pofile = self.poparse(posource % colon)
+          print pofile
+          assert len(pofile.units) == 1
+          header = pofile.units[0]
+          assert header.isheader()
+          assert not header.isblank()
 
-        headeritems = pofile.parseheader()
-        nplural, plural = pofile.getheaderplural()
-        assert nplural == "2"
-        assert plural == "(n != 1)"
+          headeritems = pofile.parseheader()
+          nplural, plural = pofile.getheaderplural()
+          assert nplural == "2"
+          assert plural == "(n != 1)"
 
     def test_plural_equation_across_lines(self):
         """test that we work if the plural equation spans more than one line"""
