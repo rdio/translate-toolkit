@@ -28,7 +28,7 @@ class TestPO2Html:
         """Tests that entities are handled correctly"""
         htmlsource = '<p>5 less than 6</p>'
         posource = '#:html:3\nmsgid "5 less than 6"\nmsgstr "5 < 6"\n'
-        htmlexpected = '<p>5 &lt; 4</p>'
+        htmlexpected = '<p>5 &lt; 6</p>'
         assert self.converthtml(posource, htmlsource) == htmlexpected
 
         htmlsource = '<p>Fish &amp; chips</p>'
