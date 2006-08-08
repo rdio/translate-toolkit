@@ -39,7 +39,7 @@ classes = {"po": po.pofile, "pot": po.pofile, "csv": csvl10n.csvfile,
 
 def getname(storefile):
     """returns the filename"""
-    if not isinstance(storefile, str):
+    if not isinstance(storefile, basestring):
         if not hasattr(storefile, "name"):
             raise Exception("Factory can only guess filetype from filename")
         else:
