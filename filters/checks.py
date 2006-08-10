@@ -778,7 +778,7 @@ class StandardChecker(TranslationChecker):
                                     "filepaths", "purepunc", "doublespacing",
                                     "sentencecount", "numbers", "isfuzzy",
                                     "isreview", "notranslatewords", "musttranslatewords",
-                                    "emails", "simpleplurals", "urls"),
+                                    "emails", "simpleplurals", "urls", "printf"),
                    "unchanged": ("doublewords",), 
                    "compendiumconflicts": ("accelerators", "brackets", "escapes", 
                                     "numbers", "startpunc", "long", "variables", 
@@ -786,7 +786,7 @@ class StandardChecker(TranslationChecker):
                                     "doublespacing", "endpunc", "xmltags",
                                     "startwhitespace", "endwhitespace",
                                     "singlequoting", "doublequoting",
-                                    "filepaths", "purepunc", "doublewords") }
+                                    "filepaths", "purepunc", "doublewords", "printf") }
 
 # code to actually run the tests (use unittest?)
 
