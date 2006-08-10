@@ -72,7 +72,7 @@ class matcher:
                 simpleunit.target = candidate.target
                 simpleunit.addnote(candidate.getnotes())
                 self.candidates.units.append(simpleunit)
-        self.candidates.units.sort(key=sourcelen)
+        self.candidates.units.sort(sourcelen)
         if not self.candidates.units:
             raise Exception("No usable translation memory")
         print "TM initialised with %d candidates (%d to %d characters long)" % \
@@ -139,7 +139,8 @@ class matcher:
             return score != 0
         bestcandidates = filter(notzero, bestcandidates)
         #Sort for use as a general list, and reverse so the best one is at index 0
-        bestcandidates.sort(reverse=True)
+        bestcandidates.sort()
+        bestcandidates.reverse()
         return self.buildunits(bestcandidates)
 
     def buildunits(self, candidates):
