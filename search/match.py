@@ -159,7 +159,7 @@ class matcher:
 
 class terminologymatcher(matcher):
     """A matcher with settings specifically for terminology matching"""
-    def __init__(self, store, max_candidates=10, min_similarity=75, max_length=250, comparer=None):
+    def __init__(self, store, max_candidates=10, min_similarity=75, max_length=500, comparer=None):
         if comparer is None:
             comparer = terminology.TerminologyComparer(max_length)
         matcher.__init__(self, store, max_candidates, min_similarity=10, max_length=max_length, comparer=comparer)
@@ -170,6 +170,16 @@ class terminologymatcher(matcher):
         matcher.inittm(self, store)
         for unit in self.candidates.units:
             unit.source = unit.source.lower()
+
+    def getstartlength(self, min_similarity, text):
+        # Let's number false matches by not working with terms of two 
+        # characters or less
+        return 3
+            
+    def getstoplength(self, min_similarity, text):
+        # Let's ignore terms with more than 30 characters. Perhaps someone
+        # gave a file with normal (long) translations
+        return 30
             
     def matches(self, text):
         """Normal matching after converting text to lower case. Then replace

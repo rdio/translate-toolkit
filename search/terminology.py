@@ -41,7 +41,7 @@ class TerminologyComparer:
         # in the word "format", for example. A word like "at" will trigger too
         # many false positives. We could still miss plurals, for example the 
         # term "category" will not be found in "categories".
-        if b in a:
+        if b in a[:self.MAX_LEN]:
             return 100
         else:
             return 0
