@@ -31,6 +31,13 @@ def sourcelen(unit):
     """Returns the length of the source string"""
     return len(unit.source)
 
+def sourcelencmp(x, y):
+    """Compares using sourcelen"""
+    # This is mostly useful for Python 2.3
+    xlen = sourcelen(x)
+    ylen = sourcelen(y)
+    return cmp(xlen, ylen)
+
 class matcher:
     """A class that will do matching and store configuration for the matching process"""
     def __init__(self, store, max_candidates=10, min_similarity=75, max_length=70, comparer=None):
@@ -72,7 +79,7 @@ class matcher:
                 simpleunit.target = candidate.target
                 simpleunit.addnote(candidate.getnotes())
                 self.candidates.units.append(simpleunit)
-        self.candidates.units.sort(sourcelen)
+        self.candidates.units.sort(sourcelencmp)
         if not self.candidates.units:
             raise Exception("No usable translation memory")
         print "TM initialised with %d candidates (%d to %d characters long)" % \
