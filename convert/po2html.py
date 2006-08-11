@@ -55,6 +55,9 @@ class po2html:
   def mergefile(self, inputpo, templatetext):
     """converts a file to .po format"""
     htmlresult = templatetext
+    if isinstance(htmlresult, str):
+      #TODO: get the correct encoding
+      htmlresult = htmlresult.decode('utf-8')
     # TODO: use the algorithm from html2po to get blocks and translate them individually
     # rather than using replace
     for thepo in inputpo.units:
@@ -64,7 +67,7 @@ class po2html:
       msgstr = self.wrapmessage(thepo.target)
       if msgstr.strip():
         htmlresult = htmlresult.replace(msgid, msgstr)
-    return htmlresult
+    return htmlresult.encode('utf-8')
 
 def converthtml(inputfile, outputfile, templatefile, wrap=None, includefuzzy=False):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
