@@ -50,7 +50,7 @@ class po2html:
         htmlresult += self.wrapmessage(thepo.target) + "\n" + "\n"
       else:
         htmlresult += self.wrapmessage(thepo.source) + "\n" + "\n"
-    return htmlresult
+    return htmlresult.encode('utf-8')
  
   def mergefile(self, inputpo, templatetext):
     """converts a file to .po format"""
