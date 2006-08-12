@@ -118,6 +118,18 @@ class TestPOT2PO:
         newpo.units = newpo.units[1:]
         assert str(newpo) == potsource + "\n" + posource
 
+    def test_mrging_resurect_obsolete_messages(self):
+        """check that we can reuse old obsolete messages if the message comes back"""
+        potsource = '''#: resurect.c\nmsgid "&About"\nmsgstr ""\n'''
+        posource = '''#~ msgid "&About"\n#~ msgstr "&Omtrent"\n'''
+        expected = '''#: resurect.c\nmsgid "&About"\nmsgstr "&Omtrent"\n'''
+        newpo = self.convertpot(potsource, posource)
+        print newpo
+        assert len(newpo.units) == 2
+        assert newpo.units[0].isheader()
+        newpounit = self.singleunit(newpo)
+        assert str(newpounit) == expected
+
     def test_header_initialisation(self):
         """test to check that we initialise the header correctly"""
         sourcepot = po.pofile()
