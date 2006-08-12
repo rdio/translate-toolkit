@@ -63,7 +63,7 @@ class TestPOT2PO:
         assert str(self.singleunit(newpo)) == poexpected
 
     def xtest_merging_location_change(self):
-        """tests that if the msgid changes but the location stays the same that we merge"""
+        """tests that if the location changes but the msgid stays the same that we merge"""
         potsource = '''#: new_simple.label\n#: new_simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr ""\n'''
         posource = '''#: simple.label\n#: simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
         poexpected = '''#: new_simple.label\n#: new_simple.accesskey\n#, fuzzy\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
@@ -117,6 +117,19 @@ class TestPOT2PO:
         assert newpo.units[2].isobsolete()
         newpo.units = newpo.units[1:]
         assert str(newpo) == potsource + "\n" + posource
+
+    def test_header_initialisation(self):
+        """test to check that we initialise the header correctly"""
+        sourcepot = po.pofile()
+        sourcepot.units.append(sourcepot.makeheader())
+        print sourcepot
+        assert sourcepot.units[0].isheader()
+        newpo = self.convertpot(sourcepot.__str__())
+        print newpo
+        assert newpo.units[0].isheader()
+        sourcepotrevison = sourcepot.parseheader().get('PO-Revision-Date', None)
+        newporevison = newpo.parseheader().get('PO-Revision-Date', None)
+        assert sourcepotrevison == newporevison
 
 class TestPOT2POCommand(test_convert.TestConvertCommand, TestPOT2PO):
     """Tests running actual pot2po commands on files"""
