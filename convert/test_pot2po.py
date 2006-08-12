@@ -71,6 +71,15 @@ class TestPOT2PO:
         print newpo
         assert str(self.singleunit(newpo)) == poexpected
 
+    def test_merging_location_and_whitespace_change(self):
+        """test that even if the location changes that if the msgid only has whitespace changes we can still merge"""
+        potsource = '''#: singlespace.label\n#: singlespace.accesskey\nmsgid "&We have spaces"\nmsgstr ""\n'''
+        posource = '''#: doublespace.label\n#: doublespace.accesskey\nmsgid "&We  have  spaces"\nmsgstr "&One  het  spasies"\n'''
+        poexpected = '''#: singlespace.label\n#: singlespace.accesskey\n#, fuzzy\nmsgid "&We have spaces"\nmsgstr "&One  het  spasies"\n'''
+        newpo = self.convertpot(potsource, posource)
+        print newpo
+        assert str(self.singleunit(newpo)) == poexpected
+
     def test_lines_cut_differently(self):
         """checks that the convertpot function is working"""
         potsource = '''#: simple.label\nmsgid "Line split "\n"differently"\nmsgstr ""\n'''
@@ -118,7 +127,7 @@ class TestPOT2PO:
         newpo.units = newpo.units[1:]
         assert str(newpo) == potsource + "\n" + posource
 
-    def test_mrging_resurect_obsolete_messages(self):
+    def test_merging_resurect_obsolete_messages(self):
         """check that we can reuse old obsolete messages if the message comes back"""
         potsource = '''#: resurect.c\nmsgid "&About"\nmsgstr ""\n'''
         posource = '''#~ msgid "&About"\n#~ msgstr "&Omtrent"\n'''
