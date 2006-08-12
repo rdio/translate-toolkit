@@ -61,9 +61,7 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
         kwargs[key] = value
   inputheadervalues = inputpot.parseheader()
   for key, value in inputheadervalues.iteritems():
-    if key == "Project-Id-Version":
-      project_id_version = value
-    elif key in ("Last-Translator", "Language-Team", "PO-Revision-Date", "Content-Type", "Content-Transfer-Encoding"):
+    if key in ("Project-Id-Version", "Last-Translator", "Language-Team", "PO-Revision-Date", "Content-Type", "Content-Transfer-Encoding"):
       # don't know how to handle these keys, or ignoring them
       pass
     elif key == "POT-Creation-Date":
@@ -75,6 +73,12 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
   outputheaderpo = outputpo.makeheader(charset=charset, encoding=encoding, project_id_version=project_id_version,
     pot_creation_date=pot_creation_date, po_revision_date=po_revision_date, last_translator=last_translator,
     language_team=language_team, mime_version=mime_version, **kwargs)
+  # Get the header comments
+  if templatepofile is not None:
+    if templatepo.units[0].isheader():    
+      outputheaderpo.addnote(templatepo.units[0].getnotes())
+  elif inputpot.units[0].isheader():
+    outputheaderpo.addnote(inputpot.units[0].getnotes())
   outputpo.units.append(outputheaderpo)
   for thepo in inputpot.units:
     if not thepo.isheader():
