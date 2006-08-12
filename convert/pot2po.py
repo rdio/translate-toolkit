@@ -23,9 +23,9 @@
 
 from translate.storage import po
 
-def convertpot(inputfile, outputfile, templatefile):
-  """reads in inputfile pot, adjusts header, writes to outputfile. if templatefile exists, merge translations from it"""
-  inputpo = po.pofile(inputfile)
+def convertpot(inputpotfile, outputpofile, templatepofile):
+  """reads in inputpotfile, adjusts header, writes to outputpofile. if templatepofile exists, merge translations from it into outputpofile"""
+  inputpot = po.pofile(inputpotfile)
   outputpo = po.pofile()
   # header values
   charset = "UTF-8"
@@ -37,8 +37,8 @@ def convertpot(inputfile, outputfile, templatefile):
   language_team = None
   mime_version = None
   kwargs = {}
-  if templatefile is not None:
-    templatepo = po.pofile(templatefile)
+  if templatepofile is not None:
+    templatepo = po.pofile(templatepofile)
     templatepo.makeindex()
     templateheadervalues = templatepo.parseheader()
     for key, value in templateheadervalues.iteritems():
@@ -76,7 +76,7 @@ def convertpot(inputfile, outputfile, templatefile):
   outputpo.units.append(outputheaderpo)
   for thepo in inputpo.units:
     if not thepo.isheader():
-      if templatefile:
+      if templatepofile:
         possiblematches = []
         for location in thepo.getlocations():
           otherpo = templatepo.locationindex.get(location, None)
@@ -96,14 +96,14 @@ def convertpot(inputfile, outputfile, templatefile):
         outputpo.units.append(thepo)
 
   #Let's take care of obsoleted messages
-  if templatefile:
+  if templatepofile:
     for unit in templatepo.units:
       if not inputpo.findunit(unit.source):
         #not in .pot, make it obsolete
         unit.makeobsolete()
       if unit.isobsolete():
         outputpo.units.append(unit)
-  outputfile.write(str(outputpo))
+  outputpofile.write(str(outputpo))
   return 1
 
 def main(argv=None):
