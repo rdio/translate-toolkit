@@ -80,26 +80,27 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
   elif inputpot.units[0].isheader():
     outputheaderpo.addnote(inputpot.units[0].getnotes())
   outputpo.units.append(outputheaderpo)
-  for thepo in inputpot.units:
-    if not thepo.isheader():
+  # Do matching
+  for inputpotunit in inputpot.units:
+    if not inputpotunit.isheader():
       if templatepofile:
         possiblematches = []
-        for location in thepo.getlocations():
-          otherpo = templatepo.locationindex.get(location, None)
-          if otherpo is not None:
-            possiblematches.append(otherpo)
-        if len(thepo.getlocations()) == 0:
-          otherpo = templatepo.findunit(thepo.source)
-        if otherpo:
-          possiblematches.append(otherpo)
-        for otherpo in possiblematches:
+        for location in inputpotunit.getlocations():
+          templatepounit = templatepo.locationindex.get(location, None)
+          if templatepounit is not None:
+            possiblematches.append(templatepounit)
+        if len(inputpotunit.getlocations()) == 0:
+          templatepounit = templatepo.findunit(inputpotunit.source)
+        if templatepounit:
+          possiblematches.append(templatepounit)
+        for templatepounit in possiblematches:
           # TODO: do fuzzy merging if not entirely matching
-          if po.unquotefrompo(thepo.msgid, joinwithlinebreak=False) == po.unquotefrompo(otherpo.msgid, joinwithlinebreak=False):
-            thepo.merge(otherpo)
+          if po.unquotefrompo(inputpotunit.msgid, joinwithlinebreak=False) == po.unquotefrompo(templatepounit.msgid, joinwithlinebreak=False):
+            inputpotunit.merge(templatepounit)
             break
-        outputpo.units.append(thepo)
+        outputpo.units.append(inputpotunit)
       else:
-        outputpo.units.append(thepo)
+        outputpo.units.append(inputpotunit)
 
   #Let's take care of obsoleted messages
   if templatepofile:
