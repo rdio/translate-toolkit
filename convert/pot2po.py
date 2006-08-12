@@ -57,7 +57,7 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
         encoding = value
       else:
         kwargs[key] = value
-  inputheadervalues = inputpo.parseheader()
+  inputheadervalues = inputpot.parseheader()
   for key, value in inputheadervalues.iteritems():
     if key == "Project-Id-Version":
       project_id_version = value
@@ -74,7 +74,7 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
     pot_creation_date=pot_creation_date, po_revision_date=po_revision_date, last_translator=last_translator,
     language_team=language_team, mime_version=mime_version, **kwargs)
   outputpo.units.append(outputheaderpo)
-  for thepo in inputpo.units:
+  for thepo in inputpot.units:
     if not thepo.isheader():
       if templatepofile:
         possiblematches = []
@@ -98,7 +98,7 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
   #Let's take care of obsoleted messages
   if templatepofile:
     for unit in templatepo.units:
-      if not inputpo.findunit(unit.source):
+      if not inputpot.findunit(unit.source):
         #not in .pot, make it obsolete
         unit.makeobsolete()
       if unit.isobsolete():
