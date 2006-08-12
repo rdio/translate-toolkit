@@ -80,6 +80,15 @@ class TestPOT2PO:
         print newpo
         assert str(self.singleunit(newpo)) == poexpected
 
+    def test_merging_accelerator_changes(self):
+        """test that a change in the accelerator localtion still allows merging"""
+        potsource = '''#: someline.c\nmsgid "A&bout"\nmsgstr ""\n'''
+        posource = '''#: someline.c\nmsgid "&About"\nmsgstr "&Info"\n'''
+        poexpected = '''#: someline.c\n#, fuzzy\nmsgid "A&bout"\nmsgstr "&Info"\n'''
+        newpo = self.convertpot(potsource, posource)
+        print newpo
+        assert str(self.singleunit(newpo)) == poexpected
+
     def test_lines_cut_differently(self):
         """checks that the convertpot function is working"""
         potsource = '''#: simple.label\nmsgid "Line split "\n"differently"\nmsgstr ""\n'''
