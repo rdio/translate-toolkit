@@ -32,7 +32,7 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
   encoding = "8bit"
   project_id_version = None
   pot_creation_date = None
-  po_revision_date = True
+  po_revision_date = None
   last_translator = None
   language_team = None
   mime_version = None
