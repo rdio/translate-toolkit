@@ -74,6 +74,13 @@ class TestPOUnit(test_base.TestTranslationUnit):
         assert str(unit) == '# Which meaning of file?\n# Thank you\n#. Verb\nmsgid "File"\nmsgstr ""\n'
 
         assert unit.getnotes() == "Which meaning of file?\nThank you\nVerb"
+
+    def test_notes_withcomments(self):
+        """tests that when we add notes that look like comments that we treat them properly"""
+        unit = self.UnitClass("File")
+        unit.addnote("# Double commented comment")
+        assert str(unit) == '# # Double commented comment\nmsgid "File"\nmsgstr ""\n'
+        assert unit.getnotes() == "# Double commented comment"
         
 class TestPO(test_base.TestTranslationStore):
     StoreClass = po.pofile
@@ -162,6 +169,20 @@ msgstr ""
         print pofile.units[1].msgidcomments
         assert po.unquotefrompo(pofile.units[0].msgidcomments) == "_: source1\n"
         assert po.unquotefrompo(pofile.units[1].msgidcomments) == "_: source2\n"
+
+    def test_msgid_comment(self):
+        """checks that when adding msgid_comments we place them on a newline"""
+        posource = '#: source0\nmsgid "Same"\nmsgstr ""\n\n#: source1\nmsgid "Same"\nmsgstr ""\n'
+        pofile = self.poparse(posource)
+        assert len(pofile.units) == 2
+        pofile.removeduplicates("msgid_comment")
+        assert len(pofile.units) == 2
+        assert po.unquotefrompo(pofile.units[0].msgidcomments) == "_: source0\n"
+        assert po.unquotefrompo(pofile.units[1].msgidcomments) == "_: source1\n"
+        # Now lets check for formating
+        for i in (0, 1):
+          expected = '''#: source%d\nmsgid ""\n"_: source%d\\n"\n"Same"\nmsgstr ""\n''' % (i, i)
+          assert pofile.units[i].__str__() == expected
 
     def test_keep_blanks(self):
         """checks that keeping keeps blanks and doesn't add msgid_comments"""

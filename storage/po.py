@@ -519,6 +519,9 @@ class pounit(base.TranslationUnit):
         # but if the whole string is blank, leave it in
         if len(partlines) > 1:
           partstartline += 1
+      else:
+        # All partcomments should start on a newline
+        partstr += '""\n'
       # combine comments into one if more than one
       if len(partcomments) > 1:
         combinedcomment = []
