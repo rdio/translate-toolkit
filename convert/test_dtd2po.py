@@ -118,7 +118,7 @@ class TestDTD2PO:
 <!ENTITY exampleOpenTag.label "&lt;i&gt;">'''
         pofile = self.dtd2po(dtdsource)
         assert self.countelements(pofile) == 0
-        dtdsource = '''<!-- LOCALIZATION NOTE (imapAdvanced.label): DONT_TRANSLATE "IMAP" -->
+        dtdsource = '''<!-- LOCALIZATION NOTE (imapAdvanced.label): Do not translate "IMAP" -->
 <!ENTITY imapAdvanced.label "Advanced IMAP Server Settings">'''
         pofile = self.dtd2po(dtdsource)
         assert self.countelements(pofile) == 1
