@@ -48,7 +48,9 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
         last_translator = value
       elif key == "Language-Team":
         language_team = value
-      elif key in ("POT-Creation-Date", "PO-Revision-Date", "MIME-Version"):
+      elif key == "PO-Revision-Date":
+        po_revision_date = value
+      elif key in ("POT-Creation-Date", "MIME-Version"):
         # don't know how to handle these keys, or ignoring them
         pass
       elif key == "Content-Type":
