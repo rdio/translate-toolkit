@@ -150,16 +150,53 @@ class TestPOT2PO:
 
     def test_header_initialisation(self):
         """test to check that we initialise the header correctly"""
-        sourcepot = po.pofile()
-        sourcepot.units.append(sourcepot.makeheader())
-        print sourcepot
-        assert sourcepot.units[0].isheader()
-        newpo = self.convertpot(sourcepot.__str__())
-        print newpo
-        assert newpo.units[0].isheader()
-        sourcepotrevison = sourcepot.parseheader().get('PO-Revision-Date', None)
-        newporevison = newpo.parseheader().get('PO-Revision-Date', None)
-        assert sourcepotrevison == newporevison
+        potsource = r'''#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: new@example.com\n"
+"POT-Creation-Date: 2006-11-11 11:11+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Generator: Translate Toolkit 0.10rc2\n"
+'''
+        posource = r'''msgid ""
+msgstr ""
+"Project-Id-Version: Pootle 0.10\n"
+"Report-Msgid-Bugs-To: old@example.com\n"
+"POT-Creation-Date: 2006-01-01 01:01+0100\n"
+"PO-Revision-Date: 2006-09-09 09:09+0900\n"
+"Last-Translator: Joe Translate <joe@example.com>\n"
+"Language-Team: Pig Latin <piglatin@example.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Translate Toolkit 0.9\n"
+'''
+        expected = r'''msgid ""
+msgstr ""
+"Project-Id-Version: Pootle 0.10\n"
+"Report-Msgid-Bugs-To: new@example.com\n"
+"POT-Creation-Date: 2006-11-11 11:11+0000\n"
+"PO-Revision-Date: 2006-09-09 09:09+0900\n"
+"Last-Translator: Joe Translate <joe@example.com>\n"
+"Language-Team: Pig Latin <piglatin@example.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Translate Toolkit 0.10rc2\n"
+'''
+        newpo = self.convertpot(potsource, posource)
+        print 'Output Header:\n%s' % newpo
+        print 'Expected Header:\n%s' % expected
+        assert str(newpo) == expected
 
 class TestPOT2POCommand(test_convert.TestConvertCommand, TestPOT2PO):
     """Tests running actual pot2po commands on files"""

@@ -36,6 +36,7 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
   last_translator = None
   language_team = None
   mime_version = None
+  plural_forms = None
   kwargs = {}
   if templatepofile is not None:
     templatepo = po.pofile(templatepofile)
@@ -57,12 +58,14 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
         kwargs[key] = value
       elif key == "Content-Transfer-Encoding":
         encoding = value
+      elif key == "Plural-Forms":
+        plural_forms = value
       else:
         kwargs[key] = value
   inputheadervalues = inputpot.parseheader()
   for key, value in inputheadervalues.iteritems():
-    if key in ("Project-Id-Version", "Last-Translator", "Language-Team", "PO-Revision-Date", "Content-Type", "Content-Transfer-Encoding"):
-      # don't know how to handle these keys, or ignoring them
+    if key in ("Project-Id-Version", "Last-Translator", "Language-Team", "PO-Revision-Date", "Content-Type", "Content-Transfer-Encoding", "Plural-Forms"):
+      # want to carry these from the template so we ignore them
       pass
     elif key == "POT-Creation-Date":
       pot_creation_date = value
@@ -72,11 +75,13 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
       kwargs[key] = value
   outputheaderpo = outputpo.makeheader(charset=charset, encoding=encoding, project_id_version=project_id_version,
     pot_creation_date=pot_creation_date, po_revision_date=po_revision_date, last_translator=last_translator,
-    language_team=language_team, mime_version=mime_version, **kwargs)
-  # Get the header comments
+    language_team=language_team, mime_version=mime_version, plural_forms=plural_forms, **kwargs)
+  # Get the header comments and fuzziness state
   if templatepofile is not None:
     if templatepo.units[0].isheader():    
-      outputheaderpo.addnote(templatepo.units[0].getnotes())
+      if templatepo.units[0].getnotes():
+        outputheaderpo.addnote(templatepo.units[0].getnotes())
+      outputheaderpo.markfuzzy(templatepo.units[0].isfuzzy())
   elif inputpot.units[0].isheader():
     outputheaderpo.addnote(inputpot.units[0].getnotes())
   outputpo.units.append(outputheaderpo)
