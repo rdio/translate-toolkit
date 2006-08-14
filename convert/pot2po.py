@@ -99,8 +99,7 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
         if templatepounit:
           possiblematches.append(templatepounit)
         for templatepounit in possiblematches:
-          # TODO: do fuzzy merging if not entirely matching
-          if po.unquotefrompo(inputpotunit.msgid, joinwithlinebreak=False) == po.unquotefrompo(templatepounit.msgid, joinwithlinebreak=False):
+          if inputpotunit.source == templatepounit.source:
             inputpotunit.merge(templatepounit)
             break
         outputpo.units.append(inputpotunit)
