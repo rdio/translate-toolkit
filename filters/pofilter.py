@@ -105,7 +105,8 @@ class pocheckfilter:
     target = thepo.target
     if thepo.hasplural():
       failures = self.checker.run_filters(thepo, source, target)
-      failures += self.checker.run_filters(thepo, source.strings[1], target.strings[1])
+      for plural in target.strings[1:]:
+        failures += self.checker.run_filters(thepo, source, plural)
     else:
       failures = self.checker.run_filters(thepo, source, target)
       if failures and self.options.autocorrect:
