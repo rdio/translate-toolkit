@@ -113,6 +113,7 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
             fuzzycandidates = fuzzymatcher.matches(inputpotunit.source)
             if fuzzycandidates:
               inputpotunit.merge(fuzzycandidates[0])
+              templatepo.findunit(fuzzycandidates[0].source).reused = True
         outputpo.units.append(inputpotunit)
       else:
         outputpo.units.append(inputpotunit)
@@ -120,7 +121,7 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
   #Let's take care of obsoleted messages
   if templatepofile:
     for unit in templatepo.units:
-      if not inputpot.findunit(unit.source):
+      if not inputpot.findunit(unit.source) and not hasattr(unit, "reused"):
         #not in .pot, make it obsolete
         unit.makeobsolete()
       if unit.isobsolete():
