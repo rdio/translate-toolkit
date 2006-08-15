@@ -22,6 +22,7 @@
 """converts gettext .pot template to .po translation files, merging in existing translations if present"""
 
 from translate.storage import po
+from translate.search import match
 
 def convertpot(inputpotfile, outputpofile, templatepofile):
   """reads in inputpotfile, adjusts header, writes to outputpofile. if templatepofile exists, merge translations from it into outputpofile"""
@@ -40,6 +41,11 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
   kwargs = {}
   if templatepofile is not None:
     templatepo = po.pofile(templatepofile)
+    try:
+      fuzzymatcher = match.matcher(templatepo, max_candidates=1, min_similarity=75, max_length=1000)
+      fuzzymatcher.addpercentage = False
+    except:
+      fuzzymatcher = None
     templatepo.makeindex()
     templateheadervalues = templatepo.parseheader()
     for key, value in templateheadervalues.iteritems():
@@ -102,6 +108,11 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
           if inputpotunit.source == templatepounit.source:
             inputpotunit.merge(templatepounit)
             break
+        else: 
+          if fuzzymatcher:
+            fuzzycandidates = fuzzymatcher.matches(inputpotunit.source)
+            if fuzzycandidates:
+              inputpotunit.merge(fuzzycandidates[0])
         outputpo.units.append(inputpotunit)
       else:
         outputpo.units.append(inputpotunit)
