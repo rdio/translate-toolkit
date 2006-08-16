@@ -62,11 +62,11 @@ class TestPOT2PO:
         print newpo
         assert str(self.singleunit(newpo)) == poexpected
 
-    def xtest_merging_location_change(self):
+    def test_merging_location_change(self):
         """tests that if the location changes but the msgid stays the same that we merge"""
         potsource = '''#: new_simple.label\n#: new_simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr ""\n'''
         posource = '''#: simple.label\n#: simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
-        poexpected = '''#: new_simple.label\n#: new_simple.accesskey\n#, fuzzy\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
+        poexpected = '''#: new_simple.label\n#: new_simple.accesskey\nmsgid "A &hard coded newline.\\n"\nmsgstr "&Hart gekoeerde nuwe lyne\\n"\n'''
         newpo = self.convertpot(potsource, posource)
         print newpo
         assert str(self.singleunit(newpo)) == poexpected
