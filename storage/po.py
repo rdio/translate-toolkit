@@ -161,19 +161,22 @@ class pounit(base.TranslationUnit):
   # sourcecomments = []     #   #: sourcefile.xxx:35
   # typecomments = []       #   #, fuzzy
   # visiblecomments = []    #   #_ note to translator  (this is nonsense)
-  # obsoletemessages = []   #   #~ msgid ""
   # msgidcomments = []      #   _: within msgid
   # msgid = []
   # msgstr = []
 
   def __init__(self, source=None, encoding="UTF-8"):
     self.encoding = encodingToUse(encoding)
-    self.obsoletemessages = []
+    self.obsolete = False
     self.initallcomments(blankall=True)
     self.msgid = []
     self.msgid_pluralcomments = []
     self.msgid_plural = []
     self.msgstr = []
+    self.obsoletemsgid = []
+    self.obsoletemsgid_pluralcomments = []
+    self.obsoletemsgid_plural = []
+    self.obsoletemsgstr = []
     if source:
       self.setsource(source)
 
@@ -186,12 +189,14 @@ class pounit(base.TranslationUnit):
       self.typecomments = []
       self.visiblecomments = []
       self.msgidcomments = []
+      self.obsoletemsgidcomments = []
     self.allcomments = [self.othercomments, 
                         self.automaticcomments, 
                         self.sourcecomments, 
                         self.typecomments, 
                         self.visiblecomments, 
-                        self.msgidcomments]
+                        self.msgidcomments,
+                        self.obsoletemsgidcomments]
 
   def getsource(self):
     """Returns the unescaped msgid"""
@@ -260,8 +265,7 @@ class pounit(base.TranslationUnit):
     newpo.sourcecomments = self.sourcecomments[:]
     newpo.typecomments = self.typecomments[:]
     newpo.visiblecomments = self.visiblecomments[:]
-    if hasattr(self, "obsoletemessages"):
-      newpo.obsoletemessages = self.obsoletemessages[:]
+    newpo.obsolete = self.obsolete
     newpo.msgidcomments = self.msgidcomments[:]
     newpo.initallcomments()
     newpo.msgid = self.msgid[:]
@@ -271,6 +275,14 @@ class pounit(base.TranslationUnit):
       newpo.msgstr = self.msgstr.copy()
     else:
       newpo.msgstr = self.msgstr[:]
+      
+    newpo.obsoletemsgid = self.obsoletemsgid[:]
+    newpo.obsoletemsgid_pluralcomments = self.obsoletemsgid_pluralcomments[:]
+    newpo.obsoletemsgid_plural = self.obsoletemsgid_plural[:]
+    if isinstance(self.obsoletemsgstr, dict):
+      newpo.obsoletemsgstr = self.obsoletemsgstr.copy()
+    else:
+      newpo.obsoletemsgstr = self.obsoletemsgstr[:]
     return newpo
 
   def msgidlen(self):
@@ -341,7 +353,6 @@ class pounit(base.TranslationUnit):
       mergelists(self.sourcecomments, otherpo.sourcecomments, split=True)
       mergelists(self.typecomments, otherpo.typecomments)
       mergelists(self.visiblecomments, otherpo.visiblecomments)
-      mergelists(self.obsoletemessages, otherpo.obsoletemessages)
       mergelists(self.msgidcomments, otherpo.msgidcomments)
     if self.isblankmsgstr() or overwrite:
       self.target = sre.sub("_: .*?\\n", "", otherpo.target)
@@ -405,21 +416,35 @@ class pounit(base.TranslationUnit):
     return not self.isblank()
 
   def isobsolete(self):
-    return len(self.obsoletemessages) > 0
+    return self.obsolete
 
   def makeobsolete(self):
     """Makes this unit obsolete"""
-    self.obsoletemessages.extend(["#~ msgid %s\n" % msgid for msgid in self.msgid])
-    self.obsoletemessages.extend(["#~ msgid_plural %s\n" % msgid for msgid in self.msgid_plural])
-    if isinstance(self.msgstr, dict):
-      for (id, msgstr) in self.msgstr.iteritems():
-        self.obsoletemessages.extend(["#~ msgstr[%s] %s\n" % (id, msgstrpart) for msgstrpart in msgstr])
-    else:
-      self.obsoletemessages.extend(["#~ msgstr %s\n" % msgstr for msgstr in self.msgstr])
-    self.msgid = []
-    self.msgstr = []
+    self.obsolete = True
+    if self.msgid:
+      self.obsoletemsgid = self.msgid
+      self.msgid = []
+    if self.msgid_plural:
+      self.obsoletemsgid_plural = self.msgid_plural
+      self.msgid_plural = []
+    if self.msgstr:
+      self.obsoletemsgstr = self.msgstr
+      self.msgstr = []
     self.sourcecomments = []
     self.automaticcomments = []
+
+  def resurrect(self):
+    """Makes an obsolete unit normal"""
+    self.obsolete = False
+    if self.obsoletemsgid:
+      self.msgid = self.obsoletemsgid
+      self.obsoletemsgid = []
+    if self.obsoletemsgid_plural:
+      self.msgid_plural = self.obsoletemsgid_plural
+      self.obsoletemsgid_plural = []
+    if self.obsoletemsgstr:
+      self.msgstr = self.obsoletemsgstr
+      self.obsoletemgstr = []
 
   def hasplural(self):
     """returns whether this pounit contains plural strings..."""
@@ -450,10 +475,12 @@ class pounit(base.TranslationUnit):
         elif line[1] == '_':
           self.visiblecomments.append(line)
         elif line[1] == '~':
-          self.obsoletemessages.append(line)
+          line = line[3:]
+          self.obsolete = True
         else:
           self.othercomments.append(line)
-      else:
+#      else:
+      if True:
         if line.startswith('msgid_plural'):
           inmsgid = 0
           inmsgid_plural = 1
@@ -502,6 +529,8 @@ class pounit(base.TranslationUnit):
             if msgstr_pluralid not in self.msgstr:
               self.msgstr[msgstr_pluralid] = []
             self.msgstr[msgstr_pluralid].append(extracted)
+    if self.obsolete:
+      self.makeobsolete()
     return linesprocessed
 
   def getmsgpartstr(self, partname, partlines, partcomments=""):
@@ -565,7 +594,11 @@ class pounit(base.TranslationUnit):
     lines.extend(self.othercomments)
     if self.isobsolete():
       lines.extend(self.typecomments)
-      lines.extend(self.obsoletemessages)
+      lines.append(self.getmsgpartstr("#~ msgid", self.obsoletemsgid, self.obsoletemsgidcomments))
+      if self.obsoletemsgid_plural or self.obsoletemsgid_pluralcomments:
+        lines.append(self.getmsgpartstr("#~ msgid_plural", self.obsoletemsgid_plural, self.obsoletemsgid_pluralcomments))
+      lines.append(self.getmsgpartstr("#~ msgstr", self.obsoletemsgstr))
+      lines = [self.encodeifneccessary(line) for line in lines]
       return "".join(lines)
     # if there's no msgid don't do msgid and string, unless we're the header
     # this will also discard any comments other than plain othercomments...
