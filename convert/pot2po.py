@@ -41,6 +41,9 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
   kwargs = {}
   if templatepofile is not None:
     templatepo = po.pofile(templatepofile)
+    for unit in templatepo.units:
+      if unit.isobsolete():
+        unit.resurrect()
     try:
       fuzzymatcher = match.matcher(templatepo, max_candidates=1, min_similarity=75, max_length=1000)
       fuzzymatcher.addpercentage = False
