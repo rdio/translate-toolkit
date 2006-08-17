@@ -463,7 +463,7 @@ class pounit(base.TranslationUnit):
       if len(line) == 0:
         continue
       elif line[0] == '#':
-        if inmsgstr:
+        if inmsgstr and not line[1] == '~':
           # if we're already in the message string, this is from the next element
           break
         if line[1] == '.':
@@ -479,26 +479,24 @@ class pounit(base.TranslationUnit):
           self.obsolete = True
         else:
           self.othercomments.append(line)
-#      else:
-      if True:
-        if line.startswith('msgid_plural'):
-          inmsgid = 0
-          inmsgid_plural = 1
-          inmsgstr = 0
-          inmsgid_comment = 0
-        elif line.startswith('msgid'):
-          inmsgid = 1
-          inmsgid_plural = 0
-          inmsgstr = 0
-          inmsgid_comment = 0
-        elif line.startswith('msgstr'):
-          inmsgid = 0
-          inmsgid_plural = 0
-          inmsgstr = 1
-          if line.startswith('msgstr['):
-            msgstr_pluralid = int(line[len('msgstr['):line.find(']')].strip())
-          else:
-            msgstr_pluralid = None
+      if line.startswith('msgid_plural'):
+        inmsgid = 0
+        inmsgid_plural = 1
+        inmsgstr = 0
+        inmsgid_comment = 0
+      elif line.startswith('msgid'):
+        inmsgid = 1
+        inmsgid_plural = 0
+        inmsgstr = 0
+        inmsgid_comment = 0
+      elif line.startswith('msgstr'):
+        inmsgid = 0
+        inmsgid_plural = 0
+        inmsgstr = 1
+        if line.startswith('msgstr['):
+          msgstr_pluralid = int(line[len('msgstr['):line.find(']')].strip())
+        else:
+          msgstr_pluralid = None
       extracted = quote.extractstr(line)
       if not extracted is None:
         if inmsgid:
@@ -594,10 +592,15 @@ class pounit(base.TranslationUnit):
     lines.extend(self.othercomments)
     if self.isobsolete():
       lines.extend(self.typecomments)
-      lines.append(self.getmsgpartstr("#~ msgid", self.obsoletemsgid, self.obsoletemsgidcomments))
+      obsoletelines = []
+      obsoletelines.append(self.getmsgpartstr("#~ msgid", self.obsoletemsgid, self.obsoletemsgidcomments))
       if self.obsoletemsgid_plural or self.obsoletemsgid_pluralcomments:
-        lines.append(self.getmsgpartstr("#~ msgid_plural", self.obsoletemsgid_plural, self.obsoletemsgid_pluralcomments))
-      lines.append(self.getmsgpartstr("#~ msgstr", self.obsoletemsgstr))
+        obsoletelines.append(self.getmsgpartstr("#~ msgid_plural", self.obsoletemsgid_plural, self.obsoletemsgid_pluralcomments))
+      obsoletelines.append(self.getmsgpartstr("#~ msgstr", self.obsoletemsgstr))
+      for index, obsoleteline in enumerate(obsoletelines):
+        # We need to account for a multiline msgid or msgstr here
+        obsoletelines[index] = obsoleteline.replace('\n"', '\n#~ "')
+      lines.extend(obsoletelines)
       lines = [self.encodeifneccessary(line) for line in lines]
       return "".join(lines)
     # if there's no msgid don't do msgid and string, unless we're the header
