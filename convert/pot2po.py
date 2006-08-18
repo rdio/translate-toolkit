@@ -123,12 +123,15 @@ def convertpot(inputpotfile, outputpofile, templatepofile):
 
   #Let's take care of obsoleted messages
   if templatepofile:
+    newlyobsoleted = []
     for unit in templatepo.units:
       if not inputpot.findunit(unit.source) and not hasattr(unit, "reused"):
         #not in .pot, make it obsolete
         unit.makeobsolete()
-      if unit.isobsolete():
+        newlyobsoleted.append(unit)
+      elif unit.isobsolete():
         outputpo.units.append(unit)
+    outputpo.units.extend(newlyobsoleted)
   outputpofile.write(str(outputpo))
   return 1
 
