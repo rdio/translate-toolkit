@@ -24,7 +24,7 @@ class TestPOT2PO:
         pooutfile = wStringIO.StringIO()
         pot2po.convertpot(potfile, pooutfile, pofile)
         pooutfile.seek(0)
-	return po.pofile(pooutfile.read())
+        return po.pofile(pooutfile.read())
 
     def singleunit(self, pofile):
         """checks that the pofile contains a single non-header unit, and returns it"""
@@ -129,6 +129,15 @@ class TestPOT2PO:
         """test to check that we place new blank message before obsolete messages"""
         potsource = '''#: newline.c\nmsgid "&About"\nmsgstr ""\n'''
         posource = '''#~ msgid "Old"\n#~ msgstr "Oud"\n'''
+        newpo = self.convertpot(potsource, posource)
+        assert len(newpo.units) == 3
+        assert newpo.units[0].isheader()
+        assert newpo.units[2].isobsolete()
+        newpo.units = newpo.units[1:]
+        assert str(newpo) == potsource + "\n" + posource
+
+        # Now test with real units present in posource
+        posource2 = '''msgid "Old"\nmsgstr "Oud"\n'''
         newpo = self.convertpot(potsource, posource)
         assert len(newpo.units) == 3
         assert newpo.units[0].isheader()
