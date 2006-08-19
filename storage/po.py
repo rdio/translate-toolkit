@@ -424,6 +424,9 @@ class pounit(base.TranslationUnit):
     if self.msgid:
       self.obsoletemsgid = self.msgid
       self.msgid = []
+    if self.msgidcomments:
+      self.obsoletemsgidcomments = self.msgidcomments
+      self.msgidcomments = []
     if self.msgid_plural:
       self.obsoletemsgid_plural = self.msgid_plural
       self.msgid_plural = []
@@ -439,6 +442,9 @@ class pounit(base.TranslationUnit):
     if self.obsoletemsgid:
       self.msgid = self.obsoletemsgid
       self.obsoletemsgid = []
+    if self.obsoletemsgidcomments:
+      self.msgidcomments = self.obsoletemsgidcomments
+      self.obsoletemsgidcomments = []
     if self.obsoletemsgid_plural:
       self.msgid_plural = self.obsoletemsgid_plural
       self.obsoletemsgid_plural = []
