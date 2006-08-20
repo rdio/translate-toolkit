@@ -85,12 +85,17 @@ class reprop:
           self.inmultilinemsgid = 1
         # now deal with the current string...
         name = line[:equalspos].strip()
+        # Calculate space around the equal sign
+        preeqspace = line.lstrip()[line.lstrip().find(' '):equalspos]
+        posteqspacestart = len(line[equalspos+1:])
+        posteqspaceend = len(line[equalspos+1:].lstrip())
+        posteqspace = line[equalspos+1:equalspos+(posteqspacestart-posteqspaceend)+1]
         if self.podict.has_key(name):
           self.inecho = 0
           postr = self.podict[name]
           if isinstance(postr, str):
             postr = postr.decode('utf8')
-          returnline = name+"="+quote.mozillapropertiesencode(postr)+eol
+          returnline = name+preeqspace+"="+posteqspace+quote.mozillapropertiesencode(postr)+eol
         else:
           self.inecho = 1
           returnline = line+eol
