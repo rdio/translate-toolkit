@@ -52,6 +52,7 @@ class po2xliff:
       comment = "\n".join([comment[3:-1] for comment in thepo.automaticcomments])
       if comment:
         unit.createcontextgroup("po-entry", [("x-po-autocomment", comment)], purpose="information")
+        unit.addnote(comment, origin="developer")
     
       #TODO: x-format, etc.
 
@@ -60,7 +61,7 @@ class po2xliff:
     comment = "\n".join([comment[2:-1] for comment in thepo.othercomments])
     if comment:
       unit.createcontextgroup("po-entry", [("x-po-trancomment", comment)], purpose="information")
-      unit.addnote(comment)
+      unit.addnote(comment, origin="po-translator")
       
     return unit
 
