@@ -144,6 +144,11 @@ class xliffunit(lisa.LISAunit):
             #TODO: review decision
             self.xmlelement.setAttribute("approved", "no")
 
+    def istranslated(self):
+        targetnode = self.getlanguageNode(lang=None, index=1)
+        return not targetnode is None and \
+                (targetnode.getAttribute("state") == "translated")
+
     def marktranslated(self):
         targetnode = self.getlanguageNode(lang=None, index=1)
         if not targetnode:
