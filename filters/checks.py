@@ -47,7 +47,7 @@ except ImportError:
     
 def tagname(string):
   """Returns the name of the XML/HTML tag in string"""
-  return sre.match("<[\s/]*(\w*)", string).groups(1)[0]
+  return sre.match("<[\s]*([\w\/]*)", string).groups(1)[0]
 
 def intuplelist(pair, list):
   """Tests to see if pair == (a,b,c) is in list, but handles None entries in 
@@ -65,7 +65,7 @@ def intuplelist(pair, list):
   return pair
 
 def tagproperties(strings, ignore):
-  """Returns all the properties in the XML/HTML tag string as (key,value),
+  """Returns all the properties in the XML/HTML tag string as (tagname,propertyname,propertyvalue),
   but ignore those combinations specified in ignore."""
   properties = []
   for string in strings:
