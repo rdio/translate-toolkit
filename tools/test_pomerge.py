@@ -313,13 +313,15 @@ msgstr ""
 '''
         mergepo = r'''#: sendMsgTitle
 #: sendMsgTitle.accesskey
-msgid "_: sendMsgTitle sendMsgTitle.accesskey\n"
+msgid ""
+"_: sendMsgTitle sendMsgTitle.accesskey\n"
 "Send Message"
 msgstr "Stuur"
 
 #: sendMessageCheckWindowTitle
 #: sendMessageCheckWindowTitle.accesskey
-msgid "_: sendMessageCheckWindowTitle sendMessageCheckWindowTitle.accesskey\n"
+msgid ""
+"_: sendMessageCheckWindowTitle sendMessageCheckWindowTitle.accesskey\n"
 "Send Message"
 msgstr "Stuur"
 '''
