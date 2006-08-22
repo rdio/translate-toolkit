@@ -95,12 +95,12 @@ class matcher:
     def getstoplength(self, min_similarity, text):
         """Calculates a length beyond which we are not interested.
         The extra fat is because we don't use plain character distance only."""
-        return len(text) / (min_similarity/100.0)
+        return min(len(text) / (min_similarity/100.0), self.MAX_LENGTH)
 
     def getstartlength(self, min_similarity, text):
         """Calculates the minimum length we are interested in.
         The extra fat is because we don't use plain character distance only."""
-        return len(text) * (min_similarity/100.0)
+        return max(len(text) * (min_similarity/100.0), 1)
     
     def matches(self, text):
         """Returns a list of possible matches for text in candidates with the associated similarity.

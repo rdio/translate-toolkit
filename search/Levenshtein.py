@@ -34,7 +34,7 @@ class LevenshteinComparer:
 
 #        chr_a = segment.characters(a)
 #        chr_b = segment.characters(b)
-#        if abs(len(chr_a) - len(a)) + abs(len(chr_b) - len(b)):
+#        if chr_a and chr_b and abs(len(chr_a) - len(a)) + abs(len(chr_b) - len(b)):
 #            similarity += self.similarity_real(chr_a, chr_b, stoppercentage)
 #            measurements += 1
 #        else:
@@ -65,11 +65,9 @@ class LevenshteinComparer:
         * Implementation uses memory O(min(len(a), len(b))
         * Excecution time is O(len(a)*len(b))
     """
-        #TODO: consider case sensitivity
-        #TODO: consider word spacing, stripping \n, \r, \t
-        #TODO: consider working by words instead of / in addition to characters
-        #TODO: consider whitespace on edges
         l1, l2 = len(a), len(b)
+	if l1 == 0 or l2 == 0:
+            return 0
         #Let's make l1 the smallest
         if l1 > l2:
             l1,l2 = l2,l1
