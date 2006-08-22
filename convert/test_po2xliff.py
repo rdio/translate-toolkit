@@ -14,7 +14,7 @@ class TestPO2XLIFF:
         """helper that converts po source to xliff source without requiring files"""
 	pofile = po.pofile(posource)
 	convertor = po2xliff.po2xliff()
-	outputxliff = convertor.convertfile(pofile, None)
+	outputxliff = convertor.convertfile(pofile, None, sourcelanguage=sourcelanguage)
 	return poxliff.PoXliffFile(outputxliff)
 	
     def getnode(self, xliff):
@@ -263,7 +263,6 @@ msgstr[2] "iiinkomo"
 msgstr "Uno"
 '''
         xliff = self.po2xliff(minipo, "af", "es")
-        print dir(xliff)
         assert xliff.sourcelanguage == "af"
         assert xliff.targetlanguage == "es"
         
