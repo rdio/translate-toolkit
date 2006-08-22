@@ -21,6 +21,7 @@
 
 """factory methods to build real storage objects that conform to base.py"""
 
+from translate.storage import base
 from translate.storage import po
 from translate.storage import csvl10n
 from translate.storage import xliff
@@ -65,6 +66,8 @@ def getclass(storefile, ignore=None):
 def getobject(storefile, ignore=None):
     """Factory that returns a usable object for the type of file presented.
     Specify ignore to ignore some part at the back of the name (like .gz). """
+    if isinstance(storefile, base.TranslationStore):
+        return storefile
     storefilename = getname(storefile)
     storeclass = getclass(storefilename, ignore)
     if os.path.exists(storefilename) or not getattr(storefile, "closed", True):
