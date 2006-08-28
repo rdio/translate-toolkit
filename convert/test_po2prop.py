@@ -37,6 +37,15 @@ class TestPO2Prop:
         print propfile
         assert propfile == [propexpected]
 
+    def test_space_preservation(self):
+        """check that we preserve any spacing in properties files when merging"""
+        posource = '''#: prop\nmsgid "value"\nmsgstr "waarde"\n'''
+        proptemplate = '''prop  =  value\n'''
+        propexpected = '''prop  =  waarde\n'''
+        propfile = self.merge2prop(proptemplate, posource)
+        print propfile
+        assert propfile == [propexpected]
+
 class TestPO2PropCommand(test_convert.TestConvertCommand, TestPO2Prop):
     """Tests running actual po2prop commands on files"""
     convertmodule = po2prop
