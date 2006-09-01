@@ -163,19 +163,22 @@ def test_escapes():
     stdchecker = checks.StandardChecker()
     assert checks.passes(stdchecker.escapes, r"""_: KDE comment\n
 A sentence""", "I'm correct.")
-    assert checks.passes(stdchecker.escapes, r"A file\n", r"'n Leer\n")
-    assert checks.fails(stdchecker.escapes, r"A file\n", r"'n Leer")
-    assert checks.fails(stdchecker.escapes, r"blah.\nA file", r"bleah. 'n leer")
+    assert checks.passes(stdchecker.escapes, "A file\n", "'n Leer\n")
+    assert checks.fails(stdchecker.escapes, "A file\n", "'n Leer")
+    assert checks.fails(stdchecker.escapes, "blah.\nA file", "bleah. 'n leer")
     assert checks.fails(stdchecker.escapes, r"blah. A file", r"bleah.\n'n leer")
     assert checks.passes(stdchecker.escapes, r"A tab\t", r"'n Tab\t")
     assert checks.fails(stdchecker.escapes, r"A tab\t", r"'n Tab")
     assert checks.passes(stdchecker.escapes, r"An escape escape \\", r"Escape escape \\")
-    assert checks.fails(stdchecker.escapes, r"An escape escape \\", r"Escape escape")
+    assert checks.fails(stdchecker.escapes, r"An escape escape \\", "Escape escape")
     assert checks.passes(stdchecker.escapes, r"A double quote \"", r"Double quote \"")
-    assert checks.fails(stdchecker.escapes, r"A double quote \"", r"Double quote")
+    assert checks.fails(stdchecker.escapes, r"A double quote \"", "Double quote")
     # Escaped escapes
-    assert checks.passes(stdchecker.escapes, r"An escaped newline \\n", r"Escaped newline \\n")
-    assert checks.fails(stdchecker.escapes, r"An escaped newline \\n", r"Escaped newline \n")
+    assert checks.passes(stdchecker.escapes, "An escaped newline \\n", "Escaped newline \\n")
+    assert checks.fails(stdchecker.escapes, "An escaped newline \\n", "Escaped newline \n")
+    # Real example
+    ooochecker = checks.OpenOfficeChecker()
+    assert checks.fails(ooochecker.escapes, "The arrowhead was modified without saving.\nWould you like to save the arrowhead now?", "Ṱhoho ya musevhe yo khwinifhadzwa hu si na u seiva.Ni khou ṱoda u seiva thoho ya musevhe zwino?")
 
 def test_filepaths():
     """tests filepaths"""
