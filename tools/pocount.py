@@ -56,10 +56,10 @@ def wordsinpoel(poel):
 def summarize(title, units, CSVstyle=False):
   # ignore totally blank or header units
   units = filter(lambda poel: not poel.isheader(), units)
-  translated = filter(lambda poel: not poel.isblankmsgstr() and not poel.isfuzzy(), units)
-  fuzzy = filter(lambda poel: poel.isfuzzy() and not poel.isblankmsgstr(), units)
+  translated = self.translatedmessages(units)
+  fuzzy = self.fuzzymessages(units)
   review = filter(lambda poel: poel.isreview(), units)
-  untranslated = filter(lambda poel: poel.isblankmsgstr() and not poel.isobsolete(), units)
+  untranslated = self.untranslatedmessages(units)
   wordcounts = dict(map(lambda poel: (poel, wordsinpoel(poel)), units))
   msgidwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][0], elementlist))
   msgstrwords = lambda elementlist: sum(map(lambda poel: wordcounts[poel][1], elementlist))
@@ -82,6 +82,15 @@ def summarize(title, units, CSVstyle=False):
     if len(review) > 0:
       print "review:       %5d %10d             n/a" % (len(review), msgidwords(review))
     print
+
+def fuzzymessages(units):
+    return filter(lambda unit: unit.isfuzzy() and unit.istranslated(), units)
+
+def translatedmessages(units):
+    return filter(lambda unit: unit.istranslated() and not unit.isfuzzy(), units)
+
+def untranslatedmessages(units):
+    return filter(lambda unit: not unit.istranslated(), units)
 
 class summarizer:
   def __init__(self, filenames, CSVstyle):
