@@ -23,6 +23,7 @@
 """Parent class for LISA standards (TMX, TBX, XLIFF)"""
 
 from translate.storage import base
+from translate.misc.multistring import multistring
 from xml.dom import minidom
 
 def getText(nodelist):
@@ -35,7 +36,7 @@ def getText(nodelist):
             rc.append(node.data)
         elif node.nodeType == node.ELEMENT_NODE:
             rc += getText(node.childNodes)
-    return ''.join(rc)
+    return multistring(''.join(rc))
     #return "".join([t.data for t in node.childNodes if t.nodeType == t.TEXT_NODE])
 
 def _findAllMatches(text,re_obj):
