@@ -61,6 +61,19 @@ class TestXLIFFfile(test_base.TestTranslationStore):
         assert len(notenodes) == 2
         assert not notenodes[0].hasAttribute("from")
         assert notenodes[1].getAttribute("from") == "Mom"
+        assert unit.getnotes(origin="Mom") == "Please buy milk"
+
+        unit.addnote("Don't forget the beer", origin="Dad")
+        notenodes = unit.xmlelement.getElementsByTagName("note")
+        assert len(notenodes) == 3
+        assert notenodes[1].getAttribute("from") == "Mom"
+        assert notenodes[2].getAttribute("from") == "Dad"
+        assert unit.getnotes(origin="Dad") == "Don't forget the beer"
+
+        assert not unit.getnotes(origin="Bob") == "Please buy breadPlease buy milkDon't forget the beer"
+        assert not notenodes[2].getAttribute("from") == "Mom"
+        assert not notenodes[0].hasAttribute("from")
+        assert unit.getnotes() == "Please buy breadPlease buy milkDon't forget the beer"
 
     def test_fuzzy(self):
         xlifffile = xliff.xlifffile()
