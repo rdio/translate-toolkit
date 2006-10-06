@@ -76,7 +76,7 @@ def converttxt(inputfile, outputfile, templatefile, wrap=None):
     templatetext = templatefile.read()
     outputtxt = convertor.mergefile(inputpo, templatetext)
   outputfilepos = outputfile.tell()
-  outputfile.write(outputtxt)
+  outputfile.write(outputtxt.encode('utf-8'))
   return 1
 
 def main(argv=None):
