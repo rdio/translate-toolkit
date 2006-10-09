@@ -43,7 +43,7 @@ class xliff2po:
       thepo.sourcecomments.append("#: %s\n" % " ".join(locations))
 
     #Translator comments
-    notes = transunit.getnotes()
+    notes = transunit.getnotes("po-translator")
     trancomments = transunit.gettranslatorcomments()
     if notes == trancomments or trancomments.find(notes) >= 0:
       notes = ""
