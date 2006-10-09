@@ -58,7 +58,6 @@ class TestPOXLIFFfile(test_xliff.TestXLIFFfile):
   </file>
 </xliff>'''
 
-
     def test_parse(self):
         minixlf = self.xliffskeleton % '''<group restype="x-gettext-plurals">
         <trans-unit id="1[0]" xml:space="preserve">
@@ -75,3 +74,23 @@ class TestPOXLIFFfile(test_xliff.TestXLIFFfile):
         assert xlifffile.translate("cow") == "inkomo"
         assert xlifffile.units[0].source == "cow"
         assert xlifffile.units[0].source == multistring(["cow", "cows"])
+
+    def test_notes(self):
+        minixlf = self.xliffskeleton % '''<group restype="x-gettext-plurals">
+        <trans-unit id="1[0]" xml:space="preserve">
+            <source>cow</source>
+            <target>inkomo</target>
+<note from="po-translator">Zulu translation of program ABC</note>
+<note from="developer">azoozoo come back!</note>
+        </trans-unit>
+        <trans-unit id="1[1]" xml:space="preserve">
+            <source>cows</source>
+            <target>iinkomo</target>
+<note from="po-translator">Zulu translation of program ABC</note>
+<note from="developer">azoozoo come back!</note>
+        </trans-unit>
+</group>'''
+        xlifffile = self.StoreClass.parsestring(minixlf)
+        assert xlifffile.units[0].getnotes() == "Zulu translation of program ABCazoozoo come back!"
+        assert xlifffile.units[0].getnotes("developer") == "azoozoo come back!"
+        assert xlifffile.units[0].getnotes("po-translator") == "Zulu translation of program ABC"
