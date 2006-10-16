@@ -70,11 +70,14 @@ Content-Transfer-Encoding: 8bit'''
             <context context-type="x-po-trancomment">Couldn't do
 it</context>
         </context-group>
+        <note from="po-translator">Couldn't do
+it</note>
 </trans-unit>'''
         pofile = self.xliff2po(minixlf)
         assert pofile.translate("nonsense") == "matlhapolosa"
         assert pofile.translate("bla") is None
         unit = pofile.units[0]
+        assert unit.getnotes("translator") == "Couldn't do\nit"
         assert unit.othercomments == ["# Couldn't do\n", "# it\n"]
         potext = str(pofile)
         assert potext.index("# Couldn't do\n# it\n") >= 0
@@ -88,11 +91,14 @@ it</context>
             <context context-type="x-po-autocomment">Note that this is
 garbage</context>
         </context-group>
+        <note from="developer">Note that this is
+garbage</note>
 </trans-unit>'''
         pofile = self.xliff2po(minixlf)
         assert pofile.translate("nonsense") == "matlhapolosa"
         assert pofile.translate("bla") is None
         unit = pofile.units[0]
+        assert unit.getnotes("developer") == "Note that this is\ngarbage"
         assert unit.automaticcomments == ["#. Note that this is\n", "#. garbage\n"]
         potext = str(pofile)
         assert potext.index("#. Note that this is\n#. garbage\n") >= 0
