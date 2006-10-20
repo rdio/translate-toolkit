@@ -52,6 +52,8 @@ class TextWrapper:
         Expand tabs in input text to spaces before further processing.
         Each tab will become 1 .. 8 spaces, depending on its position in
         its line.  If false, each tab is treated as a single character.
+      drop_whitespace (default: true)
+        Drop leading and trailing whitespace from lines.
       replace_whitespace (default: true)
         Replace all whitespace characters in the input text by spaces
         after tab expansion.  Note that if expand_tabs is false and
@@ -96,6 +98,7 @@ class TextWrapper:
                   initial_indent="",
                   subsequent_indent="",
                   expand_tabs=True,
+                  drop_whitespace=True,
                   replace_whitespace=True,
                   fix_sentence_endings=False,
                   break_long_words=True):
@@ -103,6 +106,7 @@ class TextWrapper:
         self.initial_indent = initial_indent
         self.subsequent_indent = subsequent_indent
         self.expand_tabs = expand_tabs
+        self.drop_whitespace = drop_whitespace
         self.replace_whitespace = replace_whitespace
         self.fix_sentence_endings = fix_sentence_endings
         self.break_long_words = break_long_words
@@ -224,7 +228,7 @@ class TextWrapper:
 
             # First chunk on line is whitespace -- drop it, unless this
             # is the very beginning of the text (ie. no lines started yet).
-            if chunks[0].strip() == '' and lines:
+            if chunks[0].strip() == '' and lines and self.drop_whitespace:
                 del chunks[0]
 
             while chunks:
@@ -245,7 +249,7 @@ class TextWrapper:
                 self._handle_long_word(chunks, cur_line, cur_len, width)
 
             # If the last chunk on this line is all whitespace, drop it.
-            if cur_line and cur_line[-1].strip() == '':
+            if cur_line and cur_line[-1].strip() == '' and self.drop_whitespace:
                 del cur_line[-1]
 
             # Convert current line back to a string and store it in list
