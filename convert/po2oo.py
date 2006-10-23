@@ -177,10 +177,10 @@ class oopocheckfilter(pofilter.pocheckfilter):
         for filtername, filtermessage in filterresult:
           if filtername in self.options.error:
             print >> sys.stderr, "Error at %s::%s: %s" % (filename, thepo.getlocations()[0], filtermessage)
-            return not filteraction in ["exclude", "exclude-serious"]
+            return not filteraction in ["exclude-all", "exclude-serious"]
           if filtername in self.options.warning or self.options.alwayswarn:
             print >> sys.stderr, "Warning at %s::%s: %s" % (filename, thepo.getlocations()[0], filtermessage)
-            return not filteraction in ["exclude"]
+            return not filteraction in ["exclude-all"]
     return True
 
 class oofilteroptions:
@@ -238,8 +238,8 @@ def main(argv=None):
                     help="don't change the timestamps of the strings")
   parser.add_option("", "--nonrecursiveoutput", dest="allowrecursiveoutput", default=True, action="store_false", help="don't treat the output oo as a recursive store")
   parser.add_option("", "--nonrecursivetemplate", dest="allowrecursivetemplate", default=True, action="store_false", help="don't treat the template oo as a recursive store")
-  parser.add_option("", "--filteraction", dest="filteraction", default="exclude-critical", metavar="ACTION",
-                    help="action on pofilter failure: none, warn, exclude-serious, exclude")
+  parser.add_option("", "--filteraction", dest="filteraction", default="none", metavar="ACTION",
+                    help="action on pofilter failure: none (default), warn, exclude-serious, exclude-all")
   parser.add_fuzzy_option()
   parser.add_multifile_option()
   parser.passthrough.append("sourcelanguage")
