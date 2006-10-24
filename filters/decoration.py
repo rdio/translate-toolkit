@@ -102,14 +102,15 @@ def findmarkedvariables(str1, startmarker, endmarker, ignorelist=[]):
       startmatch = currentpos
       currentpos += len(startmarker)
       if endmarker is None:
-        # handle case without an end marker - use any non-alphanumeric character
+        # handle case without an end marker - use any non-alphanumeric character as the end marker, var must be len > 1
         endmatch = currentpos
         for n in range(currentpos, len(str1)):
           if not str1[n].isalnum():
             endmatch = n
             break
         if currentpos == endmatch: endmatch = len(str1)
-        variable = str1[currentpos:endmatch]
+        if currentpos < endmatch:
+          variable = str1[currentpos:endmatch]
         currentpos = endmatch
       elif type(endmarker) == int:
         # setting endmarker to an int means it is a fixed-length variable string (usually endmarker==1)
