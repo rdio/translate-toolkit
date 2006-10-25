@@ -56,8 +56,8 @@ class ConvertOptionParser(optrecurse.RecursiveOptionParser, object):
   def add_duplicates_option(self, default="merge"):
     """adds an option to say what to do with duplicate strings"""
     self.add_option("", "--duplicates", dest="duplicatestyle", default=default,
-      type="choice", choices=["msgid_comment", "merge", "keep", "msgid_comment_all"],
-      help="what to do with duplicate strings (identical source text): merge (default), msgid_comment, keep, msgid_comment_all", metavar="DUPLICATESTYLE")
+      type="choice", choices=["msgid_comment", "msgctxt", "merge", "keep", "msgid_comment_all"],
+      help="what to do with duplicate strings (identical source text): merge (default), msgid_comment, msgctxt, keep, msgid_comment_all", metavar="DUPLICATESTYLE")
     self.passthrough.append("duplicatestyle")
 
   def add_multifile_option(self, default="single"):
