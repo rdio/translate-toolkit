@@ -95,7 +95,8 @@ class ooline:
 
   def getoutput(self):
     """return a line in tab-delimited form"""
-    return "\t".join(self.getparts()).replace("\n", "\\n")
+    parts = [part.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r") for part in self.getparts()]
+    return "\t".join(parts)
 
   def getkey(self):
     """get the key that identifies the resource"""
