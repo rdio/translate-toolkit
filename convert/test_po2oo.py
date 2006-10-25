@@ -62,7 +62,7 @@ class TestPO2OO:
         filter = po2oo.filter
 	pofile = po.pofile()
 	pofile.parse(posource)
-	assert not filter.validelement(pofile.units[0], "dummyname.po", "exclude")
+	assert not filter.validelement(pofile.units[0], "dummyname.po", "exclude-all")
 
     def test_roundtrip_simple(self):
         """checks that simple strings make it through a oo->po->oo roundtrip"""
