@@ -117,7 +117,7 @@ class prop2po:
     thepo.target = ""
     return thepo
 
-def convertprop(inputfile, outputfile, templatefile, pot=False, duplicatestyle="msgid_comment"):
+def convertprop(inputfile, outputfile, templatefile, pot=False, duplicatestyle="msgctxt"):
   """reads in inputfile using properties, converts using prop2po, writes to outputfile"""
   inputprop = properties.propfile(inputfile)
   convertor = prop2po()

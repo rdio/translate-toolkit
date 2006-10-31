@@ -44,7 +44,7 @@ class html2po:
     thepofile.removeduplicates(duplicatestyle)
     return thepofile
 
-def converthtml(inputfile, outputfile, templates, includeuntagged=False, pot=False, duplicatestyle="msgid_comment"):
+def converthtml(inputfile, outputfile, templates, includeuntagged=False, pot=False, duplicatestyle="msgctxt"):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
   convertor = html2po()
   outputfilepos = outputfile.tell()

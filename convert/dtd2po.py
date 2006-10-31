@@ -316,7 +316,7 @@ class dtd2po:
     thepofile.removeduplicates(self.duplicatestyle)
     return thepofile
 
-def convertdtd(inputfile, outputfile, templatefile, pot=False, duplicatestyle="msgid_comment"):
+def convertdtd(inputfile, outputfile, templatefile, pot=False, duplicatestyle="msgctxt"):
   """reads in inputfile and templatefile using dtd, converts using dtd2po, writes to outputfile"""
   inputdtd = dtd.dtdfile(inputfile)
   convertor = dtd2po(blankmsgstr=pot, duplicatestyle=duplicatestyle)

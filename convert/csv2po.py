@@ -175,7 +175,7 @@ class csv2po:
       if thepo.isblankmsgstr():
         missing += 1
 
-def convertcsv(inputfile, outputfile, templatefile, charset=None, columnorder=None, duplicatestyle="keep"):
+def convertcsv(inputfile, outputfile, templatefile, charset=None, columnorder=None, duplicatestyle="msgctxt"):
   """reads in inputfile using csvl10n, converts using csv2po, writes to outputfile"""
   inputcsv = csvl10n.csvfile(inputfile, fieldnames=columnorder)
   if templatefile is None:

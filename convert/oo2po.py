@@ -96,7 +96,7 @@ class oo2po:
     polist = [textpo, quickhelppo, titlepo]
     return polist
 
-  def convertfile(self, theoofile, duplicatestyle="msgid_comment"):
+  def convertfile(self, theoofile, duplicatestyle="msgctxt"):
     """converts an entire oo file to .po format"""
     thepofile = po.pofile()
     # create a header for the file
