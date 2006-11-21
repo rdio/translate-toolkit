@@ -19,9 +19,9 @@
 # along with translate; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""grep for gettext .po localization files"""
+"""grep for localization files in various formats, eg. gettext .po and xliff"""
 
-from translate.storage import po
+from translate.storage import factory
 from translate.misc import optrecurse
 from translate.misc.multistring import multistring
 import sre
@@ -98,11 +98,11 @@ class pogrepfilter:
 
   def filterfile(self, thepofile):
     """runs filters on a file"""
-    thenewpofile = po.pofile()
+    thenewpofile = type(thepofile)()
     for thepo in thepofile.units:
-      matches = self.filterelement(thepo)
-      if matches:
-        thenewpofile.units.append(thepo)
+      # filterelement() returns True when a unit matches.
+      if self.filterelement(thepo):
+        thenewpofile.addunit(thepo)
     return thenewpofile
 
 class GrepOptionParser(optrecurse.RecursiveOptionParser):
@@ -148,17 +148,17 @@ class GrepOptionParser(optrecurse.RecursiveOptionParser):
     self.usepsyco(options)
     self.recursiveprocess(options)
 
-def runpogrep(inputfile, outputfile, templatefile, checkfilter):
+def rungrep(inputfile, outputfile, templatefile, checkfilter):
   """reads in inputfile using po.pofile, filters using pocheckfilter, writes to stdout"""
-  fromfile = po.pofile(inputfile)
+  fromfile = factory.getobject(inputfile)
   tofile = checkfilter.filterfile(fromfile)
   if tofile.isempty():
-    return 0
+    return False
   outputfile.write(str(tofile))
-  return 1
+  return True
 
 def cmdlineparser():
-  formats = {"po":("po", runpogrep), "pot":("pot", runpogrep), None:("po", runpogrep)}
+  formats = {"po":("po", rungrep), "pot":("pot", rungrep), "xliff":("xliff", rungrep), "xlf":("xlf", rungrep), None:("po", rungrep)}
   parser = GrepOptionParser(formats)
   parser.add_option("", "--search", dest="searchparts",
     action="append", type="choice", choices=["msgid", "msgstr", "comment", "source"],
