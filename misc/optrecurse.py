@@ -198,7 +198,7 @@ class RecursiveOptionParser(optparse.OptionParser, object):
     inputoption.required = True
     self.define_option(inputoption)
     excludeoption = optparse.Option("-x", "--exclude", dest="exclude", action="append",
-                    type="string", default=["CVS"], metavar="EXCLUDE",
+                    type="string", default=["CVS", ".svn"], metavar="EXCLUDE",
                     help="exclude names matching EXCLUDE from input paths")
     self.define_option(excludeoption)
     outputformathelp = self.getformathelp(outputformats)
