@@ -85,7 +85,7 @@ class MozConvertOptionParser(convert.ArchiveConvertOptionParser):
 def main(argv=None):
   # handle command line options
   formats = {("dtd.po", "dtd"): ("dtd", po2dtd.convertdtd),
-             ("properties.po", "properties"): ("properties", po2prop.convertprop),
+             ("properties.po", "properties"): ("properties", po2prop.convertmozillaprop),
              ("xhtml.po", "xhtml"): ("xhtml", po2html.converthtml),
              ("html.po", "html"): ("html", po2html.converthtml),
              ("it.po", "it"): ("it", prop2mozfunny.po2it),

@@ -99,7 +99,7 @@ def po2inc(inputfile, outputfile, templatefile, encoding=None, includefuzzy=Fals
     templatepropfile = StringIO("".join(templateproplines))
   else:
     templatepropfile = None
-  result = po2prop.convertprop(inputfile, outputpropfile, templatepropfile, includefuzzy=includefuzzy)
+  result = po2prop.convertmozillaprop(inputfile, outputpropfile, templatepropfile, includefuzzy=includefuzzy)
   if result:
     outputpropfile.seek(0)
     pf = properties.propfile(outputpropfile)
@@ -116,7 +116,7 @@ def po2it(inputfile, outputfile, templatefile, encoding="cp1252", includefuzzy=F
     templatepropfile = StringIO("".join(templateproplines))
   else:
     templatepropfile = None
-  result = po2prop.convertprop(inputfile, outputpropfile, templatepropfile, includefuzzy=includefuzzy)
+  result = po2prop.convertmozillaprop(inputfile, outputpropfile, templatepropfile, includefuzzy=includefuzzy)
   if result:
     outputpropfile.seek(0)
     pf = properties.propfile(outputpropfile)
