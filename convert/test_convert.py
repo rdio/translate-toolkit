@@ -8,7 +8,7 @@ from py import test
 class TestConvertCommand:
     """Tests running actual commands on files"""
     convertmodule=convert
-    defaultoptions = {"progress": "none"}
+    defaultoptions = {"progress": "none", "psyco": "none"}
 
     def setup_method(self, method):
         """creates a clean test directory for the given method"""
