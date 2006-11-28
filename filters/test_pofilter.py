@@ -2,19 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from translate.storage import po
+from translate.storage import xliff
 from translate.filters import pofilter
 from translate.filters import checks
 from translate.misc import wStringIO
 
-class TestPOFilter:
-    def poparse(self, posource):
-        """helper that parses po source without requiring files"""
-        dummyfile = wStringIO.StringIO(posource)
-        pofile = po.pofile(dummyfile)
-        return pofile
-
-    def pofilter(self, posource, checkerconfig=None, cmdlineoptions=None):
-        """helper that parses po source and passes it through a filter"""
+class BaseTestFilter(object):
+    """Base class for filter tests."""
+    def filter(self, translationstore, checkerconfig=None, cmdlineoptions=None):
+        """Helper that passes a translations store through a filter, and returns the resulting store."""
         if cmdlineoptions is None:
             cmdlineoptions = []
         options, args = pofilter.cmdlineparser().parse_args(["xxx.po"] + cmdlineoptions)
@@ -22,98 +18,168 @@ class TestPOFilter:
         if checkerconfig is None:
           checkerconfig = checks.CheckerConfig()
         checkfilter = pofilter.pocheckfilter(options, checkerclasses, checkerconfig)
-        tofile = checkfilter.filterfile(self.poparse(posource))
-        return str(tofile)
+        tofile = checkfilter.filterfile(translationstore)
+        return tofile
 
     def test_simplepass(self):
         """checks that an obviously correct string passes"""
-        posource = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
-        poresult = self.pofilter(posource)
-        assert poresult == ""
+        filter_result = self.filter(self.translationstore)
+        assert len(filter_result.units) == 0
 
     def test_simplefail(self):
         """checks that an obviously wrong string fails"""
-        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
-        poresult = self.pofilter(posource)
-        assert poresult != ""
+        self.unit.settarget("REST")
+        filter_result = self.filter(self.translationstore)
+        assert 'startcaps:' in str(filter_result)
+        assert 'simplecaps:' in str(filter_result)
 
     def test_variables_across_lines(self):
         """Test that variables can span lines and still fail/pass"""
-        posource = '#: test.c\nmsgid "At &timeBombURL."\n"label;."\nmsgstr "Tydens &tydBombURL."\n"labeel;."'
-        poresult = self.pofilter(posource)
-        assert poresult == ""
+        self.unit.setsource('"At &timeBombURL."\n"label;."')
+        self.unit.settarget('"Tydens &tydBombURL."\n"etiket;."')
+        filter_result = self.filter(self.translationstore)
+        assert len(filter_result.units) == 0
 
     def test_ignore_if_already_marked(self):
-        """check that we don't add another failing marker is the message is already marked as failed"""
-        posource = '# (pofilter) untranslated: checks whether a string has been translated at all\n#: test.c\nmsgid "Simple string"\nmsgstr ""'
-        poexpected = posource + '\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["--test=untranslated"])
-        print poresult
-        assert poresult == poexpected
+        """check that we don't add another failing marker if the message is already marked as failed"""
+        self.unit.settarget('')
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--test=untranslated"])
+        notes = filter_result.units[0].getnotes(origin="translator").split('\n')
+        assert len(notes) == 1
+        assert notes[0].count('untranslated:') == 1
+
+        # Run a filter test on the result, to check that it doesn't mark the same error twice.
+        filter_result2 = self.filter(filter_result, cmdlineoptions=["--test=untranslated"])
+        notes = filter_result.units[0].getnotes(origin="translator").split('\n')
+        assert len(notes) == 1
+        assert notes[0].count('untranslated:') == 1
 
     def test_non_existant_check(self):
-	"""check that we report an error if a user tries to run a non-existant test"""
-        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["-t nonexistant"])
-	# TODO Not sure how to check for the stderror result of: warning: could not find filter  nonexistant
-        assert poresult == ""
+        """check that we report an error if a user tries to run a non-existant test"""
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["-t nonexistant"])
+        # TODO Not sure how to check for the stderror result of: warning: could not find filter  nonexistant
+        assert len(filter_result.units) == 0
 
     def test_list_all_tests(self):
-	"""lists all available tests"""
-        poresult = self.pofilter("", cmdlineoptions=["-l"])
-	# TODO again not sure how to check the stderror output
-	assert poresult == ""
+        """lists all available tests"""
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["-l"])
+        # TODO again not sure how to check the stderror output
+        assert len(filter_result.units) == 0
 
     def test_test_against_fuzzy(self):
-	"""test whether to run tests against fuzzy translations"""
-        posource = '#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["--fuzzy"])
-	assert poresult != posource
-        poresult = self.pofilter(posource, cmdlineoptions=["--nofuzzy"])
-	assert poresult == ""
-        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["--fuzzy"])
-	assert poresult != posource
-        poresult = self.pofilter(posource, cmdlineoptions=["--nofuzzy"])
-	assert poresult != posource
+        """test whether to run tests against fuzzy translations"""
+        self.unit.markfuzzy()
+
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--fuzzy"])
+        assert filter_result.units[0].getnotes(origin="translator").count('isfuzzy:') == 1
+
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--nofuzzy"])
+        assert len(filter_result.units) == 0
+
+        # Re-initialize the translation store object in order to get an unfuzzy unit
+	# with no filter notes.
+        self.setup_method(self)
+
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--fuzzy"])
+        assert len(filter_result.units) == 0
+
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--nofuzzy"])
+        assert len(filter_result.units) == 0
 
     def test_test_against_review(self):
-	"""test whether to run tests against translations marked for review"""
-        posource = '#: test.c\n# (review)\nmsgid "test"\nmsgstr "REST"\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["--review"])
-	assert poresult != posource
-        poresult = self.pofilter(posource, cmdlineoptions=["--noreview"])
-	assert poresult == ""
-        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["--review"])
-	assert poresult != posource
-        poresult = self.pofilter(posource, cmdlineoptions=["--noreview"])
-	assert poresult != posource
+        """test whether to run tests against translations marked for review"""
+        self.unit.markreviewneeded()
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--review"])
+        assert filter_result.units[0].isreview()
+
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--noreview"])
+        assert len(filter_result.units) == 0
+
+        # Re-initialize the translation store object.
+        self.setup_method(self)
+
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--review"])
+        assert len(filter_result.units) == 0
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--noreview"])
+        assert len(filter_result.units) == 0
 
     def test_isfuzzy(self):
-	"""tests the extraction of items marked fuzzy"""
-        posource = '#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n'
-        poexpected = '# (pofilter) isfuzzy: check if the po element has been marked fuzzy\n#: test.c\n#, fuzzy\nmsgid "test"\nmsgstr "REST"\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["--test=isfuzzy"])
-	assert poresult == poexpected
-        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["--test=isfuzzy"])
-	assert poresult == ""
+        """tests the extraction of items marked fuzzy"""
+        self.unit.markfuzzy()
+
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--test=isfuzzy"])
+        assert 'isfuzzy:' in str(filter_result)
+
+        self.unit.markfuzzy(False)
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--test=isfuzzy"])
+        assert 'isfuzzy:' not in str(filter_result)
 
     def test_isreview(self):
-	"""tests the extraction of items marked review"""
-        posource = '# (review)\n#: test.c\nmsgid "test"\nmsgstr "REST"'
-        poexpected = posource + '\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["--test=isreview"])
-	assert poresult == poexpected
-        posource = '#: test.c\nmsgid "test"\nmsgstr "REST"\n'
-        poresult = self.pofilter(posource, cmdlineoptions=["--test=isreview"])
-	assert poresult == ""
+        """tests the extraction of items marked review"""
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--test=isreview"])
+        assert len(filter_result.units) == 0
+
+        self.unit.markreviewneeded()
+        filter_result = self.filter(self.translationstore, cmdlineoptions=["--test=isreview"])
+        assert filter_result.units[0].isreview()
 
     def test_unicode(self):
         """tests that we can handle UTF-8 encoded characters when there is no known header specified encoding"""
-        posource = u'#: test.c\nmsgid "Bézier curve"\nmsgstr "Bézier-kurwe"'
-        poresult = self.pofilter(posource)
-        assert poresult == ''
+        self.unit.setsource(u'Bézier curve')
+        self.unit.settarget(u'Bézier-kurwe')
+        filter_result = self.filter(self.translationstore)
+        assert len(filter_result.units) == 0
 
+class TestPOFilter(BaseTestFilter):
+    """Test class for po-specific tests."""
+    filetext = '#: test.c\nmsgid "test"\nmsgstr "rest"\n'
 
+    def poparse(self, posource):
+        """helper that parses po source without requiring files"""
+        dummyfile = wStringIO.StringIO(posource)
+        pofile = po.pofile(dummyfile)
+        return pofile
+
+    def setup_method(self, method):
+        self.translationstore = self.poparse(self.filetext)
+        self.unit = self.translationstore.units[0]
+
+class TestXliffFilter(BaseTestFilter):
+    """Test class for xliff-specific tests."""
+    filetext = '''<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.1" xmlns="urn:oasis:names:tc:xliff:document:1.1">
+<file original='NoName' source-language="en" datatype="plaintext">
+  <body>
+    <trans-unit>
+      <source>test</source>
+      <target>rest</target>
+    </trans-unit>
+  </body>
+</file>
+</xliff>'''
+
+    def xliffparse(self, filetext):
+        """helper that parses xliff file content without requiring files"""
+        dummyfile = wStringIO.StringIO(filetext)
+        xliffstore = xliff.xlifffile(dummyfile)
+        return xliffstore
+
+    def set_store_review(review=True):
+        self.filetext = '''<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.1" xmlns="urn:oasis:names:tc:xliff:document:1.1">
+<file datatype="po" original="example.po" source-language="en-US">
+  <body>
+    <trans-unit>
+      <source>test</source>
+      <target>rest</target>
+    </trans-unit>
+  </body>
+</file>
+</xliff>'''
+
+        self.translationstore = self.xliffparse(self.filetext)
+        self.unit = self.translationstore.units[0]
+
+    def setup_method(self, method):
+        self.translationstore = self.xliffparse(self.filetext)
+        self.unit = self.translationstore.units[0]
