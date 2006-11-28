@@ -9,12 +9,17 @@ from translate.storage import properties
 from translate.storage import test_base
 from translate.storage import base
 from translate.misc import wStringIO
+from py import test
 
 class TestMonolingualUnit(test_base.TestTranslationUnit):
     UnitClass = base.TranslationUnit
 
     def test_target(self):
       pass
+
+    def test_markreview(self):
+        unit = self.UnitClass("Test Source String")
+        assert test.raises(NotImplementedError, unit.markreviewneeded)
 
 class TestMonolingualStore(test_base.TestTranslationStore):
     StoreClass = base.TranslationStore

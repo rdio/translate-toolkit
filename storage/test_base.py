@@ -74,10 +74,10 @@ class TestTranslationUnit:
                     'A "solution"', "skop 'n bal", '"""', "'''", 
                     '\n', '\t', '\r', 
                     '\\n', '\\t', '\\r', '\\"', '\\', '\\ ',
-		    '\\\n', '\\\t', '\\\r', 
-		    '\\\\n', '\\\\t', '\\\\r', '\\\\"',
-		    '\r\n', '\\r\\n', '\\\\r\\n', '\\r\\\\n', '\\\\n\\\\r'
-		    u'µ']
+                    '\\\n', '\\\t', '\\\r', 
+                    '\\\\n', '\\\\t', '\\\\r', '\\\\"',
+                    '\r\n', '\\r\\n', '\\\\r\\n', '\\r\\\\n', '\\\\n\\\\r'
+                    u'µ']
         for special in specials:
             unit.source = special
             print "unit.source:"
@@ -87,6 +87,34 @@ class TestTranslationUnit:
             print repr(special)
             print special.encode('utf-8')
             assert unit.source == special
+
+    def test_markreview(self):
+        """Tests if we can mark the unit to need review."""
+        unit = self.UnitClass("Test String")
+        # We have to explicitly set the target to nothing, otherwise xliff
+        # tests will fail.
+        # Can we make it default behavior for the UnitClass?
+        unit.target = ""
+
+        unit.addnote("Test note 1", origin="translator")
+        unit.addnote("Test note 2", origin="translator")
+        original_notes = unit.getnotes(origin="translator")
+
+        # The base class methods won't be implemented:
+        if self.__module__.endswith('test_base'):
+            assert test.raises(NotImplementedError, unit.markreviewneeded) 
+            return
+
+        assert not unit.isreview()
+        unit.markreviewneeded()
+        assert unit.isreview()
+        unit.markreviewneeded(False)
+        assert not unit.isreview()
+        assert unit.getnotes(origin="translator") == original_notes
+        unit.markreviewneeded(explanation="Double check spelling.")
+        assert unit.isreview()
+        notes = unit.getnotes(origin="translator")
+        assert notes.count("Double check spelling.") == 1
 
 class TestTranslationStore:
     """Tests a TranslationStore.

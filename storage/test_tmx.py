@@ -3,11 +3,14 @@
 from translate.storage import tmx
 from translate.storage import test_base
 from translate.misc import wStringIO
-
 from py import test
 
 class TestTMXUnit(test_base.TestTranslationUnit):
     UnitClass = tmx.tmxunit
+
+    def test_markreview(self):
+        unit = self.UnitClass("Test Source String")
+        assert test.raises(NotImplementedError, unit.markreviewneeded)
 
 class TestTMXfile(test_base.TestTranslationStore):
     StoreClass = tmx.tmxfile

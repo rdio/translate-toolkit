@@ -3,11 +3,14 @@
 from translate.storage import tbx
 from translate.storage import test_base
 from translate.misc import wStringIO
-
 from py import test
 
 class TestTBXUnit(test_base.TestTranslationUnit):
-	UnitClass = tbx.tbxunit
+    UnitClass = tbx.tbxunit
+
+    def test_markreview(self):
+        unit = self.UnitClass("Test Source String")
+        assert test.raises(NotImplementedError, unit.markreviewneeded)
 
 class TestTBXfile(test_base.TestTranslationStore):
 	StoreClass = tbx.tbxfile
