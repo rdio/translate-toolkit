@@ -84,8 +84,14 @@ class propunit(base.TranslationUnit):
   def getlocations(self):
     return [self.name]
 
-  def addnote(self, note):
-    self.comments.append(note + "\n")
+  def addnote(self, note, origin=None):
+    self.comments.append(note)
+
+  def getnotes(self, origin=None):
+    return '\n'.join(self.comments)
+
+  def removenotes(self):
+    self.comments = []
 
   def isblank(self):
     """returns whether this is a blank element, containing only comments..."""
