@@ -130,3 +130,6 @@ def main():
   parser.passthrough.append("format")
   parser.run()
 
+
+if __name__ == '__main__':
+    main()

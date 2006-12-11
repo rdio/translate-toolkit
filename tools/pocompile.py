@@ -111,3 +111,6 @@ def main():
   parser = convert.ConvertOptionParser(formats, usepots=False, description=__doc__)
   parser.add_fuzzy_option()
   parser.run()
+
+if __name__ == '__main__':
+    main()
