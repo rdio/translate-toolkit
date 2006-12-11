@@ -105,3 +105,6 @@ def main(argv=None):
   parser.passthrough.append("targetlanguage")
   parser.run(argv)
 
+
+if __name__ == '__main__':
+    main()

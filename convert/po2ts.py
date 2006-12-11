@@ -79,3 +79,6 @@ def main(argv=None):
   parser = convert.ConvertOptionParser(formats, usepots=True, usetemplates=True, description=__doc__)
   parser.run(argv)
 
+
+if __name__ == '__main__':
+    main()

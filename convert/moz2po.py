@@ -50,3 +50,6 @@ def main(argv=None):
   parser.passthrough.append("pot")
   parser.run(argv)
 
+
+if __name__ == '__main__':
+    main()

@@ -118,3 +118,6 @@ def main(argv=None):
     parser.passthrough.append("wrap")
   parser.run(argv)
 
+
+if __name__ == '__main__':
+    main()
