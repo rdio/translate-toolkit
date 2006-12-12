@@ -114,7 +114,7 @@ class ordereddict(dict):
   def __delitem__(self, key):
     alreadypresent = key in self
     result = dict.__delitem__(self, key)
-    if not alreadypresent: del self.order[self.order.find(key)]
+    if alreadypresent: del self.order[self.order.index(key)]
     return result
 
   def copy(self):
