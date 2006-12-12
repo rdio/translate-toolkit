@@ -103,9 +103,9 @@ def removeinvalidamps(entity, unquotedstr):
       comp += 1
   return unquotedstr
 
-def dounquotepo(thepo):
-  unquotedid = po.unquotefrompo(thepo.msgid, False)
-  unquotedstr = po.unquotefrompo(thepo.msgstr, False)
+def dounquotepo(pounit):
+  unquotedid = po.unquotefrompo(pounit.msgid, False)
+  unquotedstr = po.unquotefrompo(pounit.msgstr, False)
   return unquotedid, unquotedstr
 
 def getmixedentities(entities):
@@ -123,10 +123,10 @@ def getmixedentities(entities):
             mixedentities += [entity,entitybase+akeytype]
   return mixedentities
 
-def applytranslation(entity, thedtd, thepo, mixedentities):
-  """applies the translation for entity in the po element to the dtd element"""
+def applytranslation(entity, dtdunit, pounit, mixedentities):
+  """applies the translation for entity in the po unit to the dtd unit"""
   # this converts the po-style string to a dtd-style string
-  unquotedid, unquotedstr = dounquotepo(thepo)
+  unquotedid, unquotedstr = dounquotepo(pounit)
   # check there aren't missing entities...
   if len(unquotedstr.strip()) == 0:
     return
@@ -144,7 +144,7 @@ def applytranslation(entity, thedtd, thepo, mixedentities):
           if not unquotedstr:
             warnings.warn("Could not find accesskey for %s" % entity)
           else:
-            original = dtd.unquotefromdtd(thedtd.definition)
+            original = dtd.unquotefromdtd(dtdunit.definition)
             if original.isupper() and unquotedstr.islower():
               unquotedstr = unquotedstr.upper()
             elif original.islower() and unquotedstr.isupper():
@@ -153,7 +153,7 @@ def applytranslation(entity, thedtd, thepo, mixedentities):
   unquotedstr = removeinvalidamps(entity, unquotedstr)
   # finally set the new definition in the dtd, but not if its empty
   if len(unquotedstr) > 0:
-    thedtd.definition = dtd.quotefordtd(unquotedstr)
+    dtdunit.definition = dtd.quotefordtd(unquotedstr)
 
 class redtd:
   """this is a convertor class that creates a new dtd based on a template using translations in a po"""
@@ -162,97 +162,97 @@ class redtd:
 
   def convertfile(self, pofile, includefuzzy=False):
     # translate the strings
-    for thepo in pofile.units:
+    for pounit in pofile.units:
       # there may be more than one entity due to msguniq merge
-      if includefuzzy or not thepo.isfuzzy():
-        self.handlepoelement(thepo)
+      if includefuzzy or not pounit.isfuzzy():
+        self.handlepounit(pounit)
     return self.dtdfile
 
-  def handlepoelement(self, thepo):
-    entities = thepo.getlocations()
+  def handlepounit(self, pounit):
+    entities = pounit.getlocations()
     mixedentities = getmixedentities(entities)
     for entity in entities:
       if self.dtdfile.index.has_key(entity):
         # now we need to replace the definition of entity with msgstr
-        thedtd = self.dtdfile.index[entity] # find the dtd
-        applytranslation(entity, thedtd, thepo, mixedentities)
+        dtdunit = self.dtdfile.index[entity] # find the dtd
+        applytranslation(entity, dtdunit, pounit, mixedentities)
 
 class po2dtd:
   """this is a convertor class that creates a new dtd file based on a po file without a template"""
-  def convertcomments(self,thepo,thedtd):
+  def convertcomments(self, pounit, dtdunit):
     # get the entity from sourcecomments
-    entitiesstr = " ".join([sourcecomment[2:].strip() for sourcecomment in thepo.sourcecomments])
+    entitiesstr = " ".join([sourcecomment[2:].strip() for sourcecomment in pounit.sourcecomments])
     #  # entitystr, instring = quote.extract(sourcecomment, "#:","\n",None)
     #  entitiesstr += sourcecomment[2:].strip()
     entities = entitiesstr.split()
     if len(entities) > 1:
       # don't yet handle multiple entities
-      thedtd.comments.append(("conversionnote",'<!-- CONVERSION NOTE - multiple entities -->\n'))
-      thedtd.entity = entities[0]
+      dtdunit.comments.append(("conversionnote",'<!-- CONVERSION NOTE - multiple entities -->\n'))
+      dtdunit.entity = entities[0]
     elif len(entities) == 1:
-      thedtd.entity = entities[0]
+      dtdunit.entity = entities[0]
     else:
       # this produces a blank entity, which doesn't write anything out
-      thedtd.entity = ""
+      dtdunit.entity = ""
 
      # typecomments are for example #, fuzzy
     types = []
-    for typecomment in thepo.typecomments:
+    for typecomment in pounit.typecomments:
       # typestr, instring = quote.extract(typecomment, "#,","\n",None)
       types.append(quote.unstripcomment(typecomment[2:]))
     for typedescr in types:
-      thedtd.comments.append(("potype", typedescr+'\n'))
+      dtdunit.comments.append(("potype", typedescr+'\n'))
     # visiblecomments are for example #_ note to translator
     visibles = []
-    for visiblecomment in thepo.visiblecomments:
+    for visiblecomment in pounit.visiblecomments:
       # visiblestr, instring = quote.extract(visiblecomment,"#_","\n",None)
       visibles.append(quote.unstripcomment(visiblecomment[2:]))
     for visible in visibles:
-      thedtd.comments.append(("visible", visible+'\n'))
+      dtdunit.comments.append(("visible", visible+'\n'))
     # othercomments are normal e.g. # another comment
     others = []
-    for othercomment in thepo.othercomments:
+    for othercomment in pounit.othercomments:
       # otherstr, instring = quote.extract(othercomment,"#","\n",None)
       others.append(quote.unstripcomment(othercomment[2:]))
     for other in others:
       # don't put in localization note group comments as they are artificially added
       if (other.find('LOCALIZATION NOTE') == -1) or (other.find('GROUP') == -1):
-        thedtd.comments.append(("comment", other))
+        dtdunit.comments.append(("comment", other))
     # msgidcomments are special - they're actually localization notes
-    for msgidcomment in thepo.msgidcomments:
+    for msgidcomment in pounit.msgidcomments:
       unquotedmsgidcomment = quote.extractwithoutquotes(msgidcomment,'"','"','\\',includeescapes=0)[0]
       actualnote = unquotedmsgidcomment.replace("_:","",1)
       if actualnote[-2:] == '\\n':
         actualnote = actualnote[:-2]
-      locnote = quote.unstripcomment("LOCALIZATION NOTE ("+thedtd.entity+"): "+actualnote)
-      thedtd.comments.append(("locnote", locnote))
+      locnote = quote.unstripcomment("LOCALIZATION NOTE ("+dtdunit.entity+"): "+actualnote)
+      dtdunit.comments.append(("locnote", locnote))
 
-  def convertstrings(self,thepo,thedtd):
+  def convertstrings(self, pounit, dtdunit):
     # currently let's just get the msgid back
-    unquotedid = po.unquotefrompo(thepo.msgid, False)
-    unquotedstr = po.unquotefrompo(thepo.msgstr, False)
+    unquotedid = po.unquotefrompo(pounit.msgid, False)
+    unquotedstr = po.unquotefrompo(pounit.msgstr, False)
     # choose the msgstr unless it's empty, in which case choose the msgid
     if len(unquotedstr) == 0:
       unquoted = unquotedid
     else:
       unquoted = unquotedstr
-    unquoted = removeinvalidamps(thedtd.entity, unquoted)
-    thedtd.definition = dtd.quotefordtd(unquoted)
+    unquoted = removeinvalidamps(dtdunit.entity, unquoted)
+    dtdunit.definition = dtd.quotefordtd(unquoted)
 
-  def convertelement(self,thepo):
-    thedtd = dtd.dtdunit()
-    self.convertcomments(thepo,thedtd)
-    self.convertstrings(thepo,thedtd)
-    return thedtd
+  def convertunit(self, pounit):
+    dtdunit = dtd.dtdunit()
+    self.convertcomments(pounit, dtdunit)
+    self.convertstrings(pounit, dtdunit)
+    return dtdunit
 
   def convertfile(self, thepofile, includefuzzy=False):
     thedtdfile = dtd.dtdfile()
     self.currentgroups = []
-    for thepo in thepofile.units:
-      if includefuzzy or not thepo.isfuzzy():
-        thedtd = self.convertelement(thepo)
-        if thedtd is not None:
-          thedtdfile.units.append(thedtd)
+    for pounit in thepofile.units:
+      if includefuzzy or not pounit.isfuzzy():
+        dtdunit = self.convertunit(pounit)
+        if dtdunit is not None:
+          thedtdfile.units.append(dtdunit)
     return thedtdfile
 
 def convertdtd(inputfile, outputfile, templatefile, includefuzzy=False):
