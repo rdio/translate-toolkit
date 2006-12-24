@@ -96,6 +96,7 @@ class SimpleDictReader:
 class csvunit(base.TranslationUnit):
   spreadsheetescapes = [("+", "\\+"), ("-", "\\-"), ("=", "\\="), ("'", "\\'")]
   def __init__(self, source=None):
+    super(csvunit, self).__init__(source)
     self.comment = ""
     self.source = source
     self.target = ""

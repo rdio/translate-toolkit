@@ -53,6 +53,7 @@ class dtdunit(base.TranslationUnit):
   """this class represents an entity definition from a dtd file (and possibly associated comments)"""
   def __init__(self, source=""):
     """construct the dtdunit, prepare it for parsing"""
+    super(dtdunit, self).__init__(source)
     self.comments = []
     self.unparsedlines = []
     self.incomment = 0
@@ -72,6 +73,8 @@ class dtdunit(base.TranslationUnit):
 
   def settarget(self, target):
     """Sets the definition to the quoted value of target"""
+    if target is None:
+      target = ""
     self.definition = quotefordtd(target)
 
   def gettarget(self):
