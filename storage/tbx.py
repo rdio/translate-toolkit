@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2006 Zuza Software Foundation
+# Copyright 2006-2007 Zuza Software Foundation
 # 
 # This file is part of translate.
 #
@@ -24,7 +24,6 @@
 
 from translate.storage import base
 from translate.storage import lisa
-from xml.dom import minidom
 
 class tbxunit(lisa.LISAunit):
     """A single term in the TBX file. 

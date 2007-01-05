@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2005-2006 Zuza Software Foundation
+# Copyright 2005-2007 Zuza Software Foundation
 # 
 # This file is part of translate.
 #
@@ -24,7 +24,6 @@
 
 from translate.storage import lisa
 
-from xml.dom import minidom
 from translate import __version__
 
 class tmxunit(lisa.LISAunit):
