@@ -13,10 +13,11 @@ various projects from OpenOffice.org to Mozilla.
 
 At its core the software contains a set of classes for handling various 
 localization storage formats: DTD, properties, OpenOffice.org GSI/SDF,
-CSV and of course PO.  And scripts to convert between these formats.
+CSV and of course PO and XLIFF.  It also provides scripts to convert between 
+these formats.
 
 Also part of the Toolkit are Python programs to create word counts, merge
-translations and perform various checks on PO files.
+translations and perform various checks on PO and XLIFF files.
 
 
 Download
@@ -101,11 +102,9 @@ Preferably with a patch or at least a test case.
 
 Documentation
 ------------
-Please browse to doc/index.html to read the documentation.  They are being
-continually updated and the latest version can be viewed at:
-http://translate.sourceforge.net/doc/
-
-Please feel free to contribute new sections and suggest corrections.
+Please read our documentation online at http://translate.sourceforge.net/wiki/
+There they are constantly being updated. Please feel free to contribute new 
+sections and suggest corrections.
 
 
 Program overview
