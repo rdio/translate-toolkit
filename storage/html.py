@@ -32,8 +32,8 @@ class htmlunit(base.TranslationUnit):
     self.setsource(source)
 
   def getsource(self):
-    #TODO:do as much as possible
-    return self.text.replace("&amp;", "&").replace("&lt;", "<").replace("\n", "")
+    #TODO: Rethink how clever we should try to be with html entities.
+    return self.text.replace("&amp;", "&").replace("&lt;", "<").replace("\n", " ")
   
   def setsource(self, source):
     self.text = source.replace("&", "&amp;").replace("<", "&lt;")
