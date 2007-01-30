@@ -22,31 +22,63 @@ class TestPO2Html:
         htmlsource = '<p>A sentence.</p>'
         posource = '''#: html:3\nmsgid "A sentence."\nmsgstr "'n Sin."\n'''
         htmlexpected = '''<p>'n Sin.</p>'''
-        assert self.converthtml(posource, htmlsource) == htmlexpected
+        assert htmlexpected in self.converthtml(posource, htmlsource)
+
+    def test_linebreaks(self):
+        """Test that a po file can be merged into a template with linebreaks in it."""
+        htmlsource = '''<html>
+<head>
+</head>
+<body>
+<div>
+A paragraph is a section in a piece of writing, usually highlighting a
+particular point or topic. It always begins on a new line and usually
+with indentation, and it consists of at least one sentence.
+</div>
+</body>
+</html>
+'''
+        posource = '''#: None:1
+msgid ""
+"A paragraph is a section in a piece of writing, usually highlighting a "
+"particular point or topic. It always begins on a new line and usually with "
+"indentation, and it consists of at least one sentence."
+msgstr ""
+"'n Paragraaf is 'n afdeling in 'n geskrewe stuk wat gewoonlik 'n spesifieke "
+"punt uitlig. Dit begin altyd op 'n nuwe lyn (gewoonlik met indentasie) en "
+"dit bestaan uit ten minste een sin."
+'''
+        htmlexpected = '''<body>
+<div>'n Paragraaf is 'n afdeling in 'n geskrewe stuk wat gewoonlik
+'n spesifieke punt uitlig. Dit begin altyd op 'n nuwe lyn
+(gewoonlik met indentasie) en dit bestaan uit ten minste een
+sin.</div>
+</body>'''
+        assert htmlexpected.replace("\n", " ") in self.converthtml(posource, htmlsource).replace("\n", " ")
 
     def test_entities(self):
         """Tests that entities are handled correctly"""
         htmlsource = '<p>5 less than 6</p>'
         posource = '#:html:3\nmsgid "5 less than 6"\nmsgstr "5 < 6"\n'
         htmlexpected = '<p>5 &lt; 6</p>'
-        assert self.converthtml(posource, htmlsource) == htmlexpected
+        assert htmlexpected in self.converthtml(posource, htmlsource)
 
         htmlsource = '<p>Fish &amp; chips</p>'
         posource = '#: html:3\nmsgid "Fish & chips"\nmsgstr "Vis & skyfies"\n'
         htmlexpected = '<p>Vis &amp; skyfies</p>'
-        assert self.converthtml(posource, htmlsource) == htmlexpected
+        assert htmlexpected in self.converthtml(posource, htmlsource)
 
     def test_escapes(self):
         """Tests that PO escapes are correctly handled"""
         htmlsource = '<div>Row 1<br />Row 2</div>'
         posource = '#: html:3\nmsgid "Row 1\\n"\n"Row 2"\nmsgstr "Ry 1\\n"\n"Ry 2"\n'
         htmlexpected = '<div>Ry 1<br />Ry 2</div>'
-        assert self.converthtml(posource, htmlsource) == htmlexpected
+        assert htmlexpected in self.converthtml(posource, htmlsource)
 
         htmlsource = '<p>"leverage"</p>'
         posource = '#: html3\nmsgid "\\"leverage\\""\nmsgstr "\\"ek is dom\\""\n'
         htmlexpected = '<p>"ek is dom"</p>'
-        assert self.converthtml(posource, htmlsource) == htmlexpected
+        assert htmlexpected in self.converthtml(posource, htmlsource)
 
 
 class TestPO2HtmlCommand(test_convert.TestConvertCommand, TestPO2Html):
