@@ -23,51 +23,32 @@
 """Converts plain text files to Gettext .po files
 You can convert back to .txt using po2txt"""
 
+from translate.storage import txt
 from translate.storage import po
 from translate.misc import quote
 
 class txt2po:
-  def convertblock(self, filename, block, linenum):
-    """makes a pounit based on the current block"""
-    thepo = po.pounit(encoding="UTF-8")
-    thepo.sourcecomments.append("#: %s:%d\n" % (filename,linenum+1))
-    thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in block]
-    if len(thepo.msgid) > 1:
-      thepo.msgid = [quote.quotestr("")] + thepo.msgid
-    thepo.msgstr = []
-    return thepo
+  def __init__(self, duplicatestyle="msgctxt"):
+    self.duplicatestyle = duplicatestyle
 
-  def convertfile(self, inputfile, filename, includeheader):
+  def convertfile(self, thetxtfile):
     """converts a file to .po format"""
     thepofile = po.pofile()
-    if includeheader:
-      headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
-      thepofile.units.append(headerpo)
-    lines = inputfile.readlines()
-    block = []
-    startline = 0
-    for linenum in range(len(lines)):
-      line = lines[linenum]
-      isbreak = not line.strip()
-      if isbreak and block:
-        thepo = self.convertblock(filename, block, startline)
-        thepofile.units.append(thepo)
-        block = []
-      elif not isbreak:
-        if not block:
-          startline = linenum
-        block.append(line)
-    if block:
-      thepo = self.convertblock(filename, block, startline)
-      thepofile.units.append(thepo)
+    headerpo = thepofile.makeheader(charset="UTF-8", encoding="8bit")
+    headerpo.othercomments.append("# extracted from %s\n" % thetxtfile.filename)
+    thepofile.units.append(headerpo)
+    for txtunit in thetxtfile.units:
+       thepofile.addsourceunit(txtunit.source)
+    thepofile.removeduplicates(self.duplicatestyle)
     return thepofile
 
-def converttxt(inputfile, outputfile, templates):
+def converttxt(inputfile, outputfile, templates, duplicatestyle="msgxtct"):
   """reads in stdin using fromfileclass, converts using convertorclass, writes to stdout"""
-  convertor = txt2po()
-  outputfilepos = outputfile.tell()
-  includeheader = outputfilepos == 0
-  outputpo = convertor.convertfile(inputfile, getattr(inputfile, "name", "unknown"), includeheader)
+  inputtxt = txt.TxtFile(inputfile)
+  convertor = txt2po(duplicatestyle=duplicatestyle)
+  outputpo = convertor.convertfile(inputtxt)
+  if outputpo.isempty():
+    return 0
   outputposrc = str(outputpo)
   outputfile.write(outputposrc)
   return 1
@@ -79,5 +60,6 @@ def main(argv=None):
   sys.stdout = stdiotell.StdIOWrapper(sys.stdout)
   formats = {"txt":("po",converttxt), "*":("po",converttxt)}
   parser = convert.ConvertOptionParser(formats, usepots=True, description=__doc__)
+  parser.add_duplicates_option()
   parser.run(argv)
 
