@@ -62,10 +62,10 @@ wat lank aanhou"
 '''
         pofile = self.csv2po(minicsv)
         unit = self.singleelement(pofile)
-        assert not unit.sourcecomments == ["#: Random comment\nwith continuation"]
+        assert unit.sourcecomments == ["#: Random comment\nwith continuation\n"]
         assert unit.source == "Original text"
         print unit.target
-        assert not unit.target == "Langdradige teks\nwat lank aanhou"
+        assert unit.target == "Langdradige teks\nwat lank aanhou"
 
     def test_tabs(self):
         """Test the escaping of tabs"""
