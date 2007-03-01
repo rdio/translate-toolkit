@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from translate.convert import po2csv
+from translate.convert import csv2po
 from translate.convert import test_convert
 from translate.misc import wStringIO
 from translate.storage import po
@@ -14,6 +15,19 @@ class TestPO2CSV:
         convertor = po2csv.po2csv()
         outputcsv = convertor.convertfile(inputpo)
         return outputcsv
+
+    def csv2po(self, csvsource, template=None):
+        """helper that converts csv source to po source without requiring files"""
+        inputfile = wStringIO.StringIO(csvsource)
+        inputcsv = csvl10n.csvfile(inputfile)
+	if template:
+          templatefile = wStringIO.StringIO(template)
+          inputpot = po.pofile(templatefile)
+	else:
+	  inputpot = None
+        convertor = csv2po.csv2po(templatepo=inputpot)
+        outputpo = convertor.convertfile(inputcsv)
+        return outputpo
 
     def singleelement(self, storage):
         """checks that the pofile contains a single non-header element, and returns it"""
@@ -49,6 +63,10 @@ msgstr "Eerste lyn\nTweede lyn"
 '''
         csvfile = self.po2csv(minipo)
         unit = self.singleelement(csvfile)
+        assert unit.source == "First line\nSecond line"
+        assert unit.target == "Eerste lyn\nTweede lyn"
+        pofile = self.csv2po(str(csvfile))
+        unit = self.singleelement(pofile)
         assert unit.source == "First line\nSecond line"
         assert unit.target == "Eerste lyn\nTweede lyn"
 
