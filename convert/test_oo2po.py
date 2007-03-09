@@ -41,6 +41,14 @@ class TestOO2PO:
         assert "Tab \t Tab" in pounit.source 
         assert "CR \r CR" in pounit.source 
 
+    def test_double_escapes(self):
+        oosource = "helpcontent2\tsource\\text\shared\\01\\02100001.xhp\t0\thelp\tpar_id3150670 35\t\t\t\t0\ten-US\t\\\\<\t\t\t\t20020202 02:02:02"
+        pofile = self.oo2po(oosource)
+        pounit = self.singleelement(pofile)
+        poelementsrc = str(pounit)
+        print poelementsrc
+        assert pounit.source == r"\\<"
+
     def test_escapes_helpcontent2(self):
         """checks that a helpcontent2 entry converts escapes properly to a po entry"""
         oosource = r"wizards	source\formwizard\dbwizres.src	0	string	RID_DB_FORM_WIZARD_START + 19				0	en-US	%s				20050924 09:13:58" % r'size *2 \\langle x \\rangle'
