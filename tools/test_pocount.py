@@ -30,10 +30,6 @@ class TestPOCount:
         """simplest one word count"""
         self.count("One two", 2)
 
-    def test_punctuation_only(self):
-        """test a message with only punctuation"""
-        self.count(",", 1)
-
     def test_punctuation_divides_words(self):
         """test that we break words when there is punctuation"""
         self.count("One. Two", 2)
@@ -55,10 +51,6 @@ class TestPOCount:
     def test_variables_are_words(self):
         """test that we count variables as words"""
         self.count("%PROGRAMNAME %PROGRAM% %s $file $1", 5)
-
-    def test_kde_comments_are_not_counted(self):
-        """test that we do not add KDE comments to the wordcount"""
-        self.count("_: This is a seven word comment\\n\nOne two three", 3, "Een twee drie", 3)
 
     def test_plurals(self):
         """test that we can handle plural PO elements"""
