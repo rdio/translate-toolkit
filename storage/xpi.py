@@ -26,7 +26,7 @@ import zipfile
 import os.path
 from translate import __version__
 import StringIO
-import sre
+import re
 
 # we have some enhancements to zipfile in a file called zipfileext
 # hopefully they will be included in a future version of python
@@ -169,10 +169,10 @@ class XpiFile(ZipFileCatcher):
     dirstructure = {}
     locale = self.locale
     region = self.region
-    localematch = sre.compile("^[a-z]{2,3}(-[a-zA-Z]{2,3}|)$")
-    regionmatch = sre.compile("^[a-zA-Z]{2,3}$")
+    localematch = re.compile("^[a-z]{2,3}(-[a-zA-Z]{2,3}|)$")
+    regionmatch = re.compile("^[a-zA-Z]{2,3}$")
     # exclude en-mac, en-win, en-unix for seamonkey
-    osmatch = sre.compile("^[a-z]{2,3}-(mac|unix|win)$")
+    osmatch = re.compile("^[a-z]{2,3}-(mac|unix|win)$")
     for jarfilename, jarfile in self.iterjars():
       jarname = "".join(jarfilename.split('/')[-1:]).replace(".jar", "", 1)
       if localematch.match(jarname) and not osmatch.match(jarname):
