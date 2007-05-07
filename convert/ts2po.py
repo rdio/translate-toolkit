@@ -28,19 +28,18 @@ from translate.storage import ts
 from translate.misc import quote
 
 class ts2po:
-  def convertmessage(self, contextname, messagenum, msgid, msgstr, msgcomments, transtype):
+  def convertmessage(self, contextname, messagenum, source, target, msgcomments, transtype):
     """makes a pounit from the given message"""
     thepo = po.pounit(encoding="UTF-8")
     thepo.sourcecomments.append("#: %s#%d\n" % (contextname, messagenum))
-    thepo.msgid = [quote.quotestr(quote.rstripeol(line)) for line in msgid.split("\n")]
-    if len(thepo.msgid) > 1:
-      thepo.msgid = [quote.quotestr("")] + thepo.msgid
-    thepo.msgstr = [quote.quotestr(quote.rstripeol(line)) for line in msgstr.split("\n")]
+    thepo.source = source
+    thepo.target = target
     if len(msgcomments)>0:
       thepo.othercomments.append("# %s\n" %(msgcomments))
     if transtype == "unfinished" and not thepo.isblankmsgstr():
       thepo.markfuzzy()
     if transtype == "obsolete":
+      # This should use the Gettext obsolete method but it would require quite a bit of work
       thepo.visiblecomments.append("#_ OBSOLETE\n")
       # using the fact that -- quote -- "(this is nonsense)"
     return thepo
