@@ -65,6 +65,19 @@ class TestMatch:
         candidates.sort()
         assert candidates[1:] == ["Ek skop die balle", "Hy skop die bal"]
 
+    def test_extendtm(self):
+        """Test that we can extend the TM after creation."""
+        message = "Open file..."
+        csvfile1 = self.buildcsv(["Close application", "Do something"])
+        matcher = match.matcher([csvfile1])
+        candidates = self.candidatestrings(matcher.matches(message))
+        assert len(candidates) == 0
+        csvfile2 = self.buildcsv(["Open file"])
+        matcher.extendtm(csvfile2.units, store=csvfile2)
+        candidates = self.candidatestrings(matcher.matches(message))
+        assert len(candidates) == 1
+        assert candidates[0] == "Open file"
+
     def test_terminology(self):
         csvfile = self.buildcsv(["file", "computer", "directory"])
         matcher = match.terminologymatcher(csvfile)
