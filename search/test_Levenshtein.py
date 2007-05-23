@@ -1,10 +1,10 @@
-from translate.search import Levenshtein
+from translate.search import lshtein
 
 class TestLevenshtein:
     """Test whether Levenshtein distance calculations are correct"""
     def test_basic_distance(self):
         """Tests distance correctness with a few basic values"""
-        levenshtein = Levenshtein.LevenshteinComparer()
+        levenshtein = lshtein.LevenshteinComparer()
         assert levenshtein.distance("word", "word") == 0
         assert levenshtein.distance("word", "") == 4
         assert levenshtein.distance("", "word") == 4
@@ -14,7 +14,7 @@ class TestLevenshtein:
 
     def test_basic_similarity(self):
         """Tests similarity correctness with a few basic values"""
-        levenshtein = Levenshtein.LevenshteinComparer()
+        levenshtein = lshtein.LevenshteinComparer()
         assert levenshtein.similarity("word", "word") == 100
         assert levenshtein.similarity("word", "words") == 80
         assert levenshtein.similarity("word", "wood") == 75
@@ -24,7 +24,7 @@ class TestLevenshtein:
         """Tests that very long strings are handled well."""
         #A sentence with 240 characters:
         sentence = "A long, dreary sentence about a cow that never new his mother. Actually it didn't known its father either. One day he decided that enough is enough, and that he would stop making long, dreary sentences just for the sake of making sentences."
-        levenshtein = Levenshtein.LevenshteinComparer()
+        levenshtein = lshtein.LevenshteinComparer()
         assert levenshtein.similarity("Cow", sentence, 10) < 10
         assert levenshtein.similarity(sentence, "Cow", 10) < 10
         #The difference in the next comparison is supposed to be 25.83, but
