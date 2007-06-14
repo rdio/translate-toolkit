@@ -29,6 +29,7 @@ __all__ = ['Option',
            'OptionGroup',
            'OptionParser',
            'HelpFormatter',
+           'ManHelpFormatter',
            'IndentedHelpFormatter',
            'TitledHelpFormatter',
            'OptParseError',
@@ -240,6 +241,34 @@ class HelpFormatter:
             opts = long_opts + short_opts
 
         return ", ".join(opts)
+
+class ManHelpFormatter (HelpFormatter):
+    def __init__ (self,
+                  indent_increment=0,
+                  max_help_position=0,
+                  width=80,
+                  short_first=1):
+        HelpFormatter.__init__(
+            self, indent_increment, max_help_position, width, short_first)
+
+    def format_option_strings (self, option):
+        """Return a comma-separated list of option strings & metavariables."""
+        if option.takes_value():
+            metavar = option.metavar or option.dest.upper()
+            metavar = '\\fI%s\\fP'%metavar
+            short_opts = [sopt + metavar for sopt in option._short_opts]
+            long_opts = [lopt + "\\fR=\\fP" + metavar for lopt in option._long_opts]
+        else:
+            short_opts = option._short_opts
+            long_opts = option._long_opts
+
+        if self.short_first:
+            opts = short_opts + long_opts
+        else:
+            opts = long_opts + short_opts
+
+        return '\\fB%s\\fP'%("\\fR, \\fP".join(opts))
+
 
 class IndentedHelpFormatter (HelpFormatter):
     """Format help with indented section bodies.
