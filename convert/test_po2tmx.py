@@ -7,7 +7,6 @@ from translate.misc import wStringIO
 from translate.storage import po
 from translate.storage import tmx
 import os
-from xml.parsers.xmlproc import xmlval, xmlproc
 from py import test
 
 class TestPO2TMX:
