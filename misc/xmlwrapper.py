@@ -21,7 +21,10 @@
 
 """simpler wrapper to the elementtree XML parser"""
 
-from elementtree import ElementTree
+try:
+  from xml.etree.ElementTree import ElementTree
+except ImportError:
+  from elementtree import ElementTree
 # this is needed to prevent expat-version conflicts with wx >= 2.5.2.2
 from xml.parsers import expat
 
