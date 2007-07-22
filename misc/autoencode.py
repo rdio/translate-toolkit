@@ -36,7 +36,10 @@ class autoencode(unicode):
             if errors is None and encoding is None:
                 newstring = unicode.__new__(newtype, string)
             elif errors is None:
-                newstring = unicode.__new__(newtype, string, encoding)
+                try:
+                    newstring = unicode.__new__(newtype, string, encoding)
+                except LookupError, e:
+                    raise ValueError(e.message)
             elif encoding is None:
                 newstring = unicode.__new__(newtype, string, errors)
             else:

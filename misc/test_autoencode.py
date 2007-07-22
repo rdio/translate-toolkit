@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from translate.misc import autoencode
+from py import test
 
 class TestAutoencode:
     type2test = autoencode.autoencode
@@ -28,3 +29,6 @@ class TestAutoencode:
         # so the objects created must be different
         assert s1 is not s3
 
+    def test_bad_encoding(self):
+        """tests that we throw an exception if we don't know the encoding"""
+        assert test.raises(ValueError, self.type2test, 'text', 'some-encoding')
