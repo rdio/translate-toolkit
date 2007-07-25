@@ -43,19 +43,25 @@ class multistring(autoencode.autoencode):
 
     def __cmp__(self, otherstring):
         if isinstance(otherstring, multistring):
-            parentcompare = autoencode.autoencode.__cmp__(self, otherstring)
+            parentcompare = cmp(autoencode.autoencode(self), otherstring)
             if parentcompare:
                 return parentcompare
             else:
                 return cmp(self.strings[1:], otherstring.strings[1:])
         elif isinstance(otherstring, autoencode.autoencode):
-            return autoencode.autoencode(self).__cmp__(otherstring)
+            return cmp(autoencode.autoencode(self), otherstring)
         elif isinstance(otherstring, unicode):
-            return unicode(self).__cmp__(otherstring)
+            return cmp(unicode(self), otherstring)
         elif isinstance(otherstring, str):
             return cmp(str(self), otherstring)
         else:
             return cmp(type(self), type(otherstring))
+
+    def __ne__(self, otherstring):
+        return self.__cmp__(otherstring) != 0
+
+    def __eq__(self, otherstring):
+        return self.__cmp__(otherstring) == 0
 
     def __repr__(self):
         parts = [autoencode.autoencode.__repr__(self)] + [repr(a) for a in self.strings[1:]]
