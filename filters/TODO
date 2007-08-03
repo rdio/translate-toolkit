@@ -1,8 +1,7 @@
-use unicode strings throughout the pofilter program ...
 allow the user to mark strings fuzzy and write back into the input file
 provide options to handle true/false
   return all that don't have empty translations
-handle KDE and Gettext plural forms
+handle KDE and plural forms - in PO class
 allow groups of checks: eg --test-group=critical to allow focus on certain
   types of tests. -l should show these groupings
 Allow test to be disabled by default eg spelling, unless you specificly invoke
@@ -12,9 +11,6 @@ Allow test to be disabled by default eg spelling, unless you specificly invoke
 bugs
   startcaps - read the locale data to determine what letters are considered
     capitals. msgid should be treated as English caps.
-  startcaps - can't cope with sentence such as in Afrikaans taht start with 'n
-    [CAPS].  Perhaps some prefilter to remove the 'n if the language is AF?
-    Would need to be able to detect the language.
   accronym - multiple occurances of an acronym are not seen as an error. Ie one
     in msgid and two in msgstr, probably similarly the other way round.
   isreview, isfuzzy - are listed as having to pass the untranslated
@@ -25,10 +21,8 @@ other checks
   plural checks - check plural forms against the Gettext plural header
     fallback to list of valid plurals for KDE.
   Supper basic machine translation - en_GB changes color -> colour
-  emails/URLs - checks emails and URLs to make sure they have not been altered
-  punc count - .,: all add up.  Simple way to see if all sentences where
-	translated.
-  detect french style end punc ie [space][!?]
+  email: disable / check for GNOME / KDE credits entries
+  
   spell checker: spell check the msgstr based on the locale and aspell/myspell
     installed on the system.  Would it work to define the language code
     properly in the PO header so that Pootle could then also check spelling of
