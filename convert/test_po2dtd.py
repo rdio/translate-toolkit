@@ -173,7 +173,6 @@ class TestPO2DTD:
         self.check_roundtrip(r'''"Single-Quote Escape \' "''')
         # NOTE: if both quote marks are present, than ' is converted to &apos;
         self.check_roundtrip(r"""'Both Quotes "" &apos;&apos; '""")
-        assert self.roundtripstring(r"""'Both Quotes "" '' '""") == r"""'Both Quotes "" &apos;&apos; '"""
 
     def test_merging_entries_with_spaces_removed(self):
         """dtd2po removes pretty printed spaces, this tests that we can merge this back into the pretty printed dtd"""
