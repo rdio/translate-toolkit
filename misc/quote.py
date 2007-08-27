@@ -154,17 +154,17 @@ def extractwithoutquotes(source,startdelim,enddelim,escape=None,startinstring=Fa
         for epos in escape_list:
           new_section += section[last_epos:epos]
           if callable_includeescapes:
-              replace_escape = includeescapes(section[epos:epos+lenescape+1])
-              # TODO: deprecate old method of returning boolean from includeescape, by removing this if block
-              if not isinstance(replace_escape, basestring):
-                  if replace_escape:
-                      replace_escape = section[epos:epos+lenescape+1]
-                  else:
-                      replace_escape = section[epos+lenescape:epos+lenescape+1]
-              new_section += replace_escape
-              last_epos = epos + lenescape + 1
+            replace_escape = includeescapes(section[epos:epos+lenescape+1])
+            # TODO: deprecate old method of returning boolean from includeescape, by removing this if block
+            if not isinstance(replace_escape, basestring):
+              if replace_escape:
+                replace_escape = section[epos:epos+lenescape+1]
+              else:
+                replace_escape = section[epos+lenescape:epos+lenescape+1]
+            new_section += replace_escape
+            last_epos = epos + lenescape + 1
           else:
-              last_epos = epos + lenescape
+            last_epos = epos + lenescape
         section = new_section + section[last_epos:]
       extracted += section
       instring = False
@@ -183,9 +183,9 @@ def extractwithoutquotes(source,startdelim,enddelim,escape=None,startinstring=Fa
       for epos in escape_list:
         new_section += section[last_epos:epos]
         if callable_includeescapes and includeescapes(section[epos:epos+lenescape+1]):
-            last_epos = epos
+          last_epos = epos
         else:
-            last_epos = epos + lenescape
+          last_epos = epos + lenescape
       section = new_section + section[last_epos:]
     extracted += section
   return (extracted,instring)
