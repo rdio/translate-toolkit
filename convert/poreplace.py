@@ -39,11 +39,11 @@ class poreplace:
   def convertpo(self, inputfile, outputfile, templatefile):
     """reads in inputfile using po, converts using poreplace, writes to outputfile"""
     # note that templatefile is not used, but it is required by the converter...
-    inputpo = po.pofile(inputfile)
-    if inputpo.isempty():
+    inputstore = po.pofile(inputfile)
+    if inputstore.isempty():
       return 0
-    outputpo = self.convertfile(inputpo)
-    outputposrc = str(outputpo)
+    outputstore = self.convertfile(inputstore)
+    outputposrc = str(outputstore)
     outputfile.write(outputposrc)
     return 1
 
