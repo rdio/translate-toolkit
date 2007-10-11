@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from translate.misc import quote
 
@@ -66,4 +67,11 @@ class TestQuote:
       assert quote.quotestr(string) == '"A string"'
       list = ['One', 'Two']
       assert quote.quotestr(list) == '"One"\n"Two"'
+
+  def test_htmlencoding(self):
+      """test that we can encode and decode HTML entities"""
+      raw_encoded = [(u"€", "&euro;"), (u"©", "&copy;"), (u'"', "&quot;")]
+      for raw, encoded in raw_encoded:
+        assert quote.htmlentityencode(raw) == encoded
+        assert quote.htmlentitydecode(encoded) == raw
 
