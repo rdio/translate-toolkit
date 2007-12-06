@@ -1,6 +1,3 @@
---nofuzzies option
-  use original rather than fuzzies when converting back from po files
-
 --update option
   make recursive methods only run if input is newer than output
 --force option
@@ -28,7 +25,6 @@ csv2po
 oo2po / po2oo
   fix problem with OOO_VENDOR and \" quoting in offmgr.po (see help - about)
   make oo output order the same as in input file...
-  ? remove the comment before msgid, treat all msgids as duplicated, thus inserting _: <comment>\n in msgid
 
 pot2po discussion with pavel:
   pot2po should be as simple as using pot as one arg and po as the second ;-)
@@ -44,6 +40,3 @@ docs
 po2dtd
   when reporting ampersand check failures should tell you the file not just the
     name of the bad PO file not just the command line output name
-
-po2xliff
-  * Handle PO plural conversion
