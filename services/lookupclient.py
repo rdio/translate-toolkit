@@ -33,34 +33,34 @@ UnitClass = tbx.tbxunit
 
 text = sys.stdin.readline()
 while text: 
-	text = text.strip().decode("utf-8")
-	if text != "":
-		source = server.lookup(text)
-		if source:
-			print source
-			#Lets assume life is simple:
-			if "<termEntry>" in source:
-				#TBX
-				base = minidom.parseString(source)
-				unit = UnitClass.createfromxmlElement(base.documentElement, None)
-				#Do something interesting with unit
-			elif "<tu><tuv>" in source:
-				#TMX
-				base = minidom.parseString
-				unit = tmx.createfromxmlElement(base.documentElement, None)
-			target = server.translate(text)
-			print "%s -> %s".decode('utf-8') % (text, target)
-		else:
-			print " (Not found)"
-		candidates = server.matches(text)
-		#alternate example, slightly faster:
-		#candidates = server.matches(text, 5, 70)
-		if len(candidates):
-			print "Likely matches:"
-			columnwidth = min(int(len(text)*1.3)+5, 35)
-			for score, original, translation in candidates:
-				print "%s %-*s | %s".encode('utf-8') % (score, columnwidth, original, translation)
-		else:
-			print "No likely matches found"
-	text = sys.stdin.readline()
+    text = text.strip().decode("utf-8")
+    if text != "":
+        source = server.lookup(text)
+        if source:
+            print source
+            #Lets assume life is simple:
+            if "<termEntry>" in source:
+                #TBX
+                base = minidom.parseString(source)
+                unit = UnitClass.createfromxmlElement(base.documentElement, None)
+                #Do something interesting with unit
+            elif "<tu><tuv>" in source:
+                #TMX
+                base = minidom.parseString
+                unit = tmx.createfromxmlElement(base.documentElement, None)
+            target = server.translate(text)
+            print "%s -> %s".decode('utf-8') % (text, target)
+        else:
+            print " (Not found)"
+        candidates = server.matches(text)
+        #alternate example, slightly faster:
+        #candidates = server.matches(text, 5, 70)
+        if len(candidates):
+            print "Likely matches:"
+            columnwidth = min(int(len(text)*1.3)+5, 35)
+            for score, original, translation in candidates:
+                print "%s %-*s | %s".encode('utf-8') % (score, columnwidth, original, translation)
+        else:
+            print "No likely matches found"
+    text = sys.stdin.readline()
 
