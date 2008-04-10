@@ -7,9 +7,9 @@ from translate.misc import zipfileext
 
 BrokenStringIO = StringIO.StringIO
 class FixedStringIO(BrokenStringIO):
-  def truncate(self, size=None):
-    BrokenStringIO.truncate(self, size)
-    self.len = len(self.buf)
+    def truncate(self, size=None):
+        BrokenStringIO.truncate(self, size)
+        self.len = len(self.buf)
 
 StringIO.StringIO = FixedStringIO
 

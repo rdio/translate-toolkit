@@ -10,9 +10,9 @@ class TestInc2PO:
         """helper that converts .inc source to po source without requiring files"""
         inputfile = wStringIO.StringIO(incsource)
         if inctemplate:
-          templatefile = wStringIO.StringIO(inctemplate)
+            templatefile = wStringIO.StringIO(inctemplate)
         else:
-          templatefile = None
+            templatefile = None
         outputfile = wStringIO.StringIO()
         result = mozfunny2prop.inc2po(inputfile, outputfile, templatefile)
         outputpo = outputfile.getvalue()
