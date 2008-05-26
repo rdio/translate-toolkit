@@ -74,9 +74,9 @@ class StringIO:
         if self.closed:
             raise ValueError, "I/O operation on closed file"
         if n == None:
-          r = self.buf.read()
+            r = self.buf.read()
         else:
-          r = self.buf.read(n)
+            r = self.buf.read(n)
         self.pos = self.buf.tell()
         return r
 
@@ -113,9 +113,9 @@ class StringIO:
         self.buf.write(s)
         self.pos = self.buf.tell()
         if origpos + len(s) > self.len:
-          self.buf.seek(0, 2)
-          self.len = self.buf.tell()
-          self.buf.seek(self.pos)
+            self.buf.seek(0, 2)
+            self.len = self.buf.tell()
+            self.buf.seek(self.pos)
 
     def writelines(self, lines):
         if self.closed:
@@ -137,20 +137,20 @@ class StringIO:
         return self.buf.getvalue()
 
 class CatchStringOutput(StringIO, object):
-  """catches the output before it is closed and sends it to an onclose method"""
-  def __init__(self, onclose):
-    """Set up the output stream, and remember a method to call on closing"""
-    StringIO.__init__(self)
-    self.onclose = onclose
+    """catches the output before it is closed and sends it to an onclose method"""
+    def __init__(self, onclose):
+        """Set up the output stream, and remember a method to call on closing"""
+        StringIO.__init__(self)
+        self.onclose = onclose
 
-  def close(self):
-    """wrap the underlying close method, to pass the value to onclose before it goes"""
-    value = self.getvalue()
-    self.onclose(value)
-    super(CatchStringOutput, self).close()
+    def close(self):
+        """wrap the underlying close method, to pass the value to onclose before it goes"""
+        value = self.getvalue()
+        self.onclose(value)
+        super(CatchStringOutput, self).close()
 
-  def slam(self):
-    """use this method to force the closing of the stream if it isn't closed yet"""
-    if not self.closed:
-      self.close()
+    def slam(self):
+        """use this method to force the closing of the stream if it isn't closed yet"""
+        if not self.closed:
+            self.close()
 
