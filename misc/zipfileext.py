@@ -33,7 +33,11 @@ class ZipFileExt(ZipFile, object):
                 if self.debug:
                     print "Removing", name
                 deleted_offset = self.filelist[i].header_offset
-                deleted_size   = (self.filelist[i].file_offset - self.filelist[i].header_offset) + self.filelist[i].compress_size
+                # "file_offset" is only available in python up to 2.4
+                if hasattr(self.filelist[i], "file_offset"):
+                    deleted_size   = (self.filelist[i].file_offset - self.filelist[i].header_offset) + self.filelist[i].compress_size
+                else:
+                    deleted_size   = (len(self.filelist[i].FileHeader()) - self.filelist[i].header_offset) + self.filelist[i].compress_size
                 zinfo_size = struct.calcsize(structCentralDir) + len(self.filelist[i].filename) + len(self.filelist[i].extra)
                 # Remove the file's data from the archive.
                 current_offset = self.fp.tell()
@@ -61,8 +65,10 @@ class ZipFileExt(ZipFile, object):
                 for j in range (i, len(self.filelist)):
                     if self.filelist[j].header_offset > deleted_offset:
                         self.filelist[j].header_offset -= deleted_size
-                    if self.filelist[j].file_offset > deleted_offset:
-                        self.filelist[j].file_offset -= deleted_size
+                    # "file_offset" is only available in python up to 2.4
+                    if hasattr(self.filelist[i], "file_offset"):
+                        if self.filelist[j].file_offset > deleted_offset:
+                            self.filelist[j].file_offset -= deleted_size
                 del self.NameToInfo[name]
                 return
         if self.debug:
