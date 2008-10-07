@@ -4,6 +4,16 @@ from translate.storage import oo
 from translate.misc import wStringIO
 import warnings
 
+def test_makekey():
+    """checks the makekey function for consistency"""
+    assert oo.makekey(('project', r'path\to\the\sourcefile.src', 'resourcetype', 'GROUP_ID', 'LOCAL_ID', 'platform'), False) == "sourcefile.src#GROUP_ID.LOCAL_ID.resourcetype"
+    # Testwith long_key i.e. used in multifile options
+    assert oo.makekey(('project', r'path\to\the\sourcefile.src', 'resourcetype', 'GROUP_ID', 'LOCAL_ID', 'platform'), True) == "project/path/to/the/sourcefile.src#GROUP_ID.LOCAL_ID.resourcetype"
+    assert oo.makekey(('project', r'path\to\the\sourcefile.src', 'resourcetype', 'GROUP_ID', '', 'platform'), False) == "sourcefile.src#GROUP_ID.resourcetype"
+    assert oo.makekey(('project', r'path\to\the\sourcefile.src', 'resourcetype', '', 'LOCAL_ID', 'platform'), False) == "sourcefile.src#LOCAL_ID.resourcetype"
+    assert oo.makekey(('project', r'path\to\the\sourcefile.src', '', 'GROUP_ID', 'LOCAL_ID', 'platform'), False) == "sourcefile.src#GROUP_ID.LOCAL_ID"
+    assert oo.makekey(('project', r'path\to\the\sourcefile.src', '', 'GROUP_ID', '', 'platform'), False) == "sourcefile.src#GROUP_ID"
+
 class TestOO:
     def setup_method(self, method):
         warnings.resetwarnings()
