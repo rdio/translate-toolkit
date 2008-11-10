@@ -20,5 +20,16 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """translate.storage is part of the translate package
-It contains classes that represent various storage formats for localization"""
+It contains classes that represent various storage formats for localization
+
+@group Primary Localisation: xliff pypo cpo pocommon po poheader base factory
+@group Bilingual: ts2 ts oo lisa tmx tbx wordfast qph poxliff
+@group Monolingual: dtd properties ini rc ical csvl10n html php txt subtitles
+@group OpenDocument Format: xml_extract odf*
+@group Binary: qm mo
+@group Version Control: versioncontrol
+@group Placeables: placeables
+@group Other file processing: directory xpi zip statsdb statistics
+@group Other: benchmark
+"""
 
