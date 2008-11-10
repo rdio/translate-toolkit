@@ -20,5 +20,12 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """translate.convert is part of the translate package
-It contains code to convert between different storage formats for localizations"""
+It contains code to convert between different storage formats for localizations
+
+@group XLIFF: *xliff*
+@group Bilingual: pot2po po2tmx oo2po po2oo csv2tbx *wordfast* *ts*
+@group Monolingual: *prop* *dtd* csv2po po2csv *html* *ical* *ini* odf2po po2odf *rc* *txt* moz2po po2moz *php*
+@group Support: accesskey convert
+@group Other: poreplace
+"""
 
