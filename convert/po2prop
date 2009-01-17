@@ -23,5 +23,5 @@
 from translate.convert import po2prop
 
 if __name__ == '__main__':
-  po2prop.main()
+    po2prop.main()
 

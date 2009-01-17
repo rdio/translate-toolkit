@@ -25,5 +25,5 @@ You can convert from .xliff to .po using po2xliff"""
 from translate.convert import po2xliff
 
 if __name__ == '__main__':
-  po2xliff.main()
+    po2xliff.main()
 

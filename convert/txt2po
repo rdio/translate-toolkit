@@ -25,5 +25,5 @@ You can convert back to .txt using po2txt"""
 from translate.convert import txt2po
 
 if __name__ == '__main__':
-  txt2po.main()
+    txt2po.main()
 

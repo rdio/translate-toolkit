@@ -23,8 +23,7 @@
 You can merge translated strings back using po2html"""
 
 from translate.convert import html2po
-from translate.convert import convert
 
 if __name__ == '__main__':
-  html2po.main()
+    html2po.main()
 

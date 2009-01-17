@@ -25,5 +25,5 @@ You can generate the po files using txt2po"""
 from translate.convert import po2txt
 
 if __name__ == '__main__':
-  po2txt.main()
+    po2txt.main()
 

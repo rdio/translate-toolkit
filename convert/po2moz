@@ -24,5 +24,5 @@ either done using a template or just using the .po file"""
 from translate.convert import po2moz
 
 if __name__ == '__main__':
-  po2moz.main()
+    po2moz.main()
 

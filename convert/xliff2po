@@ -25,5 +25,5 @@ You can convert back to .xliff using po2xliff"""
 from translate.convert import xliff2po
 
 if __name__ == '__main__':
-  xliff2po.main()
+    xliff2po.main()
 

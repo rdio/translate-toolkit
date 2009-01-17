@@ -27,5 +27,5 @@ leave out any unincluded stuff..."""
 from translate.convert import po2oo
 
 if __name__ == '__main__':
-  po2oo.main()
+    po2oo.main()
 

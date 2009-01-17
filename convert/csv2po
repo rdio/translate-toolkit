@@ -23,5 +23,5 @@
 from translate.convert import csv2po
 
 if __name__ == '__main__':
-  csv2po.main()
+    csv2po.main()
 

@@ -23,5 +23,5 @@
 from translate.convert import prop2po
 
 if __name__ == '__main__':
-  prop2po.main()
+    prop2po.main()
 

@@ -23,5 +23,5 @@
 from translate.convert import moz2po
 
 if __name__ == '__main__':
-  moz2po.main()
+    moz2po.main()
 

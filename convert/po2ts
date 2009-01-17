@@ -25,5 +25,5 @@ You can convert from .ts to .po using po2ts"""
 from translate.convert import po2ts
 
 if __name__ == '__main__':
-  po2ts.main()
+    po2ts.main()
 

@@ -25,5 +25,5 @@ You can generate the po files using html2po"""
 from translate.convert import po2html
 
 if __name__ == '__main__':
-  po2html.main()
+    po2html.main()
 

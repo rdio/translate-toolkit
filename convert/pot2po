@@ -23,5 +23,5 @@
 from translate.convert import pot2po
 
 if __name__ == '__main__':
-  pot2po.main()
+    pot2po.main()
 
