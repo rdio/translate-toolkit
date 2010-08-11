@@ -2,6 +2,7 @@
 
 from translate.misc import multistring
 from translate.misc import test_autoencode
+from py import test
 
 class TestMultistring(test_autoencode.TestAutoencode):
     type2test = multistring.multistring
@@ -17,6 +18,7 @@ class TestMultistring(test_autoencode.TestAutoencode):
         assert s2 == "test"
         assert s2.strings == ["test", "me"]
         assert s2 != s1
+        test.raises(ValueError, t, [])
 
     def test_replace(self):
         t = self.type2test
@@ -40,3 +42,11 @@ class TestMultistring(test_autoencode.TestAutoencode):
 	
 	result = result.replace("\\n", "\n")
 	assert result == t([u"abcd\nf", u"d\nf"])
+
+        s2 = t(["abcdeef", "deef"])
+
+	result = s2.replace("e", "g")
+	assert result == t([u"abcdggf", u"dggf"])
+
+	result = s2.replace("e", "g", 1)
+	assert result == t([u"abcdgef", u"dgef"])
