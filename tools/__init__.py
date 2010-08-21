@@ -21,4 +21,3 @@
 
 """translate.tools is part of the translate package
 It contains code to perform various operations (mostly on po files)"""
-

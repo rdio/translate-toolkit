@@ -20,4 +20,3 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """Miscellaneous modules for translate - including modules for backward compatibility with pre-2.3 versions of Python"""
-

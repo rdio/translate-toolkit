@@ -46,4 +46,3 @@ def test_breadcrumb():
 
     xb.start_tag(u'a')
     assert xb.xpath == u'a[1]'
-

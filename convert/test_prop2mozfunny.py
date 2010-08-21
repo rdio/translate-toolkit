@@ -36,4 +36,3 @@ msgstr "<em:contributor>Mr Fury</em:contributor>"
         incfile = self.merge2inc(inctemplate, posource)
         print incfile
         assert incfile == incexpected
-

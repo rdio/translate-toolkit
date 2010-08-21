@@ -248,4 +248,3 @@ class FileDiffer:
 
 if __name__ == "__main__":
     main()
-
