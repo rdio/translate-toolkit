@@ -35,7 +35,7 @@ class StdIOWrapper:
             self.closed = 1
             self.stream.close()
 
-    def seek(self, pos, mode = 0):
+    def seek(self, pos, mode=0):
         raise ValueError, "I/O operation on closed file"
 
     def tell(self):
