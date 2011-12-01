@@ -87,8 +87,12 @@ class reprop:
                 postspaceend = len(line[delimiter_pos+1:].lstrip())
                 postspace = line[delimiter_pos+1:delimiter_pos+(postspacestart-postspaceend)+1]
                 delimiter = prespace + delimiter_char + postspace
-            if key in self.inputstore.locationindex:
-                unit = self.inputstore.locationindex[key]
+            inputkey = key
+            if not inputkey in self.inputstore.locationindex:
+                import urllib
+                inputkey = urllib.quote_plus(key.encode("utf-8"))
+            if inputkey in self.inputstore.locationindex:
+                unit = self.inputstore.locationindex[inputkey]
                 if self.remove_untranslated and (unit.source == unit.target or
                                                  unit.isfuzzy() or
                                                  len(unit.target) == 0):
